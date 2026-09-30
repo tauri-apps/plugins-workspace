@@ -1,0 +1,22 @@
+<!doctype html><html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OHOS plugin checks</title>
+<body><h1>OHOS plugin checks</h1><p>Run each operation on a signed device build. Errors are displayed below.</p>
+<button id="copy">Copy text</button><button id="paste">Read clipboard</button><button id="dialog">Native confirmation</button>
+<button id="open">Open and read text file</button><button id="save">Save text file</button>
+<button id="notify">Request permission and notify</button><button id="link">Open browser</button><button id="scan">Scan QR</button><pre id="result"></pre>
+<script>
+const invoke = window.__TAURI__.core.invoke;
+const actions = {
+  copy: () => invoke('plugin:clipboard-manager|write_text', {text:'Tauri OHOS clipboard'}),
+  paste: () => invoke('plugin:clipboard-manager|read_text'),
+  dialog: () => invoke('plugin:dialog|message', {message:'Native confirmation must respond to your selection.',title:'OHOS',buttons:{OkCancelCustom:['Allow','Cancel']}}),
+  open: async () => { const path = await invoke('plugin:dialog|open', {options:{multiple:false}}); if (!path) return 'Cancelled'; const bytes = await invoke('plugin:fs|read_text_file',{path}); return new TextDecoder().decode(bytes instanceof ArrayBuffer ? bytes : Uint8Array.from(bytes)); },
+  save: async () => { const path = await invoke('plugin:dialog|save',{options:{defaultPath:'ohos-check.txt'}}); return path ? invoke('plugin:fs|write_text_file',new TextEncoder().encode('OHOS native file write'),{headers:{path:encodeURIComponent(path),options:'{}'}}) : 'Cancelled'; },
+  notify: async () => { await invoke('plugin:notification|request_permission'); return invoke('plugin:notification|notify',{options:{title:'Tauri',body:'OHOS native notification'}}); },
+  link: () => invoke('plugin:opener|open_url',{url:'https://tauri.app'}),
+  scan: () => invoke('plugin:barcode-scanner|scan',{formats:['QR_CODE']})
+};
+for (const [id, action] of Object.entries(actions)) document.getElementById(id).onclick = async () => {
+  try { document.getElementById('result').textContent=JSON.stringify(await action(),null,2) ?? 'OK'; }
+  catch(error) { document.getElementById('result').textContent=String(error); }
+};
+</script></body></html>
