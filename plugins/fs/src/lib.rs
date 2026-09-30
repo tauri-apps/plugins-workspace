@@ -449,6 +449,7 @@ impl ScopeObject for scope::Entry {
 pub(crate) struct Scope {
     pub(crate) scope: tauri::fs::Scope,
     pub(crate) require_literal_leading_dot: Option<bool>,
+    pub(crate) scope_dropped_paths: bool,
 }
 
 /// Tracks which paths have active security-scoped resource access on iOS.
@@ -590,6 +591,11 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
                     .config()
                     .as_ref()
                     .and_then(|c| c.require_literal_leading_dot),
+                scope_dropped_paths: api
+                    .config()
+                    .as_ref()
+                    .and_then(|c| c.scope_dropped_paths)
+                    .unwrap_or(true),
                 scope: tauri::fs::Scope::new(app, &FsScope::default())?,
             };
 
@@ -617,7 +623,13 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
                 ..
             } = event
             {
-                let scope = app.fs_scope();
+                let Some(scope) = app.try_state::<Scope>() else {
+                    return;
+                };
+                if !scope.scope_dropped_paths {
+                    return;
+                }
+                let scope = &scope.scope;
                 for path in paths {
                     if path.is_file() {
                         let _ = scope.allow_file(path);
