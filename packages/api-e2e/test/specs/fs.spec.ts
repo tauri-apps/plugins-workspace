@@ -338,6 +338,19 @@ describePlugin('fs', () => {
     })
   })
 
+  it('FileHandle.seek rejects a negative offset from the start', async () => {
+    const message = await tauriError(async (api, path) => {
+      const baseDir = api.fs.BaseDirectory.AppData
+      const file = await api.fs.create(path, { baseDir })
+      try {
+        await file.seek(-1, api.fs.SeekMode.Start)
+      } finally {
+        await file.close()
+      }
+    }, `${dir}/seek.txt`)
+    expect(message).toMatch(/must not be negative/)
+  })
+
   it('a closed FileHandle cannot be used again', async () => {
     const message = await tauriError(async (api, path) => {
       const baseDir = api.fs.BaseDirectory.AppData
