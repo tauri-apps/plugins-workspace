@@ -48,6 +48,23 @@ fn main() {
 
 Afterwards the plugin will automatically save and restore filesystem and asset scopes.
 
+### `protocol-asset` Feature
+
+By default, this plugin persists filesystem scope changes (`fs` plugin scope).
+
+If your app also uses the `asset://` protocol and mutates that scope at runtime, enable
+the `protocol-asset` feature so those asset scope changes are persisted and restored too.
+
+`src-tauri/Cargo.toml`
+
+```toml
+[dependencies]
+tauri-plugin-persisted-scope = { version = "2.0.0", features = ["protocol-asset"] }
+```
+
+With this feature enabled, the plugin stores asset protocol scope state in a separate file
+and reapplies it on the next app start.
+
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
