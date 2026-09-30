@@ -14,7 +14,7 @@ tracing = "0.1"
 log = "0.4.21"
 tauri = { version = "2.12", default-features = false }
 tauri-build = "2.7"
-tauri-plugin = "2.7"
+tauri-plugin = "2.7.1"
 tauri-utils = "2.10"
 serde_json = "1"
 thiserror = "2"
