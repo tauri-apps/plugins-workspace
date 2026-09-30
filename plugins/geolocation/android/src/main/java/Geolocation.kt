@@ -15,16 +15,19 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationRequest as GmsLocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import android.location.LocationRequest
+import android.location.LocationListener
+import android.os.Build
 
 
 public class Geolocation(private val context: Context) {
     private var fusedLocationClient: FusedLocationProviderClient? = null
-    private var locationCallback: LocationCallback? = null
-
+    private var locationCallback: LocationCallback? = null // For gms
+    private var locationListener: LocationListener? = null // For android
 
     fun isLocationServicesEnabled(): Boolean {
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -63,8 +66,30 @@ public class Geolocation(private val context: Context) {
             } else {
                 errorCallback("Location disabled.")
             }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            val provider = locationManager.getProviderProperties(LocationManager.GPS_PROVIDER)
+            if (provider == null) {
+                errorCallback("Location unavailable.")
+                return
+            }
+            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                errorCallback("Location disabled.")
+                return
+            }
+            val req = LocationRequest.Builder(1_000L)
+                .setQuality(LocationRequest.QUALITY_HIGH_ACCURACY)
+                .setMaxUpdates(1)
+                .build()
+            locationManager.getCurrentLocation(LocationManager.GPS_PROVIDER, req, null, context.mainExecutor) { location ->
+                if (location == null) {
+                    errorCallback("Location unavailable.")
+                } else {
+                    successCallback(location)
+                }
+            }
         } else {
-            errorCallback("Google Play Services unavailable.")
+            errorCallback("No Location Services available.")
         }
     }
 
@@ -89,7 +114,7 @@ public class Geolocation(private val context: Context) {
                 val lowPrio = if (networkEnabled) Priority.PRIORITY_BALANCED_POWER_ACCURACY else Priority.PRIORITY_LOW_POWER
                 val prio = if (enableHighAccuracy) Priority.PRIORITY_HIGH_ACCURACY else lowPrio
 
-                val locationRequest = LocationRequest.Builder(timeout)
+                val locationRequest = GmsLocationRequest.Builder(timeout)
                     .setMaxUpdateDelayMillis(timeout)
                     .setMinUpdateIntervalMillis(timeout)
                     .setPriority(prio)
@@ -111,8 +136,29 @@ public class Geolocation(private val context: Context) {
             } else {
                 errorCallback("Location disabled.")
             }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            val provider = locationManager.getProviderProperties(LocationManager.GPS_PROVIDER)
+            if (provider == null) {
+                errorCallback("Location unavailable.")
+                return
+            }
+            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                errorCallback("Location disabled.")
+                return
+            }
+            val req = LocationRequest.Builder(timeout)
+                .setQuality(if (enableHighAccuracy) LocationRequest.QUALITY_HIGH_ACCURACY else LocationRequest.QUALITY_LOW_POWER)
+                .build()
+            val listener = object : android.location.LocationListener {
+                override fun onLocationChanged(location: android.location.Location) {
+                    successCallback(location)
+                }
+            }
+            locationListener = listener
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, req, context.mainExecutor, listener)
         } else {
-            errorCallback("Google Play Services not available.")
+            errorCallback("No Location Services available.")
         }
     }
 
@@ -120,6 +166,11 @@ public class Geolocation(private val context: Context) {
         if (locationCallback != null) {
             fusedLocationClient?.removeLocationUpdates(locationCallback!!)
             locationCallback = null
+        }
+        if (locationListener != null) {
+            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            locationManager.removeUpdates(locationListener!!)
+            locationListener = null
         }
     }
 
