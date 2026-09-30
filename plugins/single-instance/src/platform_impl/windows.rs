@@ -21,13 +21,16 @@ use windows_sys::Win32::{
     UI::WindowsAndMessaging::{
         self as w32wm, AllowSetForegroundWindow, CREATESTRUCTW, CreateWindowExW, DefWindowProcW,
         DestroyWindow, FindWindowW, GWL_STYLE, GWLP_USERDATA, GetWindowThreadProcessId,
-        RegisterClassExW, SendMessageW, WINDOW_LONG_PTR_INDEX, WM_COPYDATA, WM_CREATE, WM_DESTROY,
-        WNDCLASSEXW, WS_EX_LAYERED, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_EX_TRANSPARENT,
-        WS_OVERLAPPED, WS_POPUP, WS_VISIBLE,
+        RegisterClassExW, SMTO_ABORTIFHUNG, SendMessageTimeoutW, WINDOW_LONG_PTR_INDEX,
+        WM_COPYDATA, WM_CREATE, WM_DESTROY, WNDCLASSEXW, WS_EX_LAYERED, WS_EX_NOACTIVATE,
+        WS_EX_TOOLWINDOW, WS_EX_TRANSPARENT, WS_OVERLAPPED, WS_POPUP, WS_VISIBLE,
     },
 };
 
 const WMCOPYDATA_SINGLE_INSTANCE_DATA: usize = 1542;
+
+/// How long the second instance waits for the first instance to take its arguments.
+const FORWARD_TIMEOUT_MS: u32 = 10_000;
 
 struct MutexHandle(isize);
 
@@ -99,7 +102,15 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
                             lpData: bytes.as_ptr() as _,
                         };
 
-                        SendMessageW(hwnd, WM_COPYDATA, 0, &cds as *const _ as _);
+                        SendMessageTimeoutW(
+                            hwnd,
+                            WM_COPYDATA,
+                            0,
+                            &cds as *const _ as _,
+                            SMTO_ABORTIFHUNG,
+                            FORWARD_TIMEOUT_MS,
+                            std::ptr::null_mut(),
+                        );
 
                         app.cleanup_before_exit();
                         std::process::exit(0);
