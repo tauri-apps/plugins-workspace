@@ -14,4 +14,8 @@ commands.allow = [
   "write",
   "write_file",
   "write_text_file",
+  # used by `writeFile` with a stream and by the `FileHandle` returned by `create` and `open`
+  "open",
+  "seek",
+  "fstat",
 ]
