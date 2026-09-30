@@ -88,7 +88,10 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
                         let cwd = std::env::current_dir().unwrap_or_default();
                         let cwd = cwd.to_str().unwrap_or_default();
 
-                        let args = std::env::args().collect::<Vec<String>>().join("|");
+                        let args = std::env::args_os()
+                            .map(|arg| arg.to_string_lossy().into_owned())
+                            .collect::<Vec<String>>()
+                            .join("|");
 
                         let data = format!("{cwd}|{args}\0",);
 
