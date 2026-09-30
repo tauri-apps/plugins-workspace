@@ -72,5 +72,10 @@ pub async fn open_path<R: Runtime>(
 /// TODO: in the next major version, rename to `reveal_items_in_dir`
 #[tauri::command]
 pub async fn reveal_item_in_dir(paths: Vec<PathBuf>) -> crate::Result<()> {
-    crate::reveal_items_in_dir(&paths)
+    // `reveal_items_in_dir` blocks synchronously (e.g. via `zbus::blocking` on Linux),
+    // so it must run off the async runtime worker thread or it panics with
+    // "Cannot start a runtime from within a runtime".
+    tauri::async_runtime::spawn_blocking(move || crate::reveal_items_in_dir(&paths))
+        .await
+        .map_err(|e| crate::Error::Io(std::io::Error::other(e)))?
 }
