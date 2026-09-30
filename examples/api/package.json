@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^3.0.0-alpha.1",
+    "@tauri-apps/plugin-autostart": "workspace:*",
     "@tauri-apps/plugin-barcode-scanner": "workspace:*",
     "@tauri-apps/plugin-biometric": "workspace:*",
     "@tauri-apps/plugin-cli": "workspace:*",

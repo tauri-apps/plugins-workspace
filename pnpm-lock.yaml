@@ -156,6 +156,9 @@ importers:
       '@tauri-apps/api':
         specifier: ^3.0.0-alpha.1
         version: 3.0.0-alpha.1
+      '@tauri-apps/plugin-autostart':
+        specifier: workspace:*
+        version: link:../../plugins/autostart
       '@tauri-apps/plugin-barcode-scanner':
         specifier: workspace:*
         version: link:../../plugins/barcode-scanner
