@@ -237,6 +237,8 @@ pub struct MessageDialogBuilder<R: Runtime> {
     pub(crate) buttons: MessageDialogButtons,
     #[cfg(desktop)]
     pub(crate) parent: Option<crate::desktop::WindowHandle>,
+    #[cfg(mobile)]
+    pub(crate) origin: Option<tauri::Webview<R>>,
 }
 
 /// Payload for the message dialog mobile API.
@@ -266,6 +268,8 @@ impl<R: Runtime> MessageDialogBuilder<R> {
             buttons: MessageDialogButtons::default(),
             #[cfg(desktop)]
             parent: None,
+            #[cfg(mobile)]
+            origin: None,
         }
     }
 
@@ -314,6 +318,18 @@ impl<R: Runtime> MessageDialogBuilder<R> {
                 display_handle.as_raw(),
             ));
         }
+        self
+    }
+
+    /// Sets the webview whose window presents the dialog.
+    ///
+    /// Without an origin, the existing behavior is preserved: Android uses the activity the plugin
+    /// was created with; iOS uses the controller of the most recently registered webview.
+    /// If an explicit origin closes, the dialog does not fall back to another window.
+    /// **Android and iOS only**: call this with `#[cfg(mobile)]`.
+    #[cfg(mobile)]
+    pub fn origin(mut self, webview: &tauri::Webview<R>) -> Self {
+        self.origin.replace(webview.clone());
         self
     }
 
@@ -405,6 +421,8 @@ pub struct FileDialogBuilder<R: Runtime> {
     pub(crate) file_access_mode: Option<FileAccessMode>,
     #[cfg(desktop)]
     pub(crate) parent: Option<crate::desktop::WindowHandle>,
+    #[cfg(mobile)]
+    pub(crate) origin: Option<tauri::Webview<R>>,
 }
 
 #[cfg(mobile)]
@@ -435,6 +453,8 @@ impl<R: Runtime> FileDialogBuilder<R> {
             file_access_mode: None,
             #[cfg(desktop)]
             parent: None,
+            #[cfg(mobile)]
+            origin: None,
         }
     }
 
@@ -490,6 +510,19 @@ impl<R: Runtime> FileDialogBuilder<R> {
                 display_handle.as_raw(),
             ));
         }
+        self
+    }
+
+    /// Sets the webview whose window presents the dialog.
+    ///
+    /// Without an origin, Android uses the plugin manager's oldest surviving activity; iOS uses
+    /// the controller of the most recently registered webview. This preserves existing behavior.
+    /// If an explicit origin closes, the dialog does not fall back to another window.
+    /// **Android and iOS only**: call this with `#[cfg(mobile)]`.
+    #[cfg(mobile)]
+    #[must_use]
+    pub fn set_origin(mut self, webview: &tauri::Webview<R>) -> Self {
+        self.origin.replace(webview.clone());
         self
     }
 
