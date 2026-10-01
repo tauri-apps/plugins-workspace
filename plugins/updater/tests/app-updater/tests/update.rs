@@ -440,6 +440,46 @@ fn target_to_platforms(
     platforms
 }
 
+/// Serves a 1.0.0 update of `updater_path` with `signature` under `update_platform` (none for a
+/// manifest without an update) on `UPDATE_PORT`.
+fn serve_update(
+    update_platform: Option<String>,
+    signature: String,
+    updater_path: PathBuf,
+) -> UpdaterServer {
+    UpdaterServer::spawn(UPDATE_PORT, move |request| match request.url() {
+        "/" => {
+            let platforms = target_to_platforms(update_platform.clone(), signature.clone());
+
+            let body = serde_json::to_vec(&Update {
+                version: "1.0.0".into(),
+                date: time::OffsetDateTime::now_utc()
+                    .format(&time::format_description::well_known::Rfc3339)
+                    .unwrap(),
+                platforms,
+            })
+            .unwrap();
+            let len = body.len();
+            let response = tiny_http::Response::new(
+                tiny_http::StatusCode(200),
+                Vec::new(),
+                std::io::Cursor::new(body),
+                Some(len),
+                None,
+            );
+            let _ = request.respond(response);
+        }
+        "/download" => {
+            let _ = request.respond(tiny_http::Response::from_file(
+                File::open(&updater_path).unwrap_or_else(|_| {
+                    panic!("failed to open updater bundle {}", updater_path.display())
+                }),
+            ));
+        }
+        _ => (),
+    })
+}
+
 /// A bundle to build, the update platform key the server announces it under (none for a manifest
 /// without an update) and the exit codes expected from running the app once per entry.
 type TestCase = (BundleTarget, PathBuf, Option<String>, Vec<i32>);
@@ -749,37 +789,7 @@ fn run_update_cases(
         std::fs::rename(&out_updater_path, &updater_path).expect("failed to rename bundle");
 
         // start the updater server, shut down at the end of the iteration even if a case panics
-        let _server = UpdaterServer::spawn(UPDATE_PORT, move |request| match request.url() {
-            "/" => {
-                let platforms = target_to_platforms(update_platform.clone(), signature.clone());
-
-                let body = serde_json::to_vec(&Update {
-                    version: "1.0.0".into(),
-                    date: time::OffsetDateTime::now_utc()
-                        .format(&time::format_description::well_known::Rfc3339)
-                        .unwrap(),
-                    platforms,
-                })
-                .unwrap();
-                let len = body.len();
-                let response = tiny_http::Response::new(
-                    tiny_http::StatusCode(200),
-                    Vec::new(),
-                    std::io::Cursor::new(body),
-                    Some(len),
-                    None,
-                );
-                let _ = request.respond(response);
-            }
-            "/download" => {
-                let _ = request.respond(tiny_http::Response::from_file(
-                    File::open(&updater_path).unwrap_or_else(|_| {
-                        panic!("failed to open updater bundle {}", updater_path.display())
-                    }),
-                ));
-            }
-            _ => (),
-        });
+        let _server = serve_update(update_platform, signature, updater_path);
 
         config.version = "0.1.0";
 
@@ -834,6 +844,150 @@ fn run_update_cases(
         {
             remove_package(bundle_target);
         }
+    }
+}
+
+/// A disk image attached at `mount_point`, detached when it goes out of scope.
+#[cfg(target_os = "macos")]
+struct DiskImage {
+    mount_point: PathBuf,
+}
+
+#[cfg(target_os = "macos")]
+impl DiskImage {
+    /// Creates a `file_system` image named `name` in `dir` and attaches it at `dir/name`.
+    fn attach(dir: &Path, name: &str, file_system: &str) -> Self {
+        let image = dir.join(format!("{name}.dmg"));
+        let mount_point = dir.join(name);
+        // whatever an earlier run left attached
+        Self::detach(&mount_point);
+        std::fs::create_dir_all(&mount_point).expect("failed to create the mount point");
+
+        let hdiutil = |args: &[&std::ffi::OsStr]| {
+            let status = Command::new("hdiutil")
+                .args(args)
+                .status()
+                .expect("failed to run hdiutil");
+            assert!(status.success(), "hdiutil {args:?} failed");
+        };
+        hdiutil(&[
+            "create".as_ref(),
+            "-ov".as_ref(),
+            "-quiet".as_ref(),
+            "-size".as_ref(),
+            "64m".as_ref(),
+            "-fs".as_ref(),
+            file_system.as_ref(),
+            "-volname".as_ref(),
+            name.as_ref(),
+            image.as_os_str(),
+        ]);
+        hdiutil(&[
+            "attach".as_ref(),
+            "-quiet".as_ref(),
+            "-nobrowse".as_ref(),
+            "-mountpoint".as_ref(),
+            mount_point.as_os_str(),
+            image.as_os_str(),
+        ]);
+
+        Self { mount_point }
+    }
+
+    fn detach(mount_point: &Path) {
+        let _ = Command::new("hdiutil")
+            .args(["detach", "-force", "-quiet"])
+            .arg(mount_point)
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status();
+    }
+}
+
+#[cfg(target_os = "macos")]
+impl Drop for DiskImage {
+    fn drop(&mut self) {
+        Self::detach(&self.mount_point);
+    }
+}
+
+/// The updater moves the `.app` with renames, which only work within one volume, so it has to
+/// stage the update on the volume the app is on. This runs the app from disk images, which are
+/// never the volume the system temp dir is on: an APFS one, where the two bundles are swapped in
+/// one step, and an HFS+ one, which does not support the swap and moves them one at a time.
+#[cfg(target_os = "macos")]
+#[test]
+#[ignore = "needs the tauri CLI, a display and minutes of build time; the integration tests workflow runs it with --ignored"]
+fn update_app_on_another_volume() {
+    use std::os::unix::fs::MetadataExt;
+
+    let _lock = BUILD_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+
+    let target =
+        tauri_plugin_updater::target().expect("running updater test in an unsupported platform");
+    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let root_dir = manifest_dir.join("../../../..");
+
+    let mut config = Config {
+        version: "1.0.0",
+        bundle: BundleConfig {
+            create_updater_artifacts: Updater::Bool(true),
+            linux: None,
+        },
+        plugins: None,
+    };
+    build_app(&manifest_dir, &config, Some(BundleTarget::App));
+
+    let bundle_path = root_dir.join("target/release/bundle/macos/app-updater.app");
+    let signature = std::fs::read_to_string(bundle_path.with_extension("app.tar.gz.sig"))
+        .expect("failed to read signature file");
+    // move it aside so building the running app cannot clobber it
+    let updater_path = root_dir.join("target/release/app-updater.app.tar.gz");
+    std::fs::rename(bundle_path.with_extension("app.tar.gz"), &updater_path)
+        .expect("failed to rename bundle");
+    let _server = serve_update(Some(target), signature, updater_path);
+
+    config.version = "0.1.0";
+    build_app(&manifest_dir, &config, Some(BundleTarget::App));
+
+    let temp_dir_dev = std::env::temp_dir().metadata().unwrap().dev();
+    let volumes_dir = root_dir.join("target/release/app-under-test-volumes");
+    for (name, file_system) in [("apfs", "APFS"), ("hfs", "HFS+")] {
+        let volume = DiskImage::attach(&volumes_dir, name, file_system);
+        assert_ne!(
+            volume.mount_point.metadata().unwrap().dev(),
+            temp_dir_dev,
+            "the {file_system} image is on the same volume as the temp dir"
+        );
+
+        let app_path = volume.mount_point.join("app-updater.app");
+        copy_recursively(&bundle_path, &app_path)
+            .unwrap_or_else(|e| panic!("failed to copy the app to {}: {e}", app_path.display()));
+
+        for expected_exit_code in [UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE] {
+            let output = Command::new(app_path.join("Contents/MacOS/app-updater"))
+                .env("TARGET", BundleTarget::App.name())
+                .output()
+                .unwrap_or_else(|e| panic!("failed to run {}: {e}", app_path.display()));
+            let code = output.status.code().unwrap_or(-1);
+            assert_eq!(
+                code,
+                expected_exit_code,
+                "unexpected exit code running the app from an {file_system} volume: {}",
+                String::from_utf8_lossy(&output.stdout)
+            );
+        }
+
+        // the update is staged next to the app, and nothing of it may be left behind
+        let leftovers = std::fs::read_dir(&volume.mount_point)
+            .unwrap()
+            .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
+            .filter(|name| name.starts_with("tauri_"))
+            .collect::<Vec<_>>();
+        assert!(
+            leftovers.is_empty(),
+            "the update left {leftovers:?} on the {file_system} volume"
+        );
     }
 }
 
