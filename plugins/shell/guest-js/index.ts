@@ -796,19 +796,24 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
 
     const onEvent = new Channel<CommandEvent<O>>()
     onEvent.onmessage = (event) => {
-      switch (event.event) {
-        case 'Error':
-          this.emit('error', event.payload)
-          break
-        case 'Terminated':
-          this.emit('close', event.payload)
-          break
-        case 'Stdout':
-          this.stdout.emit('data', event.payload)
-          break
-        case 'Stderr':
-          this.stderr.emit('data', event.payload)
-          break
+      try {
+        switch (event.event) {
+          case 'Error':
+            this.emit('error', event.payload)
+            break
+          case 'Terminated':
+            this.emit('close', event.payload)
+            break
+          case 'Stdout':
+            this.stdout.emit('data', event.payload)
+            break
+          case 'Stderr':
+            this.stderr.emit('data', event.payload)
+            break
+        }
+      } catch (error) {
+        // Let the channel advance so a listener error cannot stop later events.
+        console.error('Error in shell event listener:', error)
       }
     }
 
