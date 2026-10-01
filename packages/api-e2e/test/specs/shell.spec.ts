@@ -144,6 +144,62 @@ describePlugin('shell', () => {
     }
   )
 
+  itSpawns(
+    'spawn keeps delivering events after a data listener throws',
+    async () => {
+      const result = await tauri(
+        (api, program, flag, script) =>
+          new Promise<{ stdout: string[]; stderr: string[]; errors: number }>(
+            (resolve, reject) => {
+              const stdout: string[] = []
+              const stderr: string[] = []
+              let errors = 0
+              const originalError = console.error
+              console.error = (...args: unknown[]) => {
+                errors++
+                originalError(...args)
+              }
+              const timeout = setTimeout(() => {
+                console.error = originalError
+                reject(new Error('command never closed after listener error'))
+              }, 15000)
+              const command = api.shell.Command.create(program, [flag, script])
+              command.stdout.on('data', (line) => {
+                stdout.push(line.trim())
+                if (stdout.length === 1)
+                  throw new Error('stdout listener failed')
+              })
+              command.stderr.on('data', (line) => {
+                stderr.push(line.trim())
+                if (stderr.length === 1)
+                  throw new Error('stderr listener failed')
+              })
+              command.on('close', () => {
+                clearTimeout(timeout)
+                console.error = originalError
+                resolve({ stdout, stderr, errors })
+              })
+              command.spawn().catch((error: unknown) => {
+                clearTimeout(timeout)
+                console.error = originalError
+                reject(
+                  error instanceof Error ? error : new Error(String(error))
+                )
+              })
+            }
+          ),
+        shell.program,
+        shell.flag,
+        platform === 'win32'
+          ? 'echo one && echo two && echo err1 1>&2 && echo err2 1>&2'
+          : 'echo one; echo two; echo err1 >&2; echo err2 >&2'
+      )
+      expect(result.stdout).toEqual(['one', 'two'])
+      expect(result.stderr).toEqual(['err1', 'err2'])
+      expect(result.errors).toBe(2)
+    }
+  )
+
   itSpawns('write sends to stdin', async () => {
     const output = await tauri(
       (api, program, flag, script) =>
