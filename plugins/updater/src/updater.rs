@@ -1457,6 +1457,12 @@ impl Update {
             Ok(()) => false,
             Err(err) if err.kind() == std::io::ErrorKind::PermissionDenied => true,
             Err(err) => {
+                if let Some(kept) =
+                    keep_backup_if_not_restored(&self.extract_path, tmp_backup_dir, &backup)
+                {
+                    log::error!("failed to install the update: {err}");
+                    return Err(Error::PreviousAppNotRestored(kept));
+                }
                 std::fs::remove_dir_all(tmp_extract_dir.path()).ok();
                 return Err(err.into());
             }
@@ -1484,6 +1490,11 @@ impl Update {
             let result = rx.recv().unwrap();
 
             if res.is_err() || result.is_err() {
+                if let Some(kept) =
+                    keep_backup_if_not_restored(&self.extract_path, tmp_backup_dir, &backup)
+                {
+                    return Err(Error::PreviousAppNotRestored(kept));
+                }
                 std::fs::remove_dir_all(tmp_extract_dir.path()).ok();
                 return Err(Error::Io(std::io::Error::new(
                     std::io::ErrorKind::PermissionDenied,
@@ -1532,6 +1543,23 @@ fn replace_bundle(target: &Path, staged: &Path, backup: &Path) -> std::io::Resul
         return Err(err);
     }
     Ok(())
+}
+
+/// After a failed install, returns where the previous app is if it never made it back to
+/// `target`. `backup` is then the only copy left, so `backup_dir` is kept rather than
+/// deleted on drop as it otherwise is.
+#[cfg(any(target_os = "macos", test))]
+fn keep_backup_if_not_restored(
+    target: &Path,
+    backup_dir: tempfile::TempDir,
+    backup: &Path,
+) -> Option<PathBuf> {
+    if std::fs::symlink_metadata(target).is_err() && std::fs::symlink_metadata(backup).is_ok() {
+        let _ = backup_dir.keep();
+        Some(backup.to_path_buf())
+    } else {
+        None
+    }
 }
 
 /// Gets the base target string used by the updater. If bundle type is available it
@@ -1983,6 +2011,40 @@ mod tests {
             "old"
         );
         assert!(!backup.exists());
+    }
+
+    #[test]
+    fn keeps_the_backup_when_the_previous_app_was_not_restored() {
+        let dir = tempfile::tempdir().unwrap();
+        let target = dir.path().join("App.app");
+        let backup_dir = tempfile::tempdir_in(dir.path()).unwrap();
+        let backup_dir_path = backup_dir.path().to_path_buf();
+        let backup = backup_dir_path.join("current_app");
+        std::fs::create_dir(&backup).unwrap();
+        std::fs::write(backup.join("version"), "old").unwrap();
+
+        let kept = super::keep_backup_if_not_restored(&target, backup_dir, &backup);
+
+        assert_eq!(kept.as_deref(), Some(backup.as_path()));
+        assert_eq!(
+            std::fs::read_to_string(backup.join("version")).unwrap(),
+            "old"
+        );
+        std::fs::remove_dir_all(backup_dir_path).unwrap();
+    }
+
+    #[test]
+    fn drops_the_backup_when_the_previous_app_is_in_place() {
+        let dir = tempfile::tempdir().unwrap();
+        let target = dir.path().join("App.app");
+        std::fs::create_dir(&target).unwrap();
+        let backup_dir = tempfile::tempdir_in(dir.path()).unwrap();
+        let backup_dir_path = backup_dir.path().to_path_buf();
+        let backup = backup_dir_path.join("current_app");
+        std::fs::create_dir(&backup).unwrap();
+
+        assert!(super::keep_backup_if_not_restored(&target, backup_dir, &backup).is_none());
+        assert!(!backup_dir_path.exists());
     }
 
     #[test]
