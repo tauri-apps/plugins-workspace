@@ -1443,12 +1443,13 @@ impl Update {
         // system supports it, so the install path is never empty; the previous app
         // then sits in the extraction temp dir, which is removed on drop. Where the
         // swap is not supported, fall back to two renames with a restore on failure.
+        // File systems report that with different errors (`ENOTSUP` on HFS+,
+        // `EOPNOTSUPP`, `ENOSYS` or `EINVAL` elsewhere), so anything but a permission
+        // error, which needs the privileged install instead, gets the fallback.
         let backup = tmp_backup_dir.path().join("current_app");
         let moved = match swap_bundle(&self.extract_path, tmp_extract_dir.path()) {
-            Err(err)
-                if err.raw_os_error() == Some(libc::ENOTSUP)
-                    || err.raw_os_error() == Some(libc::EINVAL) =>
-            {
+            Err(err) if err.kind() != std::io::ErrorKind::PermissionDenied => {
+                log::debug!("cannot swap the app bundles ({err}), moving them instead");
                 replace_bundle(&self.extract_path, tmp_extract_dir.path(), &backup)
             }
             other => other,
@@ -1520,8 +1521,8 @@ impl Update {
 }
 
 /// Exchange `target` and `staged` atomically, so there is no instant at which
-/// `target` does not exist. APFS supports the swap; other file systems return
-/// `ENOTSUP`, and the caller falls back to [`replace_bundle`].
+/// `target` does not exist. APFS supports the swap; other file systems return an
+/// error, and the caller falls back to [`replace_bundle`].
 #[cfg(target_os = "macos")]
 fn swap_bundle(target: &Path, staged: &Path) -> std::io::Result<()> {
     use std::ffi::CString;
@@ -1999,6 +2000,19 @@ mod tests {
         assert!(!staged.exists());
     }
 
+    #[cfg(target_os = "macos")]
+    fn is_apfs(path: &std::path::Path) -> bool {
+        use std::os::unix::ffi::OsStrExt;
+
+        let path = std::ffi::CString::new(path.as_os_str().as_bytes()).unwrap();
+        let mut stat: libc::statfs = unsafe { std::mem::zeroed() };
+        // SAFETY: `path` is NUL-terminated and `stat` is a valid `statfs` to write to.
+        assert_eq!(unsafe { libc::statfs(path.as_ptr(), &mut stat) }, 0);
+        // SAFETY: `f_fstypename` is a NUL-terminated string filled in by `statfs`.
+        let name = unsafe { std::ffi::CStr::from_ptr(stat.f_fstypename.as_ptr()) };
+        name.to_bytes() == b"apfs"
+    }
+
     #[test]
     #[cfg(target_os = "macos")]
     fn swap_bundle_exchanges_the_two_bundles_in_place() {
@@ -2010,11 +2024,12 @@ mod tests {
         std::fs::create_dir(&staged).unwrap();
         std::fs::write(staged.join("version"), "new").unwrap();
 
-        match super::swap_bundle(&target, &staged) {
-            // A temp dir on a file system without swap support proves nothing here.
-            Err(err) if err.raw_os_error() == Some(libc::ENOTSUP) => return,
-            other => other.unwrap(),
+        // A temp dir on a file system without swap support proves nothing here, but on
+        // APFS the swap has to work: the install would otherwise always fall back.
+        if !is_apfs(dir.path()) {
+            return;
         }
+        super::swap_bundle(&target, &staged).unwrap();
 
         assert_eq!(
             std::fs::read_to_string(target.join("version")).unwrap(),
