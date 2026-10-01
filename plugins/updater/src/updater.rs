@@ -1479,8 +1479,9 @@ impl Update {
 
         if need_authorization {
             log::debug!("app installation needs admin privileges");
-            // Use AppleScript to perform the same moves with admin privileges: the
-            // current app is only deleted once the new one is in place.
+            // Use AppleScript to swap the bundles, or move them where the file system
+            // cannot swap, with admin privileges: the current app is only deleted once
+            // the new one is in place.
             let apple_script = format!(
                 "do shell script {} with administrator privileges",
                 applescript_string(&privileged_install_command(
@@ -1562,15 +1563,26 @@ fn replace_bundle(target: &Path, staged: &Path, backup: &Path) -> std::io::Resul
     Ok(())
 }
 
-/// The shell command the privileged install runs: the same moves as [`replace_bundle`],
-/// deleting the previous app only once the new one is in place.
+/// Exchanges the two paths it is given like [`swap_bundle`], for the privileged install:
+/// the shell has no command for the swap, but `osascript` running this JavaScript for
+/// Automation can call `renamex_np` (`2` is `RENAME_SWAP`), and ships with every macOS.
+#[cfg(any(target_os = "macos", test))]
+const SWAP_BUNDLE_JXA: &str = r#"function run(argv) {
+  ObjC.import("stdio");
+  if ($.renamex_np(argv[0], argv[1], 2) !== 0) throw new Error("renamex_np failed");
+}"#;
+
+/// The shell command the privileged install runs: the same swap as [`swap_bundle`], and
+/// where that fails, the same moves as [`replace_bundle`], deleting the previous app only
+/// once the new one is in place.
 #[cfg(any(target_os = "macos", test))]
 fn privileged_install_command(target: &Path, staged: &Path, backup: &Path) -> String {
+    let swap = sh_quote(Path::new(SWAP_BUNDLE_JXA));
     let target = sh_quote(target);
     let staged = sh_quote(staged);
     let backup = sh_quote(backup);
     format!(
-        "mv -f {target} {backup} && {{ mv -f {staged} {target} || {{ mv -f {backup} {target}; exit 1; }}; }} && rm -rf {backup}"
+        "if /usr/bin/osascript -l JavaScript -e {swap} {staged} {target} 2>/dev/null; then rm -rf {staged}; else mv -f {target} {backup} && {{ mv -f {staged} {target} || {{ mv -f {backup} {target}; exit 1; }}; }} && rm -rf {backup}; fi"
     )
 }
 
@@ -2141,6 +2153,37 @@ mod tests {
             String::from_utf8_lossy(&output.stderr)
         );
         assert_privileged_install_command_moved(dir.path());
+    }
+
+    /// The privileged install swaps the bundles where the file system can, so on APFS it
+    /// never touches the backup: one in a directory that does not exist must not matter.
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn privileged_install_command_swaps_the_bundles() {
+        let dir = tempfile::tempdir().unwrap();
+        if !is_apfs(dir.path()) {
+            return;
+        }
+        let target = dir.path().join("App.app");
+        let staged = dir.path().join("staged");
+        std::fs::create_dir(&target).unwrap();
+        std::fs::write(target.join("version"), "old").unwrap();
+        std::fs::create_dir(&staged).unwrap();
+        std::fs::write(staged.join("version"), "new").unwrap();
+        let backup = dir.path().join("missing").join("backup");
+
+        let status = std::process::Command::new("sh")
+            .arg("-c")
+            .arg(super::privileged_install_command(&target, &staged, &backup))
+            .status()
+            .unwrap();
+
+        assert!(status.success());
+        assert_eq!(
+            std::fs::read_to_string(target.join("version")).unwrap(),
+            "new"
+        );
+        assert!(!staged.exists());
     }
 
     #[test]
