@@ -1473,23 +1473,31 @@ impl Update {
             // Use AppleScript to perform the same moves with admin privileges: the
             // current app is only deleted once the new one is in place.
             let apple_script = format!(
-                "do shell script \"mv -f '{src}' '{backup}' && {{ mv -f '{new}' '{src}' || {{ mv -f '{backup}' '{src}'; exit 1; }}; }} && rm -rf '{backup}'\" with administrator privileges",
-                src = self.extract_path.display(),
-                new = tmp_extract_dir.path().display(),
-                backup = backup.display()
+                "do shell script {} with administrator privileges",
+                applescript_string(&privileged_install_command(
+                    &self.extract_path,
+                    tmp_extract_dir.path(),
+                    &backup
+                ))
             );
 
             let (tx, rx) = std::sync::mpsc::channel();
             let res = (self.context.run_on_main_thread)(Box::new(move || {
                 let mut script =
                     osakit::Script::new_from_source(osakit::Language::AppleScript, &apple_script);
-                script.compile().expect("invalid AppleScript");
-                let r = script.execute();
-                tx.send(r).unwrap();
+                let result = match script.compile() {
+                    Ok(()) => script.execute().map(|_| ()).map_err(|e| e.to_string()),
+                    Err(e) => Err(e.to_string()),
+                };
+                let _ = tx.send(result);
             }));
-            let result = rx.recv().unwrap();
+            // `recv` only fails when the closure never ran, which `res` then reports
+            let result = res
+                .map_err(|e| e.to_string())
+                .and_then(|()| rx.recv().map_err(|e| e.to_string())?);
 
-            if res.is_err() || result.is_err() {
+            if let Err(err) = result {
+                log::error!("failed to move the new app into place: {err}");
                 if let Some(kept) =
                     keep_backup_if_not_restored(&self.extract_path, tmp_backup_dir, &backup)
                 {
@@ -1543,6 +1551,30 @@ fn replace_bundle(target: &Path, staged: &Path, backup: &Path) -> std::io::Resul
         return Err(err);
     }
     Ok(())
+}
+
+/// The shell command the privileged install runs: the same moves as [`replace_bundle`],
+/// deleting the previous app only once the new one is in place.
+#[cfg(any(target_os = "macos", test))]
+fn privileged_install_command(target: &Path, staged: &Path, backup: &Path) -> String {
+    let target = sh_quote(target);
+    let staged = sh_quote(staged);
+    let backup = sh_quote(backup);
+    format!(
+        "mv -f {target} {backup} && {{ mv -f {staged} {target} || {{ mv -f {backup} {target}; exit 1; }}; }} && rm -rf {backup}"
+    )
+}
+
+/// Quotes `path` as a single `sh` word, whatever characters it holds.
+#[cfg(any(target_os = "macos", test))]
+fn sh_quote(path: &Path) -> String {
+    format!("'{}'", path.to_string_lossy().replace('\'', r"'\''"))
+}
+
+/// Quotes `s` as an AppleScript string literal.
+#[cfg(any(target_os = "macos", test))]
+fn applescript_string(s: &str) -> String {
+    format!("\"{}\"", s.replace('\\', r"\\").replace('"', "\\\""))
 }
 
 /// After a failed install, returns where the previous app is if it never made it back to
@@ -2011,6 +2043,81 @@ mod tests {
             "old"
         );
         assert!(!backup.exists());
+    }
+
+    /// A directory whose name `sh` and AppleScript would both misread unquoted.
+    #[cfg(unix)]
+    fn hostile_dir() -> tempfile::TempDir {
+        tempfile::Builder::new()
+            .prefix("it's \"a\" \\ $(touch pwned) `dir`\n")
+            .tempdir()
+            .unwrap()
+    }
+
+    #[cfg(unix)]
+    fn assert_privileged_install_command_moved(dir: &std::path::Path) {
+        let target = dir.join("Bob's \"App\".app");
+        assert_eq!(
+            std::fs::read_to_string(target.join("version")).unwrap(),
+            "new"
+        );
+        assert!(!dir.join("staged").exists());
+        assert!(!dir.join("backup").exists());
+        assert!(!dir.join("pwned").exists());
+    }
+
+    #[cfg(unix)]
+    fn stage_privileged_install(dir: &std::path::Path) -> String {
+        let target = dir.join("Bob's \"App\".app");
+        let staged = dir.join("staged");
+        std::fs::create_dir(&target).unwrap();
+        std::fs::write(target.join("version"), "old").unwrap();
+        std::fs::create_dir(&staged).unwrap();
+        std::fs::write(staged.join("version"), "new").unwrap();
+        super::privileged_install_command(&target, &staged, &dir.join("backup"))
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn privileged_install_command_quotes_every_path() {
+        let dir = hostile_dir();
+        let command = stage_privileged_install(dir.path());
+
+        let status = std::process::Command::new("sh")
+            .arg("-c")
+            .arg(&command)
+            .current_dir(dir.path())
+            .status()
+            .unwrap();
+
+        assert!(status.success());
+        assert_privileged_install_command_moved(dir.path());
+    }
+
+    /// The command the install runs, wrapped the way it is handed to AppleScript, only without
+    /// `with administrator privileges` so it runs without a prompt.
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn privileged_install_script_quotes_every_path() {
+        let dir = hostile_dir();
+        let command = stage_privileged_install(dir.path());
+
+        let output = std::process::Command::new("osascript")
+            .arg("-e")
+            .arg(format!(
+                "do shell script {}",
+                super::applescript_string(&command)
+            ))
+            .current_dir(dir.path())
+            .output()
+            .unwrap();
+
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert_privileged_install_command_moved(dir.path());
     }
 
     #[test]
