@@ -65,8 +65,9 @@ pub enum Error {
     /// `zip` errors.
     #[error(transparent)]
     Extract(#[from] zip::result::ZipError),
-    /// Temp dir is not on same mount mount. This prevents our updater to rename the AppImage to a temp file.
-    #[error("temp directory is not on the same mount point as the AppImage")]
+    /// No temp dir could be created on the same mount point as the app, which the updater needs
+    /// to move the app aside and the update into place with renames.
+    #[error("temp directory is not on the same mount point as the app")]
     TempDirNotOnSameMountPoint,
     /// Installing the update failed, and the app it was replacing could not be moved back to its
     /// install path either. The previous app was kept at the given path instead.

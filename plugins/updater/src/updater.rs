@@ -1394,20 +1394,28 @@ impl Update {
         let cursor = Cursor::new(bytes);
         let mut extracted_files: Vec<PathBuf> = Vec::new();
 
-        // Create temp directories for backup and extraction
+        // The app is moved with renames, which only work within one file system, so the
+        // temp dirs for backup and extraction go on the app's volume: in the system temp
+        // dir when it is there, and next to the app otherwise. If neither is, refuse now
+        // rather than fail after the current app has been moved away. The renames act on
+        // the install path itself, so a symlink there is not followed.
+        let app_dev = std::fs::symlink_metadata(&self.extract_path)?.dev();
+        let tmp_root = [
+            Some(std::env::temp_dir()),
+            self.extract_path.parent().map(Path::to_path_buf),
+        ]
+        .into_iter()
+        .flatten()
+        .find(|dir| dir.metadata().is_ok_and(|m| m.dev() == app_dev))
+        .ok_or(Error::TempDirNotOnSameMountPoint)?;
+
         let tmp_backup_dir = tempfile::Builder::new()
             .prefix("tauri_current_app")
-            .tempdir()?;
+            .tempdir_in(&tmp_root)?;
 
         let tmp_extract_dir = tempfile::Builder::new()
             .prefix("tauri_updated_app")
-            .tempdir()?;
-
-        // The app is moved with renames, which only work within one file system.
-        // Refuse now rather than fail after the current app has been moved away.
-        if self.extract_path.metadata()?.dev() != tmp_extract_dir.path().metadata()?.dev() {
-            return Err(Error::TempDirNotOnSameMountPoint);
-        }
+            .tempdir_in(&tmp_root)?;
 
         let decoder = GzDecoder::new(cursor);
         let mut archive = tar::Archive::new(decoder);
