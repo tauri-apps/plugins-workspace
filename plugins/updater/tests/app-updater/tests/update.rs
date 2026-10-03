@@ -911,6 +911,68 @@ impl Drop for DiskImage {
     }
 }
 
+/// Bundles 1.0.0 and serves it as the update, then bundles 0.1.0 and returns the server along with
+/// where the 0.1.0 `.app` was left, to copy wherever a test runs it from.
+#[cfg(target_os = "macos")]
+fn build_and_serve_macos_update(manifest_dir: &Path, root_dir: &Path) -> (UpdaterServer, PathBuf) {
+    let target =
+        tauri_plugin_updater::target().expect("running updater test in an unsupported platform");
+
+    let mut config = Config {
+        version: "1.0.0",
+        bundle: BundleConfig {
+            create_updater_artifacts: Updater::Bool(true),
+            linux: None,
+        },
+        plugins: None,
+    };
+    build_app(manifest_dir, &config, Some(BundleTarget::App));
+
+    let bundle_path = root_dir.join("target/release/bundle/macos/app-updater.app");
+    let signature = std::fs::read_to_string(bundle_path.with_extension("app.tar.gz.sig"))
+        .expect("failed to read signature file");
+    // move it aside so building the running app cannot clobber it
+    let updater_path = root_dir.join("target/release/app-updater.app.tar.gz");
+    std::fs::rename(bundle_path.with_extension("app.tar.gz"), &updater_path)
+        .expect("failed to rename bundle");
+    let server = serve_update(Some(target), signature, updater_path);
+
+    config.version = "0.1.0";
+    build_app(manifest_dir, &config, Some(BundleTarget::App));
+
+    (server, bundle_path)
+}
+
+/// Runs the app at `app_path` twice, expecting it to install the update and then to find itself
+/// up to date.
+#[cfg(target_os = "macos")]
+fn update_and_check(app_path: &Path, envs: &[(&str, &Path)], context: &str) {
+    for expected_exit_code in [UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE] {
+        let output = Command::new(app_path.join("Contents/MacOS/app-updater"))
+            .env("TARGET", BundleTarget::App.name())
+            .envs(envs.iter().copied())
+            .output()
+            .unwrap_or_else(|e| panic!("failed to run {}: {e}", app_path.display()));
+        let code = output.status.code().unwrap_or(-1);
+        assert_eq!(
+            code,
+            expected_exit_code,
+            "unexpected exit code running the app {context}: {}",
+            String::from_utf8_lossy(&output.stdout)
+        );
+    }
+}
+
+/// The entries of `dir` an update staged there and failed to clean up.
+#[cfg(target_os = "macos")]
+fn update_leftovers(dir: &Path) -> Vec<String> {
+    std::fs::read_dir(dir)
+        .unwrap()
+        .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
+        .filter(|name| name.starts_with("tauri_"))
+        .collect()
+}
+
 /// The updater moves the `.app` with renames, which only work within one volume, so it has to
 /// stage the update on the volume the app is on. This runs the app from disk images, which are
 /// never the volume the system temp dir is on: an APFS one, where the two bundles are swapped in
@@ -923,32 +985,9 @@ fn update_app_on_another_volume() {
 
     let _lock = BUILD_LOCK.lock().unwrap_or_else(|e| e.into_inner());
 
-    let target =
-        tauri_plugin_updater::target().expect("running updater test in an unsupported platform");
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let root_dir = manifest_dir.join("../../../..");
-
-    let mut config = Config {
-        version: "1.0.0",
-        bundle: BundleConfig {
-            create_updater_artifacts: Updater::Bool(true),
-            linux: None,
-        },
-        plugins: None,
-    };
-    build_app(&manifest_dir, &config, Some(BundleTarget::App));
-
-    let bundle_path = root_dir.join("target/release/bundle/macos/app-updater.app");
-    let signature = std::fs::read_to_string(bundle_path.with_extension("app.tar.gz.sig"))
-        .expect("failed to read signature file");
-    // move it aside so building the running app cannot clobber it
-    let updater_path = root_dir.join("target/release/app-updater.app.tar.gz");
-    std::fs::rename(bundle_path.with_extension("app.tar.gz"), &updater_path)
-        .expect("failed to rename bundle");
-    let _server = serve_update(Some(target), signature, updater_path);
-
-    config.version = "0.1.0";
-    build_app(&manifest_dir, &config, Some(BundleTarget::App));
+    let (_server, bundle_path) = build_and_serve_macos_update(&manifest_dir, &root_dir);
 
     let temp_dir_dev = std::env::temp_dir().metadata().unwrap().dev();
     let volumes_dir = root_dir.join("target/release/app-under-test-volumes");
@@ -964,31 +1003,94 @@ fn update_app_on_another_volume() {
         copy_recursively(&bundle_path, &app_path)
             .unwrap_or_else(|e| panic!("failed to copy the app to {}: {e}", app_path.display()));
 
-        for expected_exit_code in [UPDATED_EXIT_CODE, UP_TO_DATE_EXIT_CODE] {
-            let output = Command::new(app_path.join("Contents/MacOS/app-updater"))
-                .env("TARGET", BundleTarget::App.name())
-                .output()
-                .unwrap_or_else(|e| panic!("failed to run {}: {e}", app_path.display()));
-            let code = output.status.code().unwrap_or(-1);
-            assert_eq!(
-                code,
-                expected_exit_code,
-                "unexpected exit code running the app from an {file_system} volume: {}",
-                String::from_utf8_lossy(&output.stdout)
-            );
-        }
+        update_and_check(&app_path, &[], &format!("from an {file_system} volume"));
 
         // the update is staged next to the app, and nothing of it may be left behind
-        let leftovers = std::fs::read_dir(&volume.mount_point)
-            .unwrap()
-            .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
-            .filter(|name| name.starts_with("tauri_"))
-            .collect::<Vec<_>>();
+        let leftovers = update_leftovers(&volume.mount_point);
         assert!(
             leftovers.is_empty(),
             "the update left {leftovers:?} on the {file_system} volume"
         );
     }
+}
+
+/// Makes a directory read-only, and writable again when it goes out of scope so it can be removed.
+#[cfg(target_os = "macos")]
+struct ReadOnlyDir(PathBuf);
+
+#[cfg(target_os = "macos")]
+impl ReadOnlyDir {
+    fn new(dir: PathBuf) -> Self {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&dir, std::fs::Permissions::from_mode(0o555))
+            .expect("failed to make the directory read-only");
+        Self(dir)
+    }
+}
+
+#[cfg(target_os = "macos")]
+impl Drop for ReadOnlyDir {
+    fn drop(&mut self) {
+        use std::os::unix::fs::PermissionsExt;
+        let _ = std::fs::set_permissions(&self.0, std::fs::Permissions::from_mode(0o755));
+    }
+}
+
+/// When the user cannot write to the folder the app is in, the updater asks for an admin password
+/// and installs as root. Someone has to type that password, so this only runs with
+/// `TAURI_UPDATER_ADMIN_PROMPT_TEST` set, and asks twice: for a folder on the temp dir's APFS
+/// volume, where root swaps the bundles in one step, and for one on an HFS+ disk image, where the
+/// swap is not supported and root moves them one at a time.
+///
+/// Each run points `TMPDIR` at a directory of its own on the app's volume, so what the install
+/// leaves behind there can be checked.
+#[cfg(target_os = "macos")]
+#[test]
+#[ignore = "needs the tauri CLI, a display, someone to type an admin password and minutes of build time"]
+fn update_app_with_admin_prompt() {
+    if std::env::var_os("TAURI_UPDATER_ADMIN_PROMPT_TEST").is_none() {
+        eprintln!("skipping the admin prompt test: TAURI_UPDATER_ADMIN_PROMPT_TEST is not set");
+        return;
+    }
+
+    let _lock = BUILD_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+
+    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let root_dir = manifest_dir.join("../../../..");
+    let (_server, bundle_path) = build_and_serve_macos_update(&manifest_dir, &root_dir);
+
+    let work_dir = root_dir.join("target/release/app-under-test-admin");
+    let run = |dir: &Path, file_system: &str| {
+        let app_dir = dir.join("read-only");
+        let tmp_dir = dir.join("tmp");
+        // whatever an earlier run left
+        drop(ReadOnlyDir(app_dir.clone()));
+        let _ = std::fs::remove_dir_all(&app_dir);
+        let _ = std::fs::remove_dir_all(&tmp_dir);
+        std::fs::create_dir_all(&app_dir).expect("failed to create the app directory");
+        std::fs::create_dir_all(&tmp_dir).expect("failed to create the temp directory");
+
+        let app_path = app_dir.join("app-updater.app");
+        copy_recursively(&bundle_path, &app_path)
+            .unwrap_or_else(|e| panic!("failed to copy the app to {}: {e}", app_path.display()));
+        let _read_only = ReadOnlyDir::new(app_dir);
+
+        update_and_check(
+            &app_path,
+            &[("TMPDIR", &tmp_dir)],
+            &format!("from a read-only folder on an {file_system} volume"),
+        );
+
+        let leftovers = update_leftovers(&tmp_dir);
+        assert!(
+            leftovers.is_empty(),
+            "the admin install left {leftovers:?} on the {file_system} volume"
+        );
+    };
+
+    run(&work_dir.join("apfs"), "APFS");
+    let volume = DiskImage::attach(&work_dir, "hfs", "HFS+");
+    run(&volume.mount_point, "HFS+");
 }
 
 const SIGNED_VERSION_PORT: u16 = 3008;

@@ -68,5 +68,16 @@ jobs:
         # between runs, so the cached artifacts stay valid.
         run: cargo install tauri-cli --git https://github.com/tauri-apps/tauri --branch dev --locked --debug --target-dir target
 
+      - name: grant admin rights without a prompt
+        if: startsWith(matrix.platform, 'macos')
+        # The updater installs into folders the user cannot write to through
+        # `do shell script ... with administrator privileges`, which asks Authorization
+        # Services for `system.privilege.admin` and shows a password prompt nobody can answer
+        # here. Allowing the right outright lets `update_app_with_admin_prompt` cover that
+        # install; the runner is discarded after the job.
+        run: |
+          sudo security authorizationdb write system.privilege.admin allow
+          echo "TAURI_UPDATER_ADMIN_PROMPT_TEST=1" >> "$GITHUB_ENV"
+
       - name: run integration tests
         run: cargo test --test '*' -- --ignored
