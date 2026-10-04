@@ -1466,9 +1466,12 @@ impl Update {
             Ok(()) => false,
             Err(err) if err.kind() == std::io::ErrorKind::PermissionDenied => true,
             Err(err) => {
-                if let Some(kept) =
-                    keep_backup_if_not_restored(&self.extract_path, tmp_backup_dir, &backup)
-                {
+                if let Some(kept) = keep_backup_if_not_restored(
+                    &self.extract_path,
+                    tmp_backup_dir,
+                    &backup,
+                    std::env::home_dir().as_deref(),
+                ) {
                     log::error!("failed to install the update: {err}");
                     return Err(Error::PreviousAppNotRestored(kept));
                 }
@@ -1508,9 +1511,12 @@ impl Update {
 
             if let Err(err) = result {
                 log::error!("failed to move the new app into place: {err}");
-                if let Some(kept) =
-                    keep_backup_if_not_restored(&self.extract_path, tmp_backup_dir, &backup)
-                {
+                if let Some(kept) = keep_backup_if_not_restored(
+                    &self.extract_path,
+                    tmp_backup_dir,
+                    &backup,
+                    std::env::home_dir().as_deref(),
+                ) {
                     return Err(Error::PreviousAppNotRestored(kept));
                 }
                 std::fs::remove_dir_all(tmp_extract_dir.path()).ok();
@@ -1566,52 +1572,77 @@ fn replace_bundle(target: &Path, staged: &Path, backup: &Path) -> std::io::Resul
 /// Exchanges the two paths it is given like [`swap_bundle`], for the privileged install:
 /// the shell has no command for the swap, but `osascript` running this JavaScript for
 /// Automation can call `renamex_np` (`2` is `RENAME_SWAP`), and ships with every macOS.
-#[cfg(any(target_os = "macos", test))]
+/// It prints `swapped` or `failed`, so the caller can tell a swap that did not happen
+/// from an `osascript` failure that leaves unknown whether it did.
+#[cfg(target_os = "macos")]
 const SWAP_BUNDLE_JXA: &str = r#"function run(argv) {
   ObjC.import("stdio");
-  if ($.renamex_np(argv[0], argv[1], 2) !== 0) throw new Error("renamex_np failed");
+  return $.renamex_np(argv[0], argv[1], 2) === 0 ? "swapped" : "failed";
 }"#;
 
 /// The shell command the privileged install runs: the same swap as [`swap_bundle`], and
-/// where that fails, the same moves as [`replace_bundle`], deleting the previous app only
-/// once the new one is in place.
-#[cfg(any(target_os = "macos", test))]
+/// where the file system cannot swap, the same moves as [`replace_bundle`], deleting the
+/// previous app only once the new one is in place. The moves only run once the swap is
+/// known not to have happened, since after a swap they would put the previous app back.
+#[cfg(target_os = "macos")]
 fn privileged_install_command(target: &Path, staged: &Path, backup: &Path) -> String {
     let swap = sh_quote(Path::new(SWAP_BUNDLE_JXA));
     let target = sh_quote(target);
     let staged = sh_quote(staged);
     let backup = sh_quote(backup);
     format!(
-        "if /usr/bin/osascript -l JavaScript -e {swap} {staged} {target} 2>/dev/null; then rm -rf {staged}; else mv -f {target} {backup} && {{ mv -f {staged} {target} || {{ mv -f {backup} {target}; exit 1; }}; }} && rm -rf {backup}; fi"
+        "case \"$(/usr/bin/osascript -l JavaScript -e {swap} {staged} {target} 2>/dev/null)\" in swapped) rm -rf {staged};; failed) mv -f {target} {backup} && {{ mv -f {staged} {target} || {{ mv -f {backup} {target}; exit 1; }}; }} && rm -rf {backup};; *) exit 1;; esac"
     )
 }
 
 /// Quotes `path` as a single `sh` word, whatever characters it holds.
-#[cfg(any(target_os = "macos", test))]
+#[cfg(target_os = "macos")]
 fn sh_quote(path: &Path) -> String {
     format!("'{}'", path.to_string_lossy().replace('\'', r"'\''"))
 }
 
 /// Quotes `s` as an AppleScript string literal.
-#[cfg(any(target_os = "macos", test))]
+#[cfg(target_os = "macos")]
 fn applescript_string(s: &str) -> String {
     format!("\"{}\"", s.replace('\\', r"\\").replace('"', "\\\""))
 }
 
 /// After a failed install, returns where the previous app is if it never made it back to
-/// `target`. `backup` is then the only copy left, so `backup_dir` is kept rather than
-/// deleted on drop as it otherwise is.
+/// `target`. `backup` is then the only copy left, and usually sits in the system temp dir,
+/// which macOS empties on its own, so it is moved next to `target`, or to `fallback_dir`
+/// (the home folder) when that is not writable, as `<name> (previous version).app`. If
+/// neither works, `backup_dir` is kept rather than deleted on drop as it otherwise is.
 #[cfg(any(target_os = "macos", test))]
 fn keep_backup_if_not_restored(
     target: &Path,
     backup_dir: tempfile::TempDir,
     backup: &Path,
+    fallback_dir: Option<&Path>,
 ) -> Option<PathBuf> {
-    if std::fs::symlink_metadata(target).is_err() && std::fs::symlink_metadata(backup).is_ok() {
-        let _ = backup_dir.keep();
-        Some(backup.to_path_buf())
-    } else {
-        None
+    if std::fs::symlink_metadata(target).is_ok() || std::fs::symlink_metadata(backup).is_err() {
+        return None;
+    }
+
+    let mut name = target.file_stem().unwrap_or_default().to_os_string();
+    name.push(" (previous version)");
+    if let Some(extension) = target.extension() {
+        name.push(".");
+        name.push(extension);
+    }
+    let kept = [target.parent(), fallback_dir]
+        .into_iter()
+        .flatten()
+        .map(|dir| dir.join(&name))
+        // `rename` replaces an empty directory, so never move onto anything already there
+        .filter(|kept| std::fs::symlink_metadata(kept).is_err())
+        .find(|kept| std::fs::rename(backup, kept).is_ok());
+
+    match kept {
+        Some(kept) => Some(kept),
+        None => {
+            let _ = backup_dir.keep();
+            Some(backup.to_path_buf())
+        }
     }
 }
 
@@ -2081,7 +2112,7 @@ mod tests {
     }
 
     /// A directory whose name `sh` and AppleScript would both misread unquoted.
-    #[cfg(unix)]
+    #[cfg(target_os = "macos")]
     fn hostile_dir() -> tempfile::TempDir {
         tempfile::Builder::new()
             .prefix("it's \"a\" \\ $(touch pwned) `dir`\n")
@@ -2089,7 +2120,7 @@ mod tests {
             .unwrap()
     }
 
-    #[cfg(unix)]
+    #[cfg(target_os = "macos")]
     fn assert_privileged_install_command_moved(dir: &std::path::Path) {
         let target = dir.join("Bob's \"App\".app");
         assert_eq!(
@@ -2101,7 +2132,7 @@ mod tests {
         assert!(!dir.join("pwned").exists());
     }
 
-    #[cfg(unix)]
+    #[cfg(target_os = "macos")]
     fn stage_privileged_install(dir: &std::path::Path) -> String {
         let target = dir.join("Bob's \"App\".app");
         let staged = dir.join("staged");
@@ -2113,7 +2144,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(unix)]
+    #[cfg(target_os = "macos")]
     fn privileged_install_command_quotes_every_path() {
         let dir = hostile_dir();
         let command = stage_privileged_install(dir.path());
@@ -2196,14 +2227,63 @@ mod tests {
         std::fs::create_dir(&backup).unwrap();
         std::fs::write(backup.join("version"), "old").unwrap();
 
-        let kept = super::keep_backup_if_not_restored(&target, backup_dir, &backup);
+        let kept = super::keep_backup_if_not_restored(&target, backup_dir, &backup, None);
+
+        let expected = dir.path().join("App (previous version).app");
+        assert_eq!(kept.as_deref(), Some(expected.as_path()));
+        assert_eq!(
+            std::fs::read_to_string(expected.join("version")).unwrap(),
+            "old"
+        );
+        assert!(!backup_dir_path.exists());
+    }
+
+    #[test]
+    fn moves_the_backup_to_the_fallback_dir_when_it_cannot_go_next_to_the_app() {
+        let dir = tempfile::tempdir().unwrap();
+        let target = dir.path().join("App.app");
+        std::fs::write(dir.path().join("App (previous version).app"), "other").unwrap();
+        let backup_dir = tempfile::tempdir_in(dir.path()).unwrap();
+        let backup = backup_dir.path().join("current_app");
+        std::fs::create_dir(&backup).unwrap();
+        std::fs::write(backup.join("version"), "old").unwrap();
+        let fallback = tempfile::tempdir_in(dir.path()).unwrap();
+
+        let kept =
+            super::keep_backup_if_not_restored(&target, backup_dir, &backup, Some(fallback.path()));
+
+        let expected = fallback.path().join("App (previous version).app");
+        assert_eq!(kept.as_deref(), Some(expected.as_path()));
+        assert_eq!(
+            std::fs::read_to_string(expected.join("version")).unwrap(),
+            "old"
+        );
+    }
+
+    #[test]
+    fn keeps_the_backup_in_place_when_it_cannot_be_moved() {
+        let dir = tempfile::tempdir().unwrap();
+        let target = dir.path().join("App.app");
+        // A file where the backup would go next to the app, which must not be replaced
+        std::fs::write(dir.path().join("App (previous version).app"), "other").unwrap();
+        let backup_dir = tempfile::tempdir_in(dir.path()).unwrap();
+        let backup_dir_path = backup_dir.path().to_path_buf();
+        let backup = backup_dir_path.join("current_app");
+        std::fs::create_dir(&backup).unwrap();
+        std::fs::write(backup.join("version"), "old").unwrap();
+        let missing = dir.path().join("missing");
+
+        let kept = super::keep_backup_if_not_restored(&target, backup_dir, &backup, Some(&missing));
 
         assert_eq!(kept.as_deref(), Some(backup.as_path()));
         assert_eq!(
             std::fs::read_to_string(backup.join("version")).unwrap(),
             "old"
         );
-        std::fs::remove_dir_all(backup_dir_path).unwrap();
+        assert_eq!(
+            std::fs::read_to_string(dir.path().join("App (previous version).app")).unwrap(),
+            "other"
+        );
     }
 
     #[test]
@@ -2216,7 +2296,7 @@ mod tests {
         let backup = backup_dir_path.join("current_app");
         std::fs::create_dir(&backup).unwrap();
 
-        assert!(super::keep_backup_if_not_restored(&target, backup_dir, &backup).is_none());
+        assert!(super::keep_backup_if_not_restored(&target, backup_dir, &backup, None).is_none());
         assert!(!backup_dir_path.exists());
     }
 
