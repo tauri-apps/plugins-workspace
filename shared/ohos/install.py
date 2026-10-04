@@ -4,6 +4,7 @@ import json
 import argparse
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 import tomllib
 import json5
@@ -11,6 +12,7 @@ import json5
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('host')
 parser.add_argument('--without-barcode', action='store_true', help='Omit ScanKit when building for OpenHarmony without Huawei ScanKit')
+parser.add_argument('--sources-only', action='store_true', help='Keep the application-owned project metadata and Ability unchanged')
 args = parser.parse_args()
 source = Path(__file__).resolve().parent
 host = Path(args.host).resolve()
@@ -19,7 +21,7 @@ library = manifest.get('lib', {}).get('name', manifest['package']['name'].replac
 project = host / 'gen/ohos'
 entry = project / 'entry'
 destination = entry / 'src/main/ets/tauri-plugins'
-ignored = ['*.py', '*.json', '*.md'] + (['Barcode.ets'] if args.without_barcode else [])
+ignored = ['__pycache__', '*.pyc', '*.py', '*.json', '*.md'] + (['Barcode.ets'] if args.without_barcode else [])
 shutil.copytree(source, destination, ignore=shutil.ignore_patterns(*ignored), dirs_exist_ok=True)
 if args.without_barcode:
     bridge = destination / 'TauriPlugins.ets'
@@ -37,10 +39,24 @@ types.mkdir(parents=True, exist_ok=True)
 declare const native: NativeModule;
 export default native;
 ''')
+ability_source = Path((host / 'gen/ohos-ability-source').read_text().strip())
+subprocess.run(['bash', 'scripts/pack.sh'], cwd=ability_source, check=True)
+archives = list(ability_source.glob('*.har'))
+if len(archives) != 1:
+    raise ValueError(f'Expected one Ability HAR from pinned sources, got {archives}')
+vendor = project / 'vendor'
+vendor.mkdir(exist_ok=True)
+shutil.copyfile(archives[0], vendor / 'ability.har')
+if args.sources_only:
+    print(f'Installed pinned HAR and plugin sources into {project}')
+    sys.exit(0)
+
 package = entry / 'oh-package.json5'
 data = json5.loads(package.read_text())
 data.setdefault('dependencies', {})[module_name] = 'file:./src/main/cpp/types/tauri-plugins-native'
+data['dependencies']['@ohos-rs/ability'] = 'file:../vendor/ability.har'
 package.write_text(json.dumps(data, indent=2)+'\n')
+
 ability = entry / 'src/main/ets/entryability/EntryAbility.ets'
 text = ability.read_text()
 if 'TauriPlugins' in text:
