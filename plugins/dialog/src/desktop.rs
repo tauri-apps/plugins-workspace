@@ -11,7 +11,7 @@
 use raw_window_handle::{HasDisplayHandle, HasWindowHandle, RawDisplayHandle, RawWindowHandle};
 use rfd::{AsyncFileDialog, AsyncMessageDialog};
 use serde::de::DeserializeOwned;
-use tauri::{AppHandle, Runtime, plugin::PluginApi};
+use tauri::{AppHandle, Manager, Runtime, plugin::PluginApi};
 
 use crate::{FileDialogBuilder, FilePath, MessageDialogBuilder, models::*};
 

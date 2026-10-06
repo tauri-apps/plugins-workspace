@@ -15,7 +15,7 @@
   "devDependencies": {
     "@crabnebula/tauri-driver": "^2.0.9",
     "@crabnebula/test-runner-backend": "^0.3.0",
-    "@tauri-apps/api": "^3.0.0-alpha.1",
+    "@tauri-apps/api": "^3.0.0-alpha.2",
     "@tauri-apps/plugin-autostart": "workspace:*",
     "@tauri-apps/plugin-barcode-scanner": "workspace:*",
     "@tauri-apps/plugin-biometric": "workspace:*",
