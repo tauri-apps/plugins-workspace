@@ -48,7 +48,7 @@ serde_repr = "0.1"
 tauri = { workspace = true, features = ["wry"] }
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
-notify-rust = "4.11"
+notify-rust = "4.18"
 
 [features]
 # Deprecated: tauri 2.12 no longer supports Windows 7, so this feature does nothing.

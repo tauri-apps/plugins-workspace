@@ -243,12 +243,25 @@ impl<R: Runtime, T: Manager<R>> crate::NotificationExt<R> for T {
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("notification")
-        .invoke_handler(tauri::generate_handler![
-            commands::notify,
-            commands::request_permission,
-            commands::is_permission_granted
-        ])
+    let builder = Builder::new("notification");
+    // On mobile the other commands are implemented by the Kotlin and Swift plugins.
+    #[cfg(mobile)]
+    let builder = builder.invoke_handler(tauri::generate_handler![
+        commands::notify,
+        commands::request_permission,
+        commands::is_permission_granted
+    ]);
+    #[cfg(desktop)]
+    let builder = builder.invoke_handler(tauri::generate_handler![
+        commands::notify,
+        commands::request_permission,
+        commands::is_permission_granted,
+        commands::register_action_types,
+        commands::remove_active,
+        commands::register_listener,
+        commands::remove_listener
+    ]);
+    builder
         .js_init_script(include_str!("init-iife.js").replace(
             "__TEMPLATE_windows__",
             if cfg!(windows) { "true" } else { "false" },

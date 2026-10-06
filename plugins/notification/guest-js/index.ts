@@ -690,6 +690,9 @@ function sendNotification(options: Options | string): void {
 /**
  * Register actions that are performed when the user clicks on the notification.
  *
+ * On desktop the actions of a type become the buttons of the notifications that reference it;
+ * only their `id` and `title` are used there.
+ *
  * @example
  * ```typescript
  * import { registerActionTypes } from '@tauri-apps/plugin-notification';
@@ -790,6 +793,9 @@ async function active(): Promise<ActiveNotification[]> {
  * import { removeActive } from '@tauri-apps/plugin-notification';
  * await removeActive([{ id: -34234 }, { id: 23432 }, { id: 4311 }])
  * ```
+ *
+ * On desktop only notifications shown while an {@link onAction} listener existed can be removed,
+ * and only on Linux and the BSDs.
  *
  * @param notifications The active notifications to remove, identified by their id and, on Android, their optional tag.
  *
@@ -910,8 +916,10 @@ async function onNotificationReceived(
 /**
  * Listens to the actions the user performs on a notification.
  *
- * Only emitted on mobile, for notifications that reference an action type
- * registered with {@link registerActionTypes}.
+ * On mobile it is emitted for notifications that reference an action type
+ * registered with {@link registerActionTypes}. On desktop it is emitted when the user
+ * clicks a notification (`actionId` is `tap`) or one of its actions, for notifications
+ * shown while a listener existed and as far as the notification server reports it.
  *
  * @example
  * ```typescript
