@@ -56,8 +56,6 @@ trait AddRequest {
     fn add_request(&mut self, fut: CancelableResponseFuture) -> ResourceId;
 }
 
-/// Drops what [`AddRequest::add_request`] stored for a request, once [`fetch_send`] is done with
-/// it. The abort sender may already be gone: [`fetch_cancel`] takes it.
 fn release_request(resources_table: &mut ResourceTable, rid: ResourceId, abort_tx_rid: ResourceId) {
     let _ = resources_table.take::<AbortSender>(abort_tx_rid);
     let _ = resources_table.close(rid);
@@ -570,7 +568,6 @@ mod tests {
     fn release_request_leaves_nothing_of_a_sent_request() {
         let mut table = ResourceTable::default();
         let (rid, abort_tx_rid, abort_rx_rid) = pending_request(&mut table);
-        // what `fetch_send` takes before it awaits the response
         table.take::<AbortRecveiver>(abort_rx_rid).unwrap();
 
         release_request(&mut table, rid, abort_tx_rid);
