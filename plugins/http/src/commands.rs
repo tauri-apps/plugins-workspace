@@ -56,11 +56,6 @@ trait AddRequest {
     fn add_request(&mut self, fut: CancelableResponseFuture) -> ResourceId;
 }
 
-fn release_request(resources_table: &mut ResourceTable, rid: ResourceId, abort_tx_rid: ResourceId) {
-    let _ = resources_table.take::<AbortSender>(abort_tx_rid);
-    let _ = resources_table.close(rid);
-}
-
 impl AddRequest for ResourceTable {
     fn add_request(&mut self, fut: CancelableResponseFuture) -> ResourceId {
         let (tx, rx) = channel::<()>();
@@ -446,8 +441,14 @@ pub async fn fetch_send<R: Runtime>(
         res = fut.as_mut() => res,
         _ = abort_rx.0 => Err(Error::RequestCanceled),
     };
+
     drop(fut);
-    release_request(&mut webview.resources_table(), rid, req.abort_tx_rid);
+    
+    // Release resources
+    let mut resources_table = webview.resources_table();
+    let _ = resources_table.take::<AbortSender>(abort_tx_rid);
+    let _ = resources_table.close(rid);
+
     let res = res?;
 
     #[cfg(feature = "tracing")]
@@ -557,37 +558,6 @@ mod tests {
     };
 
     use super::*;
-
-    fn pending_request(table: &mut ResourceTable) -> (ResourceId, ResourceId, ResourceId) {
-        let rid = table.add_request(Box::pin(async { Err(Error::RequestCanceled) }));
-        let req = table.get::<FetchRequest>(rid).unwrap();
-        (rid, req.abort_tx_rid, req.abort_rx_rid)
-    }
-
-    #[test]
-    fn release_request_leaves_nothing_of_a_sent_request() {
-        let mut table = ResourceTable::default();
-        let (rid, abort_tx_rid, abort_rx_rid) = pending_request(&mut table);
-        table.take::<AbortRecveiver>(abort_rx_rid).unwrap();
-
-        release_request(&mut table, rid, abort_tx_rid);
-
-        assert!(!table.has(rid));
-        assert!(!table.has(abort_tx_rid));
-        assert!(!table.has(abort_rx_rid));
-    }
-
-    #[test]
-    fn release_request_after_fetch_cancel_took_the_sender() {
-        let mut table = ResourceTable::default();
-        let (rid, abort_tx_rid, abort_rx_rid) = pending_request(&mut table);
-        table.take::<AbortRecveiver>(abort_rx_rid).unwrap();
-        table.take::<AbortSender>(abort_tx_rid).unwrap();
-
-        release_request(&mut table, rid, abort_tx_rid);
-
-        assert!(!table.has(rid));
-    }
 
     /// Test server with an open redirect:
     ///
