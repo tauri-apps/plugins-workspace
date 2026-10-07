@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">Tauri API</string>
-    <string name="main_activity_title">Tauri API</string>
+    <string name="app_name">"Tauri API"</string>
+    <string name="main_activity_title">"Tauri API"</string>
 </resources>

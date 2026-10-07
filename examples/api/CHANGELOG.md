@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.50]
+
+### Dependencies
+
+- Upgraded to `shell-js@2.4.1`
+
 ## [2.0.49]
 
 ### Dependencies

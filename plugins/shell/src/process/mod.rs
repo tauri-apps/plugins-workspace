@@ -7,8 +7,8 @@ use std::{
     io::{BufRead, BufReader, Write},
     path::{Path, PathBuf},
     process::{Command as StdCommand, Stdio},
-    sync::{Arc, RwLock},
-    thread::spawn,
+    sync::Arc,
+    thread::{JoinHandle, spawn},
 };
 
 #[cfg(unix)]
@@ -315,42 +315,29 @@ impl Command {
         let shared_child = SharedChild::spawn(&mut command)?;
         let child = Arc::new(shared_child);
         let child_ = child.clone();
-        let guard = Arc::new(RwLock::new(()));
-
         let (tx, rx) = channel(1);
 
-        spawn_pipe_reader(
-            tx.clone(),
-            guard.clone(),
-            stdout_reader,
-            CommandEvent::Stdout,
-            raw,
-        );
-        spawn_pipe_reader(
-            tx.clone(),
-            guard.clone(),
-            stderr_reader,
-            CommandEvent::Stderr,
-            raw,
-        );
+        let stdout_thread = spawn_pipe_reader(tx.clone(), stdout_reader, CommandEvent::Stdout, raw);
+        let stderr_thread = spawn_pipe_reader(tx.clone(), stderr_reader, CommandEvent::Stderr, raw);
 
         spawn(move || {
-            let _ = match child_.wait() {
-                Ok(status) => {
-                    let _l = guard.write().unwrap();
-                    block_on_task(async move {
-                        tx.send(CommandEvent::Terminated(TerminatedPayload {
-                            code: status.code(),
-                            #[cfg(windows)]
-                            signal: None,
-                            #[cfg(unix)]
-                            signal: status.signal(),
-                        }))
-                        .await
-                    })
-                }
+            let status = child_.wait();
+            // `Terminated` must be the last event: wait for the readers to drain the pipes,
+            // since a short-lived child can exit before they have read anything.
+            let _ = stdout_thread.join();
+            let _ = stderr_thread.join();
+            let _ = match status {
+                Ok(status) => block_on_task(async move {
+                    tx.send(CommandEvent::Terminated(TerminatedPayload {
+                        code: status.code(),
+                        #[cfg(windows)]
+                        signal: None,
+                        #[cfg(unix)]
+                        signal: status.signal(),
+                    }))
+                    .await
+                }),
                 Err(e) => {
-                    let _l = guard.write().unwrap();
                     block_on_task(async move { tx.send(CommandEvent::Error(e.to_string())).await })
                 }
             };
@@ -489,13 +476,11 @@ fn read_line<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
 
 fn spawn_pipe_reader<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
     tx: Sender<CommandEvent>,
-    guard: Arc<RwLock<()>>,
     pipe_reader: PipeReader,
     wrapper: F,
     raw_out: bool,
-) {
+) -> JoinHandle<()> {
     spawn(move || {
-        let _lock = guard.read().unwrap();
         let reader = BufReader::new(pipe_reader);
 
         if raw_out {
@@ -503,7 +488,7 @@ fn spawn_pipe_reader<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
         } else {
             read_line(reader, tx, wrapper);
         }
-    });
+    })
 }
 
 // tests for the commands functions.
