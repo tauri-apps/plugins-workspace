@@ -442,8 +442,6 @@ pub async fn fetch_send<R: Runtime>(
         _ = abort_rx.0 => Err(Error::RequestCanceled),
     };
 
-    drop(fut);
-
     // Release resources
     let mut resources_table = webview.resources_table();
     let _ = resources_table.take::<AbortSender>(req.abort_tx_rid);
