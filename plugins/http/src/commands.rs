@@ -438,13 +438,18 @@ pub async fn fetch_send<R: Runtime>(
     let mut fut = req.fut.lock().await;
 
     let res = tokio::select! {
-        res = fut.as_mut() => res?,
-        _ = abort_rx.0 => {
-            let mut resources_table = webview.resources_table();
-            resources_table.close(rid)?;
-            return Err(Error::RequestCanceled);
-        }
+        res = fut.as_mut() => res,
+        _ = abort_rx.0 => Err(Error::RequestCanceled),
     };
+
+    // Release resources
+    {
+        let mut resources_table = webview.resources_table();
+        let _ = resources_table.take::<AbortSender>(req.abort_tx_rid);
+        let _ = resources_table.close(rid);
+    }
+
+    let res = res?;
 
     #[cfg(feature = "tracing")]
     tracing::trace!("{:?}", res);
