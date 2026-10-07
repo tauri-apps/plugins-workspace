@@ -95,12 +95,16 @@ jobs:
           # that other runs would have hit (10 GB repository limit, LRU eviction).
           save-if: ${{ github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3' }}
 
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-binstall
+
+      # The latest published 2.x CLI, downloaded from its GitHub release. `--pkg-fmt` because the
+      # crate's binstall metadata expects a .tgz on aarch64-apple-darwin, where the release only
+      # ships a .zip, and the disabled strategies make a missing binary fail the step instead of
+      # silently compiling the CLI from source.
       - name: install Tauri CLI
-        # `--debug --target-dir target`: a dev-profile build in the workspace target dir reuses
-        # the cached dependencies (shared with the test build below) instead of a from-scratch
-        # release build in a temporary dir. `--locked` keeps the dependency versions stable
-        # between runs, so the cached artifacts stay valid.
-        run: cargo install tauri-cli --git https://github.com/tauri-apps/tauri --branch dev --locked --debug --target-dir target
+        run: cargo binstall -y tauri-cli@^2 --pkg-fmt ${{ runner.os == 'Linux' && 'tgz' || 'zip' }} --disable-strategies quick-install,compile
 
       - name: grant admin rights without a prompt
         if: startsWith(matrix.platform, 'macos')

@@ -62,15 +62,8 @@ jobs:
         if: ${{ !cancelled() && steps.filter.outputs.toml == 'true' }}
         run: taplo fmt --check --diff
 
-      - uses: actions/setup-node@v7
+      - uses: ./.github/actions/setup-pnpm
         if: ${{ !cancelled() && steps.filter.outputs.prettier == 'true' }}
-        with:
-          node-version: 'lts/*'
-      - uses: pnpm/action-setup@v6
-        if: ${{ !cancelled() && steps.filter.outputs.prettier == 'true' }}
-        with:
-          run_install: true
-          cache: true # the pnpm store, keyed by OS and lockfile hash and shared by every workflow
 
       - name: prettier
         if: ${{ !cancelled() && steps.filter.outputs.prettier == 'true' }}
