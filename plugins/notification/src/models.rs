@@ -11,7 +11,7 @@ use url::Url;
 /// A media file attached to a notification.
 ///
 /// Attachments are only used on mobile; desktop notifications ignore them.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Attachment {
     id: String,
@@ -31,7 +31,7 @@ impl Attachment {
 ///
 /// Fields left as [`None`] match any value, so the notification fires on every date
 /// whose remaining components match. Used by [`Schedule::Interval`].
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ScheduleInterval {
     /// The year the notification fires on.
@@ -55,7 +55,7 @@ pub struct ScheduleInterval {
 /// The unit of the repeating interval used by [`Schedule::Every`].
 ///
 /// It is serialized as its lowercase camelCase name, e.g. `twoWeeks`.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ScheduleEvery {
     /// Repeats every year.
     ///
@@ -133,7 +133,7 @@ impl<'de> Deserialize<'de> for ScheduleEvery {
 ///
 /// Scheduling is only implemented on mobile; the desktop implementation delivers the
 /// notification immediately and ignores the schedule.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Schedule {
     /// Fires at a specific date and time, which must be in the future.
@@ -315,7 +315,7 @@ impl PendingNotification {
 /// Returned by `Notification::active`, which is only available on mobile.
 /// Which fields are populated depends on the platform, since Android and iOS expose
 /// different information about delivered notifications.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ActiveNotification {
     id: i32,
@@ -716,7 +716,7 @@ impl ActionBuilder {
 ///
 /// On desktop it is emitted when the user clicks the notification body (`actionId` = `tap`) or
 /// one of the actions of its [`ActionType`], as far as the notification server reports it.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ActionPerformed {
     action_id: String,

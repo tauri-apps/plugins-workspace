@@ -75,12 +75,12 @@ pub(crate) async fn remove_active<R: Runtime>(
 #[cfg(desktop)]
 #[command]
 pub(crate) fn register_listener<R: Runtime>(
-    _app: AppHandle<R>,
+    webview: tauri::Webview<R>,
     notification: State<'_, Notification<R>>,
     event: String,
     handler: tauri::ipc::Channel<serde_json::Value>,
 ) {
-    notification.register_listener(event, handler);
+    notification.register_listener(event, handler, &webview);
 }
 
 #[cfg(desktop)]

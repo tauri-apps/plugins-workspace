@@ -932,6 +932,13 @@ async function onNotificationReceived(
  * registered with {@link registerActionTypes}. On desktop it is emitted when the user
  * clicks a notification (`actionId` is `tap`) or one of its actions, for notifications
  * shown while a listener existed and as far as the notification server reports it.
+ * Without a listener, desktop notifications are shown without their actions.
+ *
+ * #### Platform-specific
+ *
+ * - **Windows:** a click is only reported while the toast is on screen, not once it moved to the Action Center.
+ * - **macOS:** two or more actions are shown in an "Options" menu, and a click on the menu button itself
+ *   reports the first action. Actions are told apart by their title.
  *
  * @example
  * ```typescript

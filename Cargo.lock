@@ -6823,6 +6823,7 @@ dependencies = [
  "thiserror 2.0.12",
  "time",
  "url",
+ "zbus",
 ]
 
 [[package]]
