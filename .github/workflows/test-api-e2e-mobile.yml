@@ -159,7 +159,13 @@ jobs:
           profile: pixel_6
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: E2E_SKIP_BUILD=1 E2E_SPEC_RETRIES=1 pnpm test:api-e2e:android
+          # The slow emulator regularly has the launcher hit an ANR, and the "isn't responding"
+          # dialog takes input focus from the app under test (failing focus-gated APIs such as
+          # clipboard reads). With error dialogs hidden the system kills the unresponsive process
+          # instead; one that is already up is closed before each spec (see wdio.mobile.ts).
+          script: |
+            adb shell settings put global hide_error_dialogs 1
+            E2E_SKIP_BUILD=1 E2E_SPEC_RETRIES=1 pnpm test:api-e2e:android
 
       - name: upload appium logs
         if: failure()
