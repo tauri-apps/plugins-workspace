@@ -207,6 +207,18 @@ impl<R: Runtime> Notification<R> {
         Ok(())
     }
 
+    /// Removes all delivered notifications that can still be closed.
+    pub fn remove_all_active(&self) -> crate::Result<()> {
+        let shown = lock(&self.shared.active)
+            .drain()
+            .map(|(_, shown)| shown)
+            .collect::<Vec<_>>();
+        for shown in shown {
+            shown.close();
+        }
+        Ok(())
+    }
+
     /// Calls `handler` for every action the user performs on a notification of this app:
     /// a click on the notification itself (`tap`) or on one of its actions.
     ///

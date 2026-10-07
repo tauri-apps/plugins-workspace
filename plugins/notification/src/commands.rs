@@ -62,9 +62,14 @@ pub(crate) struct ActiveId {
 pub(crate) async fn remove_active<R: Runtime>(
     _app: AppHandle<R>,
     notification: State<'_, Notification<R>>,
-    notifications: Vec<ActiveId>,
+    notifications: Option<Vec<ActiveId>>,
 ) -> Result<()> {
-    notification.remove_active(notifications.into_iter().map(|n| n.id).collect())
+    match notifications {
+        Some(notifications) => {
+            notification.remove_active(notifications.into_iter().map(|n| n.id).collect())
+        }
+        None => notification.remove_all_active(),
+    }
 }
 
 #[cfg(desktop)]
