@@ -443,10 +443,10 @@ pub async fn fetch_send<R: Runtime>(
     };
 
     drop(fut);
-    
+
     // Release resources
     let mut resources_table = webview.resources_table();
-    let _ = resources_table.take::<AbortSender>(abort_tx_rid);
+    let _ = resources_table.take::<AbortSender>(req.abort_tx_rid);
     let _ = resources_table.close(rid);
 
     let res = res?;
