@@ -211,7 +211,7 @@ checksum = "2a4385e2e34eb35d6b3efe798b9eb88096925d87726c0798709bf56d9ed84af3"
 
 [[package]]
 name = "api"
-version = "2.0.53"
+version = "2.0.54"
 dependencies = [
  "log",
  "serde",
@@ -6896,7 +6896,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-shell"
-version = "2.4.0"
+version = "2.4.1"
 dependencies = [
  "encoding_rs",
  "log",

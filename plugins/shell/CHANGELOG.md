@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.1]
+
+- [`65ce65bd`](https://github.com/tauri-apps/plugins-workspace/commit/65ce65bdbb4390f73076c8182fbf06a52036f241) ([#3672](https://github.com/tauri-apps/plugins-workspace/pull/3672) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Fix `Command::spawn` (and the JavaScript `Command` API) sometimes emitting the `Terminated` (`close`) event before the child's `stdout`/`stderr` output when the process exits quickly.
+
 ## [2.4.0]
 
 - [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
