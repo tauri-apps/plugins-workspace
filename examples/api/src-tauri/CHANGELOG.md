@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.54]
+
+### Dependencies
+
+- Upgraded to `shell@2.4.1`
+
 ## [2.0.53]
 
 ### Dependencies
