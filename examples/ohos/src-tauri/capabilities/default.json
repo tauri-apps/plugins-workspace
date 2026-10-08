@@ -1,6 +1,0 @@
-{
-  "identifier":"default", "windows":["main"],
-  "permissions":["core:default","clipboard-manager:allow-write-text","clipboard-manager:allow-read-text",
-    "dialog:allow-message","dialog:allow-open","dialog:allow-save","fs:allow-read-text-file","fs:allow-write-text-file",
-    "notification:default","opener:default","barcode-scanner:default"]
-}

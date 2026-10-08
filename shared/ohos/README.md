@@ -37,42 +37,28 @@ omit the Rust barcode plugin and pass `--without-barcode` to `install.py`.
 The other five backends use OpenHarmony APIs. This option excludes the ScanKit
 source/import and camera declaration from the generated application.
 
-## Build the sample
+## Application integration
 
-The repository's [OHOS workflow](../../.github/workflows/ohos.yml) uses the public,
-digest-pinned [tauri-harmony image](https://github.com/LeenHawk/tauri-harmony).
-It runs four focused URI authorization/handle-lifetime checks, then builds the
-Rust and ArkTS code and packages an unsigned ARM64 HAP.
-
-Inside that image, from a disposable checkout:
+Use the [tauri-harmony image](https://github.com/LeenHawk/tauri-harmony)
+with an application-owned Tauri project. `prepare.py` accepts an external source
+directory, the application workspace, and its Tauri host directory:
 
 ```bash
-python3 shared/ohos/prepare.py /tmp/ohos-plugins-core examples/ohos/src-tauri examples/ohos/src-tauri
-export TARGET_TRIPLE=aarch64-unknown-linux-ohos
-source /opt/tauri-harmony/env.sh
-export PATH="$HARMONY_TOOLS_DIR/command-line-tools/tool/node/bin:$PATH"
-(cd examples/ohos/src-tauri && cargo tauri ohos init --ci --skip-targets-install)
-python3 shared/ohos/configure-demo.py
-python3 shared/ohos/install.py examples/ohos/src-tauri
-(cd examples/ohos/src-tauri && cargo tauri ohos build --ci --target aarch64 -- --lib)
+python3 shared/ohos/prepare.py /tmp/ohos-plugins-core /path/to/app /path/to/app/src-tauri
 ```
 
-`prepare.py` clones the pinned core outside the workspace, reuses the image's
-compatible Wry/Tao/Ability sources, and points the six plugin dependencies to
-this checkout. `install.py` adds the native module declarations, Ability hooks,
-ArkTS backends and permission declarations to a freshly initialized HAP project.
-Applications keep ownership of bundle metadata, icons and signing; the sample's
-`configure-demo.py` is not an application release configuration.
+`prepare.py` clones the pinned runtime outside the workspace and points the six
+plugin dependencies to this checkout. After initializing the application's OHOS
+project, run `python3 shared/ohos/install.py /path/to/app/src-tauri` to add native
+module declarations, Ability hooks, ArkTS backends and permission declarations.
+Applications retain ownership of bundle metadata, icons and signing.
 
 ## Device validation
 
-Compilation and the Node boundary checks do not prove device behavior. The latter
-exercise the real Files backend with a filesystem double, not the OHOS service.
-The sample has manual buttons for clipboard, trusted confirmation, file read/save,
-notifications, browser opening and QR scanning. Sign its HAP with a profile
-appropriate to the device and declared permissions, then verify those flows,
-including permission denial, dialog cancellation, and closing the Ability during
-a pending operation. No device/signing environment was available for this change.
+Build and sign the application with a profile appropriate to the device and its
+permissions. Verify clipboard, confirmation dialogs, file read/save, notifications,
+browser opening and QR scanning, including permission denial, dialog cancellation,
+and closing the Ability during a pending operation. Device validation remains required.
 
 Clipboard reading and camera use follow the platform's permission and signing
 policy. This implementation does not bypass those checks or report success after
@@ -80,7 +66,7 @@ a permission failure.
 
 ## WebView baseline
 
-`runtime-pins.json` is the standalone sample baseline only. Applications such as
+`runtime-pins.json` provides the default integration baseline. Applications such as
 gproxy and TauriTavern own their pins and pass them to `prepare_sources(destination, pins)`.
 Application version constraints are retained; Cargo rejects incompatible fork versions.
 The pins select the actual Tauri, Wry, Tao and Ability sources. The Ability

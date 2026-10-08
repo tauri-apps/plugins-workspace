@@ -1,5 +1,4 @@
 [workspace]
-exclude = ["examples/ohos/src-tauri"]
 members = [
   "plugins/*",
   "plugins/*/tests/*",
