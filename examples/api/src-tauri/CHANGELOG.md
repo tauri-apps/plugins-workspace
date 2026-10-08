@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.0.54]
+
+### Dependencies
+
+- Upgraded to `shell@2.4.1`
+
+## [2.0.53]
+
+### Dependencies
+
+- Upgraded to `http@2.8.1`
+- Upgraded to `updater@2.13.2`
+
 ## [2.0.52]
 
 ### Dependencies

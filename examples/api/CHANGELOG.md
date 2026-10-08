@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.0.50]
+
+### Dependencies
+
+- Upgraded to `shell-js@2.4.1`
+
+## [2.0.49]
+
+### Dependencies
+
+- Upgraded to `http-js@2.8.1`
+- Upgraded to `updater-js@2.13.2`
+
 ## [2.0.48]
 
 ### Dependencies

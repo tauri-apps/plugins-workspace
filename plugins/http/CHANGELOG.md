@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.8.1]
+
+- [`b443d6be`](https://github.com/tauri-apps/plugins-workspace/commit/b443d6be52a17329b980c55e8bbd03fb6cbb5cd7) ([#3669](https://github.com/tauri-apps/plugins-workspace/pull/3669) by [@followdarko](https://github.com/tauri-apps/plugins-workspace/../../followdarko)) `fetch_send` now releases the request's resources once the send settles. Before, a request that got a response or failed to send left its `FetchRequest` and abort sender in the webview's resource table until the webview was destroyed, so a long-lived app grew with every request.
+- [`3113a54c`](https://github.com/tauri-apps/plugins-workspace/commit/3113a54cc275b1af532c3fb20154beba7d67d623) ([#3670](https://github.com/tauri-apps/plugins-workspace/pull/3670) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Updated inner dependency `urlpattern` from `v0.3` to `v0.6` to fix advisories about unmaintained `unic-` crates.
+
 ## [2.8.0]
 
 - [`43538190`](https://github.com/tauri-apps/plugins-workspace/commit/43538190b6110e2005c899b2f2a4c85c7fde74db) ([#3656](https://github.com/tauri-apps/plugins-workspace/pull/3656) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Re-release `@tauri-apps/plugin-http@2.7.0` as `2.8.0`.
