@@ -243,12 +243,45 @@ impl<R: Runtime, T: Manager<R>> crate::NotificationExt<R> for T {
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("notification")
+    let builder = Builder::new("notification");
+    // On mobile the other commands are implemented by the Kotlin and Swift plugins.
+    #[cfg(mobile)]
+    let builder = builder.invoke_handler(tauri::generate_handler![
+        commands::notify,
+        commands::request_permission,
+        commands::is_permission_granted
+    ]);
+    #[cfg(desktop)]
+    let builder = builder
         .invoke_handler(tauri::generate_handler![
             commands::notify,
             commands::request_permission,
-            commands::is_permission_granted
+            commands::is_permission_granted,
+            commands::register_action_types,
+            commands::remove_active,
+            commands::register_listener,
+            commands::remove_listener
         ])
+        // the listeners of a page are gone once it navigates away or its window is destroyed
+        .on_page_load(|webview, payload| {
+            if payload.event() == tauri::webview::PageLoadEvent::Started
+                && let Some(notification) = webview.try_state::<Notification<R>>()
+            {
+                notification.remove_webview_listeners(webview.label());
+            }
+        })
+        .on_event(|app, event| {
+            if let tauri::RunEvent::WindowEvent {
+                label,
+                event: tauri::WindowEvent::Destroyed,
+                ..
+            } = event
+                && let Some(notification) = app.try_state::<Notification<R>>()
+            {
+                notification.remove_window_listeners(label);
+            }
+        });
+    builder
         .js_init_script(include_str!("init-iife.js").replace(
             "__TEMPLATE_windows__",
             if cfg!(windows) { "true" } else { "false" },

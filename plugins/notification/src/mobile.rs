@@ -5,6 +5,7 @@
 use serde::{Deserialize, de::DeserializeOwned};
 use tauri::{
     AppHandle, Runtime,
+    ipc::{Channel as IpcChannel, InvokeResponseBody},
     plugin::{PermissionState, PluginApi, PluginHandle},
 };
 
@@ -102,6 +103,40 @@ impl<R: Runtime> Notification<R> {
         args.insert("types", types);
         self.0
             .run_mobile_plugin("registerActionTypes", args)
+            .map_err(Into::into)
+    }
+
+    /// Calls `handler` for every action the user performs on a notification of this app:
+    /// a tap on the notification itself (`tap`) or on one of its actions.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the listener could not be registered with the mobile plugin.
+    pub fn on_action<F: Fn(&ActionPerformed) + Send + Sync + 'static>(
+        &self,
+        handler: F,
+    ) -> crate::Result<()> {
+        #[derive(serde::Serialize)]
+        struct RegisterListener {
+            event: &'static str,
+            handler: IpcChannel,
+        }
+        let channel = IpcChannel::new(move |body| {
+            if let InvokeResponseBody::Json(payload) = body
+                && let Ok(performed) = serde_json::from_str::<ActionPerformed>(&payload)
+            {
+                handler(&performed);
+            }
+            Ok(())
+        });
+        self.0
+            .run_mobile_plugin::<()>(
+                "registerListener",
+                RegisterListener {
+                    event: "actionPerformed",
+                    handler: channel,
+                },
+            )
             .map_err(Into::into)
     }
 
