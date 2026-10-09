@@ -1,20 +1,16 @@
 "$schema" = "schemas/schema.json"
 
-[[permission]]
+[[set]]
 identifier = "write-files"
 description = "This enables all file write related commands without any pre-configured accessible paths."
-commands.allow = [
-  "create",
-  "copy_file",
-  "remove",
-  "rename",
-  "truncate",
-  "ftruncate",
-  "write",
-  "write_file",
-  "write_text_file",
-  # used by `writeFile` with a stream and by the `FileHandle` returned by `create` and `open`
-  "open",
-  "seek",
-  "fstat",
+permissions = [
+  "allow-create",
+  "allow-copy-file",
+  "allow-remove",
+  "allow-rename",
+  "allow-truncate",
+  "allow-ftruncate",
+  "allow-write",
+  "allow-write-file",
+  "allow-write-text-file",
 ]
