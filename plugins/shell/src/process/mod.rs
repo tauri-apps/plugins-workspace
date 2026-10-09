@@ -75,7 +75,7 @@ impl CommandChild {
     }
 
     /// Sends a kill signal to the child.
-    pub fn kill(self) -> crate::Result<()> {
+    pub fn kill(&self) -> crate::Result<()> {
         self.inner.kill()?;
         Ok(())
     }
