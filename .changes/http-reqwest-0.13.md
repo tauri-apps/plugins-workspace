@@ -1,0 +1,12 @@
+---
+"http": major
+"http-js": major
+---
+
+Updated `reqwest` to 0.13 and removed the `tauri_plugin_http::reqwest` re-export. Add `reqwest` to your own dependencies if you used it. Cargo features that `reqwest` 0.13 removed are removed here too:
+
+- `native-tls-alpn`: ALPN is now part of `native-tls`.
+- `rustls-tls-manual-roots`, `rustls-tls-webpki-roots` and `rustls-tls-native-roots`: `rustls-tls` now verifies certificates with the platform verifier.
+- `trust-dns`: use `hickory-dns`.
+
+`rustls-tls` uses `ring` as the crypto provider and installs it as the process default only if none is installed yet.

@@ -220,6 +220,16 @@ fn map_request_error(error: reqwest::Error) -> Error {
     Error::Network(error)
 }
 
+/// reqwest is built with `rustls-no-provider`, so a client can only be built once a
+/// rustls crypto provider is installed.
+fn install_crypto_provider() {
+    #[cfg(feature = "rustls-tls")]
+    if rustls::crypto::CryptoProvider::get_default().is_none() {
+        // This can only fail if there is already a default provider which we checked for already.
+        let _ = rustls::crypto::ring::default_provider().install_default();
+    }
+}
+
 // `state` is only read when the `cookies` feature is enabled
 #[cfg_attr(not(feature = "cookies"), allow(unused_variables))]
 #[command]
@@ -284,6 +294,8 @@ pub async fn fetch<R: Runtime>(
             if !scope.is_allowed(&url) {
                 return Err(Error::UrlNotAllowed(url));
             }
+
+            install_crypto_provider();
 
             let mut builder = reqwest::ClientBuilder::new();
 
@@ -607,6 +619,7 @@ mod tests {
     }
 
     fn get(url: &str, scope: Scope, max_redirections: Option<usize>) -> Result<reqwest::Response> {
+        install_crypto_provider();
         let client = reqwest::ClientBuilder::new()
             .redirect(redirect_policy(scope, max_redirections))
             .build()

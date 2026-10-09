@@ -158,16 +158,22 @@ describePlugin('store', () => {
     })
   })
 
-  it('reload merges the on-disk state, or replaces it with ignoreDefaults', async () => {
+  it('reload resets to defaults and merges the on-disk state, or matches the disk with ignoreDefaults', async () => {
     const result = await tauri(async (api, path) => {
-      const store = await api.store.load(path, { autoSave: false })
+      const store = await api.store.load(path, {
+        autoSave: false,
+        defaults: { theme: 'dark' }
+      })
+      // keep the default out of the on-disk state
+      await store.delete('theme')
       await store.set('saved', 1)
       await store.save()
       await store.set('saved', 2)
       await store.set('unsaved', true)
-      // a plain reload only re-applies what is on disk on top of the cache
+      // a plain reload resets to the defaults, then applies what is on disk
       await store.reload()
       const merged = {
+        theme: (await store.get('theme')) ?? null,
         saved: await store.get('saved'),
         unsaved: (await store.get('unsaved')) ?? null
       }
@@ -175,14 +181,15 @@ describePlugin('store', () => {
       await store.set('unsaved', true)
       await store.reload({ ignoreDefaults: true })
       const replaced = {
+        theme: (await store.get('theme')) ?? null,
         saved: await store.get('saved'),
         unsaved: (await store.get('unsaved')) ?? null
       }
       await store.close()
       return { merged, replaced }
     }, `${dir}/reload.json`)
-    expect(result.merged).toEqual({ saved: 1, unsaved: true })
-    expect(result.replaced).toEqual({ saved: 1, unsaved: null })
+    expect(result.merged).toEqual({ theme: 'dark', saved: 1, unsaved: null })
+    expect(result.replaced).toEqual({ theme: null, saved: 1, unsaved: null })
   })
 
   it('getStore returns the already-loaded instance, or null', async () => {

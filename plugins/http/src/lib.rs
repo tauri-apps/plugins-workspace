@@ -8,21 +8,15 @@
 //!
 //! ### Reqwest feature forwards
 //!
-//! These features forwards [`reqwest`](https://docs.rs/reqwest/0.12.28/reqwest/index.html) features:
+//! These features forwards [`reqwest`](https://docs.rs/reqwest/0.13/reqwest/index.html) features:
 //!
 //! - **http2** *(enabled by default)*: Enables HTTP/2 support.
-//! - **native-tls**: Enables TLS functionality provided by native-tls.
+//! - **native-tls**: Enables TLS functionality provided by native-tls, including ALPN.
 //! - **native-tls-vendored**: Enables the vendored feature of native-tls.
-//! - **native-tls-alpn**: Enables the alpn feature of native-tls.
-//! - **rustls-tls** *(enabled by default)*: Enables TLS functionality provided by rustls. Equivalent to
-//!   rustls-tls-webpki-roots.
-//! - **rustls-tls-manual-roots**: Enables TLS functionality provided by rustls, without setting any root
-//!   certificates. Roots have to be specified manually.
-//! - **rustls-tls-webpki-roots**: Enables TLS functionality provided by rustls, while using root certificates
-//!   from the webpki-roots crate.
-//! - **rustls-tls-native-roots**: Enables TLS functionality provided by rustls, while using root certificates
-//!   from the rustls-native-certs crate.
-//! - **blocking**: Provides the [blocking](https://docs.rs/reqwest/0.12.28/reqwest/blocking/index.html) client API.
+//! - **rustls-tls** *(enabled by default)*: Enables TLS functionality provided by rustls, verifying
+//!   certificates with the platform verifier. Uses `ring` as the crypto provider, installed as the
+//!   process default only if none is installed yet.
+//! - **blocking**: Provides the [blocking](https://docs.rs/reqwest/0.13/reqwest/blocking/index.html) client API.
 //! - **charset** *(enabled by default)*: Improved support for decoding text.
 //! - **cookies** *(enabled by default)*: Provides cookie session support.
 //! - **gzip**: Provides response body gzip decompression.
@@ -33,7 +27,7 @@
 //! - **multipart**: Provides functionality for multipart forms.
 //! - **stream**: Adds support for futures::Stream.
 //! - **socks**: Provides SOCKS5 proxy support.
-//! - **trust-dns**: Enables a trust-dns/Hickory DNS async resolver instead of the default threadpool using
+//! - **hickory-dns**: Enables a Hickory DNS async resolver instead of the default threadpool using
 //!   getaddrinfo.
 //! - **system-proxy** *(enabled by default)*: Use Windows and macOS system proxy settings automatically.
 //!
@@ -50,7 +44,6 @@
 //! an allowed origin could redirect the request to any other origin - a `localhost` service, an
 //! internal host or a cloud metadata endpoint - and hand its response to the webview.
 
-pub use reqwest;
 use tauri::{
     Manager, Runtime,
     plugin::{Builder, TauriPlugin},

@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.0-alpha.3]
+
+- [``](https://github.com/tauri-apps/plugins-workspace/commit/undefined) Update to tauri v3.0.0-alpha.4 and `@tauri-apps/api` v3.0.0-alpha.2.
+
 ## [3.0.0-alpha.2]
 
 - [`b2d7c387`](https://github.com/tauri-apps/plugins-workspace/commit/b2d7c387eff5c22ad1efd6880ccde189422a2c83) ([#3612](https://github.com/tauri-apps/plugins-workspace/pull/3612) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** Removed the deprecated `okLabel` option of `MessageDialogOptions`. Use `buttons: { ok: 'label' }` instead. `ConfirmDialogOptions` (used by `ask` and `confirm`) still accepts `okLabel` and `cancelLabel`.

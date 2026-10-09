@@ -4,6 +4,7 @@
 
 - [`2fd27c2d`](https://github.com/tauri-apps/plugins-workspace/commit/2fd27c2d43966a86e436ecd538e133e1812cc641) Update MSRV to 1.95 to match tauri.
 - [`6a12f7c8`](https://github.com/tauri-apps/plugins-workspace/commit/6a12f7c80a09939609bf522c2f384b0bad04b3d0) ([#3607](https://github.com/tauri-apps/plugins-workspace/pull/3607) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** Removed the deprecated `Update.available` field, which was always `true`. Check whether `check()` returned `null` instead.
+[`0163bbac`](https://github.com/tauri-apps/plugins-workspace/commit/0163bbaca5d42de292e11cfbdd6464220be9051b) ([#3653](https://github.com/tauri-apps/plugins-workspace/pull/3653)) Fixed an issue that caused the updater plugin to fail to build on macOS with an `no method named run_on_main_thread found` error.
 
 ## [3.0.0-alpha.1]
 
