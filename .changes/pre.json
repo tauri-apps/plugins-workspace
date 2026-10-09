@@ -11,18 +11,22 @@
     ".changes/fs-watch-event-format.md",
     ".changes/fs-watcher.md",
     ".changes/http-remove-macos-system-configuration.md",
+    ".changes/http-reqwest-0.13.md",
     ".changes/http-scope-redirects-default.md",
     ".changes/log-max-file-size-u64.md",
     ".changes/msrv-1.95.md",
     ".changes/opener-js-reveal-items-in-dir.md",
     ".changes/opener-reveal-items-in-dir.md",
     ".changes/shell-remove-open.md",
+    ".changes/single-instance-forward-timeout.md",
+    ".changes/single-instance-non-unicode-args.md",
     ".changes/store-reload-defaults.md",
     ".changes/tauri-bump-alpha.2.md",
     ".changes/tauri-bump-alpha.4.md",
     ".changes/updater-macos-manager.md",
     ".changes/updater-remove-available.md",
     ".changes/upload-options.md",
+    ".changes/upload-reqwest-0.13.md",
     ".changes/upload-system-proxy.md"
   ]
 }

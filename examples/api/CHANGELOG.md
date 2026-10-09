@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.44-alpha.4]
+
+### Dependencies
+
+- Upgraded to `http-js@3.0.0-alpha.3`
+
 ## [2.0.44-alpha.3]
 
 ### Dependencies

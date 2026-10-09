@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.0.0-alpha.3]
+
+- [`dcbdc1b3`](https://github.com/tauri-apps/plugins-workspace/commit/dcbdc1b33121b1bdd0266b8b0dfd1240a822f868) ([#3645](https://github.com/tauri-apps/plugins-workspace/pull/3645) by [@justanotheranonymoususer](https://github.com/tauri-apps/plugins-workspace/../../justanotheranonymoususer)) On Windows, a second instance no longer waits indefinitely for a first instance that stopped processing messages: it stops waiting after 10 seconds and exits. The first instance may still receive the arguments once it resumes processing messages.
+- [`5095aa22`](https://github.com/tauri-apps/plugins-workspace/commit/5095aa2290a6085819f178a3ef55611de93af4a9) ([#3644](https://github.com/tauri-apps/plugins-workspace/pull/3644) by [@justanotheranonymoususer](https://github.com/tauri-apps/plugins-workspace/../../justanotheranonymoususer)) A second instance no longer panics when a command-line argument is not valid Unicode: such an argument is forwarded with its invalid parts replaced by U+FFFD. A working directory that is not valid Unicode is now forwarded the same way instead of as an empty string.
+
 ## [3.0.0-alpha.2]
 
 - [`2fd27c2d`](https://github.com/tauri-apps/plugins-workspace/commit/2fd27c2d43966a86e436ecd538e133e1812cc641) Update MSRV to 1.95 to match tauri.
