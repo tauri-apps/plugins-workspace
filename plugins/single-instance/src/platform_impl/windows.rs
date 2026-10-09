@@ -21,9 +21,9 @@ use windows_sys::Win32::{
     UI::WindowsAndMessaging::{
         self as w32wm, AllowSetForegroundWindow, CREATESTRUCTW, CreateWindowExW, DefWindowProcW,
         DestroyWindow, FindWindowW, GWL_STYLE, GWLP_USERDATA, GetWindowThreadProcessId,
-        RegisterClassExW, SMTO_ABORTIFHUNG, SendMessageTimeoutW, WINDOW_LONG_PTR_INDEX,
-        WM_COPYDATA, WM_CREATE, WM_DESTROY, WNDCLASSEXW, WS_EX_LAYERED, WS_EX_NOACTIVATE,
-        WS_EX_TOOLWINDOW, WS_EX_TRANSPARENT, WS_OVERLAPPED, WS_POPUP, WS_VISIBLE,
+        RegisterClassExW, SMTO_NORMAL, SendMessageTimeoutW, WINDOW_LONG_PTR_INDEX, WM_COPYDATA,
+        WM_CREATE, WM_DESTROY, WNDCLASSEXW, WS_EX_LAYERED, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW,
+        WS_EX_TRANSPARENT, WS_OVERLAPPED, WS_POPUP, WS_VISIBLE,
     },
 };
 
@@ -107,7 +107,7 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
                             WM_COPYDATA,
                             0,
                             &cds as *const _ as _,
-                            SMTO_ABORTIFHUNG,
+                            SMTO_NORMAL,
                             FORWARD_TIMEOUT_MS,
                             std::ptr::null_mut(),
                         );
