@@ -74,11 +74,13 @@ pub fn init<R: Runtime>(
                             Some("org.SingleInstance.DBus"),
                             "ExecuteCallback",
                             &(
-                                std::env::args().collect::<Vec<String>>(),
+                                std::env::args_os()
+                                    .map(|arg| arg.to_string_lossy().into_owned())
+                                    .collect::<Vec<String>>(),
                                 std::env::current_dir()
                                     .unwrap_or_default()
-                                    .to_str()
-                                    .unwrap_or_default(),
+                                    .to_string_lossy()
+                                    .as_ref(),
                             ),
                         );
                     }
