@@ -303,13 +303,16 @@ pub fn stdin_write<R: Runtime>(
     Ok(())
 }
 
+// Async so waiting for the child to exit doesn't block the main thread.
 #[tauri::command]
-pub fn kill<R: Runtime>(
+pub async fn kill<R: Runtime>(
     _window: Window<R>,
     shell: State<'_, Shell<R>>,
     pid: ChildId,
 ) -> crate::Result<()> {
-    if let Some(child) = shell.children.lock().unwrap().remove(&pid) {
+    // Release the lock before killing, which waits for the child to exit.
+    let child = shell.children.lock().unwrap().remove(&pid);
+    if let Some(child) = child {
         child.kill()?;
     }
     Ok(())
