@@ -8,12 +8,12 @@ use std::{
     path::PathBuf,
 };
 
+use crate::SingleInstanceCallback;
 #[cfg(feature = "semver")]
 use crate::semver_compat::semver_compat_string;
-use crate::SingleInstanceCallback;
 use tauri::{
-    plugin::{self, TauriPlugin},
     AppHandle, Config, Manager, RunEvent, Runtime,
+    plugin::{self, TauriPlugin},
 };
 use tokio::io::AsyncReadExt;
 

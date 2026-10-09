@@ -7,16 +7,14 @@ use std::{collections::HashMap, future::Future, path::PathBuf, pin::Pin, string:
 use encoding_rs::Encoding;
 use serde::{Deserialize, Serialize};
 use tauri::{
-    ipc::{Channel, CommandScope, GlobalScope},
     Manager, Runtime, State, Window,
+    ipc::{Channel, CommandScope, GlobalScope},
 };
 
-#[allow(deprecated)]
-use crate::open::Program;
 use crate::{
+    Shell,
     process::{CommandEvent, TerminatedPayload},
     scope::ExecuteArgs,
-    Shell,
 };
 
 type ChildId = u32;
@@ -306,15 +304,4 @@ pub fn kill<R: Runtime>(
         child.kill()?;
     }
     Ok(())
-}
-
-#[allow(deprecated)]
-#[tauri::command]
-pub async fn open<R: Runtime>(
-    _window: Window<R>,
-    shell: State<'_, Shell<R>>,
-    path: String,
-    with: Option<Program>,
-) -> crate::Result<()> {
-    crate::open::open(Some(&shell.open_scope), path, with)
 }

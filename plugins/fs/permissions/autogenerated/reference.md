@@ -330,32 +330,6 @@ Denies the read_file command without any pre-configured scope.
 <tr>
 <td>
 
-`fs:allow-read-text-file`
-
-</td>
-<td>
-
-Enables the read_text_file command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`fs:deny-read-text-file`
-
-</td>
-<td>
-
-Denies the read_text_file command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
 `fs:allow-read-text-file-lines-next`
 
 </td>
@@ -590,32 +564,6 @@ Denies the truncate command without any pre-configured scope.
 <tr>
 <td>
 
-`fs:allow-unwatch`
-
-</td>
-<td>
-
-Enables the unwatch command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`fs:deny-unwatch`
-
-</td>
-<td>
-
-Denies the unwatch command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
 `fs:allow-watch`
 
 </td>
@@ -661,32 +609,6 @@ Enables the write command without any pre-configured scope.
 <td>
 
 Denies the write command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`fs:allow-write-text-file`
-
-</td>
-<td>
-
-Enables the write_text_file command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`fs:deny-write-text-file`
-
-</td>
-<td>
-
-Denies the write_text_file command without any pre-configured scope.
 
 </td>
 </tr>

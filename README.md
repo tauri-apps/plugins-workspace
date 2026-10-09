@@ -1,6 +1,6 @@
 # Official Tauri Plugins
 
-This repo and all plugins require a Rust version of at least **1.77.2**
+This repo and all plugins require a Rust version of at least **1.95**
 
 ## Plugins Found Here
 

@@ -1,5 +1,23 @@
 # Changelog
 
+## [3.0.0-alpha.2]
+
+- [`c7416a1a`](https://github.com/tauri-apps/plugins-workspace/commit/c7416a1a2c87f578883402bc023b8d5ef7111752) ([#3601](https://github.com/tauri-apps/plugins-workspace/pull/3601) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** Removed the deprecated `macos-system-configuration` Cargo feature. Use `system-proxy` (enabled by default) instead.
+- [`34a06e7f`](https://github.com/tauri-apps/plugins-workspace/commit/34a06e7f602ec5e366eaa2aed65fa66973114a06) ([#3600](https://github.com/tauri-apps/plugins-workspace/pull/3600) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** The URL scope is now always checked on every hop of a redirect chain, so every redirect target must be allowed by the scope or the request fails with `url not allowed on the configured scope`. This was previously opt-in through the `scopeRedirects` plugin configuration, which has been removed along with the `Config` struct: `tauri_plugin_http::init()` returns `TauriPlugin<R>` again, and any `plugins > http` object must be removed from `tauri.conf.json`.
+- [`2fd27c2d`](https://github.com/tauri-apps/plugins-workspace/commit/2fd27c2d43966a86e436ecd538e133e1812cc641) Update MSRV to 1.95 to match tauri.
+
+### Dependencies
+
+- Upgraded to `fs-js@3.0.0-alpha.2`
+
+## [3.0.0-alpha.1]
+
+- [`15bf611d`](https://github.com/tauri-apps/plugins-workspace/commit/15bf611d68b15f343c0e8f6834a64d0cf2cc1637) Update to @tauri-apps/api v3.0.0-alpha.
+
+### Dependencies
+
+- Upgraded to `fs-js@3.0.0-alpha.1`
+
 ## [3.0.0-alpha.0]
 
 - [`363438b5`](https://github.com/tauri-apps/plugins-workspace/commit/363438b50a09162379d57c7c7bfc132520c1e5d4) Update to tauri 3.0 alpha.
@@ -7,6 +25,38 @@
 ### Dependencies
 
 - Upgraded to `fs-js@3.0.0-alpha.0`
+
+## [2.7.0]
+
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+### Dependencies
+
+- Upgraded to `fs-js@2.6.0`
+
+## [2.7.0]
+
+- [`1198a524`](https://github.com/tauri-apps/plugins-workspace/commit/1198a524b710abf2abeb1d9bd7b252402d26ca6d) **Security:** Added the `scopeRedirects` plugin configuration option, which checks the URL scope on every hop of a redirect chain instead of only on the URL requested by the frontend. Without it, a server on an allowed origin can redirect the request to any other origin - including `localhost` services, internal hosts and cloud metadata endpoints - and the plugin follows it, returning the response to the webview.
+    
+    ```json
+    {
+      "plugins": {
+        "http": {
+          "scopeRedirects": true
+        }
+      }
+    }
+    ```
+    
+    It is opt-in because a redirect to a URL that is not allowed by the scope now fails with `url not allowed on the configured scope` instead of being followed, so applications that rely on being redirected outside of their scope must add the redirect target to the scope. **This will become the default in v3.**
+    
+    Note that `tauri_plugin_http::init()` now returns `TauriPlugin<R, Option<Config>>` instead of `TauriPlugin<R>`.
+
+## [2.6.1]
+
+- [`a21555dd`](https://github.com/tauri-apps/plugins-workspace/commit/a21555ddd2eaadfed23848912fe2802c2ba7579e) ([#3566](https://github.com/tauri-apps/plugins-workspace/pull/3566) by [@followdarko](https://github.com/tauri-apps/plugins-workspace/../../followdarko)) Fix unhandled promise rejections on every `fetch` teardown: the request/body cleanup commands were fired as floating promises, and releasing an already-released resource rejects with `The resource id N is invalid.`. `dropBody` is now idempotent and both cleanup calls handle their own rejection.
 
 ## [2.6.0]
 

@@ -20,10 +20,10 @@ use std::os::windows::process::CommandExt;
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 const NEWLINE_BYTE: u8 = b'\n';
 
-use tauri::async_runtime::{block_on as block_on_task, channel, Receiver, Sender};
+use tauri::async_runtime::{Receiver, Sender, block_on as block_on_task, channel};
 
 pub use encoding_rs::Encoding;
-use os_pipe::{pipe, PipeReader, PipeWriter};
+use os_pipe::{PipeReader, PipeWriter, pipe};
 use serde::Serialize;
 use shared_child::SharedChild;
 use tauri::utils::platform;

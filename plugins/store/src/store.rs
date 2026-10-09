@@ -11,18 +11,32 @@ use std::{
     sync::{Arc, Mutex},
     time::Duration,
 };
-use tauri::{path::BaseDirectory, AppHandle, Emitter, Manager, Resource, ResourceId, Runtime};
+use tauri::{AppHandle, Emitter, Manager, Resource, ResourceId, Runtime, path::BaseDirectory};
 use tokio::{
     select,
-    sync::mpsc::{unbounded_channel, UnboundedSender},
+    sync::mpsc::{UnboundedSender, unbounded_channel},
     time::sleep,
 };
 
+/// Function used to serialize the store cache to the bytes written to the store file.
+///
+/// The default implementation writes pretty printed JSON.
 pub type SerializeFn =
     fn(&HashMap<String, JsonValue>) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>>;
+/// Function used to deserialize the bytes read from the store file into the store cache.
+///
+/// The default implementation parses JSON.
 pub type DeserializeFn =
     fn(&[u8]) -> Result<HashMap<String, JsonValue>, Box<dyn std::error::Error + Send + Sync>>;
 
+/// Resolves the path of a store file, relative to the app data directory
+/// ([`BaseDirectory::AppData`]).
+///
+/// This is the path the [`Store`] created with the given `path` reads from and writes to.
+///
+/// # Errors
+///
+/// Returns an error if the app data directory cannot be resolved.
 pub fn resolve_store_path<R: Runtime>(
     app: &AppHandle<R>,
     path: impl AsRef<Path>,
@@ -300,12 +314,13 @@ impl<R: Runtime> StoreInner<R> {
 
     /// Update the store from the on-disk state
     ///
-    /// Note: This method loads the data and merges it with the current store
+    /// Note: This method resets the store to its defaults and then merges the on-disk state into it
     pub fn load(&mut self) -> crate::Result<()> {
         let bytes = fs::read(&self.path)?;
+        let entries = (self.deserialize_fn)(&bytes).map_err(crate::Error::Deserialize)?;
 
-        self.cache
-            .extend((self.deserialize_fn)(&bytes).map_err(crate::Error::Deserialize)?);
+        self.cache = self.defaults.clone().unwrap_or_default();
+        self.cache.extend(entries);
 
         Ok(())
     }
@@ -428,6 +443,15 @@ impl<R: Runtime> std::fmt::Debug for StoreInner<R> {
     }
 }
 
+/// A key-value store, persisted to a file resolved with [`resolve_store_path`].
+///
+/// The values are kept in memory and written to disk on [`Store::save`], and also automatically
+/// after each modification unless auto save has been disabled with
+/// [`StoreBuilder::disable_auto_save`]. Any pending auto save is applied when the store is dropped.
+///
+/// Create or load one with [`StoreExt::store`](crate::StoreExt::store) or [`StoreBuilder`].
+/// It is a [`Resource`], so it is also reachable from the frontend by its [`ResourceId`];
+/// closing that resource unregisters the store, meaning the next load creates a new instance.
 pub struct Store<R: Runtime> {
     auto_save: Option<Duration>,
     auto_save_debounce_sender: Arc<Mutex<Option<UnboundedSender<AutoSaveMessage>>>>,
@@ -525,9 +549,9 @@ impl<R: Runtime> Store<R> {
     /// Update the store from the on-disk state
     ///
     /// Note:
-    ///   - This method loads the data and merges it with the current store,
-    ///     this behavior will be changed to resetting to default first and then merging with the on-disk state in v3,
-    ///     to fully match the store with the on-disk state,
+    ///   - This method resets the store to its defaults and then merges the on-disk state into it,
+    ///     so keys that are neither in the defaults nor on disk are dropped.
+    ///     To fully match the store with the on-disk state (ignoring defaults),
     ///     use [`reload_ignore_defaults`](Self::reload_ignore_defaults) instead
     ///   - This method does not emit change events
     pub fn reload(&self) -> crate::Result<()> {
@@ -600,7 +624,8 @@ impl<R: Runtime> Store<R> {
 
     fn apply_pending_auto_save(&self) {
         // Cancel and save if auto save is pending
-        if let Some(sender) = self.auto_save_debounce_sender.lock().unwrap().take() {
+        let auto_save_debounce_sender = self.auto_save_debounce_sender.lock().unwrap().take();
+        if let Some(sender) = auto_save_debounce_sender {
             let _ = sender.send(AutoSaveMessage::Cancel);
             let _ = self.save();
         };
@@ -610,5 +635,76 @@ impl<R: Runtime> Store<R> {
 impl<R: Runtime> Drop for Store<R> {
     fn drop(&mut self) {
         self.apply_pending_auto_save();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+    use tauri::{
+        App,
+        test::{MockRuntime, mock_app},
+    };
+
+    fn temp_store_path(name: &str) -> PathBuf {
+        let dir =
+            std::env::temp_dir().join(format!("tauri-plugin-store-{}-{name}", std::process::id()));
+        fs::create_dir_all(&dir).unwrap();
+        dir.join("store.json")
+    }
+
+    fn store(app: &App<MockRuntime>, path: PathBuf) -> StoreInner<MockRuntime> {
+        let mut defaults = HashMap::new();
+        defaults.insert("default-key".to_string(), json!("default"));
+        defaults.insert("shared-key".to_string(), json!("default"));
+        StoreInner::new(
+            app.handle().clone(),
+            path,
+            Some(defaults),
+            crate::default_serialize,
+            crate::default_deserialize,
+        )
+    }
+
+    #[test]
+    fn load_resets_to_defaults_before_merging_the_on_disk_state() {
+        let app = mock_app();
+        let path = temp_store_path("load");
+        let mut store = store(&app, path.clone());
+        fs::write(&path, r#"{ "disk-key": "disk", "shared-key": "disk" }"#).unwrap();
+        // neither in the defaults nor on disk, so it must be dropped
+        store
+            .cache
+            .insert("memory-key".to_string(), json!("memory"));
+
+        store.load().unwrap();
+
+        assert_eq!(store.get("default-key"), Some(&json!("default")));
+        assert_eq!(store.get("disk-key"), Some(&json!("disk")));
+        // the on-disk state takes precedence over the defaults
+        assert_eq!(store.get("shared-key"), Some(&json!("disk")));
+        assert_eq!(store.get("memory-key"), None);
+
+        let _ = fs::remove_dir_all(path.parent().unwrap());
+    }
+
+    #[test]
+    fn load_ignore_defaults_matches_the_on_disk_state() {
+        let app = mock_app();
+        let path = temp_store_path("load-ignore-defaults");
+        let mut store = store(&app, path.clone());
+        fs::write(&path, r#"{ "disk-key": "disk" }"#).unwrap();
+        store
+            .cache
+            .insert("memory-key".to_string(), json!("memory"));
+
+        store.load_ignore_defaults().unwrap();
+
+        assert_eq!(store.get("disk-key"), Some(&json!("disk")));
+        assert_eq!(store.get("default-key"), None);
+        assert_eq!(store.get("memory-key"), None);
+
+        let _ = fs::remove_dir_all(path.parent().unwrap());
     }
 }

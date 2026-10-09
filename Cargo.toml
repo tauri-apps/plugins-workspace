@@ -12,12 +12,12 @@ resolver = "2"
 serde = { version = "1", features = ["derive"] }
 tracing = "0.1"
 log = "0.4.21"
-tauri = { version = "3.0.0-alpha.0", default-features = false }
-tauri-runtime-wry = "3.0.0-alpha.0"
-tauri-runtime-cef = "3.0.0-alpha.0"
-tauri-build = "3.0.0-alpha.0"
-tauri-plugin = "3.0.0-alpha.0"
-tauri-utils = "3.0.0-alpha.0"
+tauri = { version = "3.0.0-alpha.4", default-features = false }
+tauri-runtime-wry = "3.0.0-alpha.4"
+tauri-runtime-cef = "3.0.0-alpha.5"
+tauri-build = "3.0.0-alpha.3"
+tauri-plugin = "3.0.0-alpha.3"
+tauri-utils = "3.0.0-alpha.3"
 serde_json = "1"
 thiserror = "2"
 url = "2"
@@ -28,10 +28,10 @@ glob = "0.3"
 zbus = "5.9"
 
 [workspace.package]
-edition = "2021"
+edition = "2024"
 authors = ["Tauri Programme within The Commons Conservancy"]
 license = "Apache-2.0 OR MIT"
-rust-version = "1.77.2"
+rust-version = "1.95"
 repository = "https://github.com/tauri-apps/plugins-workspace"
 
 # default to small, optimized release binaries

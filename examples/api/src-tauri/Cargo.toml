@@ -1,9 +1,9 @@
 [package]
 name = "api"
 publish = false
-version = "3.0.0-alpha.0"
+version = "3.0.0-alpha.3"
 description = "An example Tauri Application showcasing the api"
-edition = "2021"
+edition = "2024"
 rust-version = { workspace = true }
 license = "Apache-2.0 OR MIT"
 
@@ -20,28 +20,39 @@ serde = { workspace = true }
 tiny_http = "0.12"
 time = "0.3"
 log = { workspace = true }
-tauri-plugin-log = { path = "../../../plugins/log", version = "3.0.0-alpha.0" }
-tauri-plugin-fs = { path = "../../../plugins/fs", version = "3.0.0-alpha.0", features = [
+tauri-plugin-log = { path = "../../../plugins/log", version = "3.0.0-alpha.2" }
+tauri-plugin-fs = { path = "../../../plugins/fs", version = "3.0.0-alpha.2", features = [
   "watch",
 ] }
-tauri-plugin-clipboard-manager = { path = "../../../plugins/clipboard-manager", version = "3.0.0-alpha.0" }
+tauri-plugin-clipboard-manager = { path = "../../../plugins/clipboard-manager", version = "3.0.0-alpha.2" }
 # The dialog backend is chosen by the runtime features below: the plugin's
 # default `gtk3` backend links GTK 3, which cannot share a process with the GTK 4
 # application the CEF runtime is on Linux.
-tauri-plugin-dialog = { path = "../../../plugins/dialog", version = "3.0.0-alpha.0", default-features = false }
+tauri-plugin-dialog = { path = "../../../plugins/dialog", version = "3.0.0-alpha.3", default-features = false }
 tauri-plugin-http = { path = "../../../plugins/http", features = [
   "multipart",
   "cookies",
-], version = "3.0.0-alpha.0" }
-tauri-plugin-notification = { path = "../../../plugins/notification", version = "3.0.0-alpha.0", features = [
+], version = "3.0.0-alpha.2" }
+tauri-plugin-notification = { path = "../../../plugins/notification", version = "3.0.0-alpha.2", features = [
   "windows7-compat",
 ] }
-tauri-plugin-os = { path = "../../../plugins/os", version = "3.0.0-alpha.0" }
-tauri-plugin-process = { path = "../../../plugins/process", version = "3.0.0-alpha.0" }
-tauri-plugin-opener = { path = "../../../plugins/opener", version = "3.0.0-alpha.0" }
-tauri-plugin-shell = { path = "../../../plugins/shell", version = "3.0.0-alpha.0" }
-tauri-plugin-store = { path = "../../../plugins/store", version = "3.0.0-alpha.0" }
-tauri-plugin-upload = { path = "../../../plugins/upload", version = "3.0.0-alpha.0" }
+tauri-plugin-os = { path = "../../../plugins/os", version = "3.0.0-alpha.2" }
+tauri-plugin-process = { path = "../../../plugins/process", version = "3.0.0-alpha.2" }
+tauri-plugin-opener = { path = "../../../plugins/opener", version = "3.0.0-alpha.2" }
+tauri-plugin-shell = { path = "../../../plugins/shell", version = "3.0.0-alpha.2" }
+tauri-plugin-store = { path = "../../../plugins/store", version = "3.0.0-alpha.2" }
+tauri-plugin-upload = { path = "../../../plugins/upload", version = "3.0.0-alpha.2" }
+tauri-plugin-deep-link = { path = "../../../plugins/deep-link", version = "3.0.0-alpha.1" }
+tauri-plugin-sql = { path = "../../../plugins/sql", version = "3.0.0-alpha.1", features = [
+  "sqlite",
+] }
+tauri-plugin-websocket = { path = "../../../plugins/websocket", version = "3.0.0-alpha.1" }
+
+# WebDriver automation bridge, used by the plugins e2e suite (packages/api-e2e).
+# Desktop-only and behind the off-by-default `automation` feature so it never ships in a
+# regular build.
+[target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
+tauri-plugin-automation = { version = "3.0.0-alpha.2", optional = true }
 
 [dependencies.tauri]
 workspace = true
@@ -50,38 +61,41 @@ features = [
   "image-ico",
   "image-png",
   "isolation",
-  "macos-private-api",
   "tray-icon",
   "protocol-asset",
 ]
 
 # The webview runtime is picked by depending on its crate and handing its
-# attributes to `tauri::Builder::runtime`. `macos-private-api` only reaches the
-# runtime when it is enabled on the runtime crate as well.
+# attributes to `tauri::Builder::runtime`.
 [dependencies.tauri-runtime-wry]
 workspace = true
 optional = true
-features = ["common-controls-v6", "macos-private-api"]
+features = ["common-controls-v6"]
 
 [dependencies.tauri-runtime-cef]
 workspace = true
 optional = true
-features = ["macos-private-api"]
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
-tauri-plugin-cli = { path = "../../../plugins/cli", version = "3.0.0-alpha.0" }
-tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut", version = "3.0.0-alpha.0" }
-tauri-plugin-updater = { path = "../../../plugins/updater", version = "3.0.0-alpha.0" }
-tauri-plugin-window-state = { path = "../../../plugins/window-state", version = "3.0.0-alpha.0" }
+tauri-plugin-autostart = { path = "../../../plugins/autostart", version = "3.0.0-alpha.1" }
+tauri-plugin-cli = { path = "../../../plugins/cli", version = "3.0.0-alpha.2" }
+tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut", version = "3.0.0-alpha.2" }
+tauri-plugin-positioner = { path = "../../../plugins/positioner", version = "3.0.0-alpha.1", features = [
+  "tray-icon",
+] }
+tauri-plugin-updater = { path = "../../../plugins/updater", version = "3.0.0-alpha.2" }
+tauri-plugin-window-state = { path = "../../../plugins/window-state", version = "3.0.0-alpha.2" }
 
 [target."cfg(any(target_os = \"android\", target_os = \"ios\"))".dependencies]
-tauri-plugin-barcode-scanner = { path = "../../../plugins/barcode-scanner/", version = "3.0.0-alpha.0" }
-tauri-plugin-nfc = { path = "../../../plugins/nfc", version = "3.0.0-alpha.0" }
-tauri-plugin-biometric = { path = "../../../plugins/biometric/", version = "3.0.0-alpha.0" }
-tauri-plugin-geolocation = { path = "../../../plugins/geolocation/", version = "3.0.0-alpha.0" }
-tauri-plugin-haptics = { path = "../../../plugins/haptics/", version = "3.0.0-alpha.0" }
+tauri-plugin-barcode-scanner = { path = "../../../plugins/barcode-scanner/", version = "3.0.0-alpha.2" }
+tauri-plugin-nfc = { path = "../../../plugins/nfc", version = "3.0.0-alpha.2" }
+tauri-plugin-biometric = { path = "../../../plugins/biometric/", version = "3.0.0-alpha.2" }
+tauri-plugin-geolocation = { path = "../../../plugins/geolocation/", version = "3.0.0-alpha.2" }
+tauri-plugin-haptics = { path = "../../../plugins/haptics/", version = "3.0.0-alpha.2" }
 
 [features]
+# Enables the WebDriver automation bridge; set by the e2e suite's build (packages/api-e2e).
+automation = ["dep:tauri-plugin-automation"]
 default = ["wry"]
 # wry is a GTK 3 application on Linux, so it can use the plugin's GTK 3 dialogs.
 wry = ["dep:tauri-runtime-wry", "tauri-plugin-dialog/gtk3"]

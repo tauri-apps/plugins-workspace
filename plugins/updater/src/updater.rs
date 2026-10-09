@@ -5,53 +5,66 @@
 use std::{
     collections::HashMap,
     ffi::OsString,
-    io::Cursor,
     path::{Path, PathBuf},
     str::FromStr,
     sync::Arc,
     time::Duration,
 };
 
-#[cfg(not(target_os = "macos"))]
-use std::ffi::OsStr;
-
 use base64::Engine;
 use futures_util::StreamExt;
-use http::{header::ACCEPT, HeaderName};
+use http::{HeaderName, header::ACCEPT};
 use minisign_verify::{PublicKey, Signature};
 use percent_encoding::{AsciiSet, CONTROLS};
 use reqwest::{
-    header::{HeaderMap, HeaderValue},
     ClientBuilder, StatusCode,
+    header::{HeaderMap, HeaderValue},
 };
 use semver::Version;
-use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, de::Error as DeError};
+#[cfg(any(windows, target_os = "linux"))]
+use std::ffi::OsStr;
+#[cfg(desktop)]
+use std::io::Cursor;
+#[cfg(target_os = "macos")]
+use tauri::Manager;
 use tauri::{
+    AppHandle, Resource, Runtime,
     utils::{
         config::BundleType,
         platform::{bundle_type, current_exe},
     },
-    AppHandle, Resource, Runtime,
 };
 use time::OffsetDateTime;
 use url::Url;
 
 use crate::{
-    error::{Error, Result},
     Config,
+    error::{Error, Result},
 };
 
 const UPDATER_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
+/// The kind of bundle the running application was installed from.
+///
+/// Its name is appended to the updater target string (`{os}-{arch}-{bundle_type}`) when looking
+/// up the release in the update manifest and replaces the `{{bundle_type}}` variable in the
+/// endpoint URLs.
 #[derive(Copy, Clone)]
 pub enum Installer {
+    /// Linux AppImage bundle, named `appimage`.
     AppImage,
+    /// Debian package, named `deb`.
     Deb,
+    /// RPM package, named `rpm`.
     Rpm,
 
+    /// macOS application bundle, named `app`. Also used for applications distributed as DMG.
     App,
 
+    /// Windows WiX (MSI) installer, named `msi`.
     Msi,
+    /// Windows NSIS installer, named `nsis`.
     Nsis,
 }
 
@@ -68,6 +81,7 @@ impl Installer {
     }
 }
 
+/// The update information of a single platform in the update manifest.
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ReleaseManifestPlatform {
     /// Download URL for the platform
@@ -76,11 +90,18 @@ pub struct ReleaseManifestPlatform {
     pub signature: String,
 }
 
+/// The platform specific data of a [`RemoteRelease`], in either of the two supported shapes.
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(untagged)]
 pub enum RemoteReleaseInner {
+    /// Server Format: the endpoint resolved the platform itself and returned a single
+    /// download URL and signature.
     Dynamic(ReleaseManifestPlatform),
+    /// Static Format: the manifest describes every platform it supports and the updater
+    /// picks the entry matching the current target.
     Static {
+        /// Update information for each platform, keyed by the updater target string
+        /// (e.g. `darwin-aarch64`).
         platforms: HashMap<String, ReleaseManifestPlatform>,
     },
 }
@@ -126,8 +147,16 @@ impl RemoteRelease {
     }
 }
 
+/// Function executed right before the Windows installer is spawned and the app exits.
+/// See [`UpdaterBuilder::on_before_exit`].
 pub type OnBeforeExit = Arc<dyn Fn() + Send + Sync + 'static>;
+/// Function that customizes the `reqwest` client builder used for the updater requests.
+/// See [`UpdaterBuilder::configure_client`].
 pub type OnBeforeRequest = Arc<dyn Fn(ClientBuilder) -> ClientBuilder + Send + Sync + 'static>;
+/// Function that decides whether a remote release must be installed.
+///
+/// It receives the current application version and the remote release,
+/// and returns `true` when the release should be treated as an update.
 pub type VersionComparator = Arc<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>;
 #[cfg(target_os = "macos")]
 type MainThreadClosure = Box<dyn FnOnce() + Send + Sync + 'static>;
@@ -155,6 +184,10 @@ struct UpdaterContext {
     restart_after_install: bool,
 }
 
+/// Builder for an [`Updater`] instance.
+///
+/// Get one from [`crate::UpdaterExt::updater_builder`], which pre-fills it with the plugin
+/// configuration, then call [`UpdaterBuilder::build`].
 pub struct UpdaterBuilder {
     current_version: Version,
     pub(crate) version_comparator: Option<VersionComparator>,
@@ -208,6 +241,12 @@ impl UpdaterBuilder {
         }
     }
 
+    /// Sets the function used to decide whether the remote release must be installed,
+    /// replacing the comparator set with [`crate::Builder::default_version_comparator`]
+    /// and the behavior of the `allowDowngrades` configuration value.
+    ///
+    /// When no comparator is set, a release is only installed if its version is greater
+    /// than the current application version.
     pub fn version_comparator<F: Fn(Version, RemoteRelease) -> bool + Send + Sync + 'static>(
         mut self,
         f: F,
@@ -216,11 +255,29 @@ impl UpdaterBuilder {
         self
     }
 
+    /// Sets the target name used when checking for updates.
+    ///
+    /// It replaces the `{{target}}` variable in the endpoint URLs and is used as the key to look
+    /// up the release in the `platforms` object of a static update manifest.
+    ///
+    /// When it is not set, the updater uses the current operating system name (`linux`, `darwin`
+    /// or `windows`) in the endpoint URLs and looks for `{os}-{arch}-{bundle_type}` then
+    /// `{os}-{arch}` in the manifest.
     pub fn target(mut self, target: impl Into<String>) -> Self {
         self.target.replace(target.into());
         self
     }
 
+    /// Sets the endpoints to fetch the update manifest from,
+    /// overriding the `endpoints` configuration value.
+    ///
+    /// They are checked in order and the first one that returns a valid release wins.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::InsecureTransportProtocol`] on release builds if an endpoint does not use
+    /// the `https` protocol and the `dangerousInsecureTransportProtocol` configuration value is
+    /// not enabled. On debug builds a warning is printed instead.
     pub fn endpoints(mut self, endpoints: Vec<Url>) -> Result<Self> {
         crate::config::validate_endpoints(
             &endpoints,
@@ -231,11 +288,19 @@ impl UpdaterBuilder {
         Ok(self)
     }
 
+    /// Sets the path of the application executable, which is used to determine where the update
+    /// must be installed. Defaults to the path of the current executable, or to the AppImage path
+    /// when the application runs as an AppImage.
     pub fn executable_path<P: AsRef<Path>>(mut self, p: P) -> Self {
         self.executable_path.replace(p.as_ref().into());
         self
     }
 
+    /// Adds a header to be sent on the update check and download requests.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the header name or the header value is not valid.
     pub fn header<K, V>(mut self, key: K, value: V) -> Result<Self>
     where
         HeaderName: TryFrom<K>,
@@ -251,21 +316,28 @@ impl UpdaterBuilder {
         Ok(self)
     }
 
+    /// Replaces all the headers sent on the update check and download requests with the given map,
+    /// discarding the ones previously added with [`Self::header`].
     pub fn headers(mut self, headers: HeaderMap) -> Self {
         self.headers = headers;
         self
     }
 
+    /// Removes all the headers previously set on this builder.
     pub fn clear_headers(mut self) -> Self {
         self.headers.clear();
         self
     }
 
+    /// Sets the timeout of the update check and download requests.
+    /// When it is not set, the requests do not time out.
     pub fn timeout(mut self, timeout: Duration) -> Self {
         self.timeout = Some(timeout);
         self
     }
 
+    /// Sets the proxy used for the update check and download requests.
+    /// It is ignored when [`Self::no_proxy`] was called.
     pub fn proxy(mut self, proxy: Url) -> Self {
         self.proxy.replace(proxy);
         self
@@ -277,6 +349,8 @@ impl UpdaterBuilder {
         self
     }
 
+    /// Sets the public key used to verify the update signature,
+    /// overriding the `pubkey` value of the plugin configuration.
     pub fn pubkey<S: Into<String>>(mut self, pubkey: S) -> Self {
         self.context.config.pubkey = pubkey.into();
         self
@@ -362,6 +436,15 @@ impl UpdaterBuilder {
         self
     }
 
+    /// Builds the [`Updater`].
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::EmptyEndpoints`]: neither [`Self::endpoints`] nor the `endpoints`
+    ///   configuration value provided an endpoint to check.
+    /// - [`Error::UnsupportedArch`]: the updater does not support the current architecture.
+    /// - [`Error::FailedToDetermineExtractPath`]: the install directory could not be resolved
+    ///   from the executable path.
     pub fn build(self) -> Result<Updater> {
         let endpoints = self
             .endpoints
@@ -412,6 +495,9 @@ impl UpdaterBuilder {
     }
 }
 
+/// Checks the configured endpoints for an application update.
+///
+/// Get one from [`crate::UpdaterExt::updater`] or by calling [`UpdaterBuilder::build`].
 pub struct Updater {
     current_version: Version,
     version_comparator: Option<VersionComparator>,
@@ -429,6 +515,25 @@ pub struct Updater {
 }
 
 impl Updater {
+    /// Checks the endpoints for an update, returning the first release that the version
+    /// comparator accepts.
+    ///
+    /// Each endpoint is requested in order, with the `{{current_version}}`, `{{target}}`,
+    /// `{{arch}}` and `{{bundle_type}}` variables replaced in its URL, until one of them
+    /// answers with a release manifest the updater can parse.
+    ///
+    /// Resolves to `None` when an endpoint replies with `204 No Content` or when the release it
+    /// announced is not considered an update - by default when its version is not greater than the
+    /// current application version.
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::UnsupportedOs`]: no target was set and the updater does not support the
+    ///   current operating system.
+    /// - [`Error::ReleaseNotFound`]: no endpoint returned a release manifest.
+    /// - The last request or deserialization error when every endpoint failed.
+    /// - [`Error::TargetNotFound`] or [`Error::TargetsNotFound`]: the manifest has no entry
+    ///   for the current target.
     pub async fn check(&self) -> Result<Option<Update>> {
         // we want JSON only
         let mut headers = self.headers.clone();
@@ -436,16 +541,6 @@ impl Updater {
             headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
         }
 
-        // Set SSL certs for linux if they aren't available.
-        #[cfg(target_os = "linux")]
-        {
-            if std::env::var_os("SSL_CERT_FILE").is_none() {
-                std::env::set_var("SSL_CERT_FILE", "/etc/ssl/certs/ca-certificates.crt");
-            }
-            if std::env::var_os("SSL_CERT_DIR").is_none() {
-                std::env::set_var("SSL_CERT_DIR", "/etc/ssl/certs");
-            }
-        }
         let target = if let Some(target) = &self.target {
             target
         } else {
@@ -638,6 +733,10 @@ impl Updater {
     }
 }
 
+/// An update announced by the remote server, returned by [`Updater::check`].
+///
+/// Use [`Update::download`] followed by [`Update::install`], or [`Update::download_and_install`],
+/// to apply it.
 #[derive(Clone)]
 pub struct Update {
     /// Update description
@@ -737,7 +836,13 @@ impl Update {
         }
         on_download_finish();
 
-        verify_signature(&buffer, &self.signature, &self.context.config.pubkey)?;
+        verify_signature(
+            &buffer,
+            &self.signature,
+            &self.context.config.pubkey,
+            &self.version,
+            self.context.config.require_signed_version,
+        )?;
 
         Ok(buffer)
     }
@@ -834,8 +939,8 @@ impl Update {
     /// └── ...
     fn install_inner(&self, bytes: &[u8]) -> Result<()> {
         use windows_sys::{
-            w,
             Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOW},
+            w,
         };
 
         let updater_type = self.extract(bytes)?;
@@ -1082,16 +1187,16 @@ impl Update {
                         let decoder = flate2::read::GzDecoder::new(archive);
                         let mut archive = tar::Archive::new(decoder);
                         for mut entry in archive.entries()?.flatten() {
-                            if let Ok(path) = entry.path() {
-                                if path.extension() == Some(OsStr::new("AppImage")) {
-                                    // if something went wrong during the extraction, we should restore previous app
-                                    if let Err(err) = entry.unpack(&self.extract_path) {
-                                        std::fs::rename(tmp_app_image, &self.extract_path)?;
-                                        return Err(err.into());
-                                    }
-                                    // early finish we have everything we need here
-                                    return Ok(());
+                            if let Ok(path) = entry.path()
+                                && path.extension() == Some(OsStr::new("AppImage"))
+                            {
+                                // if something went wrong during the extraction, we should restore previous app
+                                if let Err(err) = entry.unpack(&self.extract_path) {
+                                    std::fs::rename(tmp_app_image, &self.extract_path)?;
+                                    return Err(err.into());
                                 }
+                                // early finish we have everything we need here
+                                return Ok(());
                             }
                         }
                         // if we have not returned early we should restore the backup
@@ -1186,19 +1291,18 @@ impl Update {
             .arg(install_arg)
             .arg(pkg_path)
             .status()
+            && status.success()
         {
-            if status.success() {
-                log::debug!("installed {pkg_path:?} with pkexec");
-                return Ok(());
-            }
+            log::debug!("installed {pkg_path:?} with pkexec");
+            return Ok(());
         }
 
         // 2. Try zenity or kdialog for a graphical sudo experience
-        if let Ok(password) = self.get_password_graphically() {
-            if self.install_with_sudo(pkg_path, &password, install_cmd, install_arg)? {
-                log::debug!("installed {pkg_path:?} with GUI sudo");
-                return Ok(());
-            }
+        if let Ok(password) = self.get_password_graphically()
+            && self.install_with_sudo(pkg_path, &password, install_cmd, install_arg)?
+        {
+            log::debug!("installed {pkg_path:?} with GUI sudo");
+            return Ok(());
         }
 
         // 3. Final fallback: terminal sudo
@@ -1226,10 +1330,10 @@ impl Update {
             ])
             .output();
 
-        if let Ok(output) = zenity_result {
-            if output.status.success() {
-                return Ok(String::from_utf8_lossy(&output.stdout).trim().to_string());
-            }
+        if let Ok(output) = zenity_result
+            && output.status.success()
+        {
+            return Ok(String::from_utf8_lossy(&output.stdout).trim().to_string());
         }
 
         // Fall back to kdialog if zenity fails or isn't available
@@ -1237,10 +1341,10 @@ impl Update {
             .args(["--password", "Enter your password to install the update:"])
             .output();
 
-        if let Ok(output) = kdialog_result {
-            if output.status.success() {
-                return Ok(String::from_utf8_lossy(&output.stdout).trim().to_string());
-            }
+        if let Ok(output) = kdialog_result
+            && output.status.success()
+        {
+            return Ok(String::from_utf8_lossy(&output.stdout).trim().to_string());
         }
 
         Err(Error::AuthenticationFailed)
@@ -1421,6 +1525,14 @@ fn updater_arch() -> Option<&'static str> {
     }
 }
 
+/// Resolves the path the update must be installed to from the path of the application executable.
+///
+/// This is the directory holding the executable, except on macOS where the `.app` bundle path is
+/// returned for executables living in `Contents/MacOS`.
+///
+/// # Errors
+///
+/// Returns [`Error::FailedToDetermineExtractPath`] when the path has no parent directory.
 pub fn extract_path_from_executable(executable_path: &Path) -> Result<PathBuf> {
     // Return the path of the current executable by default
     // Example C:\Program Files\My App\
@@ -1521,7 +1633,13 @@ where
 }
 
 // Validate signature
-fn verify_signature(data: &[u8], release_signature: &str, pub_key: &str) -> Result<()> {
+fn verify_signature(
+    data: &[u8],
+    release_signature: &str,
+    pub_key: &str,
+    announced_version: &str,
+    require_signed_version: bool,
+) -> Result<()> {
     // we need to convert the pub key
     let pub_key_decoded = base64_to_string(pub_key)?;
     let public_key = PublicKey::decode(&pub_key_decoded)?;
@@ -1530,7 +1648,65 @@ fn verify_signature(data: &[u8], release_signature: &str, pub_key: &str) -> Resu
 
     // Validate signature or bail out
     public_key.verify(data, &signature, true)?;
-    Ok(())
+
+    // Only now is the trusted comment usable: minisign's global signature covers it, and
+    // `verify` above is what checks that global signature. Reading it before this point would
+    // be trusting attacker controlled data.
+    verify_signed_version(
+        signature.trusted_comment(),
+        announced_version,
+        require_signed_version,
+    )
+}
+
+/// Checks the version the artifact was signed for against the version the update endpoint
+/// announced.
+///
+/// The endpoint response is not signed, so its `version` field on its own does not prove which
+/// release the `url` and `signature` actually point at. Comparing it against the signed version
+/// is what stops a tampered response from pairing a new version number with an older release.
+fn verify_signed_version(
+    trusted_comment: &str,
+    announced_version: &str,
+    require_signed_version: bool,
+) -> Result<()> {
+    let Some(signed_version) = signed_version(trusted_comment) else {
+        // Signatures produced before the Tauri CLI started recording the version carry none, so
+        // this can only be enforced when the app opts in. Note that leaving it off means an
+        // attacker can bypass the check outright by serving one of those older signatures.
+        return if require_signed_version {
+            Err(Error::MissingSignedVersion)
+        } else {
+            Ok(())
+        };
+    };
+
+    // compare as semver so that equivalent spellings like `1.2.3` and `v1.2.3` match, falling
+    // back to a literal comparison for versions that are not valid semver
+    let matches = match (
+        Version::from_str(signed_version.trim_start_matches('v')),
+        Version::from_str(announced_version.trim_start_matches('v')),
+    ) {
+        (Ok(signed), Ok(announced)) => signed == announced,
+        _ => signed_version == announced_version,
+    };
+
+    if matches {
+        Ok(())
+    } else {
+        Err(Error::SignedVersionMismatch {
+            signed: signed_version.to_string(),
+            announced: announced_version.to_string(),
+        })
+    }
+}
+
+/// Reads the `version` field out of a signature's trusted comment, which the Tauri CLI writes as
+/// tab separated `key:value` pairs, e.g. `timestamp:1700000000\tfile:app.tar.gz\tversion:1.2.3`.
+fn signed_version(trusted_comment: &str) -> Option<&str> {
+    trusted_comment
+        .split('\t')
+        .find_map(|field| field.strip_prefix("version:"))
 }
 
 fn base64_to_string(base64_string: &str) -> Result<String> {
@@ -1636,6 +1812,59 @@ fn escape_msi_property_arg(arg: impl AsRef<OsStr>) -> String {
 
 #[cfg(test)]
 mod tests {
+    use super::{signed_version, verify_signed_version};
+    use crate::error::Error;
+
+    const CURRENT: &str = "timestamp:1700000000\tfile:app_1.2.3_x64.msi.zip\tversion:1.2.3";
+    // signatures produced before the CLI started embedding the version
+    const LEGACY: &str = "timestamp:1600000000\tfile:app_1.0.0_x64.msi.zip";
+
+    #[test]
+    fn reads_the_signed_version() {
+        assert_eq!(signed_version(CURRENT), Some("1.2.3"));
+        assert_eq!(signed_version(LEGACY), None);
+        // must not match on a field that merely ends in `version:`
+        assert_eq!(signed_version("timestamp:1\tfile:app-version:2.zip"), None);
+    }
+
+    #[test]
+    fn accepts_a_matching_version() {
+        assert!(verify_signed_version(CURRENT, "1.2.3", true).is_ok());
+        assert!(verify_signed_version(CURRENT, "1.2.3", false).is_ok());
+        // the endpoint and the CLI may spell the same version differently
+        assert!(verify_signed_version(CURRENT, "v1.2.3", true).is_ok());
+    }
+
+    #[test]
+    fn rejects_a_version_the_artifact_was_not_signed_for() {
+        // the rollback the flag exists to stop: an old artifact announced as a new version
+        let err = verify_signed_version(CURRENT, "9.9.9", false).unwrap_err();
+        assert!(
+            matches!(err, Error::SignedVersionMismatch { ref signed, ref announced }
+                if signed == "1.2.3" && announced == "9.9.9"),
+            "unexpected error: {err}"
+        );
+        // rejected regardless of whether the app opted in, since the signature does say
+        // which version it covers
+        assert!(verify_signed_version(CURRENT, "9.9.9", true).is_err());
+        assert!(verify_signed_version(CURRENT, "1.2.4", true).is_err());
+    }
+
+    #[test]
+    fn only_requires_a_signed_version_when_configured() {
+        assert!(verify_signed_version(LEGACY, "9.9.9", false).is_ok());
+        assert!(matches!(
+            verify_signed_version(LEGACY, "9.9.9", true).unwrap_err(),
+            Error::MissingSignedVersion
+        ));
+    }
+
+    #[test]
+    fn compares_non_semver_versions_literally() {
+        let comment = "timestamp:1700000000\tfile:app.zip\tversion:2024-01-01";
+        assert!(verify_signed_version(comment, "2024-01-01", true).is_ok());
+        assert!(verify_signed_version(comment, "2024-01-02", true).is_err());
+    }
 
     #[test]
     #[cfg(windows)]

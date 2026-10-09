@@ -1,8 +1,32 @@
 # Changelog
 
+## [3.0.0-alpha.2]
+
+- [`5c077a38`](https://github.com/tauri-apps/plugins-workspace/commit/5c077a3812e8661004845ba59d91ae4005155ec2) ([#3605](https://github.com/tauri-apps/plugins-workspace/pull/3605) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** Removed the `read_text_file` and `write_text_file` commands and their `allow-read-text-file`, `deny-read-text-file`, `allow-write-text-file` and `deny-write-text-file` permissions. `readTextFile` and `writeTextFile` now use the `read_file` and `write_file` commands, so grant `fs:allow-read-file` and `fs:allow-write-file` instead.
+- [`a315a07f`](https://github.com/tauri-apps/plugins-workspace/commit/a315a07f3665a3d07173cc438d292141b791b9b3) ([#3606](https://github.com/tauri-apps/plugins-workspace/pull/3606) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** Removed the `allow-unwatch` and `deny-unwatch` permissions. There has been no `unwatch` command since v2.0 (`Watcher.close()` releases the resource instead), so they never granted anything.
+- [`8083107a`](https://github.com/tauri-apps/plugins-workspace/commit/8083107a0ae002131d6c59a09a521d2c373fffb9) ([#3609](https://github.com/tauri-apps/plugins-workspace/pull/3609) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** The `notify` crate's `serialization-compat-6` feature is no longer enabled, so `WatchEvent` now follows notify v8's format: the event kind is flattened into the event, with `type` holding the top-level kind (`any`, `access`, `create`, `modify`, `remove` or `other`) and `kind`/`mode` refining it. For instance `{ type: { modify: { kind: 'data', mode: 'content' } } }` is now `{ type: 'modify', kind: 'data', mode: 'content' }`, and `attrs.flag` is `rescan` instead of `Rescan`. `WatchEvent.attrs` is now typed as `WatchEventAttributes`.
+- [`fdfb35e5`](https://github.com/tauri-apps/plugins-workspace/commit/fdfb35e5317f85d378b54429f6669b13339b1951) ([#3610](https://github.com/tauri-apps/plugins-workspace/pull/3610) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** `watch` and `watchImmediate` now resolve to a `Watcher` resource instead of an `UnwatchFn` callback. Call `await watcher.close()` to stop watching. The `UnwatchFn` type has been removed and `Watcher` is now exported.
+- [`2fd27c2d`](https://github.com/tauri-apps/plugins-workspace/commit/2fd27c2d43966a86e436ecd538e133e1812cc641) Update MSRV to 1.95 to match tauri.
+
+## [3.0.0-alpha.1]
+
+- [`15bf611d`](https://github.com/tauri-apps/plugins-workspace/commit/15bf611d68b15f343c0e8f6834a64d0cf2cc1637) Update to @tauri-apps/api v3.0.0-alpha.
+
 ## [3.0.0-alpha.0]
 
 - [`363438b5`](https://github.com/tauri-apps/plugins-workspace/commit/363438b50a09162379d57c7c7bfc132520c1e5d4) Update to tauri 3.0 alpha.
+
+## [2.6.0]
+
+- [`97e865bc`](https://github.com/tauri-apps/plugins-workspace/commit/97e865bc138925ba29b102a9cb99d406ce1fe48e) ([#3623](https://github.com/tauri-apps/plugins-workspace/pull/3623)) Added an `options` parameter with `baseDir` to `size`, so relative paths can be measured, like the other functions and like the JSDoc example already showed. The Rust command already accepted it.
+- [`9106093f`](https://github.com/tauri-apps/plugins-workspace/commit/9106093f775a09f899561d7823518e76f9bd6b45) ([#3624](https://github.com/tauri-apps/plugins-workspace/pull/3624)) Fixed opening Android `content://` URIs with `append` or with `write`, `truncate` and `append` together: the options were turned into invalid modes such as `ra` or `wta`. They now map to the modes Android accepts (`r`, `w`, `wt`, `wa`, `rw`, `rwt`), `append` taking precedence over `read` since there is no read and append mode.
+- [`1cae06a5`](https://github.com/tauri-apps/plugins-workspace/commit/1cae06a55b3398d409fba5ac17dbac63d9cf7652) ([#3625](https://github.com/tauri-apps/plugins-workspace/pull/3625)) Fixed `readTextFileLines` yielding empty lines forever when reading fails (e.g. on a directory). The read error is now reported: the iterator rejects and the file is closed.
+- [`1cae06a5`](https://github.com/tauri-apps/plugins-workspace/commit/1cae06a55b3398d409fba5ac17dbac63d9cf7652) ([#3625](https://github.com/tauri-apps/plugins-workspace/pull/3625)) Fixed `readTextFileLines` leaving the file open until the webview is destroyed when a `for await` loop over it exits early (`break`, `return` or `throw`). The iterator now implements `return()`, which closes the file.
+- [`0c84c917`](https://github.com/tauri-apps/plugins-workspace/commit/0c84c917e32af391fed9eaac9e131e447d0a1148) ([#3621](https://github.com/tauri-apps/plugins-workspace/pull/3621)) File watcher errors (e.g. the watched directory was removed or the inotify limit was reached) are now logged instead of being silently dropped.
+- [`b46a88ff`](https://github.com/tauri-apps/plugins-workspace/commit/b46a88ff55948367e40a90f4fcec807f8e43cbc9) ([#3622](https://github.com/tauri-apps/plugins-workspace/pull/3622)) `writeFile` and `writeTextFile` now fail when their options cannot be parsed instead of silently ignoring them (including `baseDir`, `append` and `createNew`) and writing to the raw path. Data sent as a JSON array is rejected if it contains values that are not bytes, instead of truncating them.
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
 
 ## [2.5.2]
 
@@ -230,6 +254,11 @@
 
 - [`0bba693`](https://github.com/tauri-apps/plugins-workspace/commit/0bba6932c09da5267a9dbf75ba52252e39458420)([#454](https://github.com/tauri-apps/plugins-workspace/pull/454)) Fix `writeBinaryFile` crashing with `command 'write_binary_file' not found`
 - [`d74fc0a`](https://github.com/tauri-apps/plugins-workspace/commit/d74fc0a097996e90a37be8f57d50b7d1f6ca616f)([#555](https://github.com/tauri-apps/plugins-workspace/pull/555)) Update to alpha.11.
+
+## \[2.0.0-alpha.0]
+
+- [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+55](https://github.com/tauri-apps/plugins-workspace/pull/555)) Update to alpha.11.
 
 ## \[2.0.0-alpha.0]
 

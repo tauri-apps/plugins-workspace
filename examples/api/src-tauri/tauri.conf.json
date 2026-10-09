@@ -11,7 +11,6 @@
   },
   "app": {
     "withGlobalTauri": true,
-    "macOSPrivateApi": true,
     "security": {
       "pattern": {
         "use": "isolation",
@@ -72,9 +71,6 @@
         }
       }
     },
-    "shell": {
-      "open": true
-    },
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE5QzMxNjYwNTM5OEUwNTgKUldSWTRKaFRZQmJER1h4d1ZMYVA3dnluSjdpN2RmMldJR09hUFFlZDY0SlFqckkvRUJhZDJVZXAK",
       "dangerousInsecureTransportProtocol": true,
@@ -107,7 +103,7 @@
       }
     },
     "iOS": {
-      "minimumSystemVersion": "14.0"
+      "minimumSystemVersion": "15.0"
     }
   }
 }

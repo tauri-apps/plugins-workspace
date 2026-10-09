@@ -2,6 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+/**
+ * Injected script that replaces `window.alert` and `window.confirm` with implementations backed
+ * by native dialogs.
+ *
+ * @module
+ */
+
 import { invoke } from '@tauri-apps/api/core'
 
 window.alert = function (message: string) {

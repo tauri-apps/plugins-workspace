@@ -6,17 +6,15 @@ use std::path::PathBuf;
 
 use serde::{Serialize, Serializer};
 
+/// Errors returned by the shell plugin.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    #[cfg(mobile)]
-    #[error(transparent)]
-    PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    /// The path of the current executable has no parent directory,
+    /// so the path of a sidecar program could not be resolved.
     #[error("current executable path has no parent")]
     CurrentExeHasNoParent,
-    #[error("unknown program {0}")]
-    UnknownProgramName(String),
     #[error(transparent)]
     Scope(#[from] crate::scope::Error),
     /// Sidecar not allowed by the configuration.
@@ -25,6 +23,7 @@ pub enum Error {
     /// Program not allowed by the scope.
     #[error("program not allowed on the configured shell scope: {0}")]
     ProgramNotAllowed(PathBuf),
+    /// The `encoding` spawn option is neither `raw` nor a label of a known character encoding.
     #[error("unknown encoding {0}")]
     UnknownEncoding(String),
     /// JSON error.

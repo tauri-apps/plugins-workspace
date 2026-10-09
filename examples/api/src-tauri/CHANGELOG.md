@@ -1,5 +1,63 @@
 # Changelog
 
+## [3.0.0-alpha.3]
+
+### Dependencies
+
+- Upgraded to `dialog@3.0.0-alpha.3`
+
+## [3.0.0-alpha.2]
+
+### Dependencies
+
+- Upgraded to `dialog@3.0.0-alpha.2`
+- Upgraded to `fs@3.0.0-alpha.2`
+- Upgraded to `http@3.0.0-alpha.2`
+- Upgraded to `log@3.0.0-alpha.2`
+- Upgraded to `barcode-scanner@3.0.0-alpha.2`
+- Upgraded to `biometric@3.0.0-alpha.2`
+- Upgraded to `cli@3.0.0-alpha.2`
+- Upgraded to `clipboard-manager@3.0.0-alpha.2`
+- Upgraded to `global-shortcut@3.0.0-alpha.2`
+- Upgraded to `nfc@3.0.0-alpha.2`
+- Upgraded to `notification@3.0.0-alpha.2`
+- Upgraded to `opener@3.0.0-alpha.2`
+- Upgraded to `os@3.0.0-alpha.2`
+- Upgraded to `process@3.0.0-alpha.2`
+- Upgraded to `shell@3.0.0-alpha.2`
+- Upgraded to `store@3.0.0-alpha.2`
+- Upgraded to `updater@3.0.0-alpha.2`
+- Upgraded to `upload@3.0.0-alpha.2`
+- Upgraded to `window-state@3.0.0-alpha.2`
+- Upgraded to `haptics@3.0.0-alpha.2`
+- Upgraded to `geolocation@3.0.0-alpha.2`
+
+## [3.0.0-alpha.1]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner@3.0.0-alpha.1`
+- Upgraded to `biometric@3.0.0-alpha.1`
+- Upgraded to `cli@3.0.0-alpha.1`
+- Upgraded to `clipboard-manager@3.0.0-alpha.1`
+- Upgraded to `dialog@3.0.0-alpha.1`
+- Upgraded to `fs@3.0.0-alpha.1`
+- Upgraded to `global-shortcut@3.0.0-alpha.1`
+- Upgraded to `http@3.0.0-alpha.1`
+- Upgraded to `log@3.0.0-alpha.1`
+- Upgraded to `nfc@3.0.0-alpha.1`
+- Upgraded to `notification@3.0.0-alpha.1`
+- Upgraded to `opener@3.0.0-alpha.1`
+- Upgraded to `os@3.0.0-alpha.1`
+- Upgraded to `process@3.0.0-alpha.1`
+- Upgraded to `shell@3.0.0-alpha.1`
+- Upgraded to `store@3.0.0-alpha.1`
+- Upgraded to `updater@3.0.0-alpha.1`
+- Upgraded to `upload@3.0.0-alpha.1`
+- Upgraded to `window-state@3.0.0-alpha.1`
+- Upgraded to `haptics@3.0.0-alpha.1`
+- Upgraded to `geolocation@3.0.0-alpha.1`
+
 ## [3.0.0-alpha.0]
 
 ### Dependencies
@@ -23,6 +81,45 @@
 - Upgraded to `updater@3.0.0-alpha.0`
 - Upgraded to `haptics@3.0.0-alpha.0`
 - Upgraded to `geolocation@3.0.0-alpha.0`
+
+## [2.0.50]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner@2.5.0`
+- Upgraded to `biometric@2.4.0`
+- Upgraded to `clipboard-manager@2.4.0`
+- Upgraded to `dialog@2.8.0`
+- Upgraded to `fs@2.6.0`
+- Upgraded to `geolocation@2.4.0`
+- Upgraded to `haptics@2.4.0`
+- Upgraded to `nfc@2.4.0`
+- Upgraded to `notification@2.5.0`
+- Upgraded to `opener@2.6.0`
+- Upgraded to `shell@2.4.0`
+- Upgraded to `cli@2.5.0`
+- Upgraded to `global-shortcut@2.4.0`
+- Upgraded to `http@2.8.0`
+- Upgraded to `log@2.10.0`
+- Upgraded to `os@2.4.0`
+- Upgraded to `process@2.4.0`
+- Upgraded to `store@2.5.0`
+- Upgraded to `updater@2.13.0`
+
+## [2.0.49]
+
+### Dependencies
+
+- Upgraded to `http@2.7.0`
+- Upgraded to `log@2.9.2`
+- Upgraded to `updater@2.12.0`
+
+## [2.0.48]
+
+### Dependencies
+
+- Upgraded to `http@2.6.1`
+- Upgraded to `store@2.4.5`
 
 ## [2.0.47]
 

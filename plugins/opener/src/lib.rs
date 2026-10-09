@@ -2,9 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+//! Open files and URLs using their default application, and reveal files in the system's file explorer.
+//!
+//! Use the [`OpenerExt`] trait to access [`Opener::open_url`] and [`Opener::open_path`] from a
+//! running Tauri app; the plugin's `open_url` and `open_path` commands enforce the scope
+//! configured for the plugin before delegating to them. The [`open_url`] and [`open_path`] free
+//! functions and the [`Opener`] methods themselves do not perform any scope check.
+//! [`reveal_item_in_dir`] and [`reveal_items_in_dir`] return [`Error::UnsupportedPlatform`] on
+//! Android and iOS.
+
 use std::path::Path;
 
-use tauri::{plugin::TauriPlugin, Manager, Runtime};
+use tauri::{Manager, Runtime, plugin::TauriPlugin};
 
 #[cfg(mobile)]
 use tauri::plugin::PluginHandle;
@@ -17,7 +26,7 @@ mod commands;
 mod config;
 mod error;
 mod open;
-mod reveal_item_in_dir;
+mod reveal_items_in_dir;
 mod scope;
 mod scope_entry;
 #[cfg(windows)]
@@ -27,8 +36,11 @@ pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
 
 pub use open::{open_path, open_url};
-pub use reveal_item_in_dir::{reveal_item_in_dir, reveal_items_in_dir};
+pub use reveal_items_in_dir::{reveal_item_in_dir, reveal_items_in_dir};
 
+/// Access to the opener APIs, managed by the plugin as app state.
+///
+/// Obtain an instance via [`OpenerExt::opener`].
 pub struct Opener<R: Runtime> {
     // we use `fn() -> R` to silence the unused generic error
     // while keeping this struct `Send + Sync` without requiring `R` to be
@@ -153,10 +165,20 @@ impl<R: Runtime> Opener<R> {
             .map_err(Into::into)
     }
 
+    /// Reveal the given path in the system's default explorer.
+    ///
+    /// ## Platform-specific:
+    ///
+    /// - **Android / iOS:** Unsupported.
     pub fn reveal_item_in_dir<P: AsRef<Path>>(&self, p: P) -> Result<()> {
         reveal_item_in_dir(p)
     }
 
+    /// Reveal one or more paths in the system's default explorer.
+    ///
+    /// ## Platform-specific:
+    ///
+    /// - **Android / iOS:** Unsupported.
     pub fn reveal_items_in_dir<I, P>(&self, paths: I) -> Result<()>
     where
         I: IntoIterator<Item = P>,
@@ -168,6 +190,7 @@ impl<R: Runtime> Opener<R> {
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the opener APIs.
 pub trait OpenerExt<R: Runtime> {
+    /// Returns the [`Opener`] instance managed by the plugin.
     fn opener(&self) -> &Opener<R>;
 }
 
@@ -229,11 +252,11 @@ impl Builder {
             .invoke_handler(tauri::generate_handler![
                 commands::open_url,
                 commands::open_path,
-                commands::reveal_item_in_dir,
+                commands::reveal_items_in_dir,
             ]);
 
         if self.open_js_links_on_click {
-            builder = builder.js_init_script(include_str!("init-iife.js").to_string());
+            builder = builder.initialization_script(include_str!("init-iife.js").to_string());
         }
 
         builder.build()

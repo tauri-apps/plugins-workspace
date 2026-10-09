@@ -19,7 +19,6 @@
     try {
       const update = await check()
       if (update) {
-        onMessage(`Should update: ${update.available}`)
         onMessage(update)
 
         newUpdate = update

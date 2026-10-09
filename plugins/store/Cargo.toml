@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-store"
-version = "3.0.0-alpha.0"
+version = "3.0.0-alpha.2"
 description = "Simple, persistent key-value store."
 authors = { workspace = true }
 license = { workspace = true }
@@ -35,3 +35,6 @@ tracing = { workspace = true }
 thiserror = { workspace = true }
 dunce = { workspace = true }
 tokio = { version = "1", features = ["sync", "time", "macros"] }
+
+[dev-dependencies]
+tauri = { workspace = true, features = ["test"] }

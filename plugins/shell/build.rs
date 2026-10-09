@@ -163,7 +163,7 @@ fn _f() {
     };
 }
 
-const COMMANDS: &[&str] = &["execute", "spawn", "stdin_write", "kill", "open"];
+const COMMANDS: &[&str] = &["execute", "spawn", "stdin_write", "kill"];
 
 fn main() {
     tauri_plugin::Builder::new(COMMANDS)
@@ -172,21 +172,5 @@ fn main() {
             schemars::SchemaGenerator::new(schemars::generate::SchemaSettings::draft07())
                 .into_root_schema_for::<ShellScopeEntry>(),
         )
-        .android_path("android")
-        .ios_path("ios")
         .build();
-
-    let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
-    let mobile = target_os == "ios" || target_os == "android";
-    alias("desktop", !mobile);
-    alias("mobile", mobile);
-}
-
-// creates a cfg alias if `has_feature` is true.
-// `alias` must be a snake case string.
-fn alias(alias: &str, has_feature: bool) {
-    println!("cargo:rustc-check-cfg=cfg({alias})");
-    if has_feature {
-        println!("cargo:rustc-cfg={alias}");
-    }
 }

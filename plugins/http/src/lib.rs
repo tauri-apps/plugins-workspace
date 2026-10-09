@@ -36,10 +36,17 @@
 //! - **tracing**: Adds request, response, and cookie-store diagnostics through `tracing`.
 //! - **unsafe-headers**: Allows webview requests to send any headers.
 //! - **dangerous-settings**: Allows dangerous client settings such as accepting invalid certificates or hostnames.
+//!
+//! ## Security
+//!
+//! The URL scope is checked on every hop of a redirect chain, not only on the URL requested by
+//! the frontend, so every redirect target must also be allowed by the scope. Otherwise a server on
+//! an allowed origin could redirect the request to any other origin - a `localhost` service, an
+//! internal host or a cloud metadata endpoint - and hand its response to the webview.
 
 use tauri::{
-    plugin::{Builder, TauriPlugin},
     Manager, Runtime,
+    plugin::{Builder, TauriPlugin},
 };
 
 pub use error::{Error, Result};
@@ -59,8 +66,8 @@ pub(crate) struct Http {
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::<R>::new("http")
-        .setup(|app, _| {
+    Builder::new("http")
+        .setup(|app, _api| {
             #[cfg(feature = "cookies")]
             let cookies_jar = {
                 use crate::reqwest_cookie_store::*;
@@ -111,6 +118,9 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                     }
                 }
             }
+
+            #[cfg(not(feature = "cookies"))]
+            let _ = (app, event);
         })
         .invoke_handler(tauri::generate_handler![
             commands::fetch,

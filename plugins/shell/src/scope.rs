@@ -4,13 +4,11 @@
 
 use std::sync::Arc;
 
-#[allow(deprecated)]
-use crate::open::Program;
 use crate::process::Command;
 
 use regex::Regex;
-use tauri::ipc::ScopeObject;
 use tauri::Manager;
+use tauri::ipc::ScopeObject;
 
 /// Allowed representation of `Execute` command arguments.
 #[derive(Debug, Clone, serde::Deserialize)]
@@ -139,13 +137,6 @@ impl ScopeAllowedArg {
     }
 }
 
-/// Scope for the open command
-pub struct OpenScope {
-    /// The validation regex that `shell > open` paths must match against.
-    /// When set to `None`, no values are accepted.
-    pub open: Option<Regex>,
-}
-
 /// Scope for shell process spawning.
 #[derive(Clone)]
 pub struct ShellScope<'a> {
@@ -162,8 +153,8 @@ pub enum Error {
 
     /// The sidecar program validated but failed to find the sidecar path.
     #[error(
-    "The scoped sidecar command was validated, but failed to create the path to the command: {0}"
-  )]
+        "The scoped sidecar command was validated, but failed to create the path to the command: {0}"
+    )]
     Sidecar(String),
 
     /// The named command was not found in the scoped config.
@@ -172,12 +163,14 @@ pub enum Error {
 
     /// A command variable has no value set in the arguments.
     #[error(
-    "Scoped command argument at position {0} must match regex validation {1} but it was not found"
-  )]
+        "Scoped command argument at position {0} must match regex validation {1} but it was not found"
+    )]
     MissingVar(usize, String),
 
     /// At least one argument did not pass input validation.
-    #[error("Scoped command argument at position {index} was found, but failed regex validation {validation}")]
+    #[error(
+        "Scoped command argument at position {index} was found, but failed regex validation {validation}"
+    )]
     Validation {
         /// Index of the variable.
         index: usize,
@@ -196,39 +189,6 @@ pub enum Error {
     /// A generic IO error that occurs while executing specified shell commands.
     #[error("Scoped shell IO error: {0}")]
     Io(#[from] std::io::Error),
-}
-
-impl OpenScope {
-    /// Open a path in the default (or specified) browser.
-    ///
-    /// The path is validated against the `plugins > shell > open` validation regex, which
-    /// defaults to `^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+`.
-    #[allow(deprecated)]
-    pub fn open(&self, path: &str, with: Option<Program>) -> Result<(), Error> {
-        // ensure we pass validation if the configuration has one
-        if let Some(regex) = &self.open {
-            if !regex.is_match(path) {
-                return Err(Error::Validation {
-                    index: 0,
-                    validation: regex.as_str().into(),
-                });
-            }
-        } else {
-            log::warn!("open() command called but the plugin configuration denies calls from JavaScript; set `tauri.conf.json > plugins > shell > open` to true or a validation regex string");
-            return Err(Error::Validation {
-                index: 0,
-                validation: "tauri^".to_string(), // purposefully impossible regex
-            });
-        }
-
-        // The prevention of argument escaping is handled by the usage of std::process::Command::arg by
-        // the `open` dependency. This behavior should be re-confirmed during upgrades of `open`.
-        match with.map(Program::name) {
-            Some(program) => ::open::with_detached(path, program),
-            None => ::open::that_detached(path),
-        }
-        .map_err(Into::into)
-    }
 }
 
 impl ShellScope<'_> {
