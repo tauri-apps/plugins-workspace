@@ -5,7 +5,7 @@ description = "Interface with SQL databases."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
-rust-version = { workspace = true }
+rust-version = "1.94"
 repository = { workspace = true }
 links = "tauri-plugin-sql"
 exclude = [
@@ -36,7 +36,7 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 futures-core = "0.3"
-sqlx = { version = "0.8", features = ["json", "time", "uuid", "rust_decimal"] }
+sqlx = { version = "0.9", features = ["json", "time", "uuid", "rust_decimal"] }
 rust_decimal = "1"
 time = "0.3"
 tokio = { version = "1", features = ["sync"] }
@@ -45,6 +45,6 @@ uuid = "1"
 
 [features]
 sqlite = ["sqlx/sqlite", "sqlx/runtime-tokio"]
-mysql = ["sqlx/mysql", "sqlx/runtime-tokio-rustls"]
-postgres = ["sqlx/postgres", "sqlx/runtime-tokio-rustls"]
+mysql = ["sqlx/mysql", "sqlx/runtime-tokio", "sqlx/tls-rustls"]
+postgres = ["sqlx/postgres", "sqlx/runtime-tokio", "sqlx/tls-rustls"]
 # TODO: bundled-cipher etc

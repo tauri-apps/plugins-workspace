@@ -8,7 +8,7 @@ use std::fs::create_dir_all;
 use indexmap::IndexMap;
 use serde_json::Value as JsonValue;
 #[cfg(any(feature = "sqlite", feature = "mysql", feature = "postgres"))]
-use sqlx::{Column, Executor, Pool, Row, migrate::MigrateDatabase};
+use sqlx::{AssertSqlSafe, Column, Executor, Pool, Row, migrate::MigrateDatabase};
 #[cfg(any(feature = "sqlite", feature = "mysql", feature = "postgres"))]
 use tauri::Manager;
 use tauri::{AppHandle, Runtime};
@@ -161,7 +161,7 @@ impl DbPool {
         Ok(match self {
             #[cfg(feature = "sqlite")]
             DbPool::Sqlite(pool) => {
-                let mut query = sqlx::query(&_query);
+                let mut query = sqlx::query(AssertSqlSafe(_query));
                 for value in _values {
                     if value.is_null() {
                         query = query.bind(None::<JsonValue>);
@@ -181,7 +181,7 @@ impl DbPool {
             }
             #[cfg(feature = "mysql")]
             DbPool::MySql(pool) => {
-                let mut query = sqlx::query(&_query);
+                let mut query = sqlx::query(AssertSqlSafe(_query));
                 for value in _values {
                     if value.is_null() {
                         query = query.bind(None::<JsonValue>);
@@ -201,7 +201,7 @@ impl DbPool {
             }
             #[cfg(feature = "postgres")]
             DbPool::Postgres(pool) => {
-                let mut query = sqlx::query(&_query);
+                let mut query = sqlx::query(AssertSqlSafe(_query));
                 for value in _values {
                     if value.is_null() {
                         query = query.bind(None::<JsonValue>);
@@ -229,7 +229,7 @@ impl DbPool {
         Ok(match self {
             #[cfg(feature = "sqlite")]
             DbPool::Sqlite(pool) => {
-                let mut query = sqlx::query(&_query);
+                let mut query = sqlx::query(AssertSqlSafe(_query));
                 for value in _values {
                     if value.is_null() {
                         query = query.bind(None::<JsonValue>);
@@ -259,7 +259,7 @@ impl DbPool {
             }
             #[cfg(feature = "mysql")]
             DbPool::MySql(pool) => {
-                let mut query = sqlx::query(&_query);
+                let mut query = sqlx::query(AssertSqlSafe(_query));
                 for value in _values {
                     if value.is_null() {
                         query = query.bind(None::<JsonValue>);
@@ -289,7 +289,7 @@ impl DbPool {
             }
             #[cfg(feature = "postgres")]
             DbPool::Postgres(pool) => {
-                let mut query = sqlx::query(&_query);
+                let mut query = sqlx::query(AssertSqlSafe(_query));
                 for value in _values {
                     if value.is_null() {
                         query = query.bind(None::<JsonValue>);

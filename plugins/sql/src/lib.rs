@@ -29,6 +29,7 @@ pub use wrapper::DbPool;
 use futures_core::future::BoxFuture;
 use serde::{Deserialize, Serialize};
 use sqlx::{
+    AssertSqlSafe, SqlSafeStr,
     error::BoxDynError,
     migrate::{Migration as SqlxMigration, MigrationSource, MigrationType, Migrator},
 };
@@ -125,7 +126,7 @@ impl MigrationSource<'static> for MigrationList {
                         migration.version,
                         migration.description.into(),
                         migration.kind.into(),
-                        migration.sql.into(),
+                        AssertSqlSafe(migration.sql).into_sql_str(),
                         false,
                     ));
                 }
