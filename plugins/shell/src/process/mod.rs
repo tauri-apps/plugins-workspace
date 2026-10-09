@@ -85,16 +85,16 @@ impl CommandChild {
     /// Sends a kill signal to the child and waits for it to exit.
     /// With `process_group` enabled this kills the whole process group (POSIX) or job object (Windows).
     pub fn kill(self) -> crate::Result<()> {
-        if self.inner.try_wait()?.is_some() {
-            return Ok(());
-        }
-
+        // No early return when the child already exited: the rest of its
+        // process group or job object may still be running.
         #[cfg(unix)]
         if self.process_group {
+            // The pgid can't be reused while the group has members, so this is
+            // safe even after the group leader was reaped.
             let pgid = self.inner.id() as libc::pid_t;
             if unsafe { libc::killpg(pgid, libc::SIGKILL) } != 0 {
                 let err = std::io::Error::last_os_error();
-                // ESRCH: the group emptied out between `try_wait` and `killpg`.
+                // ESRCH: every process in the group already exited.
                 if err.raw_os_error() != Some(libc::ESRCH) {
                     return Err(err.into());
                 }
@@ -819,19 +819,18 @@ mod tests {
         }
     }
 
-    /// The PyInstaller-style wrapper script for the current platform: spawns
-    /// a long-running grandchild, prints its PID, then waits on it.
-    fn sim_command() -> Command {
+    /// Runs `test/<script>.ps1` on Windows or `test/<script>.sh` elsewhere.
+    fn sim_command(script: &str) -> Command {
         if cfg!(windows) {
             Command::new("powershell").args([
-                "-NoProfile",
-                "-ExecutionPolicy",
-                "Bypass",
-                "-File",
-                "test/pyinstaller_sim.ps1",
+                "-NoProfile".to_string(),
+                "-ExecutionPolicy".to_string(),
+                "Bypass".to_string(),
+                "-File".to_string(),
+                format!("test/{script}.ps1"),
             ])
         } else {
-            Command::new("sh").args(["test/pyinstaller_sim.sh"])
+            Command::new("sh").args([format!("test/{script}.sh")])
         }
     }
 
@@ -918,7 +917,7 @@ mod tests {
     #[test]
     fn test_pyinstaller_simulation_without_process_group() {
         // Without process_group: killing the wrapper does NOT kill the grandchild.
-        let (mut rx, child) = sim_command().spawn().unwrap();
+        let (mut rx, child) = sim_command("pyinstaller_sim").spawn().unwrap();
 
         let grandchild_pid = read_grandchild_pid(&mut rx);
         assert!(
@@ -945,7 +944,10 @@ mod tests {
     #[test]
     fn test_pyinstaller_simulation_with_process_group() {
         // With process_group: killing the wrapper ALSO kills the grandchild.
-        let (mut rx, child) = sim_command().set_process_group(true).spawn().unwrap();
+        let (mut rx, child) = sim_command("pyinstaller_sim")
+            .set_process_group(true)
+            .spawn()
+            .unwrap();
 
         let grandchild_pid = read_grandchild_pid(&mut rx);
         assert!(
@@ -964,5 +966,43 @@ mod tests {
         );
 
         wait_for_terminated(rx);
+    }
+
+    /// The direct child exits right after starting a grandchild (like a launcher).
+    /// Killing the process group or job object afterwards must still kill the grandchild.
+    #[test]
+    fn test_process_group_kill_after_leader_exit() {
+        let (mut rx, child) = sim_command("launcher_sim")
+            .set_process_group(true)
+            .spawn()
+            .unwrap();
+
+        let grandchild_pid = read_grandchild_pid(&mut rx);
+
+        // Wait until the launcher has exited and been reaped.
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(30);
+        while child.inner.try_wait().unwrap().is_none() {
+            assert!(
+                std::time::Instant::now() < deadline,
+                "launcher should exit on its own"
+            );
+            std::thread::sleep(std::time::Duration::from_millis(50));
+        }
+        assert!(
+            pid_alive(grandchild_pid),
+            "grandchild should outlive the launcher"
+        );
+
+        child.kill().unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(100));
+
+        let alive = pid_alive(grandchild_pid);
+        if alive {
+            force_kill(grandchild_pid);
+        }
+        assert!(
+            !alive,
+            "grandchild should be killed even though the launcher already exited"
+        );
     }
 }
