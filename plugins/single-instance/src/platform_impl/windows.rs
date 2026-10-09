@@ -86,7 +86,7 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
                         }
 
                         let cwd = std::env::current_dir().unwrap_or_default();
-                        let cwd = cwd.to_str().unwrap_or_default();
+                        let cwd = cwd.to_string_lossy();
 
                         let args = std::env::args_os()
                             .map(|arg| arg.to_string_lossy().into_owned())
