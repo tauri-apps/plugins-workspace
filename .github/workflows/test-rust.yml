@@ -9,22 +9,23 @@ on:
     branches:
       - v1
       - v2
-    paths:
+    paths: &paths
       - '.github/workflows/test-rust.yml'
-      - 'plugins/*/src/**'
-      - '!plugins/*/src/api-iife.js'
-      - '**/Cargo.toml'
-      - '**/Cargo.lock'
+      - '.scripts/ci/affected-rust-packages.js'
+      - 'plugins/**'
+      - '!plugins/*/guest-js/**'
+      - '!plugins/*/android/**'
+      - '!plugins/*/*.md'
+      - '!plugins/*/package.json'
+      - '!plugins/*/api-iife.js'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
   pull_request:
     branches:
       - v1
       - v2
-    paths:
-      - '.github/workflows/test-rust.yml'
-      - 'plugins/*/src/**'
-      - '!plugins/*/src/api-iife.js'
-      - '**/Cargo.toml'
-      - '**/Cargo.lock'
+    paths: *paths
+  workflow_dispatch:
 
 env:
   CARGO_PROFILE_DEV_DEBUG: 0 # no debuginfo: faster builds and a much smaller target dir to cache
@@ -38,182 +39,35 @@ permissions:
   contents: read
 
 jobs:
+  # Lists the plugins the change affects (see .scripts/ci/affected-rust-packages.js) and splits
+  # them in shards. Each shard is tested in a single job per platform, one package after the other
+  # in the same target dir, so the dependencies the plugins share (tauri, wry, tao...) are built
+  # (or restored) once per job instead of once per package, and a change that affects every plugin
+  # needs a few jobs per platform instead of one per plugin.
   changes:
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: read
     outputs:
-      packages: ${{ steps.filter.outputs.changes }}
-      saver: ${{ steps.saver.outputs.saver }}
+      shards: ${{ steps.affected.outputs.shards }}
     steps:
       - uses: actions/checkout@v7
-      - uses: dorny/paths-filter@v2
-        id: filter
         with:
-          base: v2
-          filters: |
-            tauri-plugin-autostart:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/autostart/**
-            tauri-plugin-cli:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/cli/**
-            tauri-plugin-clipboard-manager:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/clipboard-manager/**
-            tauri-plugin-deep-link:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/deep-link/**
-            tauri-plugin-dialog:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/dialog/**
-              - plugins/fs/**
-            tauri-plugin-fs:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/fs/**
-            tauri-plugin-geolocation:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/geolocation/**
-            tauri-plugin-global-shortcut:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/global-shortcut/**
-            tauri-plugin-opener:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/opener/**
-            tauri-plugin-haptics:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/haptics/**
-            tauri-plugin-http:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/http/**
-              - plugins/fs/**
-            tauri-plugin-localhost:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/localhost/**
-            tauri-plugin-log:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/log/**
-            tauri-plugin-notification:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/notification/**
-            tauri-plugin-os:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/os/**
-            tauri-plugin-persisted-scope:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/persisted-scope/**
-              - plugins/fs/**
-            tauri-plugin-positioner:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/positioner/**
-            tauri-plugin-process:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/process/**
-            tauri-plugin-shell:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/shell/**
-            tauri-plugin-single-instance:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/single-instance/**
-            tauri-plugin-sql:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/sql/**
-            tauri-plugin-store:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/store/**
-            tauri-plugin-stronghold:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/stronghold/**
-            tauri-plugin-updater:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/updater/**
-            tauri-plugin-upload:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/upload/**
-            tauri-plugin-websocket:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/websocket/**
-            tauri-plugin-window-state:
-              - .github/workflows/test-rust.yml
-              - Cargo.toml
-              - Cargo.lock
-              - plugins/window-state/**
-
-      # Every package job for a platform restores the same rust-cache entry, and exactly one
-      # of them saves it (see the `save-if` of the rust-cache step). Prefer the packages whose
-      # dependency tree covers most of the other plugins' dependencies, so the entry is as
-      # useful as possible for the packages that did not save it.
-      - name: pick the package that saves the cache
-        id: saver
+          # a pull request checks out its merge commit, whose first parent is the base branch
+          fetch-depth: 2
+      - id: affected
+        run: node .scripts/ci/affected-rust-packages.js
         env:
-          PACKAGES: ${{ steps.filter.outputs.changes }}
-        run: |
-          saver="$(jq -rn --argjson packages "${PACKAGES:-[]}" '
-            ["tauri-plugin-upload", "tauri-plugin-sql", "tauri-plugin-updater", "tauri-plugin-single-instance"]
-            | map(select(. as $p | $packages | index($p) != null))
-            | first // $packages[0] // empty
-          ')"
-          echo "saver=$saver" >> "$GITHUB_OUTPUT"
+          BASE: ${{ github.event_name == 'pull_request' && 'HEAD^1' || github.event.before }}
+          ALL: ${{ github.event_name == 'workflow_dispatch' }}
+          GLOBAL_PATHS: .github/workflows/test-rust.yml
 
   test:
+    name: test (${{ matrix.platform.target }}, ${{ matrix.shard.name }})
     needs: changes
-    if: ${{ needs.changes.outputs.packages != '[]' && needs.changes.outputs.packages != '' }}
+    if: ${{ needs.changes.outputs.shards != '[]' && needs.changes.outputs.shards != '' }}
     strategy:
       fail-fast: false
       matrix:
-        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+        shard: ${{ fromJSON(needs.changes.outputs.shards) }}
         platform:
           - {
               target: x86_64-pc-windows-msvc,
@@ -247,6 +101,8 @@ jobs:
             }
 
     runs-on: ${{ matrix.platform.os }}
+    # a stuck step (e.g. `apt-get` waiting on an unreachable mirror) otherwise runs for 6 hours
+    timeout-minutes: 90
 
     steps:
       - uses: actions/checkout@v7
@@ -263,15 +119,16 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          # One entry per platform, shared by every package job: the plugins share most of
-          # their dependency tree (tauri, wry, tao...), and an entry per package and platform
-          # (26 × 5 entries of 500-800 MB each) never fits the repository's 10 GB cache limit.
+          # One entry per platform, shared by every shard: the plugins share most of their
+          # dependency tree (tauri, wry, tao...), and an entry per package or shard and platform
+          # never fits the repository's 10 GB cache limit.
           key: ${{ matrix.platform.target }}
           # Only `v2`/`v3` write to the cache: an entry saved from a pull request lives on its
           # merge ref, where nothing else can restore it, and every write evicts an entry
           # that other runs would have hit (10 GB repository limit, LRU eviction).
-          # A single package job saves the shared entry, so the jobs don't race for the key.
-          save-if: ${{ (github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3') && matrix.package == needs.changes.outputs.saver }}
+          # A single shard saves the shared entry, so the jobs don't race for the key; it is the
+          # one holding the plugins with the widest dependency trees.
+          save-if: ${{ (github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3') && matrix.shard.save }}
 
       # `cross` is built from a pinned git revision (its latest release predates the Android
       # targets we need). Keep the binary in its own small cache entry (accessed by every run,
@@ -292,20 +149,38 @@ jobs:
         if: ${{ matrix.platform.runner == 'cross' }}
         run: echo "${{ runner.tool_cache }}/cross/bin" >> $GITHUB_PATH
 
-      - name: test ${{ matrix.package }}
-        if: ${{ matrix.package != 'tauri-plugin-http' && matrix.package != 'tauri-plugin-dialog' }}
-        run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --all-features
+      # The shard's packages run one after the other, and a failing package does not stop the
+      # others (like `fail-fast: false` across jobs): the step fails at the end if any did.
+      - name: ${{ matrix.platform.command }} ${{ matrix.shard.name }}
+        shell: bash
+        env:
+          PACKAGES: ${{ matrix.shard.packages }}
+          RUNNER: ${{ matrix.platform.runner }}
+          COMMAND: ${{ matrix.platform.command }}
+          TARGET: ${{ matrix.platform.target }}
+        run: |
+          failed=()
+          for package in $PACKAGES; do
+            # the features of `http` and `dialog` cannot all be enabled at once
+            case "$package" in
+              tauri-plugin-http|tauri-plugin-dialog) features=() ;;
+              *) features=(--all-features) ;;
+            esac
 
-      - name: test ${{ matrix.package }}
-        if: ${{ matrix.package == 'tauri-plugin-http' || matrix.package == 'tauri-plugin-dialog' }}
-        run: ${{ matrix.platform.runner }} ${{ matrix.platform.command }} --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets
+            echo "::group::$COMMAND $package"
+            if ! $RUNNER $COMMAND --package "$package" --target "$TARGET" --all-targets "${features[@]}"; then
+              failed+=("$package")
+            # `--all-targets` above does not include doc tests, so they are run separately.
+            # Only on the platforms we actually test on, since cargo skips doc tests when cross compiling.
+            elif [ "$COMMAND" = test ] && ! $RUNNER test --doc --package "$package" --target "$TARGET" "${features[@]}"; then
+              failed+=("$package (doc tests)")
+            fi
+            echo "::endgroup::"
+          done
 
-      # `--all-targets` above does not include doc tests, so they are run separately.
-      # Only on the platforms we actually test on, since cargo skips doc tests when cross compiling.
-      - name: doc test ${{ matrix.package }}
-        if: ${{ matrix.platform.command == 'test' && matrix.package != 'tauri-plugin-http' && matrix.package != 'tauri-plugin-dialog' }}
-        run: ${{ matrix.platform.runner }} test --doc --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-features
-
-      - name: doc test ${{ matrix.package }}
-        if: ${{ matrix.platform.command == 'test' && (matrix.package == 'tauri-plugin-http' || matrix.package == 'tauri-plugin-dialog') }}
-        run: ${{ matrix.platform.runner }} test --doc --package ${{ matrix.package }} --target ${{ matrix.platform.target }}
+          if [ ${#failed[@]} -gt 0 ]; then
+            for package in "${failed[@]}"; do
+              echo "::error title=$COMMAND failed::$package"
+            done
+            exit 1
+          fi
