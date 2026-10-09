@@ -102,7 +102,7 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
                             lpData: bytes.as_ptr() as _,
                         };
 
-                        SendMessageTimeoutW(
+                        let sent = SendMessageTimeoutW(
                             hwnd,
                             WM_COPYDATA,
                             0,
@@ -111,6 +111,12 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
                             FORWARD_TIMEOUT_MS,
                             std::ptr::null_mut(),
                         );
+                        if sent == 0 {
+                            tracing::warn!(
+                                "single_instance failed to forward arguments to the running instance within {FORWARD_TIMEOUT_MS}ms (error {})",
+                                GetLastError()
+                            );
+                        }
 
                         app.cleanup_before_exit();
                         std::process::exit(0);
