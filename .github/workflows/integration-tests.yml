@@ -68,6 +68,8 @@ jobs:
     needs: changes
     if: needs.changes.outputs.updater == 'true'
     runs-on: ${{ matrix.platform }}
+    # a stuck step (e.g. `apt-get` waiting on an unreachable mirror) otherwise runs for 6 hours
+    timeout-minutes: 90
 
     strategy:
       fail-fast: false
@@ -102,9 +104,20 @@ jobs:
       # The latest published 2.x CLI, downloaded from its GitHub release. `--pkg-fmt` because the
       # crate's binstall metadata expects a .tgz on aarch64-apple-darwin, where the release only
       # ships a .zip, and the disabled strategies make a missing binary fail the step instead of
-      # silently compiling the CLI from source.
+      # silently compiling the CLI from source. The token authenticates the GitHub requests and the
+      # longer timeout and retries ride out a slow response, which binstall otherwise reports as a
+      # missing binary.
       - name: install Tauri CLI
-        run: cargo binstall -y tauri-cli@^2 --pkg-fmt ${{ runner.os == 'Linux' && 'tgz' || 'zip' }} --disable-strategies quick-install,compile
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in 1 2 3; do
+            cargo binstall -y tauri-cli@^2 --pkg-fmt ${{ runner.os == 'Linux' && 'tgz' || 'zip' }} --disable-strategies quick-install,compile --maximum-resolution-timeout 60 && exit 0
+            echo "::warning::cargo binstall failed (attempt $attempt)"
+            sleep 10
+          done
+          exit 1
 
       - name: grant admin rights without a prompt
         if: startsWith(matrix.platform, 'macos')

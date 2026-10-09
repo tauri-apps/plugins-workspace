@@ -58,6 +58,8 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.shards != '[]' && needs.changes.outputs.shards != '' }}
     runs-on: ${{ matrix.platform.os }}
+    # a stuck step (e.g. `apt-get` waiting on an unreachable mirror) otherwise runs for 6 hours
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:

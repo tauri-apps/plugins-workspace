@@ -37,7 +37,7 @@ pub enum MacosLauncher {
 
 #[cfg(target_os = "macos")]
 impl MacosLauncher {
-    fn to_auto_launch(&self) -> auto_launch::MacOSLaunchMode {
+    fn to_auto_launch(self) -> auto_launch::MacOSLaunchMode {
         match self {
             MacosLauncher::LaunchAgent => auto_launch::MacOSLaunchMode::LaunchAgent,
             MacosLauncher::AppleScript => auto_launch::MacOSLaunchMode::AppleScript,
