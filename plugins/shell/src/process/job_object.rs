@@ -11,7 +11,7 @@ use windows_sys::Win32::{
     Foundation::{CloseHandle, HANDLE, INVALID_HANDLE_VALUE},
     System::{
         Diagnostics::ToolHelp::{
-            CreateToolhelp32Snapshot, Thread32First, Thread32Next, TH32CS_SNAPTHREAD, THREADENTRY32,
+            CreateToolhelp32Snapshot, TH32CS_SNAPTHREAD, THREADENTRY32, Thread32First, Thread32Next,
         },
         JobObjects::{AssignProcessToJobObject, CreateJobObjectW, TerminateJobObject},
         Threading::{OpenThread, ResumeThread, THREAD_SUSPEND_RESUME},

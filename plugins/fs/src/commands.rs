@@ -2039,7 +2039,7 @@ mod test {
 
     #[test]
     fn read_len_is_capped_to_the_file() {
-        use super::{capped_read_len, MIN_READ_LEN};
+        use super::{MIN_READ_LEN, capped_read_len};
         use std::io::{Seek, SeekFrom};
 
         let path = std::env::temp_dir().join(format!(

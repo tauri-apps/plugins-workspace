@@ -885,7 +885,7 @@ mod tests {
     fn force_kill(pid: u32) {
         use windows_sys::Win32::{
             Foundation::CloseHandle,
-            System::Threading::{OpenProcess, TerminateProcess, PROCESS_TERMINATE},
+            System::Threading::{OpenProcess, PROCESS_TERMINATE, TerminateProcess},
         };
         let handle = unsafe { OpenProcess(PROCESS_TERMINATE, 0, pid) };
         if !handle.is_null() {
