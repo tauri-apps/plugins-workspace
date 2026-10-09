@@ -18,6 +18,7 @@ import {
   FIXTURE_SERVER_PORT,
   type FixtureServer
 } from './test/helpers/server.js'
+import { executeAsync } from './test/helpers/execute.js'
 
 export type MobilePlatform = 'android' | 'ios'
 
@@ -243,7 +244,7 @@ export function mobileConfig(platform: MobilePlatform): WebdriverIO.Config {
             'no WEBVIEW context appeared — is the app a debug build (webview debugging enabled)?'
         }
       )
-      // The specs run the page through `executeAsync`, and the XCUITest driver
+      // The specs run the page through async scripts, and the XCUITest driver
       // starts with a script timeout of 0 (every async script times out at
       // once) rather than the 30s the other drivers default to.
       await browser.setTimeout({ script: 30_000 })
@@ -251,7 +252,8 @@ export function mobileConfig(platform: MobilePlatform): WebdriverIO.Config {
       await browser.waitUntil(
         async () => {
           try {
-            const ready: unknown = await browser.executeAsync(
+            const ready: unknown = await executeAsync(
+              browser,
               'var done = arguments[arguments.length - 1]; done(typeof window.__TAURI__ !== "undefined");'
             )
             return ready === true

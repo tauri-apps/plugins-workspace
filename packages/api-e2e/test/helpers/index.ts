@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import { browser } from '@wdio/globals'
+import { executeAsync } from './execute.js'
 import type * as TauriApi from '@tauri-apps/api'
 import type * as Autostart from '@tauri-apps/plugin-autostart'
 import type * as BarcodeScanner from '@tauri-apps/plugin-barcode-scanner'
@@ -173,7 +174,7 @@ export async function tauri<R, A extends unknown[]>(
         }
       });
   `
-  const raw: unknown = await browser.executeAsync(script, ...args)
+  const raw: unknown = await executeAsync(browser, script, ...args)
   const outcome = (
     typeof raw === 'string' ? JSON.parse(raw) : raw
   ) as PageOutcome<Awaited<R>> | null
