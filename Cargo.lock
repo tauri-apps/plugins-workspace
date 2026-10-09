@@ -3558,7 +3558,7 @@ dependencies = [
  "cc",
  "libc",
  "libflate",
- "minisign-verify",
+ "minisign-verify 0.2.3",
  "pkg-config",
  "tar",
  "ureq",
@@ -3721,6 +3721,12 @@ name = "minisign-verify"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6367d84fb54d4242af283086402907277715b8fe46976963af5ebf173f8efba3"
+
+[[package]]
+name = "minisign-verify"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "871285dc19d8d0ebe0eef3d0e99a205f2a71363b122632cbbfa4a6c370a960ce"
 
 [[package]]
 name = "miniz_oxide"
@@ -7108,7 +7114,7 @@ dependencies = [
  "infer",
  "libc",
  "log",
- "minisign-verify",
+ "minisign-verify 0.3.0",
  "osakit",
  "percent-encoding",
  "reqwest 0.13.1",
