@@ -19,6 +19,7 @@ use windows_sys::Win32::{
 };
 
 /// Owned job object handle. Closing it leaves the processes in the job running.
+#[derive(Debug)]
 pub(crate) struct JobObject(HANDLE);
 
 // SAFETY: the handle is only ever passed to thread-safe Win32 calls.

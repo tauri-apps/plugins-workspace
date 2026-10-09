@@ -66,6 +66,7 @@ pub struct Command {
 }
 
 /// Spawned child process.
+#[derive(Debug)]
 pub struct CommandChild {
     inner: Arc<SharedChild>,
     stdin_writer: PipeWriter,
