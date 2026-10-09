@@ -1,9 +1,0 @@
-app.tauri.shell.tauri-plugin-shell-pngs-0 /home/lucasfernog/projects/tauri/plugins-workspace/plugins/shell/android/build/generated/res/pngs/debug
-app.tauri.shell.tauri-plugin-shell-updated_navigation_xml-1 /home/lucasfernog/projects/tauri/plugins-workspace/plugins/shell/android/build/generated/updated_navigation_xml/debug
-app.tauri.shell.tauri-plugin-shell-mergeDebugResources-2 /home/lucasfernog/projects/tauri/plugins-workspace/plugins/shell/android/build/intermediates/incremental/debug/mergeDebugResources/merged.dir
-app.tauri.shell.tauri-plugin-shell-mergeDebugResources-3 /home/lucasfernog/projects/tauri/plugins-workspace/plugins/shell/android/build/intermediates/incremental/debug/mergeDebugResources/stripped.dir
-app.tauri.shell.tauri-plugin-shell-debug-4 /home/lucasfernog/projects/tauri/plugins-workspace/plugins/shell/android/build/intermediates/merged_res/debug/mergeDebugResources
-app.tauri.shell.tauri-plugin-shell-debug-5 /home/lucasfernog/projects/tauri/plugins-workspace/plugins/shell/android/build/intermediates/packaged_res/debug/packageDebugResources
-app.tauri.shell.tauri-plugin-shell-debug-6 /home/lucasfernog/projects/tauri/plugins-workspace/plugins/shell/android/src/debug/res
-app.tauri.shell.tauri-plugin-shell-main-7 /home/lucasfernog/projects/tauri/plugins-workspace/plugins/shell/android/src/main/res
-gradleHome-0 /home/lucasfernog/.gradle
