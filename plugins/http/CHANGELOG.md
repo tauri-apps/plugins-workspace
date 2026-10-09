@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.0.0-alpha.3]
+
+- [`41b96be3`](https://github.com/tauri-apps/plugins-workspace/commit/41b96be34559dff587d40f966277631df688ff9d) ([#3593](https://github.com/tauri-apps/plugins-workspace/pull/3593) by [@decebal](https://github.com/tauri-apps/plugins-workspace/../../decebal)) Updated `reqwest` to 0.13 and removed the `tauri_plugin_http::reqwest` re-export. Add `reqwest` to your own dependencies if you used it. Cargo features that `reqwest` 0.13 removed are removed here too:
+    
+    - `native-tls-alpn`: ALPN is now part of `native-tls`.
+    - `rustls-tls-manual-roots`, `rustls-tls-webpki-roots` and `rustls-tls-native-roots`: `rustls-tls` now verifies certificates with the platform verifier.
+    - `trust-dns`: use `hickory-dns`.
+    
+    `rustls-tls` uses `ring` as the crypto provider and installs it as the process default only if none is installed yet.
+
 ## [3.0.0-alpha.2]
 
 - [`c7416a1a`](https://github.com/tauri-apps/plugins-workspace/commit/c7416a1a2c87f578883402bc023b8d5ef7111752) ([#3601](https://github.com/tauri-apps/plugins-workspace/pull/3601) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** Removed the deprecated `macos-system-configuration` Cargo feature. Use `system-proxy` (enabled by default) instead.

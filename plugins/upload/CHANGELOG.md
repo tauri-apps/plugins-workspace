@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.0-alpha.3]
+
+- [`41b96be3`](https://github.com/tauri-apps/plugins-workspace/commit/41b96be34559dff587d40f966277631df688ff9d) ([#3593](https://github.com/tauri-apps/plugins-workspace/pull/3593) by [@decebal](https://github.com/tauri-apps/plugins-workspace/../../decebal)) Updated `reqwest` to 0.13. `rustls-tls` uses `ring` as the crypto provider and installs it as the process default only if none is installed yet.
+
 ## [3.0.0-alpha.2]
 
 - [`2fd27c2d`](https://github.com/tauri-apps/plugins-workspace/commit/2fd27c2d43966a86e436ecd538e133e1812cc641) Update MSRV to 1.95 to match tauri.

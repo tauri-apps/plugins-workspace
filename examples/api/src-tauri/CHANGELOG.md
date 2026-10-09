@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.0-alpha.4]
+
+### Dependencies
+
+- Upgraded to `http@3.0.0-alpha.3`
+- Upgraded to `upload@3.0.0-alpha.3`
+
 ## [3.0.0-alpha.3]
 
 ### Dependencies
