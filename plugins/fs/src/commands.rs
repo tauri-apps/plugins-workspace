@@ -6,10 +6,10 @@
 use serde::{Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use tauri::{
+    Manager, Resource, ResourceId, Runtime, Webview,
     ipc::{CommandScope, GlobalScope},
     path::BaseDirectory,
     utils::config::FsScope,
-    Manager, Resource, ResourceId, Runtime, Webview,
 };
 
 use std::{
@@ -23,7 +23,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use crate::{scope::Entry, Error, SafeFilePath};
+use crate::{Error, SafeFilePath, scope::Entry};
 
 #[derive(Debug, thiserror::Error)]
 pub enum CommandError {
@@ -159,24 +159,26 @@ impl<R: Runtime> Drop for FileHandle<R> {
             // Only clean up if we're tracking this resource
             // If start_accessing_security_scoped_resource was used, it won't be in our tracking
             // and we shouldn't interfere
-            if let FilePath::Url(url) = file_path {
-                if url.scheme() == "file" {
-                    let security_scoped_resources =
-                        self.app_handle.state::<crate::SecurityScopedResources>();
+            if let FilePath::Url(url) = file_path
+                && url.scheme() == "file"
+            {
+                let security_scoped_resources =
+                    self.app_handle.state::<crate::SecurityScopedResources>();
 
-                    // Only clean up if it's not tracked manually
-                    if !security_scoped_resources.is_tracked_manually(url.as_str()) {
-                        log::debug!(
-                            "Stopping accessing security-scoped resource for URL: {url} on drop"
-                        );
-                        let _ = self
-                            .app_handle
-                            .fs()
-                            .stop_accessing_security_scoped_resource(FilePath::Url(url.clone()));
-                        security_scoped_resources.remove(url.as_str());
-                    } else {
-                        log::debug!("Not cleaning up security-scoped resource for URL: {url} on drop (manually tracked via start_accessing_security_scoped_resource)");
-                    }
+                // Only clean up if it's not tracked manually
+                if !security_scoped_resources.is_tracked_manually(url.as_str()) {
+                    log::debug!(
+                        "Stopping accessing security-scoped resource for URL: {url} on drop"
+                    );
+                    let _ = self
+                        .app_handle
+                        .fs()
+                        .stop_accessing_security_scoped_resource(FilePath::Url(url.clone()));
+                    security_scoped_resources.remove(url.as_str());
+                } else {
+                    log::debug!(
+                        "Not cleaning up security-scoped resource for URL: {url} on drop (manually tracked via start_accessing_security_scoped_resource)"
+                    );
                 }
             }
         }
@@ -235,24 +237,24 @@ impl<R: Runtime> Drop for PathHandle<R> {
         // Only clean up if we're tracking this resource (i.e., resolve_path started it)
         // If start_accessing_security_scoped_resource was used, it won't be in our tracking
         // and we shouldn't interfere
-        if let FilePath::Url(url) = file_path {
-            if url.scheme() == "file" {
-                let security_scoped_resources =
-                    self.app_handle.state::<crate::SecurityScopedResources>();
+        if let FilePath::Url(url) = file_path
+            && url.scheme() == "file"
+        {
+            let security_scoped_resources =
+                self.app_handle.state::<crate::SecurityScopedResources>();
 
-                // Only clean up if it's not tracked manually
-                if !security_scoped_resources.is_tracked_manually(url.as_str()) {
-                    log::debug!(
-                        "Stopping accessing security-scoped resource for URL: {url} on drop"
-                    );
-                    let _ = self
-                        .app_handle
-                        .fs()
-                        .stop_accessing_security_scoped_resource(FilePath::Url(url.clone()));
-                    security_scoped_resources.remove(url.as_str());
-                } else {
-                    log::debug!("Not cleaning up security-scoped resource for URL: {url} on drop (manually tracked via start_accessing_security_scoped_resource)");
-                }
+            // Only clean up if it's not tracked manually
+            if !security_scoped_resources.is_tracked_manually(url.as_str()) {
+                log::debug!("Stopping accessing security-scoped resource for URL: {url} on drop");
+                let _ = self
+                    .app_handle
+                    .fs()
+                    .stop_accessing_security_scoped_resource(FilePath::Url(url.clone()));
+                security_scoped_resources.remove(url.as_str());
+            } else {
+                log::debug!(
+                    "Not cleaning up security-scoped resource for URL: {url} on drop (manually tracked via start_accessing_security_scoped_resource)"
+                );
             }
         }
     }
@@ -511,10 +513,21 @@ pub async fn read<R: Runtime>(
     rid: ResourceId,
     len: usize,
 ) -> CommandResult<tauri::ipc::Response> {
-    let mut data = vec![0; len];
     let file: std::sync::Arc<StdFileResource<R>> = webview.resources_table().get(rid)?;
-    let nread = StdFileResource::with_lock(&file, |file| file.read(&mut data))
-        .map_err(|e| format!("faied to read bytes from file with error: {e}"))?;
+    let (nread, mut data) = StdFileResource::with_lock(&file, |file| {
+        // `len` comes from the webview: do not blindly allocate it
+        let len = capped_read_len(file, len);
+        let mut data = Vec::new();
+        // room for the bytes read and the trailing `nread` below
+        data.try_reserve_exact(len.saturating_add(8))
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::OutOfMemory, e))?;
+        data.resize(len, 0);
+        let nread = file.read(&mut data)?;
+        // only send the bytes that were read
+        data.truncate(nread);
+        std::io::Result::Ok((nread, data))
+    })
+    .map_err(|e| format!("failed to read bytes from file with error: {e}"))?;
 
     // This is an optimization to include the number of read bytes (as bigendian bytes)
     // at the end of returned vector so we can use `tauri::ipc::Response`
@@ -539,6 +552,34 @@ pub async fn read<R: Runtime>(
     data.extend(nread);
 
     Ok(tauri::ipc::Response::new(data))
+}
+
+/// Size of the buffer allocated by the `read` command when the size of the file is unknown.
+const MAX_READ_LEN_UNKNOWN_SIZE: usize = 64 * 1024 * 1024;
+/// Minimum size of the buffer allocated by the `read` command for regular files,
+/// so a file that grows while it is read is not reported as ended.
+const MIN_READ_LEN: usize = 64 * 1024;
+
+/// Caps the length requested by the `read` command to what can be read from `file`:
+/// the rest of the file for regular files, [`MAX_READ_LEN_UNKNOWN_SIZE`] otherwise.
+fn capped_read_len(file: &mut File, len: usize) -> usize {
+    use std::io::Seek;
+
+    let remaining = file
+        .metadata()
+        .ok()
+        .filter(|metadata| metadata.is_file())
+        .and_then(|metadata| {
+            let position = file.stream_position().ok()?;
+            Some(metadata.len().saturating_sub(position))
+        });
+    let max = match remaining {
+        Some(remaining) => usize::try_from(remaining)
+            .unwrap_or(usize::MAX)
+            .max(MIN_READ_LEN),
+        None => MAX_READ_LEN_UNKNOWN_SIZE,
+    };
+    len.min(max)
 }
 
 async fn read_file_inner<R: Runtime>(
@@ -703,7 +744,12 @@ pub async fn read_text_file_lines_next<R: Runtime>(
                 bytes.push(false as u8);
                 Ok(bytes)
             }
-            Some(Err(_)) => Ok(vec![false as u8]),
+            Some(Err(e)) => {
+                // the error may be persistent (e.g. reading a directory), do not report
+                // an empty line and let the caller loop forever
+                resource_table.close(rid)?;
+                Err(format!("failed to read line with error: {e}").into())
+            }
             None => {
                 resource_table.close(rid)?;
                 Ok(vec![true as u8])
@@ -842,16 +888,17 @@ pub async fn seek<R: Runtime>(
     whence: SeekMode,
 ) -> CommandResult<u64> {
     use std::io::{Seek, SeekFrom};
+    let position = match whence {
+        SeekMode::Start => SeekFrom::Start(u64::try_from(offset).map_err(|_| {
+            format!("invalid seek offset {offset}: it must not be negative with SeekMode.Start")
+        })?),
+        SeekMode::Current => SeekFrom::Current(offset),
+        SeekMode::End => SeekFrom::End(offset),
+    };
     let file: std::sync::Arc<StdFileResource<R>> = webview.resources_table().get(rid)?;
-    StdFileResource::with_lock(&file, |file| {
-        file.seek(match whence {
-            SeekMode::Start => SeekFrom::Start(offset as u64),
-            SeekMode::Current => SeekFrom::Current(offset),
-            SeekMode::End => SeekFrom::End(offset),
-        })
-    })
-    .map_err(|e| format!("failed to seek file with error: {e}"))
-    .map_err(Into::into)
+    StdFileResource::with_lock(&file, |file| file.seek(position))
+        .map_err(|e| format!("failed to seek file with error: {e}"))
+        .map_err(Into::into)
 }
 
 #[cfg(target_os = "android")]
@@ -1093,11 +1140,12 @@ async fn write_file_inner<R: Runtime>(
         })
         .and_then(|p| SafeFilePath::from_str(&p).map_err(CommandError::from))?;
 
-    let options: Option<WriteFileOptions> = request
+    let options = request
         .headers()
         .get("options")
-        .and_then(|p| p.to_str().ok())
-        .and_then(|opts| serde_json::from_str(opts).ok());
+        .map(|options| parse_write_file_options(options.as_bytes()))
+        .transpose()?
+        .flatten();
 
     let mut file_handle = resolve_file(
         permission,
@@ -1140,8 +1188,12 @@ async fn write_file_inner<R: Runtime>(
         tauri::ipc::InvokeBody::Raw(data) => Cow::Borrowed(data),
         tauri::ipc::InvokeBody::Json(serde_json::Value::Array(data)) => Cow::Owned(
             data.iter()
-                .flat_map(|v| v.as_number().and_then(|v| v.as_u64().map(|v| v as u8)))
-                .collect(),
+                .map(|v| {
+                    v.as_u64()
+                        .and_then(|v| u8::try_from(v).ok())
+                        .ok_or_else(|| anyhow::anyhow!("invalid byte in the data to write: {v}"))
+                })
+                .collect::<Result<Vec<u8>, _>>()?,
         ),
         _ => return Err(anyhow::anyhow!("unexpected invoke body").into()),
     };
@@ -1155,6 +1207,20 @@ async fn write_file_inner<R: Runtime>(
             )
         })
         .map_err(Into::into)
+}
+
+/// Parses the `options` header of the `write_file` command.
+///
+/// Fails instead of silently falling back to the defaults, which would e.g. ignore `baseDir`.
+fn parse_write_file_options(header: &[u8]) -> CommandResult<Option<WriteFileOptions>> {
+    let header = String::from_utf8_lossy(header);
+    match header.trim() {
+        // `JSON.stringify(undefined)` is sent as `undefined` by `fetch`
+        "" | "undefined" | "null" => Ok(None),
+        options => serde_json::from_str(options)
+            .map(Some)
+            .map_err(|e| anyhow::anyhow!("invalid write file options {options}: {e}").into()),
+    }
 }
 
 #[tauri::command]
@@ -1252,50 +1318,49 @@ pub fn start_accessing_security_scoped_resource<R: Runtime>(
         };
 
         // Only handle file URLs
-        if let FilePath::Url(url) = &file_path {
-            if url.scheme() == "file" {
-                use objc2_foundation::{NSString, NSURL};
+        if let FilePath::Url(url) = &file_path
+            && url.scheme() == "file"
+        {
+            use objc2_foundation::{NSString, NSURL};
 
-                let url_nsstring = NSString::from_str(url.as_str());
-                let ns_url = unsafe { NSURL::URLWithString(&url_nsstring) };
-                if let Some(ns_url) = ns_url {
-                    // Check if already active
-                    let security_scoped_resources =
-                        webview.state::<crate::SecurityScopedResources>();
-                    if security_scoped_resources.is_tracked_manually(url.as_str()) {
+            let url_nsstring = NSString::from_str(url.as_str());
+            let ns_url = NSURL::URLWithString(&url_nsstring);
+            if let Some(ns_url) = ns_url {
+                // Check if already active
+                let security_scoped_resources = webview.state::<crate::SecurityScopedResources>();
+                if security_scoped_resources.is_tracked_manually(url.as_str()) {
+                    log::debug!(
+                        "Security-scoped resource already active for URL: {}",
+                        url.as_str()
+                    );
+                    return Ok(());
+                }
+
+                // Start accessing the security-scoped resource
+                unsafe {
+                    let success = ns_url.startAccessingSecurityScopedResource();
+                    if success {
                         log::debug!(
-                            "Security-scoped resource already active for URL: {}",
+                            "Started accessing security-scoped resource for URL: {}",
                             url.as_str()
                         );
-                        return Ok(());
+                        security_scoped_resources.track_manually(url.as_str().to_string());
+                    } else {
+                        log::warn!(
+                            "Failed to start accessing security-scoped resource for URL: {}",
+                            url.as_str()
+                        );
+                        return Err(CommandError::from(format!(
+                            "Failed to start accessing security-scoped resource for URL: {}",
+                            url.as_str()
+                        )));
                     }
-
-                    // Start accessing the security-scoped resource
-                    unsafe {
-                        let success = ns_url.startAccessingSecurityScopedResource();
-                        if success {
-                            log::debug!(
-                                "Started accessing security-scoped resource for URL: {}",
-                                url.as_str()
-                            );
-                            security_scoped_resources.track_manually(url.as_str().to_string());
-                        } else {
-                            log::warn!(
-                                "Failed to start accessing security-scoped resource for URL: {}",
-                                url.as_str()
-                            );
-                            return Err(CommandError::from(format!(
-                                "Failed to start accessing security-scoped resource for URL: {}",
-                                url.as_str()
-                            )));
-                        }
-                    }
-                } else {
-                    return Err(CommandError::from(format!(
-                        "Failed to create NSURL from URL: {}",
-                        url.as_str()
-                    )));
                 }
+            } else {
+                return Err(CommandError::from(format!(
+                    "Failed to create NSURL from URL: {}",
+                    url.as_str()
+                )));
             }
         }
         Ok(())
@@ -1324,31 +1389,31 @@ pub fn stop_accessing_security_scoped_resource<R: Runtime>(
         };
 
         // Only handle file URLs
-        if let FilePath::Url(url) = file_path {
-            if url.scheme() == "file" {
-                let security_scoped_resources = webview.state::<crate::SecurityScopedResources>();
+        if let FilePath::Url(url) = file_path
+            && url.scheme() == "file"
+        {
+            let security_scoped_resources = webview.state::<crate::SecurityScopedResources>();
 
-                // Check if it's tracked
-                if !security_scoped_resources.is_tracked_manually(url.as_str()) {
-                    log::debug!(
-                        "Security-scoped resource not tracked as active for URL: {}",
-                        url.as_str()
-                    );
-                    return Ok(());
-                }
-
-                // Stop accessing the security-scoped resource
-                webview
-                    .fs()
-                    .stop_accessing_security_scoped_resource(FilePath::Url(url.clone()))?;
-
-                // Remove from tracking
-                security_scoped_resources.remove(url.as_str());
+            // Check if it's tracked
+            if !security_scoped_resources.is_tracked_manually(url.as_str()) {
                 log::debug!(
-                    "Stopped accessing security-scoped resource for URL: {}",
+                    "Security-scoped resource not tracked as active for URL: {}",
                     url.as_str()
                 );
+                return Ok(());
             }
+
+            // Stop accessing the security-scoped resource
+            webview
+                .fs()
+                .stop_accessing_security_scoped_resource(FilePath::Url(url.clone()))?;
+
+            // Remove from tracking
+            security_scoped_resources.remove(url.as_str());
+            log::debug!(
+                "Stopped accessing security-scoped resource for URL: {}",
+                url.as_str()
+            );
         }
         Ok(())
     }
@@ -1490,38 +1555,47 @@ pub fn resolve_path<R: Runtime>(
     // On iOS, start accessing security-scoped resource if the path is a file URL
     // Only if it hasn't been started already via start_accessing_security_scoped_resource
     #[cfg(target_os = "ios")]
-    if let SafeFilePath::Url(url) = &path {
-        if url.scheme() == "file" {
-            use objc2_foundation::{NSString, NSURL};
+    if let SafeFilePath::Url(url) = &path
+        && url.scheme() == "file"
+    {
+        use objc2_foundation::{NSString, NSURL};
 
-            let security_scoped_resources = webview.state::<crate::SecurityScopedResources>();
+        let security_scoped_resources = webview.state::<crate::SecurityScopedResources>();
 
-            // Check if already active (started via start_accessing_security_scoped_resource)
-            if !security_scoped_resources.is_tracked_manually(url.as_str()) {
-                let url_nsstring = NSString::from_str(url.as_str());
-                let ns_url = unsafe { NSURL::URLWithString(&url_nsstring) };
-                if let Some(ns_url) = ns_url {
-                    // Start accessing the security-scoped resource
-                    // This is required for files outside the app's sandbox (e.g., from file picker)
-                    unsafe {
-                        let success = ns_url.startAccessingSecurityScopedResource();
-                        if success {
-                            log::debug!("Started accessing security-scoped resource for URL: {} (via resolve_path)", url.as_str());
-                            // Track it so we know to clean it up
-                            security_scoped_resources.track_manually(url.as_str().to_string());
-                        } else {
-                            log::warn!(
-                                "Failed to start accessing security-scoped resource for URL: {}",
-                                url.as_str()
-                            );
-                        }
+        // Check if already active (started via start_accessing_security_scoped_resource)
+        if !security_scoped_resources.is_tracked_manually(url.as_str()) {
+            let url_nsstring = NSString::from_str(url.as_str());
+            let ns_url = NSURL::URLWithString(&url_nsstring);
+            if let Some(ns_url) = ns_url {
+                // Start accessing the security-scoped resource
+                // This is required for files outside the app's sandbox (e.g., from file picker)
+                unsafe {
+                    let success = ns_url.startAccessingSecurityScopedResource();
+                    if success {
+                        log::debug!(
+                            "Started accessing security-scoped resource for URL: {} (via resolve_path)",
+                            url.as_str()
+                        );
+                        // Track it so we know to clean it up
+                        security_scoped_resources.track_manually(url.as_str().to_string());
+                    } else {
+                        log::warn!(
+                            "Failed to start accessing security-scoped resource for URL: {}",
+                            url.as_str()
+                        );
                     }
-                } else {
-                    log::debug!("Failed to create NSURL from URL: {}, ignoring security-scoped resource access request", url.as_str());
                 }
             } else {
-                log::debug!("Security-scoped resource already active for URL: {} (started via start_accessing_security_scoped_resource), skipping", url.as_str());
+                log::debug!(
+                    "Failed to create NSURL from URL: {}, ignoring security-scoped resource access request",
+                    url.as_str()
+                );
             }
+        } else {
+            log::debug!(
+                "Security-scoped resource already active for URL: {} (started via start_accessing_security_scoped_resource), skipping",
+                url.as_str()
+            );
         }
     }
 
@@ -1660,9 +1734,9 @@ impl<B: BufRead> Iterator for LinesBytes<B> {
             Ok(0) => None,
             Ok(_n) => {
                 // Remove '\n' or '\r\n'
-                if buf.ends_with(&self.lf_bytes) {
+                if ends_with_aligned(&buf, &self.lf_bytes) {
                     buf.truncate(buf.len() - self.lf_bytes.len());
-                    if buf.ends_with(&self.cr_bytes) {
+                    if ends_with_aligned(&buf, &self.cr_bytes) {
                         buf.truncate(buf.len() - self.cr_bytes.len());
                     }
                 }
@@ -1687,15 +1761,23 @@ fn read_until_bytes(
         return r.read_until(last_byte, buf);
     }
 
+    let start = buf.len();
     let mut total_n = 0;
     loop {
         let n = r.read_until(last_byte, buf)?;
         total_n += n;
 
-        if n == 0 || buf.ends_with(bytes) {
+        // for multi-byte code units (UTF-16), only a sequence aligned on a code unit boundary
+        // is a line feed: `0x0A 0x00` can also be the end of `U+xx0A` followed by `U+00xx`
+        if n == 0 || ends_with_aligned(&buf[start..], bytes) {
             return Ok(total_n);
         }
     }
+}
+
+/// Whether `buf` ends with `bytes`, starting on a multiple of `bytes.len()`.
+fn ends_with_aligned(buf: &[u8], bytes: &[u8]) -> bool {
+    buf.ends_with(bytes) && buf.len() % bytes.len() == 0
 }
 
 struct StdLinesResource(Mutex<LinesBytes<BufReader<File>>>);
@@ -1811,6 +1893,46 @@ mod test {
     use super::LinesBytes;
 
     #[test]
+    fn write_file_options_header() {
+        use super::parse_write_file_options;
+
+        assert!(parse_write_file_options(b"undefined").unwrap().is_none());
+        assert!(parse_write_file_options(b"null").unwrap().is_none());
+        assert!(parse_write_file_options(b"").unwrap().is_none());
+
+        let options = parse_write_file_options(br#"{"baseDir":14,"append":true}"#)
+            .unwrap()
+            .unwrap();
+        assert!(options.append);
+        assert!(options.create);
+        assert!(options.base.base_dir.is_some());
+
+        assert!(parse_write_file_options(b"{not json").is_err());
+        assert!(parse_write_file_options(br#"{"append":"yes"}"#).is_err());
+    }
+
+    #[test]
+    fn read_len_is_capped_to_the_file() {
+        use super::{MIN_READ_LEN, capped_read_len};
+        use std::io::{Seek, SeekFrom};
+
+        let path = std::env::temp_dir().join(format!(
+            "tauri-plugin-fs-test-read-len-{}",
+            std::process::id()
+        ));
+        std::fs::write(&path, vec![1u8; MIN_READ_LEN * 2]).unwrap();
+        let mut file = std::fs::File::open(&path).unwrap();
+
+        assert_eq!(capped_read_len(&mut file, 10), 10);
+        assert_eq!(capped_read_len(&mut file, usize::MAX), MIN_READ_LEN * 2);
+        file.seek(SeekFrom::End(0)).unwrap();
+        assert_eq!(capped_read_len(&mut file, usize::MAX), MIN_READ_LEN);
+
+        drop(file);
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
     fn safe_file_path_parse() {
         use super::SafeFilePath;
 
@@ -1879,6 +2001,33 @@ mod test {
             assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line2ਗ")));
             assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 3")));
             assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 4")));
+            assert!(lines.next().is_none());
+        }
+
+        // UTF-16 with a line feed byte sequence at an odd offset
+        {
+            fn utf16le(text: &str) -> Vec<u8> {
+                text.encode_utf16().flat_map(|u| u.to_le_bytes()).collect()
+            }
+            fn utf16be(text: &str) -> Vec<u8> {
+                text.encode_utf16().flat_map(|u| u.to_be_bytes()).collect()
+            }
+
+            // "ਗĀ" is `17 0a 00 01` in UTF-16LE
+            let bytes = utf16le("ਗĀ\nnext\r\nlast\n");
+            let mut lines =
+                LinesBytes::new(BufReader::new(&bytes[..]), utf16le("\n"), utf16le("\r"));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16le("ਗĀ")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16le("next")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16le("last")));
+            assert!(lines.next().is_none());
+
+            // "Āਗ" is `01 00 0a 17` in UTF-16BE
+            let bytes = utf16be("Āਗ\nnext");
+            let mut lines =
+                LinesBytes::new(BufReader::new(&bytes[..]), utf16be("\n"), utf16be("\r"));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16be("Āਗ")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16be("next")));
             assert!(lines.next().is_none());
         }
     }

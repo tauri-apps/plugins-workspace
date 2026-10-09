@@ -1,8 +1,9 @@
 [package]
 name = "tauri-plugin-biometric"
-version = "2.3.3"
+version = "2.4.1"
 description = "Prompt the user for biometric authentication on Android and iOS."
 edition = { workspace = true }
+rust-version = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
@@ -30,3 +31,6 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 serde_repr = "0.1"
+
+[target.'cfg(target_os = "ios")'.dependencies]
+tauri = { workspace = true, features = ["wry"] }

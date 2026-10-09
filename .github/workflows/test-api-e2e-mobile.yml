@@ -6,10 +6,12 @@ name: test plugins e2e (mobile)
 
 on:
   workflow_dispatch:
+  # run before publishing, see covector-version-or-publish.yml
+  workflow_call:
   push:
     branches:
       - v2
-    paths:
+    paths: &paths
       - '.github/workflows/test-api-e2e-mobile.yml'
       - 'packages/api-e2e/**'
       - 'examples/api/**'
@@ -19,26 +21,25 @@ on:
       - 'plugins/*/ios/**'
       - 'plugins/*/permissions/**'
       - 'plugins/*/build.rs'
+      # dependency bumps
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'plugins/*/Cargo.toml'
+      - 'pnpm-lock.yaml'
+      - '**/package.json'
   pull_request:
     branches:
       - v2
-    paths:
-      - '.github/workflows/test-api-e2e-mobile.yml'
-      - 'packages/api-e2e/**'
-      - 'examples/api/**'
-      - 'plugins/*/guest-js/**'
-      - 'plugins/*/src/**'
-      - 'plugins/*/android/**'
-      - 'plugins/*/ios/**'
-      - 'plugins/*/permissions/**'
-      - 'plugins/*/build.rs'
+    paths: *paths
 
 env:
   RUST_BACKTRACE: 1
   CARGO_PROFILE_DEV_DEBUG: 0 # keeps the target folder small for better cache efficiency
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # `github.workflow` is the caller's name in a `workflow_call` run, so the suffix keeps the
+  # desktop and mobile suites from sharing (and cancelling) one group there.
+  group: ${{ github.workflow }}-api-e2e-mobile-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -59,13 +60,7 @@ jobs:
         with:
           targets: x86_64-linux-android
 
-      - name: setup node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 'lts/*'
-      - uses: pnpm/action-setup@v6
-        with:
-          cache: true # the pnpm store, keyed by OS and lockfile hash and shared by every workflow
+      - uses: ./.github/actions/setup-pnpm
 
       - uses: actions/setup-java@v5
         with:
@@ -118,9 +113,6 @@ jobs:
           # that other runs would have hit (10 GB repository limit, LRU eviction).
           save-if: ${{ github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3' }}
 
-      - name: install dependencies
-        run: pnpm i --frozen-lockfile
-
       - name: build plugins
         run: pnpm build
 
@@ -155,7 +147,13 @@ jobs:
           profile: pixel_6
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: E2E_SKIP_BUILD=1 E2E_SPEC_RETRIES=1 pnpm test:api-e2e:android
+          # The slow emulator regularly has the launcher hit an ANR, and the "isn't responding"
+          # dialog takes input focus from the app under test (failing focus-gated APIs such as
+          # clipboard reads). With error dialogs hidden the system kills the unresponsive process
+          # instead; one that is already up is closed before each spec (see wdio.mobile.ts).
+          script: |
+            adb shell settings put global hide_error_dialogs 1
+            E2E_SKIP_BUILD=1 E2E_SPEC_RETRIES=1 pnpm test:api-e2e:android
 
       - name: upload appium logs
         if: failure()
@@ -176,13 +174,7 @@ jobs:
         with:
           targets: aarch64-apple-ios-sim
 
-      - name: setup node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 'lts/*'
-      - uses: pnpm/action-setup@v6
-        with:
-          cache: true # the pnpm store, keyed by OS and lockfile hash and shared by every workflow
+      - uses: ./.github/actions/setup-pnpm
 
       - uses: Swatinem/rust-cache@v2
         with:
@@ -191,9 +183,6 @@ jobs:
           # merge ref, where nothing else can restore it, and every write evicts an entry
           # that other runs would have hit (10 GB repository limit, LRU eviction).
           save-if: ${{ github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3' }}
-
-      - name: install dependencies
-        run: pnpm i --frozen-lockfile
 
       - name: build plugins
         run: pnpm build

@@ -1,0 +1,44 @@
+# Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: MIT
+
+name: setup pnpm
+description: Installs Node.js, pnpm and the workspace dependencies, restoring the pnpm store from the cache
+
+# `pnpm/action-setup`'s own cache saves from every run, pull requests included. An entry saved from
+# a pull request lives on its merge ref, where nothing else can restore it, and every write evicts
+# an entry that other runs would have hit (10 GB repository limit, LRU eviction), so here every run
+# restores the store and only `v2`/`v3` save it.
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v7
+      with:
+        node-version: 'lts/*'
+
+    - uses: pnpm/action-setup@v6
+
+    - id: store
+      shell: bash
+      run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+    - id: cache
+      uses: actions/cache/restore@v6
+      with:
+        path: ${{ steps.store.outputs.path }}
+        key: pnpm-store-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: pnpm-store-${{ runner.os }}-${{ runner.arch }}-
+
+    - shell: bash
+      run: pnpm install --frozen-lockfile
+
+    # a store restored from an older lockfile still holds the packages it no longer uses
+    - if: ${{ (github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3') && steps.cache.outputs.cache-hit != 'true' }}
+      shell: bash
+      run: pnpm store prune
+
+    - if: ${{ (github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3') && steps.cache.outputs.cache-hit != 'true' }}
+      uses: actions/cache/save@v6
+      with:
+        path: ${{ steps.store.outputs.path }}
+        key: ${{ steps.cache.outputs.cache-primary-key }}

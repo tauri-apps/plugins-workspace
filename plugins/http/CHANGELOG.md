@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.8.1]
+
+- [`b443d6be`](https://github.com/tauri-apps/plugins-workspace/commit/b443d6be52a17329b980c55e8bbd03fb6cbb5cd7) ([#3669](https://github.com/tauri-apps/plugins-workspace/pull/3669) by [@followdarko](https://github.com/tauri-apps/plugins-workspace/../../followdarko)) `fetch_send` now releases the request's resources once the send settles. Before, a request that got a response or failed to send left its `FetchRequest` and abort sender in the webview's resource table until the webview was destroyed, so a long-lived app grew with every request.
+- [`3113a54c`](https://github.com/tauri-apps/plugins-workspace/commit/3113a54cc275b1af532c3fb20154beba7d67d623) ([#3670](https://github.com/tauri-apps/plugins-workspace/pull/3670) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Updated inner dependency `urlpattern` from `v0.3` to `v0.6` to fix advisories about unmaintained `unic-` crates.
+
+## [2.8.0]
+
+- [`43538190`](https://github.com/tauri-apps/plugins-workspace/commit/43538190b6110e2005c899b2f2a4c85c7fde74db) ([#3656](https://github.com/tauri-apps/plugins-workspace/pull/3656) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Re-release `@tauri-apps/plugin-http@2.7.0` as `2.8.0`.
+
+## [2.7.0]
+
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+### Dependencies
+
+- Upgraded to `fs-js@2.6.0`
+
 ## [2.7.0]
 
 - [`1198a524`](https://github.com/tauri-apps/plugins-workspace/commit/1198a524b710abf2abeb1d9bd7b252402d26ca6d) **Security:** Added the `scopeRedirects` plugin configuration option, which checks the URL scope on every hop of a redirect chain instead of only on the URL requested by the frontend. Without it, a server on an allowed origin can redirect the request to any other origin - including `localhost` services, internal hosts and cloud metadata endpoints - and the plugin follows it, returning the response to the webview.

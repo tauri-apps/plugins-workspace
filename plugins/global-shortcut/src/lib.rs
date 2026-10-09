@@ -22,14 +22,14 @@ use std::{
 
 use global_hotkey::GlobalHotKeyEvent;
 pub use global_hotkey::{
-    hotkey::{Code, HotKey as Shortcut, Modifiers},
     GlobalHotKeyEvent as ShortcutEvent, HotKeyState as ShortcutState,
+    hotkey::{Code, HotKey as Shortcut, Modifiers},
 };
 use serde::Serialize;
 use tauri::{
+    AppHandle, Manager, Runtime, State,
     ipc::Channel,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    AppHandle, Manager, Runtime, State,
 };
 
 mod error;
