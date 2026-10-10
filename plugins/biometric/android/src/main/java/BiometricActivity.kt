@@ -38,15 +38,12 @@ class BiometricActivity : AppCompatActivity() {
         var title = intent.getStringExtra(BiometricPlugin.TITLE)
         val subtitle = intent.getStringExtra(BiometricPlugin.SUBTITLE)
         val description = intent.getStringExtra(BiometricPlugin.REASON)
-        allowDeviceCredential = false
+        val allowDeviceCredentialArg = intent.getBooleanExtra(BiometricPlugin.DEVICE_CREDENTIAL, false)
         // Android docs say we should check if the device is secure before enabling device credential fallback
         val manager = getSystemService(
             Context.KEYGUARD_SERVICE
         ) as KeyguardManager
-        if (manager.isDeviceSecure) {
-            allowDeviceCredential =
-                intent.getBooleanExtra(BiometricPlugin.DEVICE_CREDENTIAL, false)
-        }
+        val allowDeviceCredential = allowDeviceCredentialArg && manager.isDeviceSecure;
 
         if (title.isNullOrEmpty()) {
             title = "Authenticate"
@@ -73,6 +70,7 @@ class BiometricActivity : AppCompatActivity() {
                 if (negativeButtonText.isNullOrEmpty()) "Cancel" else negativeButtonText
             )
         }
+
         builder.setConfirmationRequired(
             intent.getBooleanExtra(BiometricPlugin.CONFIRMATION_REQUIRED, true)
         )
@@ -85,6 +83,13 @@ class BiometricActivity : AppCompatActivity() {
                     errorCode: Int,
                     errorMessage: CharSequence
                 ) {
+                    var errorCode = errorCode
+                    var errorMessage = errorMessage
+                    // override error to properly report no device credential if needed
+                    if (allowDeviceCredentialArg && errorCode == BiometricPrompt.ERROR_NO_BIOMETRICS) {
+                        errorCode = BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL
+                        errorMessage = "No device credential set"
+                    }
                     super.onAuthenticationError(errorCode, errorMessage)
                     finishActivity(
                         BiometryResultType.ERROR,
@@ -121,9 +126,5 @@ class BiometricActivity : AppCompatActivity() {
             )
         setResult(Activity.RESULT_OK, intent)
         finish()
-    }
-
-    companion object {
-        var allowDeviceCredential = false
     }
 }
