@@ -32,7 +32,7 @@ ios = { level = "none", notes = "" }
 tauri-plugin = { workspace = true, features = ["build"] }
 
 [dev-dependencies]
-tauri = { workspace = true, features = ["wry"] }
+tauri = { workspace = true, features = ["wry", "test"] }
 
 [dependencies]
 tauri = { workspace = true }
