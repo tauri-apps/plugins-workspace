@@ -1830,7 +1830,7 @@ fn read_until_bytes(
 
 /// Whether `buf` ends with `bytes`, starting on a multiple of `bytes.len()`.
 fn ends_with_aligned(buf: &[u8], bytes: &[u8]) -> bool {
-    buf.ends_with(bytes) && buf.len() % bytes.len() == 0
+    buf.ends_with(bytes) && buf.len().is_multiple_of(bytes.len())
 }
 
 struct StdLinesResource(Mutex<LinesBytes<BufReader<File>>>);
