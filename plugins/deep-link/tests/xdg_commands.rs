@@ -56,6 +56,7 @@ fn xdg_command_results() {
         "update-failure",
         "register-failure",
         "query-failure",
+        "query-no-default",
         "unregister-failure",
     ] {
         let home = sandbox.0.join(mode);
@@ -81,6 +82,7 @@ fn xdg_command_results() {
                  [ \"$TAURI_XDG_COMMAND_MODE\" = unregister-failure ] && exit 7\n\
                  else\n\
                  [ \"$TAURI_XDG_COMMAND_MODE\" = register-failure ] && exit 7\n\
+                 [ \"$TAURI_XDG_COMMAND_MODE\" = query-no-default ] && exit 4\n\
                  printf '%s\\n' \"$TAURI_XDG_DESKTOP_FILE\"\n\
                  [ \"$TAURI_XDG_COMMAND_MODE\" = query-failure ] && exit 7\n\
                  fi\nexit 0\n"
@@ -144,6 +146,11 @@ fn exercise_commands(mode: &str) {
         .unwrap();
     let deep_link = app.deep_link();
     let scheme = "tauri-command-test";
+    if mode == "query-no-default" {
+        // Some xdg-mime backends exit with 4 when no handler is set.
+        assert!(!deep_link.is_registered(scheme).unwrap());
+        return;
+    }
     if mode != "real" {
         let error = if mode == "query-failure" {
             deep_link.is_registered(scheme).unwrap_err()

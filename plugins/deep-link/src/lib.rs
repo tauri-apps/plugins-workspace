@@ -491,6 +491,10 @@ mod imp {
                     .output()
                     .inspect_err(crate::error::inspect_command_error("xdg-mime"))?;
 
+                // xdg-utils exits with 4 ("action failed") when no default handler exists.
+                if output.status.code() == Some(4) {
+                    return Ok(false);
+                }
                 check_command_status("xdg-mime", output.status)?;
                 Ok(String::from_utf8_lossy(&output.stdout).trim_end_matches('\n') == file_name)
             }
