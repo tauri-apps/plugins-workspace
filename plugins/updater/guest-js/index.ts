@@ -155,7 +155,6 @@ class Update extends Resource {
     onEvent?: (progress: DownloadEvent) => void,
     options?: DownloadOptions
   ): Promise<void> {
-    convertToRustHeaders(options)
     const channel = new Channel<DownloadEvent>()
     if (onEvent) {
       channel.onmessage = onEvent
@@ -163,7 +162,8 @@ class Update extends Resource {
     const downloadedBytesRid = await invoke<number>('plugin:updater|download', {
       onEvent: channel,
       rid: this.rid,
-      ...options
+      ...options,
+      headers: toRustHeaders(options?.headers)
     })
     this.downloadedBytes = new Resource(downloadedBytesRid)
   }
@@ -231,7 +231,6 @@ class Update extends Resource {
     onEvent?: (progress: DownloadEvent) => void,
     options?: DownloadOptions & InstallOptions
   ): Promise<void> {
-    convertToRustHeaders(options)
     const channel = new Channel<DownloadEvent>()
     if (onEvent) {
       channel.onmessage = onEvent
@@ -239,7 +238,8 @@ class Update extends Resource {
     await invoke('plugin:updater|download_and_install', {
       onEvent: channel,
       rid: this.rid,
-      ...options
+      ...options,
+      headers: toRustHeaders(options?.headers)
     })
   }
 
@@ -283,21 +283,21 @@ class Update extends Resource {
  * @since 2.0.0
  */
 async function check(options?: CheckOptions): Promise<Update | null> {
-  convertToRustHeaders(options)
-
   const metadata = await invoke<UpdateMetadata | null>('plugin:updater|check', {
-    ...options
+    ...options,
+    headers: toRustHeaders(options?.headers)
   })
   return metadata ? new Update(metadata) : null
 }
 
 /**
- * Converts the headers in options to be an {@linkcode Array<[string, string]>} which is what the Rust side expects
+ * Converts headers to an {@linkcode Array<[string, string]>}, which is what the Rust side expects,
+ * without modifying the caller's options.
  */
-function convertToRustHeaders(options?: { headers?: HeadersInit }) {
-  if (options?.headers) {
-    options.headers = Array.from(new Headers(options.headers).entries())
-  }
+function toRustHeaders(
+  headers?: HeadersInit
+): Array<[string, string]> | undefined {
+  return headers ? Array.from(new Headers(headers).entries()) : undefined
 }
 
 export type { CheckOptions, DownloadOptions, DownloadEvent }
