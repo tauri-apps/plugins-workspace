@@ -165,6 +165,9 @@ class Update extends Resource {
       rid: this.rid,
       ...options
     })
+    // release the bytes of a previous download, which would otherwise be kept
+    // in memory until the webview is destroyed
+    await this.downloadedBytes?.close().catch(() => {})
     this.downloadedBytes = new Resource(downloadedBytesRid)
   }
 
