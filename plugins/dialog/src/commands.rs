@@ -5,7 +5,7 @@
 use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
-use tauri::{Manager, Runtime, State, Window, command};
+use tauri::{Manager, Runtime, State, Webview, Window, command};
 use tauri_plugin_fs::FsExt;
 
 use crate::{
@@ -121,10 +121,15 @@ fn set_default_path<R: Runtime>(
 #[command]
 pub(crate) async fn open<R: Runtime>(
     window: Window<R>,
+    #[allow(unused)] webview: Webview<R>,
     dialog: State<'_, Dialog<R>>,
     options: OpenDialogOptions,
 ) -> Result<OpenResponse> {
     let mut dialog_builder = dialog.file();
+    #[cfg(mobile)]
+    {
+        dialog_builder = dialog_builder.set_origin(&webview);
+    }
     #[cfg(any(windows, target_os = "macos"))]
     {
         dialog_builder = dialog_builder.set_parent(&window);
@@ -187,7 +192,10 @@ pub(crate) async fn open<R: Runtime>(
     } else if options.multiple {
         let tauri_scope = window.state::<tauri::scope::Scopes>();
 
+        #[cfg(desktop)]
         let files = dialog_builder.blocking_pick_files();
+        #[cfg(mobile)]
+        let files = crate::mobile::blocking_pick_files(dialog_builder, true)?;
         if let Some(files) = &files {
             for file in files {
                 if let Ok(path) = file.clone().into_path() {
@@ -202,7 +210,11 @@ pub(crate) async fn open<R: Runtime>(
         OpenResponse::Files(files.map(|files| files.into_iter().map(|f| f.simplified()).collect()))
     } else {
         let tauri_scope = window.state::<tauri::scope::Scopes>();
+        #[cfg(desktop)]
         let file = dialog_builder.blocking_pick_file();
+        #[cfg(mobile)]
+        let file = crate::mobile::blocking_pick_files(dialog_builder, false)?
+            .and_then(|files| files.into_iter().next());
 
         if let Some(file) = &file
             && let Ok(path) = file.clone().into_path()
@@ -221,10 +233,15 @@ pub(crate) async fn open<R: Runtime>(
 #[command]
 pub(crate) async fn save<R: Runtime>(
     window: Window<R>,
+    webview: Webview<R>,
     dialog: State<'_, Dialog<R>>,
     options: SaveDialogOptions,
 ) -> Result<Option<FilePath>> {
     let mut dialog_builder = dialog.file();
+    #[cfg(mobile)]
+    {
+        dialog_builder = dialog_builder.set_origin(&webview);
+    }
     #[cfg(desktop)]
     {
         dialog_builder = dialog_builder.set_parent(&window);
@@ -245,7 +262,10 @@ pub(crate) async fn save<R: Runtime>(
 
     let tauri_scope = window.state::<tauri::scope::Scopes>();
 
+    #[cfg(desktop)]
     let path = dialog_builder.blocking_save_file();
+    #[cfg(mobile)]
+    let path = crate::mobile::blocking_save_file(dialog_builder)?;
     if let Some(p) = &path
         && let Ok(path) = p.clone().into_path()
     {
@@ -261,6 +281,7 @@ pub(crate) async fn save<R: Runtime>(
 #[command]
 pub(crate) async fn message<R: Runtime>(
     #[allow(unused)] window: Window<R>,
+    #[allow(unused)] webview: Webview<R>,
     dialog: State<'_, Dialog<R>>,
     title: Option<String>,
     message: String,
@@ -286,5 +307,11 @@ pub(crate) async fn message<R: Runtime>(
         builder = builder.kind(kind);
     }
 
+    #[cfg(mobile)]
+    {
+        builder = builder.origin(&webview);
+        crate::mobile::blocking_show_message_dialog(builder)
+    }
+    #[cfg(desktop)]
     Ok(builder.blocking_show_with_result())
 }
