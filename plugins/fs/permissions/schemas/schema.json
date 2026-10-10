@@ -2035,16 +2035,16 @@
           "markdownDescription": "An empty permission you can use to modify the global scope.\n\n## Example\n\n```json\n{\n  \"identifier\": \"read-documents\",\n  \"windows\": [\"main\"],\n  \"permissions\": [\n    \"fs:allow-read\",\n    {\n      \"identifier\": \"fs:scope\",\n      \"allow\": [\n        \"$APPDATA/documents/**/*\"\n      ],\n      \"deny\": [\n        \"$APPDATA/documents/secret.txt\"\n      ]\n    }\n  ]\n}\n```\n"
         },
         {
-          "description": "This enables all write related commands without any pre-configured accessible paths.",
+          "description": "This enables all write related commands without any pre-configured accessible paths.\n#### This permission set includes:\n\n- `allow-mkdir`\n- `allow-create`\n- `allow-copy-file`\n- `allow-remove`\n- `allow-rename`\n- `allow-truncate`\n- `allow-ftruncate`\n- `allow-write`\n- `allow-write-file`\n- `allow-write-text-file`",
           "type": "string",
           "const": "write-all",
-          "markdownDescription": "This enables all write related commands without any pre-configured accessible paths."
+          "markdownDescription": "This enables all write related commands without any pre-configured accessible paths.\n#### This permission set includes:\n\n- `allow-mkdir`\n- `allow-create`\n- `allow-copy-file`\n- `allow-remove`\n- `allow-rename`\n- `allow-truncate`\n- `allow-ftruncate`\n- `allow-write`\n- `allow-write-file`\n- `allow-write-text-file`"
         },
         {
-          "description": "This enables all file write related commands without any pre-configured accessible paths.",
+          "description": "This enables all file write related commands without any pre-configured accessible paths.\n#### This permission set includes:\n\n- `allow-create`\n- `allow-copy-file`\n- `allow-remove`\n- `allow-rename`\n- `allow-truncate`\n- `allow-ftruncate`\n- `allow-write`\n- `allow-write-file`\n- `allow-write-text-file`",
           "type": "string",
           "const": "write-files",
-          "markdownDescription": "This enables all file write related commands without any pre-configured accessible paths."
+          "markdownDescription": "This enables all file write related commands without any pre-configured accessible paths.\n#### This permission set includes:\n\n- `allow-create`\n- `allow-copy-file`\n- `allow-remove`\n- `allow-rename`\n- `allow-truncate`\n- `allow-ftruncate`\n- `allow-write`\n- `allow-write-file`\n- `allow-write-text-file`"
         }
       ]
     }
