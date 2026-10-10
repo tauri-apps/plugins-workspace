@@ -1744,19 +1744,37 @@ fn encode_wide(string: impl AsRef<OsStr>) -> Vec<u16> {
 #[cfg(windows)]
 fn shell_execute_error(code: isize) -> std::io::Error {
     use std::io::{Error, ErrorKind};
+    use windows_sys::Win32::{
+        Foundation::ERROR_BAD_FORMAT,
+        UI::Shell::{
+            SE_ERR_ACCESSDENIED, SE_ERR_ASSOCINCOMPLETE, SE_ERR_DDEBUSY, SE_ERR_DDEFAIL,
+            SE_ERR_DDETIMEOUT, SE_ERR_DLLNOTFOUND, SE_ERR_FNF, SE_ERR_NOASSOC, SE_ERR_OOM,
+            SE_ERR_PNF, SE_ERR_SHARE,
+        },
+    };
 
-    match code {
+    let Ok(error) = u32::try_from(code) else {
+        return Error::other(format!("ShellExecuteW failed with code {code}"));
+    };
+
+    match error {
         0 => Error::new(
             ErrorKind::OutOfMemory,
             "the system is out of memory or resources",
         ),
         // SE_ERR_FNF, SE_ERR_PNF, SE_ERR_ACCESSDENIED (also returned when the user declines the
         // UAC prompt), SE_ERR_OOM and ERROR_BAD_FORMAT share the values of the Win32 error codes
-        2 | 3 | 5 | 8 | 11 => Error::from_raw_os_error(code as i32),
-        26 => Error::other("a sharing violation occurred"),
-        27 | 31 => Error::other("no application is associated with the installer"),
-        28..=30 => Error::other("the DDE transaction failed"),
-        32 => Error::other("the specified DLL was not found"),
+        SE_ERR_FNF | SE_ERR_PNF | SE_ERR_ACCESSDENIED | SE_ERR_OOM | ERROR_BAD_FORMAT => {
+            Error::from_raw_os_error(error as i32)
+        }
+        SE_ERR_SHARE => Error::other("a sharing violation occurred"),
+        SE_ERR_ASSOCINCOMPLETE | SE_ERR_NOASSOC => {
+            Error::other("no application is associated with the installer")
+        }
+        SE_ERR_DDETIMEOUT | SE_ERR_DDEFAIL | SE_ERR_DDEBUSY => {
+            Error::other("the DDE transaction failed")
+        }
+        SE_ERR_DLLNOTFOUND => Error::other("the specified DLL was not found"),
         _ => Error::other(format!("ShellExecuteW failed with code {code}")),
     }
 }
