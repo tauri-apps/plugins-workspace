@@ -231,9 +231,27 @@ fn exercise_registration() {
 
     // A removed desktop file may still have cached associations to withdraw.
     deep_link.register("tauri-test-first").unwrap();
-    fs::remove_file(desktop_path).unwrap();
+    fs::remove_file(&desktop_path).unwrap();
     deep_link.unregister("tauri-test-first").unwrap();
     assert!(!deep_link.is_registered("tauri-test-first").unwrap());
     fs::remove_file(&mimeapps_path).unwrap();
     deep_link.unregister("tauri-test-first").unwrap();
+
+    // Rewrites on register keep the desktop file's quoting and escapes.
+    deep_link.register("tauri-test-first").unwrap();
+    let custom = r#"X-Custom="quoted" a\sb"#;
+    let text = fs::read_to_string(&desktop_path).unwrap();
+    fs::write(&desktop_path, format!("{text}{custom}\n")).unwrap();
+    deep_link.register("tauri-test-first").unwrap();
+    assert_eq!(
+        fs::read_to_string(&desktop_path).unwrap(),
+        format!("{text}{custom}\n")
+    );
+    deep_link.register("tauri-test-second").unwrap();
+    let after = fs::read_to_string(&desktop_path).unwrap();
+    assert!(after.lines().any(|line| line == custom));
+    assert_eq!(
+        after.lines().find(|line| line.starts_with("Exec=")),
+        desktop_text.lines().find(|line| line.starts_with("Exec="))
+    );
 }

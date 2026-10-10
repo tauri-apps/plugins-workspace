@@ -313,7 +313,7 @@ mod imp {
 
                 let mime_type = format!("x-scheme-handler/{}", _protocol.as_ref());
 
-                if let Ok(mut desktop_file) = ini::Ini::load_from_file(&target_file) {
+                if let Ok(mut desktop_file) = load_desktop_ini(&target_file) {
                     if let Some(section) = desktop_file.section_mut(Some("Desktop Entry")) {
                         // if the mime type is not present, add it to the list
                         let mut change = add_list_entry(section, "MimeType", &mime_type);
@@ -326,7 +326,8 @@ mod imp {
 
                         // if any property has changed, rewrite the .desktop file
                         if change {
-                            desktop_file.write_to_file(&target_file)?;
+                            desktop_file
+                                .write_to_file_policy(&target_file, ini::EscapePolicy::Nothing)?;
                         }
                     }
                 } else {
