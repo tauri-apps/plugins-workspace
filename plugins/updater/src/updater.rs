@@ -870,9 +870,10 @@ impl Update {
         self.install(bytes)
     }
 
+    /// Updates are not supported on mobile, where apps are updated through the app stores.
     #[cfg(mobile)]
     fn install_inner(&self, _bytes: &[u8]) -> Result<()> {
-        Ok(())
+        Err(Error::UnsupportedOs)
     }
 
     /// Whether the Windows installer should restart the app after installed, default is `true`
