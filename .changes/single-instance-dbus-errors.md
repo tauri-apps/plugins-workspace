@@ -2,4 +2,4 @@
 "single-instance": patch
 ---
 
-Return plugin initialization errors when the Linux session bus cannot be reached or a secondary instance cannot deliver its arguments to the primary instance, instead of silently starting without ownership or exiting successfully after failed delivery.
+On Linux, a secondary instance that cannot deliver its arguments to the primary instance now returns a plugin initialization error instead of exiting successfully, and an invalid `dbus_id` returns an error instead of panicking. When the session bus is unavailable the app keeps launching normally, without single-instance support, and logs a warning.

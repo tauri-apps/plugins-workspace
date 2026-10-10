@@ -20,6 +20,7 @@ use tauri::test::{mock_builder, mock_context, noop_assets};
 const TEST_NAME: &str = "dbus_setup_errors";
 const ID_ENV: &str = "TAURI_DBUS_ERROR_ID";
 const SETUP_ERROR: &str = "SETUP_ERROR:";
+const STARTED: &str = "STARTED";
 
 struct RejectCallback(mpsc::Sender<()>);
 
@@ -87,6 +88,12 @@ fn assert_setup_error(output: Output) -> String {
     stdout
 }
 
+fn assert_started(output: Output) {
+    assert!(output.status.success(), "{output:?}");
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    assert!(stdout.contains(STARTED), "{stdout}");
+}
+
 #[test]
 #[ignore = "requires an explicit dbus-run-session invocation"]
 fn dbus_setup_errors() -> Result<(), tauri::Error> {
@@ -99,12 +106,18 @@ fn dbus_setup_errors() -> Result<(), tauri::Error> {
             )
             .build(mock_context(noop_assets()));
         return match result {
+            // Without a usable session bus the app must still launch.
+            Ok(app) => {
+                println!("{STARTED}");
+                tauri_plugin_single_instance::destroy(&app);
+                Ok(())
+            }
             Err(tauri::Error::PluginInitialization(plugin, message)) => {
                 assert_eq!(plugin, "single-instance");
                 println!("{SETUP_ERROR} {message}");
                 Err(tauri::Error::PluginInitialization(plugin, message))
             }
-            _ => panic!("setup must return a plugin error or exit after successful handoff"),
+            Err(error) => panic!("unexpected error: {error}"),
         };
     }
 
@@ -122,8 +135,8 @@ fn dbus_setup_errors() -> Result<(), tauri::Error> {
     fs::create_dir(&root).unwrap();
     let sandbox = Sandbox(root);
     let missing_address = format!("unix:path={}", sandbox.0.join("missing.sock").display());
-    assert_setup_error(TestChild::spawn(&id, &missing_address).wait());
-    assert_setup_error(TestChild::spawn(&id, "invalid-address").wait());
+    assert_started(TestChild::spawn(&id, &missing_address).wait());
+    assert_started(TestChild::spawn(&id, "invalid-address").wait());
     assert_setup_error(TestChild::spawn("invalid dbus id", &address).wait());
 
     // A real endpoint rejects delivery immediately, without bus timeouts or startup races.
@@ -156,6 +169,11 @@ fn dbus_setup_errors() -> Result<(), tauri::Error> {
         .build(mock_context(noop_assets()))?;
     let secondary = TestChild::spawn(&format!("{id}.Success"), &address).wait();
     assert!(secondary.status.success());
+    assert!(
+        !String::from_utf8(secondary.stdout)
+            .unwrap()
+            .contains(STARTED)
+    );
     let (args, cwd) = rx.recv_timeout(Duration::from_secs(1)).unwrap();
     assert_eq!(
         args,
