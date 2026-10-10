@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.8.2]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.7.0`
+
 ## [2.8.1]
 
 - [`b443d6be`](https://github.com/tauri-apps/plugins-workspace/commit/b443d6be52a17329b980c55e8bbd03fb6cbb5cd7) ([#3669](https://github.com/tauri-apps/plugins-workspace/pull/3669) by [@followdarko](https://github.com/tauri-apps/plugins-workspace/../../followdarko)) `fetch_send` now releases the request's resources once the send settles. Before, a request that got a response or failed to send left its `FetchRequest` and abort sender in the webview's resource table until the webview was destroyed, so a long-lived app grew with every request.

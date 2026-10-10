@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.8.2]
+
+- [`84895756`](https://github.com/tauri-apps/plugins-workspace/commit/848957565bf8090e47976bc374576cfa7fae916a) ([#3665](https://github.com/tauri-apps/plugins-workspace/pull/3665)) Fix browser `confirm` fails with `Uncaught dialog.confirm not allowed. Command not found`
+- [`42ae8b45`](https://github.com/tauri-apps/plugins-workspace/commit/42ae8b4501f3628cddeab3973eb38a7593304cc8) ([#3684](https://github.com/tauri-apps/plugins-workspace/pull/3684)) On iOS, mark the plugin's `init_plugin_*` entry point `public` so release builds made with Xcode 27 keep it global and link.
+
+### Dependencies
+
+- Upgraded to `fs-js@2.7.0`
+
 ## [2.8.1]
 
 - [`569ee82c`](https://github.com/tauri-apps/plugins-workspace/commit/569ee82cf61a358b4c73ba52f2e99f3317ec05d0) Fix the docs.rs build for Android: the build script now detects docs.rs through the `DOCS_RS` environment variable, since `cfg(docsrs)` is never set for build scripts.

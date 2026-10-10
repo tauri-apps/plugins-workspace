@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.4.1]
+
+### Dependencies
+
+- Upgraded to `fs@2.7.0`
+
 ## [2.4.0]
 
 - [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
