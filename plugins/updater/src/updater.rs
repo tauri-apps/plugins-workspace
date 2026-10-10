@@ -791,6 +791,7 @@ impl Update {
     ) -> Result<Vec<u8>> {
         // not enforced (unlike for the endpoints) as that would break existing releases, but the
         // artifact then travels in plaintext: only its signature protects it
+        // TODO(v3): enforce it
         if self.download_url.scheme() != "https"
             && !self.context.config.dangerous_insecure_transport_protocol
         {
