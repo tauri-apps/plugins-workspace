@@ -51,7 +51,7 @@ pub(crate) fn inspect_command_error<'a>(command: &'a str) -> impl Fn(&std::io::E
     }
 }
 
-#[cfg(any(target_os = "linux", target_os = "freebsd"))]
+#[cfg(target_os = "linux")]
 pub(crate) fn check_command_status(
     command: &str,
     status: std::process::ExitStatus,
