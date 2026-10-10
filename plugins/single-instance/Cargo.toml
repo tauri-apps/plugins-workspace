@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-single-instance"
-version = "2.4.4"
+version = "2.5.3"
 description = "Ensure a single instance of your tauri app is running."
 authors = { workspace = true }
 license = { workspace = true }
@@ -22,7 +22,7 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 tracing = { workspace = true }
 thiserror = { workspace = true }
-tauri-plugin-deep-link = { path = "../deep-link", version = "2.4.10", optional = true }
+tauri-plugin-deep-link = { path = "../deep-link", version = "2.6.1", optional = true }
 semver = { version = "1", optional = true }
 tokio = { version = "1", features = ["net"] }
 
@@ -30,7 +30,7 @@ tokio = { version = "1", features = ["net"] }
 tauri = { workspace = true, features = ["test"] }
 
 [target."cfg(target_os = \"windows\")".dependencies.windows-sys]
-version = "0.60"
+version = "0.61"
 features = [
   "Win32_System_Threading",
   "Win32_System_DataExchange",

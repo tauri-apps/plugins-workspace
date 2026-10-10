@@ -7,8 +7,8 @@ use crate::semver_compat::semver_compat_string;
 
 use crate::SingleInstanceCallback;
 use tauri::{
-    plugin::{self, TauriPlugin},
     AppHandle, Manager, RunEvent, Runtime,
+    plugin::{self, TauriPlugin},
 };
 use zbus::{blocking::Connection, interface, names::WellKnownName};
 
@@ -71,11 +71,13 @@ pub fn init<R: Runtime>(
                         Some("org.SingleInstance.DBus"),
                         "ExecuteCallback",
                         &(
-                            std::env::args().collect::<Vec<String>>(),
+                            std::env::args_os()
+                                .map(|arg| arg.to_string_lossy().into_owned())
+                                .collect::<Vec<String>>(),
                             std::env::current_dir()
                                 .unwrap_or_default()
-                                .to_str()
-                                .unwrap_or_default(),
+                                .to_string_lossy()
+                                .as_ref(),
                         ),
                     )?;
                     // Exit successfully only after the primary accepted the arguments.
@@ -98,12 +100,11 @@ pub fn init<R: Runtime>(
 }
 
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
-    if let Some(connection) = manager.try_state::<ConnectionHandle>() {
-        if let Some(dbus_name) = manager
+    if let Some(connection) = manager.try_state::<ConnectionHandle>()
+        && let Some(dbus_name) = manager
             .try_state::<DBusName>()
             .and_then(|name| WellKnownName::try_from(name.0.clone()).ok())
-        {
-            let _ = connection.0.release_name(dbus_name);
-        }
+    {
+        let _ = connection.0.release_name(dbus_name);
     }
 }

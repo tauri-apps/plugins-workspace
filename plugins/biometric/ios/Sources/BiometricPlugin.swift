@@ -148,6 +148,6 @@ class BiometricPlugin: Plugin {
 }
 
 @_cdecl("init_plugin_biometric")
-func initPlugin() -> Plugin {
+public func initPlugin() -> Plugin {
   return BiometricPlugin()
 }

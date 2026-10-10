@@ -41,6 +41,6 @@ class OpenerPlugin: Plugin {
 }
 
 @_cdecl("init_plugin_opener")
-func initPlugin() -> Plugin {
+public func initPlugin() -> Plugin {
   return OpenerPlugin()
 }

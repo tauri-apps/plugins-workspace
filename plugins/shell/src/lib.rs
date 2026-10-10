@@ -19,8 +19,8 @@ use std::{
 use process::{Command, CommandChild};
 use regex::Regex;
 use tauri::{
-    plugin::{Builder, TauriPlugin},
     AppHandle, Manager, RunEvent, Runtime,
+    plugin::{Builder, TauriPlugin},
 };
 
 mod commands;
@@ -29,6 +29,7 @@ mod error;
 #[deprecated(since = "2.1.0", note = "Use tauri-plugin-opener instead.")]
 #[allow(deprecated)]
 pub mod open;
+/// Types and helpers to spawn and interact with child processes.
 pub mod process;
 mod scope;
 mod scope_entry;
@@ -45,6 +46,9 @@ tauri::ios_plugin_binding!(init_plugin_shell);
 
 type ChildStore = Arc<Mutex<HashMap<u32, CommandChild>>>;
 
+/// Access to the shell APIs.
+///
+/// Get an instance of this type with [`ShellExt::shell`].
 pub struct Shell<R: Runtime> {
     #[allow(dead_code)]
     app: AppHandle<R>,
@@ -83,6 +87,7 @@ impl<R: Runtime> Shell<R> {
     /// See [`crate::open::open`] for how it handles security-related measures.
     #[cfg(mobile)]
     #[deprecated(since = "2.1.0", note = "Use tauri-plugin-opener instead.")]
+    #[allow(deprecated)]
     pub fn open(&self, path: impl Into<String>, _with: Option<open::Program>) -> Result<()> {
         self.mobile_plugin_handle
             .run_mobile_plugin("open", path.into())
@@ -90,7 +95,21 @@ impl<R: Runtime> Shell<R> {
     }
 }
 
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`],
+/// [`tauri::Webview`] and [`tauri::Window`] to access the shell APIs.
 pub trait ShellExt<R: Runtime> {
+    /// Gets the shell APIs.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use tauri_plugin_shell::ShellExt;
+    ///
+    /// async fn run_echo<R: tauri::Runtime>(app: &tauri::AppHandle<R>) {
+    ///     let output = app.shell().command("echo").args(["hello"]).output().await.unwrap();
+    ///     println!("{}", String::from_utf8_lossy(&output.stdout));
+    /// }
+    /// ```
     fn shell(&self) -> &Shell<R>;
 }
 
@@ -100,6 +119,18 @@ impl<R: Runtime, T: Manager<R>> ShellExt<R> for T {
     }
 }
 
+/// Initializes the shell plugin.
+///
+/// The plugin state can be accessed with [`ShellExt::shell`],
+/// and all spawned child processes are killed when the application exits.
+///
+/// # Examples
+///
+/// ```no_run
+/// fn setup<R: tauri::Runtime>(builder: tauri::Builder<R>) -> tauri::Builder<R> {
+///     builder.plugin(tauri_plugin_shell::init())
+/// }
+/// ```
 pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
     Builder::<R, Option<config::Config>>::new("shell")
         .js_init_script(include_str!("init-iife.js").to_string())

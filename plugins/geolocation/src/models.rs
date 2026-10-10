@@ -5,6 +5,7 @@
 use serde::{Deserialize, Serialize};
 use tauri::plugin::PermissionState;
 
+/// The current permission state for the geolocation APIs.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
@@ -25,6 +26,7 @@ pub struct PermissionStatus {
     pub coarse_location: PermissionState,
 }
 
+/// Options used to configure a [`get_current_position`](crate::Geolocation::get_current_position) or [`watch_position`](crate::Geolocation::watch_position) request.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
@@ -47,14 +49,18 @@ pub struct PositionOptions {
     pub maximum_age: u32,
 }
 
+/// The individual permission aliases that can be requested with [`request_permissions`](crate::Geolocation::request_permissions).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
 pub enum PermissionType {
+    /// The `location` alias. On Android this maps to both `ACCESS_COARSE_LOCATION` and `ACCESS_FINE_LOCATION`. On iOS it maps to the standard location permission.
     Location,
+    /// The `coarseLocation` alias. On Android this maps to `ACCESS_COARSE_LOCATION` only. On iOS it behaves the same as [`Location`](Self::Location).
     CoarseLocation,
 }
 
+/// The GPS coordinates of a [`Position`], along with the accuracy of each reading.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
@@ -70,12 +76,13 @@ pub struct Coordinates {
     pub altitude_accuracy: Option<f64>,
     /// The altitude the user is at, if available.
     pub altitude: Option<f64>,
-    // The speed the user is traveling, if available.
+    /// The speed the user is traveling, in meters per second, if available.
     pub speed: Option<f64>,
     /// The heading the user is facing, if available.
     pub heading: Option<f64>,
 }
 
+/// A geolocation reading, as returned by [`get_current_position`](crate::Geolocation::get_current_position) and reported through [`WatchEvent::Position`].
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
@@ -87,10 +94,13 @@ pub struct Position {
     pub coords: Coordinates,
 }
 
+/// A single update sent through the channel callback registered with [`watch_position`](crate::Geolocation::watch_position).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "specta", derive(specta::Type))]
 #[serde(untagged)]
 pub enum WatchEvent {
+    /// A new position was read successfully.
     Position(Position),
+    /// The platform failed to read a position; the string is the platform-provided error message.
     Error(String),
 }
