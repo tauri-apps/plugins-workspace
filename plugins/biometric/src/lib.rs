@@ -10,8 +10,8 @@
 
 use serde::Serialize;
 use tauri::{
-    plugin::{Builder, PluginHandle, TauriPlugin},
     Manager, Runtime,
+    plugin::{Builder, PluginHandle, TauriPlugin},
 };
 
 pub use models::*;

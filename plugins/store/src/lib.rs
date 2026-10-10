@@ -18,10 +18,10 @@ use std::{
     sync::{Arc, RwLock},
     time::Duration,
 };
-pub use store::{resolve_store_path, DeserializeFn, SerializeFn, Store, StoreBuilder};
+pub use store::{DeserializeFn, SerializeFn, Store, StoreBuilder, resolve_store_path};
 use tauri::{
-    plugin::{self, TauriPlugin},
     AppHandle, Manager, ResourceId, RunEvent, Runtime, State,
+    plugin::{self, TauriPlugin},
 };
 
 mod error;
@@ -470,10 +470,10 @@ impl Builder {
                     let collection = app_handle.state::<StoreState>();
                     let stores = collection.stores.read().unwrap();
                     for (path, rid) in stores.iter() {
-                        if let Ok(store) = app_handle.resources_table().get::<Store<R>>(*rid) {
-                            if let Err(err) = store.save() {
-                                tracing::error!("failed to save store {path:?} with error {err:?}");
-                            }
+                        if let Ok(store) = app_handle.resources_table().get::<Store<R>>(*rid)
+                            && let Err(err) = store.save()
+                        {
+                            tracing::error!("failed to save store {path:?} with error {err:?}");
                         }
                     }
                 }

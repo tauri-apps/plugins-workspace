@@ -11,10 +11,10 @@ use std::{
     sync::{Arc, Mutex},
     time::Duration,
 };
-use tauri::{path::BaseDirectory, AppHandle, Emitter, Manager, Resource, ResourceId, Runtime};
+use tauri::{AppHandle, Emitter, Manager, Resource, ResourceId, Runtime, path::BaseDirectory};
 use tokio::{
     select,
-    sync::mpsc::{unbounded_channel, UnboundedSender},
+    sync::mpsc::{UnboundedSender, unbounded_channel},
     time::sleep,
 };
 

@@ -7,16 +7,16 @@ use std::{collections::HashMap, future::Future, path::PathBuf, pin::Pin, string:
 use encoding_rs::Encoding;
 use serde::{Deserialize, Serialize};
 use tauri::{
-    ipc::{Channel, CommandScope, GlobalScope},
     Manager, Runtime, State, Window,
+    ipc::{Channel, CommandScope, GlobalScope},
 };
 
 #[allow(deprecated)]
 use crate::open::Program;
 use crate::{
+    Shell,
     process::{CommandEvent, TerminatedPayload},
     scope::ExecuteArgs,
-    Shell,
 };
 
 type ChildId = u32;
@@ -88,6 +88,10 @@ pub struct CommandOptions {
     env: Option<HashMap<String, String>>,
     // Character encoding for stdout/stderr
     encoding: Option<String>,
+    // Spawn the child in a new process group (POSIX) or job object (Windows).
+    // When enabled, killing the child also kills all processes in the group.
+    #[serde(default)]
+    process_group: bool,
 }
 
 #[allow(clippy::unnecessary_wraps)]
@@ -153,6 +157,9 @@ fn prepare_cmd<R: Runtime>(
         command = command.envs(env);
     } else {
         command = command.env_clear();
+    }
+    if options.process_group {
+        command = command.set_process_group(true);
     }
 
     let encoding = match options.encoding {
@@ -296,13 +303,16 @@ pub fn stdin_write<R: Runtime>(
     Ok(())
 }
 
+// Async so waiting for the child to exit doesn't block the main thread.
 #[tauri::command]
-pub fn kill<R: Runtime>(
+pub async fn kill<R: Runtime>(
     _window: Window<R>,
     shell: State<'_, Shell<R>>,
     pid: ChildId,
 ) -> crate::Result<()> {
-    if let Some(child) = shell.children.lock().unwrap().remove(&pid) {
+    // Release the lock before killing, which waits for the child to exit.
+    let child = shell.children.lock().unwrap().remove(&pid);
+    if let Some(child) = child {
         child.kill()?;
     }
     Ok(())

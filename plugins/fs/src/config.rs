@@ -16,4 +16,9 @@ pub struct Config {
     /// Defaults to `true` on Unix systems and `false` on Windows
     // dotfiles are not supposed to be exposed by default on unix
     pub require_literal_leading_dot: Option<bool>,
+    /// Whether the paths dropped onto a window (drag and drop) are added to the runtime fs scope,
+    /// directories recursively, which gives every webview with an fs permission access to them.
+    ///
+    /// Defaults to `true`.
+    pub scope_dropped_paths: Option<bool>,
 }

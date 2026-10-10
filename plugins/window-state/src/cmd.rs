@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 use crate::{AppHandleExt, StateFlags, WindowExt};
-use tauri::{command, AppHandle, Manager, Runtime};
+use tauri::{AppHandle, Manager, Runtime, command};
 
 fn get_state_flags<R: Runtime>(
     app: &AppHandle<R>,

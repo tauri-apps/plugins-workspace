@@ -139,10 +139,6 @@
     "deep-link:allow-is-registered",
     "sql:default",
     "sql:allow-execute",
-    "stronghold:default",
-    "stronghold:allow-destroy",
-    "stronghold:allow-remove-secret",
-    "stronghold:allow-remove-store-record",
     "websocket:default"
   ]
 }

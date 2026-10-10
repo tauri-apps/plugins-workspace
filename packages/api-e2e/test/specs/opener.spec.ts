@@ -41,6 +41,7 @@ describePlugin('opener', () => {
         await api.path.join(await api.path.appDataDir(), 'does-not-exist-e2e')
       )
     )
-    expect(message).toMatch(/os error 2/)
+    // the `std::io` NotFound message on Unix, the shell path lookup's on Windows
+    expect(message).toMatch(/os error 2|path doesn't exist/)
   })
 })
