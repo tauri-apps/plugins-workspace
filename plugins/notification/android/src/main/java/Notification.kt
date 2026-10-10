@@ -38,6 +38,9 @@ class Notification {
   var sourceJson: String? = null
   var visibility: Int? = null
   var number: Int? = null
+  var `when`: Long? = null
+  var usesChronometer: Boolean = false
+  var chronometerCountDown: Boolean = false
 
   fun getSound(context: Context, defaultSound: Int): String? {
     var soundPath: String? = null
