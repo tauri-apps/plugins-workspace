@@ -412,6 +412,7 @@ mod imp {
 
                 let target = self.app.path().data_dir()?.join("applications");
                 let desktop_path = target.join(&file_name);
+                let mut desktop_changed = false;
                 match load_desktop_ini(&desktop_path) {
                     Ok(mut desktop) => {
                         if let Some(section) = desktop.section_mut(Some("Desktop Entry"))
@@ -419,14 +420,23 @@ mod imp {
                         {
                             desktop
                                 .write_to_file_policy(&desktop_path, ini::EscapePolicy::Nothing)?;
+                            desktop_changed = true;
                         }
                     }
                     Err(ini::Error::Io(error)) if error.kind() == std::io::ErrorKind::NotFound => {}
                     Err(error) => return Err(error.into()),
                 }
 
-                // Clear stale cache entries even after a failed update or a removed desktop file.
-                if target.try_exists()? {
+                // Also clear stale cache entries left by a failed update or a removed desktop file.
+                let cached =
+                    std::fs::read_to_string(target.join("mimeinfo.cache")).is_ok_and(|cache| {
+                        cache.lines().any(|line| {
+                            line.split_once('=').is_some_and(|(key, value)| {
+                                key == scheme && value.split(';').any(|entry| entry == file_name)
+                            })
+                        })
+                    });
+                if desktop_changed || cached {
                     run_command(Command::new("update-desktop-database").arg(&target))?;
                 }
 

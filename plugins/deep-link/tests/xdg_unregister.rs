@@ -240,6 +240,12 @@ fn exercise_registration() {
     assert!(!deep_link.is_registered("tauri-test-first").unwrap());
     fs::remove_file(&mimeapps_path).unwrap();
     deep_link.unregister("tauri-test-first").unwrap();
+    // Nothing to withdraw: the desktop database is not refreshed, so its tool is not needed.
+    let path = std::env::var_os("PATH").unwrap();
+    unsafe { std::env::set_var("PATH", "") };
+    deep_link.unregister("tauri-test-first").unwrap();
+    deep_link.unregister("tauri-never-registered").unwrap();
+    unsafe { std::env::set_var("PATH", path) };
 
     // Rewrites on register keep the desktop file's quoting and escapes.
     deep_link.register("tauri-test-first").unwrap();

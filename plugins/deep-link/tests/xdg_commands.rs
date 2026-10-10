@@ -161,6 +161,8 @@ fn exercise_commands(mode: &str) {
             )
             .unwrap();
             let error = deep_link.unregister(scheme).unwrap_err();
+            // Nothing is left to withdraw, so the failing cache refresh is not run again.
+            deep_link.unregister(scheme).unwrap();
             // The default is withdrawn even though the cache refresh failed.
             let mimeapps = ini::Ini::load_from_file(&mimeapps_path).unwrap();
             assert!(
