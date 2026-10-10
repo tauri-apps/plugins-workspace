@@ -137,4 +137,6 @@ jobs:
           # about a minute linking each of those builds. None of it matters to the updater.
           CARGO_PROFILE_RELEASE_LTO: 'false'
           CARGO_PROFILE_RELEASE_CODEGEN_UNITS: '16'
-        run: cargo test --test '*' -- --ignored
+        # The single-instance D-Bus test is also ignored by default, but needs a session bus and
+        # runs in test-rust.yml instead.
+        run: cargo test --workspace --exclude tauri-plugin-single-instance --test '*' -- --ignored
