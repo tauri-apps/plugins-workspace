@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.7.1]
+
+- [`3b19ca09`](https://github.com/tauri-apps/plugins-workspace/commit/3b19ca096ca2ad85a1c5d4256d743230c05d1519) ([#3632](https://github.com/tauri-apps/plugins-workspace/pull/3632) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Fixed relative paths whose first component contains a colon, such as `notes:2024.txt`, being parsed as URLs and rejected with "URL is not a valid path". Only strings with a hierarchical URL form (`scheme://...` or `scheme:/...`) are treated as URLs now.
+- [`6a263bec`](https://github.com/tauri-apps/plugins-workspace/commit/6a263bec1c3320f3695ced03b3e7e68e98911325) ([#3630](https://github.com/tauri-apps/plugins-workspace/pull/3630) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) The `write-all` and `write-files` permissions (and so every `allow-*-write[-recursive]` set) are now sets of the `allow-*` command permissions, so they also allow the commands a command depends on. `writeFile` with a `ReadableStream` uses `open` and failed with "not allowed" under these sets.
+
 ## [2.7.0]
 
 - [`a934743b`](https://github.com/tauri-apps/plugins-workspace/commit/a934743b7307891cc028c0dea945113311ddf100) ([#3637](https://github.com/tauri-apps/plugins-workspace/pull/3637)) Added the `scopeDroppedPaths` plugin config option (`plugins > fs > scopeDroppedPaths` in `tauri.conf.json`). Set it to `false` to stop adding the paths dropped onto any window to the fs scope, which otherwise gives every webview with an fs permission access to them (directories recursively). Defaults to `true`, the current behaviour.

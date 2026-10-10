@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.0.52]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.7.1`
+- Upgraded to `updater-js@2.14.0`
+- Upgraded to `dialog-js@2.8.3`
+- Upgraded to `http-js@2.8.3`
+
 ## [2.0.51]
 
 ### Dependencies

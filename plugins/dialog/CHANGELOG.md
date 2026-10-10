@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.8.3]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.7.1`
+
 ## [2.8.2]
 
 - [`84895756`](https://github.com/tauri-apps/plugins-workspace/commit/848957565bf8090e47976bc374576cfa7fae916a) ([#3665](https://github.com/tauri-apps/plugins-workspace/pull/3665)) Fix browser `confirm` fails with `Uncaught dialog.confirm not allowed. Command not found`
