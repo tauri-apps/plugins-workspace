@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.0.51]
+
+### Dependencies
+
+- Upgraded to `dialog-js@2.8.2`
+- Upgraded to `fs-js@2.7.0`
+- Upgraded to `global-shortcut-js@2.4.1`
+- Upgraded to `barcode-scanner-js@2.5.2`
+- Upgraded to `biometric-js@2.4.2`
+- Upgraded to `clipboard-manager-js@2.4.2`
+- Upgraded to `log-js@2.10.1`
+- Upgraded to `nfc-js@2.4.2`
+- Upgraded to `notification-js@2.6.0`
+- Upgraded to `opener-js@2.7.1`
+- Upgraded to `shell-js@2.5.0`
+- Upgraded to `updater-js@2.13.3`
+- Upgraded to `http-js@2.8.2`
+
 ## [2.0.50]
 
 ### Dependencies

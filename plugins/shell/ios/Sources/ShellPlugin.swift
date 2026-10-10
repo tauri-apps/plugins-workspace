@@ -29,6 +29,6 @@ class ShellPlugin: Plugin {
 }
 
 @_cdecl("init_plugin_shell")
-func initPlugin() -> Plugin {
+public func initPlugin() -> Plugin {
   return ShellPlugin()
 }

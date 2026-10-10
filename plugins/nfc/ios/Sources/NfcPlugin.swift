@@ -518,6 +518,6 @@ class NfcPlugin: Plugin, NFCTagReaderSessionDelegate, NFCNDEFReaderSessionDelega
 }
 
 @_cdecl("init_plugin_nfc")
-func initPlugin() -> Plugin {
+public func initPlugin() -> Plugin {
   return NfcPlugin()
 }
