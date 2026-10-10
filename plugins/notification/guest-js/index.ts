@@ -364,7 +364,8 @@ interface Attachment {
 /**
  * A button the user can tap on a notification, belonging to an {@link ActionType}.
  *
- * Only used on mobile. On Android only the identifier, the title and the input flag are used.
+ * On Android only the identifier, the title and the input flag are used. On desktop only the
+ * identifier and title are used.
  */
 interface Action {
   /**
@@ -406,7 +407,7 @@ interface Action {
  * `actionTypeId` option of a notification.
  *
  * Register it with {@link registerActionTypes} before sending a notification that uses it.
- * Only used on mobile.
+ * On desktop, the actions become buttons on notifications that reference this type.
  */
 interface ActionType {
   /**
@@ -466,9 +467,8 @@ interface PendingNotification {
 /**
  * A notification that was delivered and is still visible in the notification center.
  *
- * Returned by {@link active}, which is only supported on mobile. Which fields are
- * populated depends on the platform, since Android and iOS expose different
- * information about delivered notifications.
+ * Returned by {@link active}, which is only supported on mobile, and by {@link onAction} on
+ * mobile and desktop. Which fields are populated depends on the platform.
  */
 interface ActiveNotification {
   /**
@@ -519,6 +519,18 @@ interface ActiveNotification {
    * The sound resource name of the notification. iOS only.
    */
   sound?: string
+}
+
+/**
+ * An action the user performed on a notification.
+ */
+interface ActionPerformed {
+  /** The identifier of the performed action, or `tap` for the notification itself. */
+  actionId: string
+  /** The text entered for an input action, on mobile. */
+  inputValue: string | null
+  /** The notification the action was performed on, when the platform reports it. */
+  notification: ActiveNotification | null
 }
 
 /**
@@ -690,6 +702,9 @@ function sendNotification(options: Options | string): void {
 /**
  * Register actions that are performed when the user clicks on the notification.
  *
+ * On desktop the actions of a type become the buttons of the notifications that reference it;
+ * only their `id` and `title` are used there.
+ *
  * @example
  * ```typescript
  * import { registerActionTypes } from '@tauri-apps/plugin-notification';
@@ -791,6 +806,9 @@ async function active(): Promise<ActiveNotification[]> {
  * await removeActive([{ id: -34234 }, { id: 23432 }, { id: 4311 }])
  * ```
  *
+ * On desktop only notifications shown while an {@link onAction} listener existed can be removed,
+ * and only on Linux and the BSDs. Calling {@link removeAllActive} removes all such notifications.
+ *
  * @param notifications The active notifications to remove, identified by their id and, on Android, their optional tag.
  *
  * @returns A promise indicating the success or failure of the operation.
@@ -879,7 +897,7 @@ async function removeChannel(id: string): Promise<void> {
  * @since 2.0.0
  */
 async function channels(): Promise<Channel[]> {
-  return await invoke('plugin:notification|listChannels')
+  return await invoke('plugin:notification|list_channels')
 }
 
 /**
@@ -910,25 +928,34 @@ async function onNotificationReceived(
 /**
  * Listens to the actions the user performs on a notification.
  *
- * Only emitted on mobile, for notifications that reference an action type
- * registered with {@link registerActionTypes}.
+ * On mobile it is emitted for notifications that reference an action type
+ * registered with {@link registerActionTypes}. On desktop it is emitted when the user
+ * clicks a notification (`actionId` is `tap`) or one of its actions, for notifications
+ * shown while a listener existed and as far as the notification server reports it.
+ * Without a listener, desktop notifications are shown without their actions.
+ *
+ * #### Platform-specific
+ *
+ * - **Windows:** a click is only reported while the toast is on screen, not once it moved to the Action Center.
+ * - **macOS:** two or more actions are shown in an "Options" menu, and a click on the menu button itself
+ *   reports the first action. Actions are told apart by their title.
  *
  * @example
  * ```typescript
  * import { onAction } from '@tauri-apps/plugin-notification';
- * const unlisten = await onAction((notification) => {
- *   console.log(`user acted on notification: ${notification.title}`);
+ * const unlisten = await onAction((event) => {
+ *   console.log(`user performed ${event.actionId} on ${event.notification?.title}`);
  * });
  * ```
  *
- * @param cb The closure called with the notification the action was performed on.
+ * @param cb The closure called with the performed action and the notification it refers to.
  *
  * @returns A promise resolving to a listener that can be used to stop listening for the event.
  *
  * @since 2.0.0
  */
 async function onAction(
-  cb: (notification: Options) => void
+  cb: (event: ActionPerformed) => void
 ): Promise<PluginListener> {
   return await addPluginListener('notification', 'actionPerformed', cb)
 }
@@ -940,6 +967,7 @@ export type {
   ActionType,
   PendingNotification,
   ActiveNotification,
+  ActionPerformed,
   Channel,
   ScheduleInterval
 }

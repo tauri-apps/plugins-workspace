@@ -21,9 +21,15 @@ import type { Options } from './index'
   let permissionValue = 'default'
 
   async function isPermissionGranted(): Promise<boolean> {
-    // @ts-expect-error __TEMPLATE_windows__ will be replaced in rust before it's injected.
-    if (window.Notification.permission !== 'default' || __TEMPLATE_windows__) {
+    if (window.Notification.permission !== 'default') {
       return await Promise.resolve(window.Notification.permission === 'granted')
+    }
+    // Windows always grants the permission, and asking the backend for it from
+    // the init script makes the WebView throw a STATUS_ACCESS_VIOLATION on
+    // remote websites, so answer it here instead of invoking.
+    // @ts-expect-error __TEMPLATE_windows__ will be replaced in rust before it's injected.
+    if (__TEMPLATE_windows__) {
+      return true
     }
     return await invoke('plugin:notification|is_permission_granted')
   }

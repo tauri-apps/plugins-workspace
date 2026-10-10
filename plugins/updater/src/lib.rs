@@ -24,8 +24,8 @@ use std::{ffi::OsString, sync::Arc};
 use http::{HeaderMap, HeaderName, HeaderValue};
 use semver::Version;
 use tauri::{
-    plugin::{Builder as PluginBuilder, TauriPlugin},
     Manager, Runtime,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
 };
 
 mod commands;

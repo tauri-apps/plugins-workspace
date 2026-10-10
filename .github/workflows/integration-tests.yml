@@ -6,20 +6,38 @@ name: integration tests
 
 on:
   workflow_dispatch:
+  # run before publishing, see covector-version-or-publish.yml
+  workflow_call:
+    inputs:
+      all:
+        description: Run even if the updater is not affected by the pushed changes
+        type: boolean
+        default: true
   push:
     branches:
       - v1
       - v2
-    paths:
+    paths: &paths
       - '.github/workflows/integration-tests.yml'
-      - 'plugins/updater/src/**'
+      - '.scripts/ci/affected-rust-packages.js'
+      - 'plugins/updater/**'
+      - '!plugins/updater/guest-js/**'
+      - '!plugins/updater/*.md'
+      - '!plugins/updater/package.json'
+      - '!plugins/updater/api-iife.js'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
   pull_request:
     branches:
       - v1
       - v2
-    paths:
-      - '.github/workflows/integration-tests.yml'
-      - 'plugins/updater/src/**'
+    paths: *paths
+
+concurrency:
+  # `github.workflow` is the caller's name in a `workflow_call` run, so the suffix keeps this
+  # workflow from sharing (and cancelling) the group of the other workflows the caller runs.
+  group: ${{ github.workflow }}-integration-tests-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -28,8 +46,30 @@ env:
   CARGO_PROFILE_DEV_DEBUG: 0 # no debuginfo: faster builds and a much smaller target dir to cache
 
 jobs:
+  # A `Cargo.lock` change only runs the tests when it touches the updater's dependency tree; see
+  # .scripts/ci/affected-rust-packages.js.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      updater: ${{ contains(fromJSON(steps.affected.outputs.packages), 'tauri-plugin-updater') }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # a pull request checks out its merge commit, whose first parent is the base branch
+          fetch-depth: 2
+      - id: affected
+        run: node .scripts/ci/affected-rust-packages.js
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && 'HEAD^1' || github.event.before }}
+          ALL: ${{ inputs.all == true || github.event_name == 'workflow_dispatch' }}
+          GLOBAL_PATHS: .github/workflows/integration-tests.yml
+
   run-integration-tests:
+    needs: changes
+    if: needs.changes.outputs.updater == 'true'
     runs-on: ${{ matrix.platform }}
+    # a stuck step (e.g. `apt-get` waiting on an unreachable mirror) otherwise runs for 6 hours
+    timeout-minutes: 90
 
     strategy:
       fail-fast: false
@@ -48,7 +88,7 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y webkit2gtk-4.0 libwebkit2gtk-4.1-dev libayatana-appindicator3-dev libfuse2
+          sudo apt-get install -y webkit2gtk-4.0 libwebkit2gtk-4.1-dev libayatana-appindicator3-dev libfuse2 rpm
 
       - uses: Swatinem/rust-cache@v2
         with:
@@ -57,12 +97,44 @@ jobs:
           # that other runs would have hit (10 GB repository limit, LRU eviction).
           save-if: ${{ github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3' }}
 
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-binstall
+
+      # The latest published 2.x CLI, downloaded from its GitHub release. `--pkg-fmt` because the
+      # crate's binstall metadata expects a .tgz on aarch64-apple-darwin, where the release only
+      # ships a .zip, and the disabled strategies make a missing binary fail the step instead of
+      # silently compiling the CLI from source. The token authenticates the GitHub requests and the
+      # longer timeout and retries ride out a slow response, which binstall otherwise reports as a
+      # missing binary.
       - name: install Tauri CLI
-        # `--debug --target-dir target`: a dev-profile build in the workspace target dir reuses
-        # the cached dependencies (shared with the test build below) instead of a from-scratch
-        # release build in a temporary dir. `--locked` keeps the dependency versions stable
-        # between runs, so the cached artifacts stay valid.
-        run: cargo install tauri-cli --git https://github.com/tauri-apps/tauri --branch dev --locked --debug --target-dir target
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in 1 2 3; do
+            cargo binstall -y tauri-cli@^2 --pkg-fmt ${{ runner.os == 'Linux' && 'tgz' || 'zip' }} --disable-strategies quick-install,compile --maximum-resolution-timeout 60 && exit 0
+            echo "::warning::cargo binstall failed (attempt $attempt)"
+            sleep 10
+          done
+          exit 1
+
+      - name: grant admin rights without a prompt
+        if: startsWith(matrix.platform, 'macos')
+        # The updater installs into folders the user cannot write to through
+        # `do shell script ... with administrator privileges`, which asks Authorization
+        # Services for `system.privilege.admin` and shows a password prompt nobody can answer
+        # here. Allowing the right outright lets `update_app_with_admin_prompt` cover that
+        # install; the runner is discarded after the job.
+        run: |
+          sudo security authorizationdb write system.privilege.admin allow
+          echo "TAURI_UPDATER_ADMIN_PROMPT_TEST=1" >> "$GITHUB_ENV"
 
       - name: run integration tests
+        env:
+          # The tests bundle the app with `cargo tauri build` over and over, changing nothing but
+          # its version, and the workspace release profile (fat LTO, a single codegen unit) spends
+          # about a minute linking each of those builds. None of it matters to the updater.
+          CARGO_PROFILE_RELEASE_LTO: 'false'
+          CARGO_PROFILE_RELEASE_CODEGEN_UNITS: '16'
         run: cargo test --test '*' -- --ignored

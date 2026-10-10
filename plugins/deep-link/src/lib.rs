@@ -11,8 +11,8 @@
 //! calling those methods returns [`Error::UnsupportedPlatform`].
 
 use tauri::{
-    plugin::{Builder, PluginApi, TauriPlugin},
     AppHandle, EventId, Listener, Manager, Runtime,
+    plugin::{Builder, PluginApi, TauriPlugin},
 };
 
 mod commands;
@@ -33,8 +33,8 @@ fn init_deep_link<R: Runtime>(
         let _api = api;
 
         use tauri::{
-            ipc::{Channel, InvokeResponseBody},
             Emitter,
+            ipc::{Channel, InvokeResponseBody},
         };
 
         let handle = _api.register_android_plugin(PLUGIN_IDENTIFIER, "DeepLinkPlugin")?;
@@ -65,10 +65,10 @@ fn init_deep_link<R: Runtime>(
             },
         )?;
 
-        return Ok(DeepLink {
+        Ok(DeepLink {
             app: app.clone(),
             plugin_handle: handle,
-        });
+        })
     }
 
     #[cfg(target_os = "ios")]
@@ -94,7 +94,7 @@ fn init_deep_link<R: Runtime>(
 
 #[cfg(target_os = "android")]
 mod imp {
-    use tauri::{ipc::Channel, plugin::PluginHandle, AppHandle, Runtime};
+    use tauri::{AppHandle, Runtime, ipc::Channel, plugin::PluginHandle};
 
     use serde::{Deserialize, Serialize};
 
@@ -172,7 +172,7 @@ mod imp {
     use std::sync::Mutex;
     #[cfg(target_os = "linux")]
     use std::{
-        fs::{create_dir_all, File},
+        fs::{File, create_dir_all},
         io::Write,
         process::Command,
     };
@@ -223,7 +223,9 @@ mod imp {
                         current.replace(vec![url.clone()]);
                         let _ = self.app.emit("deep-link://new-url", vec![url]);
                     } else if cfg!(debug_assertions) {
-                        tracing::warn!("argument {url} does not match any configured deep link scheme; skipping it");
+                        tracing::warn!(
+                            "argument {url} does not match any configured deep link scheme; skipping it"
+                        );
                     }
                 }
             }
@@ -454,13 +456,11 @@ mod imp {
                 let desktop_path = target.join(&file_name);
                 match load_ini(&desktop_path) {
                     Ok(mut desktop) => {
-                        if let Some(section) = desktop.section_mut(Some("Desktop Entry")) {
-                            if remove_entry(section, "MimeType", &scheme) {
-                                desktop.write_to_file_policy(
-                                    &desktop_path,
-                                    ini::EscapePolicy::Nothing,
-                                )?;
-                            }
+                        if let Some(section) = desktop.section_mut(Some("Desktop Entry"))
+                            && remove_entry(section, "MimeType", &scheme)
+                        {
+                            desktop
+                                .write_to_file_policy(&desktop_path, ini::EscapePolicy::Nothing)?;
                         }
                     }
                     Err(ini::Error::Io(error)) if error.kind() == std::io::ErrorKind::NotFound => {}
@@ -599,16 +599,14 @@ impl<R: Runtime> DeepLink<R> {
     ///
     /// Use `get_current` on app load to check whether your app was started via a deep link.
     pub fn on_open_url<F: Fn(OpenUrlEvent) + Send + Sync + 'static>(&self, f: F) -> EventId {
-        let event_id = self.app.listen("deep-link://new-url", move |event| {
+        self.app.listen("deep-link://new-url", move |event| {
             if let Ok(urls) = serde_json::from_str(event.payload()) {
                 f(OpenUrlEvent {
                     id: event.id(),
                     urls,
                 })
             }
-        });
-
-        event_id
+        })
     }
 }
 

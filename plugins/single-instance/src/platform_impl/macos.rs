@@ -8,12 +8,12 @@ use std::{
     path::PathBuf,
 };
 
+use crate::SingleInstanceCallback;
 #[cfg(feature = "semver")]
 use crate::semver_compat::semver_compat_string;
-use crate::SingleInstanceCallback;
 use tauri::{
-    plugin::{self, TauriPlugin},
     AppHandle, Config, Manager, RunEvent, Runtime,
+    plugin::{self, TauriPlugin},
 };
 use tokio::io::AsyncReadExt;
 
@@ -80,12 +80,14 @@ fn notify_singleton(socket: &PathBuf) -> Result<(), Error> {
     let mut bf = BufWriter::new(&stream);
     let cwd = std::env::current_dir()
         .unwrap_or_default()
-        .to_str()
-        .unwrap_or_default()
-        .to_string();
+        .to_string_lossy()
+        .into_owned();
     bf.write_all(cwd.as_bytes())?;
     bf.write_all(b"\0\0")?;
-    let args_joined = std::env::args().collect::<Vec<String>>().join("\0");
+    let args_joined = std::env::args_os()
+        .map(|arg| arg.to_string_lossy().into_owned())
+        .collect::<Vec<String>>()
+        .join("\0");
     bf.write_all(args_joined.as_bytes())?;
     bf.flush()?;
     drop(bf);

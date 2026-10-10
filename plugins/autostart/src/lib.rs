@@ -11,11 +11,10 @@
 #![cfg(not(any(target_os = "android", target_os = "ios")))]
 
 use auto_launch::{AutoLaunch, AutoLaunchBuilder};
-use serde::{ser::Serializer, Serialize};
+use serde::{Serialize, ser::Serializer};
 use tauri::{
-    command,
+    Manager, Runtime, State, command,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    Manager, Runtime, State,
 };
 
 use std::env::current_exe;
@@ -34,6 +33,16 @@ pub enum MacosLauncher {
     /// Auto start by adding a login item through an AppleScript command sent to the
     /// "System Events" application.
     AppleScript,
+}
+
+#[cfg(target_os = "macos")]
+impl MacosLauncher {
+    fn to_auto_launch(self) -> auto_launch::MacOSLaunchMode {
+        match self {
+            MacosLauncher::LaunchAgent => auto_launch::MacOSLaunchMode::LaunchAgent,
+            MacosLauncher::AppleScript => auto_launch::MacOSLaunchMode::AppleScript,
+        }
+    }
 }
 
 /// The error type of this plugin.
@@ -83,10 +92,13 @@ impl AutoLaunchManager {
     ///
     /// Returns [`Error::Anyhow`] if the platform-specific removal fails.
     pub fn disable(&self) -> Result<()> {
-        self.0
-            .disable()
-            .map_err(|e| e.to_string())
-            .map_err(Error::Anyhow)
+        match self.0.disable() {
+            // On Windows, disabling deletes the app's `Run` registry value, which fails with
+            // "not found" when autostart is already disabled. macOS and Linux treat that as a
+            // no-op, so do the same here.
+            Err(auto_launch::Error::Io(e)) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            result => result.map_err(|e| e.to_string()).map_err(Error::Anyhow),
+        }
     }
 
     /// Returns whether auto start is currently enabled for the application.
@@ -225,10 +237,7 @@ impl Builder {
 
                 #[cfg(target_os = "macos")]
                 {
-                    builder.set_use_launch_agent(matches!(
-                        self.macos_launcher,
-                        MacosLauncher::LaunchAgent
-                    ));
+                    builder.set_macos_launch_mode(self.macos_launcher.to_auto_launch());
                     // on macOS, current_exe gives path to /Applications/Example.app/MacOS/Example
                     // but this results in seeing a Unix Executable in macOS login items
                     // It must be: /Applications/Example.app

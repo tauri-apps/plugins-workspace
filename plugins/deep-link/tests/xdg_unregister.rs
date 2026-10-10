@@ -206,11 +206,13 @@ fn exercise_registration() {
         desktop_text.lines().find(|line| line.starts_with("Exec="))
     );
     let desktop = ini::Ini::load_from_str(&after).unwrap();
-    assert!(desktop
-        .section(Some("Desktop Entry"))
-        .unwrap()
-        .get("MimeType")
-        .is_none());
+    assert!(
+        desktop
+            .section(Some("Desktop Entry"))
+            .unwrap()
+            .get("MimeType")
+            .is_none()
+    );
     let other = ini::Ini::load_from_file(data.join("applications/other.desktop")).unwrap();
     assert_eq!(
         other
