@@ -24,8 +24,6 @@ use semver::Version;
 use serde::{Deserialize, Deserializer, Serialize, de::Error as DeError};
 #[cfg(any(windows, target_os = "linux"))]
 use std::ffi::OsStr;
-#[cfg(desktop)]
-use std::io::Cursor;
 use tauri::{
     AppHandle, Resource, Runtime,
     utils::{
@@ -1130,7 +1128,7 @@ impl Update {
     fn extract_zip(&self, bytes: &[u8]) -> Result<WindowsUpdaterType> {
         let temp_dir = self.make_temp_dir()?;
 
-        let archive = Cursor::new(bytes);
+        let archive = std::io::Cursor::new(bytes);
         let mut extractor = zip::ZipArchive::new(archive)?;
         extractor.extract(&temp_dir)?;
 
@@ -1211,6 +1209,21 @@ impl Update {
         use std::os::unix::fs::{MetadataExt, PermissionsExt};
         let extract_path_metadata = self.extract_path.metadata()?;
 
+        // check the payload before touching the current AppImage
+        let is_gz = infer::archive::is_gz(bytes);
+        #[cfg(not(feature = "zip"))]
+        if is_gz {
+            log::error!(
+                "the update is a compressed AppImage, which can only be installed when the updater's `zip` feature is enabled"
+            );
+            return Err(Error::InvalidUpdaterFormat);
+        }
+        // AppImages are ELF executables
+        if !is_gz && !infer::app::is_elf(bytes) {
+            log::error!("the update is neither an AppImage nor a compressed AppImage");
+            return Err(Error::InvalidUpdaterFormat);
+        }
+
         let tmp_dir_locations = vec![
             Box::new(|| Some(std::env::temp_dir())) as Box<dyn FnOnce() -> Option<PathBuf>>,
             Box::new(dirs::cache_dir),
@@ -1237,11 +1250,11 @@ impl Update {
                     std::fs::rename(&self.extract_path, tmp_app_image)?;
 
                     #[cfg(feature = "zip")]
-                    if infer::archive::is_gz(bytes) {
+                    if is_gz {
                         log::debug!("extracting AppImage");
                         // extract the buffer to the tmp_dir
                         // we extract our signed archive into our final directory without any temp file
-                        let archive = Cursor::new(bytes);
+                        let archive = std::io::Cursor::new(bytes);
                         let decoder = flate2::read::GzDecoder::new(archive);
                         let mut archive = tar::Archive::new(decoder);
                         for mut entry in archive.entries()?.flatten() {
@@ -1451,7 +1464,7 @@ impl Update {
         use flate2::read::GzDecoder;
         use std::os::unix::fs::{MetadataExt, PermissionsExt};
 
-        let cursor = Cursor::new(bytes);
+        let cursor = std::io::Cursor::new(bytes);
         let mut extracted_files: Vec<PathBuf> = Vec::new();
 
         // The app is moved with renames, which only work within one file system, so the
@@ -2264,6 +2277,106 @@ mod offline_tests {
         assert_eq!(restored.timeout, online.timeout);
         assert!(!online.context.config.require_signed_version);
         assert!(restored.context.config.require_signed_version);
+    }
+
+    #[cfg(target_os = "linux")]
+    const INSTALLED_APPIMAGE: &[u8] = b"\x7fELF installed AppImage";
+
+    /// An update for an AppImage installed in a fresh directory.
+    #[cfg(target_os = "linux")]
+    fn appimage_update() -> (tempfile::TempDir, PathBuf, Update) {
+        let dir = tempfile::tempdir().unwrap();
+        let appimage = dir.path().join("app.AppImage");
+        std::fs::write(&appimage, INSTALLED_APPIMAGE).unwrap();
+        let update = builder()
+            .executable_path(&appimage)
+            .build()
+            .unwrap()
+            .restore_update(manifest())
+            .unwrap()
+            .unwrap();
+        (dir, appimage, update)
+    }
+
+    /// The smallest buffer `infer` recognizes as an ELF executable: a full ELF header.
+    #[cfg(target_os = "linux")]
+    fn new_appimage() -> Vec<u8> {
+        let mut appimage = b"\x7fELF new AppImage".to_vec();
+        appimage.resize(64, 0);
+        appimage
+    }
+
+    #[cfg(all(target_os = "linux", feature = "zip"))]
+    fn compressed_appimage(name: &str, contents: &[u8]) -> Vec<u8> {
+        let mut archive = tar::Builder::new(flate2::write::GzEncoder::new(
+            Vec::new(),
+            flate2::Compression::default(),
+        ));
+        let mut header = tar::Header::new_gnu();
+        header.set_size(contents.len() as u64);
+        header.set_mode(0o755);
+        header.set_cksum();
+        archive.append_data(&mut header, name, contents).unwrap();
+        archive.into_inner().unwrap().finish().unwrap()
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn appimage_install_rejects_a_payload_that_is_not_an_appimage() {
+        let (_dir, appimage, update) = appimage_update();
+        assert!(matches!(
+            update.install_appimage(b"not an AppImage"),
+            Err(Error::InvalidUpdaterFormat)
+        ));
+        assert_eq!(std::fs::read(&appimage).unwrap(), INSTALLED_APPIMAGE);
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn appimage_install_writes_an_appimage_payload() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let (_dir, appimage, update) = appimage_update();
+        std::fs::set_permissions(&appimage, std::fs::Permissions::from_mode(0o755)).unwrap();
+        update.install_appimage(&new_appimage()).unwrap();
+        assert_eq!(std::fs::read(&appimage).unwrap(), new_appimage());
+        assert_eq!(
+            std::fs::metadata(&appimage).unwrap().permissions().mode() & 0o777,
+            0o755
+        );
+    }
+
+    #[test]
+    #[cfg(all(target_os = "linux", feature = "zip"))]
+    fn appimage_install_extracts_a_compressed_appimage() {
+        let (_dir, appimage, update) = appimage_update();
+        update
+            .install_appimage(&compressed_appimage("app.AppImage", &new_appimage()))
+            .unwrap();
+        assert_eq!(std::fs::read(&appimage).unwrap(), new_appimage());
+    }
+
+    #[test]
+    #[cfg(all(target_os = "linux", feature = "zip"))]
+    fn appimage_install_restores_the_app_when_the_archive_has_no_appimage() {
+        let (_dir, appimage, update) = appimage_update();
+        assert!(matches!(
+            update.install_appimage(&compressed_appimage("readme.txt", b"hello")),
+            Err(Error::BinaryNotFoundInArchive)
+        ));
+        assert_eq!(std::fs::read(&appimage).unwrap(), INSTALLED_APPIMAGE);
+    }
+
+    #[test]
+    #[cfg(all(target_os = "linux", not(feature = "zip")))]
+    fn appimage_install_rejects_a_compressed_appimage_without_the_zip_feature() {
+        let (_dir, appimage, update) = appimage_update();
+        // the gzip magic, which is all the check looks at
+        assert!(matches!(
+            update.install_appimage(b"\x1f\x8b\x08\x00 compressed AppImage"),
+            Err(Error::InvalidUpdaterFormat)
+        ));
+        assert_eq!(std::fs::read(&appimage).unwrap(), INSTALLED_APPIMAGE);
     }
 }
 
