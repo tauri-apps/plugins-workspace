@@ -57,6 +57,7 @@ fn xdg_command_results() {
         "register-failure",
         "query-failure",
         "query-no-default",
+        "query-padded",
         "unregister-failure",
     ] {
         let home = sandbox.0.join(mode);
@@ -83,6 +84,7 @@ fn xdg_command_results() {
                  else\n\
                  [ \"$TAURI_XDG_COMMAND_MODE\" = register-failure ] && exit 7\n\
                  [ \"$TAURI_XDG_COMMAND_MODE\" = query-no-default ] && exit 4\n\
+                 [ \"$TAURI_XDG_COMMAND_MODE\" = query-padded ] && printf ' %s \\r\\nother\\n' \"$TAURI_XDG_DESKTOP_FILE\" && exit 0\n\
                  printf '%s\\n' \"$TAURI_XDG_DESKTOP_FILE\"\n\
                  [ \"$TAURI_XDG_COMMAND_MODE\" = query-failure ] && exit 7\n\
                  fi\nexit 0\n"
@@ -149,6 +151,11 @@ fn exercise_commands(mode: &str) {
     if mode == "query-no-default" {
         // Some xdg-mime backends exit with 4 when no handler is set.
         assert!(!deep_link.is_registered(scheme).unwrap());
+        return;
+    }
+    if mode == "query-padded" {
+        // Surrounding whitespace and extra lines don't hide a match.
+        assert!(deep_link.is_registered(scheme).unwrap());
         return;
     }
     if mode != "real" {

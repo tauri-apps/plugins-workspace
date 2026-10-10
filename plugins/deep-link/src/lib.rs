@@ -496,7 +496,9 @@ mod imp {
                     return Ok(false);
                 }
                 check_command_status("xdg-mime", output.status)?;
-                Ok(String::from_utf8_lossy(&output.stdout).trim_end_matches('\n') == file_name)
+                // Backends may pad the name or print more lines, so only the first is compared.
+                let stdout = String::from_utf8_lossy(&output.stdout);
+                Ok(stdout.lines().next().map(str::trim) == Some(file_name.as_str()))
             }
 
             #[cfg(not(any(windows, target_os = "linux")))]
