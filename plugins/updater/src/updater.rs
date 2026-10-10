@@ -539,11 +539,7 @@ impl Updater {
             headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
         }
 
-        let target = if let Some(target) = &self.target {
-            target
-        } else {
-            updater_os().ok_or(Error::UnsupportedOs)?
-        };
+        let target = self.current_target()?;
 
         let mut remote_release: Option<RemoteRelease> = None;
         let mut raw_json: Option<serde_json::Value> = None;
@@ -675,22 +671,38 @@ impl Updater {
     /// configuration, including the public key and installation path, comes from this updater,
     /// not from the cached metadata. Returns `None` if the release is no longer an update.
     ///
-    /// This does not authenticate the metadata or any cached package. Call [`Update::verify`]
-    /// on cached bytes before passing those same bytes to [`Update::install`]. Enable
-    /// [`Config::require_signed_version`] to require the signature to bind the package to the
-    /// announced version, including when cached metadata might have been modified.
+    /// The cached metadata is not authenticated, so the restored update always requires the
+    /// package signature to bind the announced version, as if [`Config::require_signed_version`]
+    /// was enabled. Otherwise modified metadata could pair a newer version number with an older,
+    /// validly signed package. Packages signed without a version (by Tauri CLI releases that
+    /// predate `--app-version`) are rejected with [`Error::MissingSignedVersion`].
+    ///
+    /// [`Update::install`] verifies the bytes it is given, and [`Update::verify`] can be used to
+    /// check a cached package before installing it.
     ///
     /// # Errors
     ///
-    /// Returns an error if the metadata cannot be parsed or does not contain a compatible target.
+    /// - [`Error::UnsupportedOs`]: no target was set and the updater does not support the
+    ///   current operating system.
+    /// - A deserialization error when the metadata is not a valid release manifest.
+    /// - [`Error::TargetNotFound`] or [`Error::TargetsNotFound`]: the release is an update but
+    ///   the manifest has no entry for the current target.
     pub fn restore_update(&self, raw_json: serde_json::Value) -> Result<Option<Update>> {
-        let target = if let Some(target) = &self.target {
-            target
-        } else {
-            updater_os().ok_or(Error::UnsupportedOs)?
-        };
+        let target = self.current_target()?;
         let release = serde_json::from_value(raw_json.clone())?;
-        self.update_from_release(release, raw_json, target)
+        let mut update = self.update_from_release(release, raw_json, target)?;
+        if let Some(update) = &mut update {
+            update.context.config.require_signed_version = true;
+        }
+        Ok(update)
+    }
+
+    /// The `{{target}}` value: the user provided target or the current operating system.
+    fn current_target(&self) -> Result<&str> {
+        match &self.target {
+            Some(target) => Ok(target),
+            None => updater_os().ok_or(Error::UnsupportedOs),
+        }
     }
 
     fn update_from_release(
@@ -704,31 +716,30 @@ impl Updater {
             None => release.version > self.current_version,
         };
 
+        // a release that is not an update is not an error, even if it has no entry for this target
+        if !should_update {
+            return Ok(None);
+        }
+
         let installer = installer_for_bundle_type(bundle_type());
         let (download_url, signature) = self.get_urls(&release, &installer)?;
 
-        let update = if should_update {
-            Some(Update {
-                current_version: self.current_version.to_string(),
-                target: target.to_owned(),
-                extract_path: self.extract_path.clone(),
-                version: release.version.to_string(),
-                date: release.pub_date,
-                download_url: download_url.clone(),
-                signature: signature.to_owned(),
-                body: release.notes,
-                raw_json,
-                timeout: None,
-                proxy: self.proxy.clone(),
-                no_proxy: self.no_proxy,
-                headers: self.headers.clone(),
-                context: self.context.clone(),
-            })
-        } else {
-            None
-        };
-
-        Ok(update)
+        Ok(Some(Update {
+            current_version: self.current_version.to_string(),
+            target: target.to_owned(),
+            extract_path: self.extract_path.clone(),
+            version: release.version.to_string(),
+            date: release.pub_date,
+            download_url: download_url.clone(),
+            signature: signature.to_owned(),
+            body: release.notes,
+            raw_json,
+            timeout: None,
+            proxy: self.proxy.clone(),
+            no_proxy: self.no_proxy,
+            headers: self.headers.clone(),
+            context: self.context.clone(),
+        }))
     }
 
     fn get_urls<'a>(
@@ -874,10 +885,9 @@ impl Update {
 
     /// Verifies package bytes using this update's signature and the configured public key.
     ///
-    /// This performs the same checks as [`Self::download`], including signed-version validation,
-    /// without making a request or installing anything. Use this for cached packages, then pass
-    /// the same verified bytes to [`Self::install`]. A successful call does not mark this update
-    /// or a file on disk as verified; modified bytes must be verified again.
+    /// This performs the same checks as [`Self::download`] and [`Self::install`], including
+    /// signed-version validation, without making a request or installing anything. Use it to
+    /// discard a corrupted or tampered cached package early.
     pub fn verify(&self, bytes: &[u8]) -> Result<()> {
         verify_signature(
             bytes,
@@ -888,17 +898,20 @@ impl Update {
         )
     }
 
-    /// Installs the updater package downloaded by [`Update::download`]
+    /// Installs the updater package downloaded by [`Update::download`] or cached from a previous
+    /// download.
     ///
-    /// This does not verify the bytes. For packages not obtained from [`Self::download`],
-    /// call [`Self::verify`] before installing them.
+    /// The bytes are verified with [`Self::verify`] first, so a package that does not match this
+    /// update's signature is never installed.
     ///
     /// ## Platform-specific:
     ///
     /// - **Windows:** This function exits the app after launching the updater installer successfully
     /// - **macOS / Linux:** You need to relaunch the app to run the newly install version
     pub fn install(&self, bytes: impl AsRef<[u8]>) -> Result<()> {
-        self.install_inner(bytes.as_ref())
+        let bytes = bytes.as_ref();
+        self.verify(bytes)?;
+        self.install_inner(bytes)
     }
 
     /// Downloads and installs the updater package
@@ -912,8 +925,9 @@ impl Update {
         on_chunk: C,
         on_download_finish: D,
     ) -> Result<()> {
+        // `download` already verified the bytes
         let bytes = self.download(on_chunk, on_download_finish).await?;
-        self.install(bytes)
+        self.install_inner(&bytes)
     }
 
     #[cfg(mobile)]
@@ -1860,45 +1874,38 @@ mod offline_tests {
     use super::*;
     use serde_json::{json, Value};
 
-    const PUBLIC_KEY: &str = "untrusted comment: minisign public key E7620F1842B4E81F\nRWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3";
-    const SIGNATURE: &str = "untrusted comment: signature from minisign secret key\nRUQf6LRCGA9i559r3g7V1qNyJDApGip8MfqcadIgT9CuhV3EMhHoN1mGTkUidF/z7SrlQgXdy8ofjb7bNJJylDOocrCo8KLzZwo=\ntrusted comment: timestamp:1633700835\tfile:test\tprehashed\nwLMDjy9FLAuxZ3q4NlEvkgtyhrr0gtTu6KC4KBJdITbbOeAi1zBIYo0v4iTgt8jJpIidRJnp94ABQkJAgAooBQ==";
+    // A throwaway key pair generated with `tauri signer generate`, and the signature of the
+    // payload `test` made with `tauri signer sign --app-version 2.0.0`.
+    const PUBLIC_KEY: &str = "untrusted comment: minisign public key: A49EF4746FA6E6D7\nRWTX5qZvdPSepDGWg2bz8n6ArQnBMwgQK1geVosorcbLzcunD+KJ+cYe";
+    const SIGNATURE: &str = "untrusted comment: signature from tauri secret key\nRUTX5qZvdPSepPF2zsjvP/L/TQtBLRnWRvaq+4omK1UEugtQp/USrGiI1v762sDy3id3aor7bRC9ETyeot6lMHHrWoZ5hjUM1Qc=\ntrusted comment: timestamp:1791649051\tfile:payload\tversion:2.0.0\nDDq2CLOEl5cQmC2eJRHlnZPVViOZsu1CjpPKQoei4A/XBfkDqGO0B+QMrcrHgEQ5qV3mne75tdFWhJpqUXh9AA==";
+    // The public `test` payload vector from minisign-verify, signed without a version.
+    const UNVERSIONED_PUBLIC_KEY: &str = "untrusted comment: minisign public key E7620F1842B4E81F\nRWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3";
+    const UNVERSIONED_SIGNATURE: &str = "untrusted comment: signature from minisign secret key\nRUQf6LRCGA9i559r3g7V1qNyJDApGip8MfqcadIgT9CuhV3EMhHoN1mGTkUidF/z7SrlQgXdy8ofjb7bNJJylDOocrCo8KLzZwo=\ntrusted comment: timestamp:1633700835\tfile:test\tprehashed\nwLMDjy9FLAuxZ3q4NlEvkgtyhrr0gtTu6KC4KBJdITbbOeAi1zBIYo0v4iTgt8jJpIidRJnp94ABQkJAgAooBQ==";
 
     fn encode(value: &str) -> String {
         base64::engine::general_purpose::STANDARD.encode(value)
     }
 
+    fn builder() -> UpdaterBuilder {
+        let app = tauri::test::mock_app();
+        let config = Config {
+            pubkey: encode(PUBLIC_KEY),
+            ..Default::default()
+        };
+        let mut builder = UpdaterBuilder::new(app.handle(), config)
+            .target("test-target")
+            .executable_path("runtime-path/app")
+            .timeout(Duration::from_secs(30))
+            .no_proxy()
+            .configure_client(|_| panic!("unexpected network request"))
+            .endpoints(vec!["https://example.invalid/update".parse().unwrap()])
+            .unwrap();
+        builder.current_version = Version::new(1, 0, 0);
+        builder
+    }
+
     fn updater() -> Updater {
-        Updater {
-            current_version: Version::new(1, 0, 0),
-            version_comparator: None,
-            timeout: Some(Duration::from_secs(30)),
-            proxy: None,
-            no_proxy: true,
-            endpoints: vec![],
-            arch: std::env::consts::ARCH,
-            target: Some("test-target".into()),
-            headers: HeaderMap::new(),
-            extract_path: PathBuf::from("runtime-path"),
-            context: UpdaterContext {
-                config: Config {
-                    pubkey: encode(PUBLIC_KEY),
-                    ..Default::default()
-                },
-                configure_client: Some(Arc::new(|_| panic!("unexpected network request"))),
-                #[cfg(target_os = "macos")]
-                run_on_main_thread: Arc::new(|_| panic!("unexpected main thread dispatch")),
-                #[cfg(windows)]
-                app_name: "Updater test".into(),
-                #[cfg(windows)]
-                installer_args: vec![],
-                #[cfg(windows)]
-                current_exe_args: vec![],
-                #[cfg(windows)]
-                on_before_exit: None,
-                #[cfg(windows)]
-                restart_after_install: true,
-            },
-        }
+        builder().build().unwrap()
     }
 
     fn manifest() -> Value {
@@ -1917,10 +1924,11 @@ mod offline_tests {
 
     #[test]
     fn restores_release_metadata_with_runtime_context() {
-        let mut updater = updater();
-        updater
-            .headers
-            .insert("x-test", HeaderValue::from_static("runtime"));
+        let updater = builder()
+            .header("x-test", "runtime")
+            .unwrap()
+            .build()
+            .unwrap();
         let mut metadata = manifest();
         metadata["extract_path"] = json!("untrusted-path");
         metadata["config"] = json!({ "pubkey": "untrusted-key" });
@@ -1974,6 +1982,14 @@ mod offline_tests {
     }
 
     #[test]
+    fn stale_release_without_this_target_is_not_an_update() {
+        let mut metadata = manifest();
+        metadata["version"] = json!("0.9.0");
+        metadata["platforms"] = json!({ "other-target": metadata["platforms"]["test-target"] });
+        assert!(updater().restore_update(metadata).unwrap().is_none());
+    }
+
+    #[test]
     fn rejects_malformed_and_incompatible_manifests() {
         let updater = updater();
         assert!(updater.restore_update(json!({})).is_err());
@@ -1993,25 +2009,51 @@ mod offline_tests {
         let mut update = updater().restore_update(manifest()).unwrap().unwrap();
         update.verify(b"test").unwrap();
         assert!(update.verify(b"tampered").is_err());
-        update.signature = encode(&SIGNATURE.replace("file:test", "file:other"));
+        update.signature = encode(&SIGNATURE.replace("file:payload", "file:other"));
         assert!(update.verify(b"test").is_err());
         update.signature = "invalid signature".into();
         assert!(update.verify(b"test").is_err());
         update.signature = encode(SIGNATURE);
-        update.context.config.pubkey = encode(&PUBLIC_KEY.replace("RWQf", "RWQe"));
+        update.context.config.pubkey = encode(&PUBLIC_KEY.replace("RWTX", "RWTY"));
         assert!(update.verify(b"test").is_err());
     }
 
     #[test]
-    fn preserves_signed_version_requirement() {
-        let mut updater = updater();
-        updater.context.config.require_signed_version = true;
+    fn install_rejects_bytes_that_do_not_match_the_signature() {
+        let update = updater().restore_update(manifest()).unwrap().unwrap();
+        assert!(matches!(
+            update.install(b"tampered"),
+            Err(Error::Minisign(_))
+        ));
+    }
+
+    #[test]
+    fn restored_updates_require_a_signed_version() {
+        let mut builder = builder().pubkey(encode(UNVERSIONED_PUBLIC_KEY));
+        builder.context.config.require_signed_version = false;
+        let updater = builder.build().unwrap();
         let mut metadata = manifest();
+        metadata["platforms"]["test-target"]["signature"] = json!(encode(UNVERSIONED_SIGNATURE));
         metadata["config"] = json!({ "requireSignedVersion": false });
         let update = updater.restore_update(metadata).unwrap().unwrap();
         assert!(matches!(
             update.verify(b"test"),
             Err(Error::MissingSignedVersion)
+        ));
+        assert!(matches!(
+            update.install(b"test"),
+            Err(Error::MissingSignedVersion)
+        ));
+    }
+
+    #[test]
+    fn restored_updates_reject_a_version_the_package_was_not_signed_for() {
+        let mut metadata = manifest();
+        metadata["version"] = json!("3.0.0");
+        let update = updater().restore_update(metadata).unwrap().unwrap();
+        assert!(matches!(
+            update.verify(b"test"),
+            Err(Error::SignedVersionMismatch { .. })
         ));
     }
 
@@ -2058,6 +2100,8 @@ mod offline_tests {
         assert_eq!(restored.signature, online.signature);
         assert_eq!(restored.extract_path, online.extract_path);
         assert_eq!(restored.timeout, online.timeout);
+        assert!(!online.context.config.require_signed_version);
+        assert!(restored.context.config.require_signed_version);
     }
 }
 
