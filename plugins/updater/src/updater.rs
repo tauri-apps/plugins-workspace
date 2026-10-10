@@ -2034,7 +2034,7 @@ fn escape_msi_property_arg(arg: impl AsRef<OsStr>) -> String {
 #[cfg(test)]
 mod offline_tests {
     use super::*;
-    use serde_json::{json, Value};
+    use serde_json::{Value, json};
 
     // A throwaway key pair generated with `tauri signer generate`, and the signature of the
     // payload `test` made with `tauri signer sign --app-version 2.0.0`.
