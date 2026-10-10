@@ -19,8 +19,8 @@ use std::{
 use process::{Command, CommandChild};
 use regex::Regex;
 use tauri::{
-    plugin::{Builder, TauriPlugin},
     AppHandle, Manager, RunEvent, Runtime,
+    plugin::{Builder, TauriPlugin},
 };
 
 mod commands;
@@ -87,6 +87,7 @@ impl<R: Runtime> Shell<R> {
     /// See [`crate::open::open`] for how it handles security-related measures.
     #[cfg(mobile)]
     #[deprecated(since = "2.1.0", note = "Use tauri-plugin-opener instead.")]
+    #[allow(deprecated)]
     pub fn open(&self, path: impl Into<String>, _with: Option<open::Program>) -> Result<()> {
         self.mobile_plugin_handle
             .run_mobile_plugin("open", path.into())
