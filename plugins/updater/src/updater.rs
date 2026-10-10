@@ -1234,7 +1234,11 @@ impl Update {
                     let permissions = std::fs::metadata(&self.extract_path)?.permissions();
 
                     // create a backup of our current app image
-                    std::fs::rename(&self.extract_path, tmp_app_image)?;
+                    match std::fs::rename(&self.extract_path, tmp_app_image) {
+                        Ok(()) => {}
+                        Err(err) if err.kind() == std::io::ErrorKind::CrossesDevices => continue,
+                        Err(err) => return Err(err.into()),
+                    }
 
                     #[cfg(feature = "zip")]
                     if infer::archive::is_gz(bytes) {
