@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.13.3]
+
+- [`81631888`](https://github.com/tauri-apps/plugins-workspace/commit/81631888e9482d88de5581769c2e03dea1e73222) ([#3658](https://github.com/tauri-apps/plugins-workspace/pull/3658)) Update `minisign-verify` to 0.3, which rejects signatures with a non-canonical Ed25519 `S` value. The `Error::Minisign` variant now wraps `minisign_verify` 0.3's `Error`, and its message reads like "The signature verification failed" instead of the variant name (`InvalidSignature`).
+
 ## [2.13.2]
 
 - [`2a9c29e0`](https://github.com/tauri-apps/plugins-workspace/commit/2a9c29e004325db674fd904089749c38f4aac824) ([#3578](https://github.com/tauri-apps/plugins-workspace/pull/3578) by [@alii13](https://github.com/tauri-apps/plugins-workspace/../../alii13)) On macOS, a failed install no longer deletes the installed app. The bundles are swapped atomically where the file system supports it; otherwise the previous app is restored, or kept as `<name> (previous version).app` and reported through the new `Error::PreviousAppNotRestored`. Also fixes installing apps on a volume other than the temp directory's, and the bundle root's permissions (`0755`).
