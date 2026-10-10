@@ -99,7 +99,7 @@ fn exercise_registration() {
     let mimeapps_path = config.join("mimeapps.list");
     fs::write(
         &mimeapps_path,
-        "[Default Applications]\nx-scheme-handler/unrelated=other.desktop\n",
+        "# user comment\n[Default Applications]\nx-scheme-handler/unrelated=other.desktop\n\n",
     )
     .unwrap();
 
@@ -134,6 +134,10 @@ fn exercise_registration() {
     deep_link.unregister("tauri-test-first").unwrap();
     assert!(!deep_link.is_registered("tauri-test-first").unwrap());
     assert!(deep_link.is_registered("tauri-test-second").unwrap());
+    // The user's comments and blank lines survive the edit.
+    let mimeapps_text = fs::read_to_string(&mimeapps_path).unwrap();
+    assert!(mimeapps_text.starts_with("# user comment\n"));
+    assert!(mimeapps_text.contains("\n\n"));
     let after = fs::read_to_string(data.join("applications").join(&file_name)).unwrap();
     assert_eq!(
         after.lines().find(|line| line.starts_with("Exec=")),

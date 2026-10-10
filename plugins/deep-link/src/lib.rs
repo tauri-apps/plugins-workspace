@@ -398,20 +398,15 @@ mod imp {
                 let scheme = format!("x-scheme-handler/{}", _protocol.as_ref());
                 // Drop the defaults first so a failed cache refresh below cannot leave them behind.
                 let mimeapps_path = self.app.path().config_dir()?.join("mimeapps.list");
-                match load_desktop_ini(&mimeapps_path) {
-                    Ok(mut mimeapps) => {
-                        let mut changed = false;
-                        for group in ["Default Applications", "Added Associations"] {
-                            if let Some(section) = mimeapps.section_mut(Some(group)) {
-                                changed |= remove_list_entry(section, &scheme, &file_name);
-                            }
-                        }
-                        if changed {
-                            mimeapps
-                                .write_to_file_policy(mimeapps_path, ini::EscapePolicy::Nothing)?;
+                match std::fs::read_to_string(&mimeapps_path) {
+                    Ok(mimeapps) => {
+                        if let Some(mimeapps) =
+                            remove_mimeapps_association(&mimeapps, &scheme, &file_name)
+                        {
+                            std::fs::write(&mimeapps_path, mimeapps)?;
                         }
                     }
-                    Err(ini::Error::Io(error)) if error.kind() == std::io::ErrorKind::NotFound => {}
+                    Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
                     Err(error) => return Err(error.into()),
                 }
 
@@ -551,23 +546,71 @@ mod imp {
     /// Returns whether it changed.
     #[cfg(target_os = "linux")]
     fn remove_list_entry(section: &mut ini::Properties, key: &str, item: &str) -> bool {
-        let Some(value) = section.get(key) else {
+        let Some(remaining) = section
+            .get(key)
+            .and_then(|value| remove_from_list(value, item))
+        else {
             return false;
         };
-        if !value.split(';').any(|entry| entry == item) {
-            return false;
+        if remaining.is_empty() {
+            section.remove(key);
+        } else {
+            section.insert(key, remaining);
         }
-        let remaining = value
+        true
+    }
+
+    /// Returns the `;`-separated `list` without `item`, or `None` if it does not contain it.
+    #[cfg(target_os = "linux")]
+    fn remove_from_list(list: &str, item: &str) -> Option<String> {
+        if !list.split(';').any(|entry| entry == item) {
+            return None;
+        }
+        let remaining = list
             .split(';')
             .filter(|entry| !entry.is_empty() && *entry != item)
             .collect::<Vec<_>>()
             .join(";");
-        if remaining.is_empty() {
-            section.remove(key);
+        Some(if remaining.is_empty() {
+            remaining
         } else {
-            section.insert(key, format!("{remaining};"));
+            format!("{remaining};")
+        })
+    }
+
+    /// Removes `desktop_file` from the `mime_type` associations of a `mimeapps.list`.
+    /// Edits it line by line so the user's comments and formatting survive.
+    /// Returns `None` if nothing changed.
+    #[cfg(target_os = "linux")]
+    fn remove_mimeapps_association(
+        mimeapps: &str,
+        mime_type: &str,
+        desktop_file: &str,
+    ) -> Option<String> {
+        let mut group = "";
+        let mut changed = false;
+        let mut out = String::with_capacity(mimeapps.len());
+        for line in mimeapps.split_inclusive('\n') {
+            let trimmed = line.trim();
+            if let Some(name) = trimmed.strip_prefix('[').and_then(|l| l.strip_suffix(']')) {
+                group = name;
+            } else if matches!(group, "Default Applications" | "Added Associations")
+                && let Some((key, value)) = trimmed.split_once('=')
+                && key.trim_end() == mime_type
+                && let Some(remaining) = remove_from_list(value.trim_start(), desktop_file)
+            {
+                changed = true;
+                if !remaining.is_empty() {
+                    out.push_str(&format!("{key}={remaining}"));
+                    if line.ends_with('\n') {
+                        out.push('\n');
+                    }
+                }
+                continue;
+            }
+            out.push_str(line);
         }
-        true
+        changed.then_some(out)
     }
 }
 
