@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.4.0]
+
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
 ## \[2.3.2]
 
 - [`8bfa4450`](https://github.com/tauri-apps/plugins-workspace/commit/8bfa4450230d6a00f836bd27944c34cd7fe43e08) ([#3112](https://github.com/tauri-apps/plugins-workspace/pull/3112) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Disable caching on responses.

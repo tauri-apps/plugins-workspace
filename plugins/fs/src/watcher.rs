@@ -3,20 +3,20 @@
 // SPDX-License-Identifier: MIT
 
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
-use notify_debouncer_full::{new_debouncer, DebouncedEvent, Debouncer, RecommendedCache};
+use notify_debouncer_full::{DebouncedEvent, Debouncer, RecommendedCache, new_debouncer};
 use serde::Deserialize;
 use tauri::{
+    Manager, Resource, ResourceId, Runtime, Webview,
     ipc::{Channel, CommandScope, GlobalScope},
     path::BaseDirectory,
-    Manager, Resource, ResourceId, Runtime, Webview,
 };
 
 use std::time::Duration;
 
 use crate::{
-    commands::{resolve_path, CommandResult},
-    scope::Entry,
     SafeFilePath,
+    commands::{CommandResult, resolve_path},
+    scope::Entry,
 };
 
 #[allow(unused)]

@@ -5,40 +5,40 @@
 use std::{
     collections::HashMap,
     ffi::OsString,
-    io::Cursor,
     path::{Path, PathBuf},
     str::FromStr,
     sync::Arc,
     time::Duration,
 };
 
-#[cfg(not(target_os = "macos"))]
-use std::ffi::OsStr;
-
 use base64::Engine;
 use futures_util::StreamExt;
-use http::{header::ACCEPT, HeaderName};
+use http::{HeaderName, header::ACCEPT};
 use minisign_verify::{PublicKey, Signature};
 use percent_encoding::{AsciiSet, CONTROLS};
 use reqwest::{
-    header::{HeaderMap, HeaderValue},
     ClientBuilder, StatusCode,
+    header::{HeaderMap, HeaderValue},
 };
 use semver::Version;
-use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, de::Error as DeError};
+#[cfg(any(windows, target_os = "linux"))]
+use std::ffi::OsStr;
+#[cfg(desktop)]
+use std::io::Cursor;
 use tauri::{
+    AppHandle, Resource, Runtime,
     utils::{
         config::BundleType,
         platform::{bundle_type, current_exe},
     },
-    AppHandle, Resource, Runtime,
 };
 use time::OffsetDateTime;
 use url::Url;
 
 use crate::{
-    error::{Error, Result},
     Config,
+    error::{Error, Result},
 };
 
 const UPDATER_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
@@ -997,8 +997,8 @@ impl Update {
     /// └── ...
     fn install_inner(&self, bytes: &[u8]) -> Result<()> {
         use windows_sys::{
-            w,
             Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOW},
+            w,
         };
 
         let updater_type = self.extract(bytes)?;
@@ -1245,16 +1245,16 @@ impl Update {
                         let decoder = flate2::read::GzDecoder::new(archive);
                         let mut archive = tar::Archive::new(decoder);
                         for mut entry in archive.entries()?.flatten() {
-                            if let Ok(path) = entry.path() {
-                                if path.extension() == Some(OsStr::new("AppImage")) {
-                                    // if something went wrong during the extraction, we should restore previous app
-                                    if let Err(err) = entry.unpack(&self.extract_path) {
-                                        std::fs::rename(tmp_app_image, &self.extract_path)?;
-                                        return Err(err.into());
-                                    }
-                                    // early finish we have everything we need here
-                                    return Ok(());
+                            if let Ok(path) = entry.path()
+                                && path.extension() == Some(OsStr::new("AppImage"))
+                            {
+                                // if something went wrong during the extraction, we should restore previous app
+                                if let Err(err) = entry.unpack(&self.extract_path) {
+                                    std::fs::rename(tmp_app_image, &self.extract_path)?;
+                                    return Err(err.into());
                                 }
+                                // early finish we have everything we need here
+                                return Ok(());
                             }
                         }
                         // if we have not returned early we should restore the backup
@@ -1349,19 +1349,18 @@ impl Update {
             .arg(install_arg)
             .arg(pkg_path)
             .status()
+            && status.success()
         {
-            if status.success() {
-                log::debug!("installed {pkg_path:?} with pkexec");
-                return Ok(());
-            }
+            log::debug!("installed {pkg_path:?} with pkexec");
+            return Ok(());
         }
 
         // 2. Try zenity or kdialog for a graphical sudo experience
-        if let Ok(password) = self.get_password_graphically() {
-            if self.install_with_sudo(pkg_path, &password, install_cmd, install_arg)? {
-                log::debug!("installed {pkg_path:?} with GUI sudo");
-                return Ok(());
-            }
+        if let Ok(password) = self.get_password_graphically()
+            && self.install_with_sudo(pkg_path, &password, install_cmd, install_arg)?
+        {
+            log::debug!("installed {pkg_path:?} with GUI sudo");
+            return Ok(());
         }
 
         // 3. Final fallback: terminal sudo
@@ -1389,10 +1388,10 @@ impl Update {
             ])
             .output();
 
-        if let Ok(output) = zenity_result {
-            if output.status.success() {
-                return Ok(String::from_utf8_lossy(&output.stdout).trim().to_string());
-            }
+        if let Ok(output) = zenity_result
+            && output.status.success()
+        {
+            return Ok(String::from_utf8_lossy(&output.stdout).trim().to_string());
         }
 
         // Fall back to kdialog if zenity fails or isn't available
@@ -1400,10 +1399,10 @@ impl Update {
             .args(["--password", "Enter your password to install the update:"])
             .output();
 
-        if let Ok(output) = kdialog_result {
-            if output.status.success() {
-                return Ok(String::from_utf8_lossy(&output.stdout).trim().to_string());
-            }
+        if let Ok(output) = kdialog_result
+            && output.status.success()
+        {
+            return Ok(String::from_utf8_lossy(&output.stdout).trim().to_string());
         }
 
         Err(Error::AuthenticationFailed)
@@ -1450,18 +1449,33 @@ impl Update {
     /// └── ...
     fn install_inner(&self, bytes: &[u8]) -> Result<()> {
         use flate2::read::GzDecoder;
+        use std::os::unix::fs::{MetadataExt, PermissionsExt};
 
         let cursor = Cursor::new(bytes);
         let mut extracted_files: Vec<PathBuf> = Vec::new();
 
-        // Create temp directories for backup and extraction
+        // The app is moved with renames, which only work within one file system, so the
+        // temp dirs for backup and extraction go on the app's volume: in the system temp
+        // dir when it is there, and next to the app otherwise. If neither is, refuse now
+        // rather than fail after the current app has been moved away. The renames act on
+        // the install path itself, so a symlink there is not followed.
+        let app_dev = std::fs::symlink_metadata(&self.extract_path)?.dev();
+        let tmp_root = [
+            Some(std::env::temp_dir()),
+            self.extract_path.parent().map(Path::to_path_buf),
+        ]
+        .into_iter()
+        .flatten()
+        .find(|dir| dir.metadata().is_ok_and(|m| m.dev() == app_dev))
+        .ok_or(Error::TempDirNotOnSameMountPoint)?;
+
         let tmp_backup_dir = tempfile::Builder::new()
             .prefix("tauri_current_app")
-            .tempdir()?;
+            .tempdir_in(&tmp_root)?;
 
         let tmp_extract_dir = tempfile::Builder::new()
             .prefix("tauri_updated_app")
-            .tempdir()?;
+            .tempdir_in(&tmp_root)?;
 
         let decoder = GzDecoder::new(cursor);
         let mut archive = tar::Archive::new(decoder);
@@ -1485,55 +1499,92 @@ impl Update {
             extracted_files.push(extraction_path);
         }
 
-        // Try to move the current app to backup
-        let move_result = std::fs::rename(
-            &self.extract_path,
-            tmp_backup_dir.path().join("current_app"),
-        );
-        let need_authorization = if let Err(err) = move_result {
-            if err.kind() == std::io::ErrorKind::PermissionDenied {
-                true
-            } else {
+        // The temp dir becomes the installed bundle's root, and tempfile creates it
+        // with mode 0700, which stops every other user of the machine from launching
+        // the updated app.
+        std::fs::set_permissions(
+            tmp_extract_dir.path(),
+            std::fs::Permissions::from_mode(0o755),
+        )?;
+
+        // Exchange the current app and the new one in a single step where the file
+        // system supports it, so the install path is never empty; the previous app
+        // then sits in the extraction temp dir, which is removed on drop. Where the
+        // swap is not supported, fall back to two renames with a restore on failure.
+        // File systems report that with different errors (`ENOTSUP` on HFS+,
+        // `EOPNOTSUPP`, `ENOSYS` or `EINVAL` elsewhere), so anything but a permission
+        // error, which needs the privileged install instead, gets the fallback.
+        let backup = tmp_backup_dir.path().join("current_app");
+        let moved = match swap_bundle(&self.extract_path, tmp_extract_dir.path()) {
+            Err(err) if err.kind() != std::io::ErrorKind::PermissionDenied => {
+                log::debug!("cannot swap the app bundles ({err}), moving them instead");
+                replace_bundle(&self.extract_path, tmp_extract_dir.path(), &backup)
+            }
+            other => other,
+        };
+        let need_authorization = match moved {
+            Ok(()) => false,
+            Err(err) if err.kind() == std::io::ErrorKind::PermissionDenied => true,
+            Err(err) => {
+                if let Some(kept) = keep_backup_if_not_restored(
+                    &self.extract_path,
+                    tmp_backup_dir,
+                    &backup,
+                    std::env::home_dir().as_deref(),
+                ) {
+                    log::error!("failed to install the update: {err}");
+                    return Err(Error::PreviousAppNotRestored(kept));
+                }
                 std::fs::remove_dir_all(tmp_extract_dir.path()).ok();
                 return Err(err.into());
             }
-        } else {
-            false
         };
 
         if need_authorization {
             log::debug!("app installation needs admin privileges");
-            // Use AppleScript to perform moves with admin privileges
+            // Use AppleScript to swap the bundles, or move them where the file system
+            // cannot swap, with admin privileges: the current app is only deleted once
+            // the new one is in place.
             let apple_script = format!(
-                "do shell script \"rm -rf '{src}' && mv -f '{new}' '{src}'\" with administrator privileges",
-                src = self.extract_path.display(),
-                new = tmp_extract_dir.path().display()
+                "do shell script {} with administrator privileges",
+                applescript_string(&privileged_install_command(
+                    &self.extract_path,
+                    tmp_extract_dir.path(),
+                    &backup
+                ))
             );
 
             let (tx, rx) = std::sync::mpsc::channel();
             let res = (self.context.run_on_main_thread)(Box::new(move || {
                 let mut script =
                     osakit::Script::new_from_source(osakit::Language::AppleScript, &apple_script);
-                script.compile().expect("invalid AppleScript");
-                let r = script.execute();
-                tx.send(r).unwrap();
+                let result = match script.compile() {
+                    Ok(()) => script.execute().map(|_| ()).map_err(|e| e.to_string()),
+                    Err(e) => Err(e.to_string()),
+                };
+                let _ = tx.send(result);
             }));
-            let result = rx.recv().unwrap();
+            // `recv` only fails when the closure never ran, which `res` then reports
+            let result = res
+                .map_err(|e| e.to_string())
+                .and_then(|()| rx.recv().map_err(|e| e.to_string())?);
 
-            if res.is_err() || result.is_err() {
+            if let Err(err) = result {
+                log::error!("failed to move the new app into place: {err}");
+                if let Some(kept) = keep_backup_if_not_restored(
+                    &self.extract_path,
+                    tmp_backup_dir,
+                    &backup,
+                    std::env::home_dir().as_deref(),
+                ) {
+                    return Err(Error::PreviousAppNotRestored(kept));
+                }
                 std::fs::remove_dir_all(tmp_extract_dir.path()).ok();
                 return Err(Error::Io(std::io::Error::new(
                     std::io::ErrorKind::PermissionDenied,
                     "Failed to move the new app into place",
                 )));
             }
-        } else {
-            // Remove existing directory if it exists
-            if self.extract_path.exists() {
-                std::fs::remove_dir_all(&self.extract_path)?;
-            }
-            // Move the new app to the target path
-            std::fs::rename(tmp_extract_dir.path(), &self.extract_path)?;
         }
 
         let _ = std::process::Command::new("touch")
@@ -1541,6 +1592,117 @@ impl Update {
             .status();
 
         Ok(())
+    }
+}
+
+/// Exchange `target` and `staged` atomically, so there is no instant at which
+/// `target` does not exist. APFS supports the swap; other file systems return an
+/// error, and the caller falls back to [`replace_bundle`].
+#[cfg(target_os = "macos")]
+fn swap_bundle(target: &Path, staged: &Path) -> std::io::Result<()> {
+    use std::ffi::CString;
+    use std::os::unix::ffi::OsStrExt;
+
+    let from = CString::new(staged.as_os_str().as_bytes())?;
+    let to = CString::new(target.as_os_str().as_bytes())?;
+    // SAFETY: both pointers are valid NUL-terminated strings that outlive the call,
+    // and `renamex_np` only reads them.
+    let result = unsafe { libc::renamex_np(from.as_ptr(), to.as_ptr(), libc::RENAME_SWAP) };
+    if result == 0 {
+        Ok(())
+    } else {
+        Err(std::io::Error::last_os_error())
+    }
+}
+
+/// Move `staged` into `target`, keeping what was at `target` in `backup` until the
+/// move has succeeded. If the second rename fails, the first is undone so `target`
+/// is left exactly as it was. Both renames must be within one file system.
+#[cfg(any(target_os = "macos", test))]
+fn replace_bundle(target: &Path, staged: &Path, backup: &Path) -> std::io::Result<()> {
+    std::fs::rename(target, backup)?;
+    if let Err(err) = std::fs::rename(staged, target) {
+        // Best effort: the error worth reporting is the one from the failed move.
+        let _ = std::fs::rename(backup, target);
+        return Err(err);
+    }
+    Ok(())
+}
+
+/// Exchanges the two paths it is given like [`swap_bundle`], for the privileged install:
+/// the shell has no command for the swap, but `osascript` running this JavaScript for
+/// Automation can call `renamex_np` (`2` is `RENAME_SWAP`), and ships with every macOS.
+/// It prints `swapped` or `failed`, so the caller can tell a swap that did not happen
+/// from an `osascript` failure that leaves unknown whether it did.
+#[cfg(target_os = "macos")]
+const SWAP_BUNDLE_JXA: &str = r#"function run(argv) {
+  ObjC.import("stdio");
+  return $.renamex_np(argv[0], argv[1], 2) === 0 ? "swapped" : "failed";
+}"#;
+
+/// The shell command the privileged install runs: the same swap as [`swap_bundle`], and
+/// where the file system cannot swap, the same moves as [`replace_bundle`], deleting the
+/// previous app only once the new one is in place. The moves only run once the swap is
+/// known not to have happened, since after a swap they would put the previous app back.
+#[cfg(target_os = "macos")]
+fn privileged_install_command(target: &Path, staged: &Path, backup: &Path) -> String {
+    let swap = sh_quote(Path::new(SWAP_BUNDLE_JXA));
+    let target = sh_quote(target);
+    let staged = sh_quote(staged);
+    let backup = sh_quote(backup);
+    format!(
+        "case \"$(/usr/bin/osascript -l JavaScript -e {swap} {staged} {target} 2>/dev/null)\" in swapped) rm -rf {staged};; failed) mv -f {target} {backup} && {{ mv -f {staged} {target} || {{ mv -f {backup} {target}; exit 1; }}; }} && rm -rf {backup};; *) exit 1;; esac"
+    )
+}
+
+/// Quotes `path` as a single `sh` word, whatever characters it holds.
+#[cfg(target_os = "macos")]
+fn sh_quote(path: &Path) -> String {
+    format!("'{}'", path.to_string_lossy().replace('\'', r"'\''"))
+}
+
+/// Quotes `s` as an AppleScript string literal.
+#[cfg(target_os = "macos")]
+fn applescript_string(s: &str) -> String {
+    format!("\"{}\"", s.replace('\\', r"\\").replace('"', "\\\""))
+}
+
+/// After a failed install, returns where the previous app is if it never made it back to
+/// `target`. `backup` is then the only copy left, and usually sits in the system temp dir,
+/// which macOS empties on its own, so it is moved next to `target`, or to `fallback_dir`
+/// (the home folder) when that is not writable, as `<name> (previous version).app`. If
+/// neither works, `backup_dir` is kept rather than deleted on drop as it otherwise is.
+#[cfg(any(target_os = "macos", test))]
+fn keep_backup_if_not_restored(
+    target: &Path,
+    backup_dir: tempfile::TempDir,
+    backup: &Path,
+    fallback_dir: Option<&Path>,
+) -> Option<PathBuf> {
+    if std::fs::symlink_metadata(target).is_ok() || std::fs::symlink_metadata(backup).is_err() {
+        return None;
+    }
+
+    let mut name = target.file_stem().unwrap_or_default().to_os_string();
+    name.push(" (previous version)");
+    if let Some(extension) = target.extension() {
+        name.push(".");
+        name.push(extension);
+    }
+    let kept = [target.parent(), fallback_dir]
+        .into_iter()
+        .flatten()
+        .map(|dir| dir.join(&name))
+        // `rename` replaces an empty directory, so never move onto anything already there
+        .filter(|kept| std::fs::symlink_metadata(kept).is_err())
+        .find(|kept| std::fs::rename(backup, kept).is_ok());
+
+    match kept {
+        Some(kept) => Some(kept),
+        None => {
+            let _ = backup_dir.keep();
+            Some(backup.to_path_buf())
+        }
     }
 }
 
@@ -2162,6 +2324,279 @@ mod tests {
     }
 
     #[test]
+    fn replace_bundle_moves_the_staged_bundle_into_place() {
+        let dir = tempfile::tempdir().unwrap();
+        let target = dir.path().join("App.app");
+        let staged = dir.path().join("staged");
+        let backup = dir.path().join("backup");
+        std::fs::create_dir(&target).unwrap();
+        std::fs::write(target.join("version"), "old").unwrap();
+        std::fs::create_dir(&staged).unwrap();
+        std::fs::write(staged.join("version"), "new").unwrap();
+
+        super::replace_bundle(&target, &staged, &backup).unwrap();
+
+        assert_eq!(
+            std::fs::read_to_string(target.join("version")).unwrap(),
+            "new"
+        );
+        assert_eq!(
+            std::fs::read_to_string(backup.join("version")).unwrap(),
+            "old"
+        );
+        assert!(!staged.exists());
+    }
+
+    #[cfg(target_os = "macos")]
+    fn is_apfs(path: &std::path::Path) -> bool {
+        use std::os::unix::ffi::OsStrExt;
+
+        let path = std::ffi::CString::new(path.as_os_str().as_bytes()).unwrap();
+        let mut stat: libc::statfs = unsafe { std::mem::zeroed() };
+        // SAFETY: `path` is NUL-terminated and `stat` is a valid `statfs` to write to.
+        assert_eq!(unsafe { libc::statfs(path.as_ptr(), &mut stat) }, 0);
+        // SAFETY: `f_fstypename` is a NUL-terminated string filled in by `statfs`.
+        let name = unsafe { std::ffi::CStr::from_ptr(stat.f_fstypename.as_ptr()) };
+        name.to_bytes() == b"apfs"
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn swap_bundle_exchanges_the_two_bundles_in_place() {
+        let dir = tempfile::tempdir().unwrap();
+        let target = dir.path().join("App.app");
+        let staged = dir.path().join("staged");
+        std::fs::create_dir(&target).unwrap();
+        std::fs::write(target.join("version"), "old").unwrap();
+        std::fs::create_dir(&staged).unwrap();
+        std::fs::write(staged.join("version"), "new").unwrap();
+
+        // A temp dir on a file system without swap support proves nothing here, but on
+        // APFS the swap has to work: the install would otherwise always fall back.
+        if !is_apfs(dir.path()) {
+            return;
+        }
+        super::swap_bundle(&target, &staged).unwrap();
+
+        assert_eq!(
+            std::fs::read_to_string(target.join("version")).unwrap(),
+            "new"
+        );
+        assert_eq!(
+            std::fs::read_to_string(staged.join("version")).unwrap(),
+            "old"
+        );
+    }
+
+    #[test]
+    fn replace_bundle_restores_the_current_bundle_when_the_move_fails() {
+        let dir = tempfile::tempdir().unwrap();
+        let target = dir.path().join("App.app");
+        let backup = dir.path().join("backup");
+        std::fs::create_dir(&target).unwrap();
+        std::fs::write(target.join("version"), "old").unwrap();
+        let missing = dir.path().join("missing");
+
+        let err = super::replace_bundle(&target, &missing, &backup).unwrap_err();
+
+        assert_eq!(err.kind(), std::io::ErrorKind::NotFound);
+        assert_eq!(
+            std::fs::read_to_string(target.join("version")).unwrap(),
+            "old"
+        );
+        assert!(!backup.exists());
+    }
+
+    /// A directory whose name `sh` and AppleScript would both misread unquoted.
+    #[cfg(target_os = "macos")]
+    fn hostile_dir() -> tempfile::TempDir {
+        tempfile::Builder::new()
+            .prefix("it's \"a\" \\ $(touch pwned) `dir`\n")
+            .tempdir()
+            .unwrap()
+    }
+
+    #[cfg(target_os = "macos")]
+    fn assert_privileged_install_command_moved(dir: &std::path::Path) {
+        let target = dir.join("Bob's \"App\".app");
+        assert_eq!(
+            std::fs::read_to_string(target.join("version")).unwrap(),
+            "new"
+        );
+        assert!(!dir.join("staged").exists());
+        assert!(!dir.join("backup").exists());
+        assert!(!dir.join("pwned").exists());
+    }
+
+    #[cfg(target_os = "macos")]
+    fn stage_privileged_install(dir: &std::path::Path) -> String {
+        let target = dir.join("Bob's \"App\".app");
+        let staged = dir.join("staged");
+        std::fs::create_dir(&target).unwrap();
+        std::fs::write(target.join("version"), "old").unwrap();
+        std::fs::create_dir(&staged).unwrap();
+        std::fs::write(staged.join("version"), "new").unwrap();
+        super::privileged_install_command(&target, &staged, &dir.join("backup"))
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn privileged_install_command_quotes_every_path() {
+        let dir = hostile_dir();
+        let command = stage_privileged_install(dir.path());
+
+        let status = std::process::Command::new("sh")
+            .arg("-c")
+            .arg(&command)
+            .current_dir(dir.path())
+            .status()
+            .unwrap();
+
+        assert!(status.success());
+        assert_privileged_install_command_moved(dir.path());
+    }
+
+    /// The command the install runs, wrapped the way it is handed to AppleScript, only without
+    /// `with administrator privileges` so it runs without a prompt.
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn privileged_install_script_quotes_every_path() {
+        let dir = hostile_dir();
+        let command = stage_privileged_install(dir.path());
+
+        let output = std::process::Command::new("osascript")
+            .arg("-e")
+            .arg(format!(
+                "do shell script {}",
+                super::applescript_string(&command)
+            ))
+            .current_dir(dir.path())
+            .output()
+            .unwrap();
+
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert_privileged_install_command_moved(dir.path());
+    }
+
+    /// The privileged install swaps the bundles where the file system can, so on APFS it
+    /// never touches the backup: one in a directory that does not exist must not matter.
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn privileged_install_command_swaps_the_bundles() {
+        let dir = tempfile::tempdir().unwrap();
+        if !is_apfs(dir.path()) {
+            return;
+        }
+        let target = dir.path().join("App.app");
+        let staged = dir.path().join("staged");
+        std::fs::create_dir(&target).unwrap();
+        std::fs::write(target.join("version"), "old").unwrap();
+        std::fs::create_dir(&staged).unwrap();
+        std::fs::write(staged.join("version"), "new").unwrap();
+        let backup = dir.path().join("missing").join("backup");
+
+        let status = std::process::Command::new("sh")
+            .arg("-c")
+            .arg(super::privileged_install_command(&target, &staged, &backup))
+            .status()
+            .unwrap();
+
+        assert!(status.success());
+        assert_eq!(
+            std::fs::read_to_string(target.join("version")).unwrap(),
+            "new"
+        );
+        assert!(!staged.exists());
+    }
+
+    #[test]
+    fn keeps_the_backup_when_the_previous_app_was_not_restored() {
+        let dir = tempfile::tempdir().unwrap();
+        let target = dir.path().join("App.app");
+        let backup_dir = tempfile::tempdir_in(dir.path()).unwrap();
+        let backup_dir_path = backup_dir.path().to_path_buf();
+        let backup = backup_dir_path.join("current_app");
+        std::fs::create_dir(&backup).unwrap();
+        std::fs::write(backup.join("version"), "old").unwrap();
+
+        let kept = super::keep_backup_if_not_restored(&target, backup_dir, &backup, None);
+
+        let expected = dir.path().join("App (previous version).app");
+        assert_eq!(kept.as_deref(), Some(expected.as_path()));
+        assert_eq!(
+            std::fs::read_to_string(expected.join("version")).unwrap(),
+            "old"
+        );
+        assert!(!backup_dir_path.exists());
+    }
+
+    #[test]
+    fn moves_the_backup_to_the_fallback_dir_when_it_cannot_go_next_to_the_app() {
+        let dir = tempfile::tempdir().unwrap();
+        let target = dir.path().join("App.app");
+        std::fs::write(dir.path().join("App (previous version).app"), "other").unwrap();
+        let backup_dir = tempfile::tempdir_in(dir.path()).unwrap();
+        let backup = backup_dir.path().join("current_app");
+        std::fs::create_dir(&backup).unwrap();
+        std::fs::write(backup.join("version"), "old").unwrap();
+        let fallback = tempfile::tempdir_in(dir.path()).unwrap();
+
+        let kept =
+            super::keep_backup_if_not_restored(&target, backup_dir, &backup, Some(fallback.path()));
+
+        let expected = fallback.path().join("App (previous version).app");
+        assert_eq!(kept.as_deref(), Some(expected.as_path()));
+        assert_eq!(
+            std::fs::read_to_string(expected.join("version")).unwrap(),
+            "old"
+        );
+    }
+
+    #[test]
+    fn keeps_the_backup_in_place_when_it_cannot_be_moved() {
+        let dir = tempfile::tempdir().unwrap();
+        let target = dir.path().join("App.app");
+        // A file where the backup would go next to the app, which must not be replaced
+        std::fs::write(dir.path().join("App (previous version).app"), "other").unwrap();
+        let backup_dir = tempfile::tempdir_in(dir.path()).unwrap();
+        let backup_dir_path = backup_dir.path().to_path_buf();
+        let backup = backup_dir_path.join("current_app");
+        std::fs::create_dir(&backup).unwrap();
+        std::fs::write(backup.join("version"), "old").unwrap();
+        let missing = dir.path().join("missing");
+
+        let kept = super::keep_backup_if_not_restored(&target, backup_dir, &backup, Some(&missing));
+
+        assert_eq!(kept.as_deref(), Some(backup.as_path()));
+        assert_eq!(
+            std::fs::read_to_string(backup.join("version")).unwrap(),
+            "old"
+        );
+        assert_eq!(
+            std::fs::read_to_string(dir.path().join("App (previous version).app")).unwrap(),
+            "other"
+        );
+    }
+
+    #[test]
+    fn drops_the_backup_when_the_previous_app_is_in_place() {
+        let dir = tempfile::tempdir().unwrap();
+        let target = dir.path().join("App.app");
+        std::fs::create_dir(&target).unwrap();
+        let backup_dir = tempfile::tempdir_in(dir.path()).unwrap();
+        let backup_dir_path = backup_dir.path().to_path_buf();
+        let backup = backup_dir_path.join("current_app");
+        std::fs::create_dir(&backup).unwrap();
+
+        assert!(super::keep_backup_if_not_restored(&target, backup_dir, &backup, None).is_none());
+        assert!(!backup_dir_path.exists());
+    }
+
+    #[test]
     #[cfg(windows)]
     fn it_wraps_correctly() {
         use super::PathExt;
@@ -2260,7 +2695,7 @@ mod tests {
         assert_eq!(cases.len(), cases_escaped.len());
 
         for (orig, escaped) in cases.iter().zip(cases_escaped) {
-            assert_eq!(escape_nsis_current_exe_arg(&OsStr::new(orig)), escaped);
+            assert_eq!(escape_nsis_current_exe_arg(OsStr::new(orig)), escaped);
         }
     }
 }

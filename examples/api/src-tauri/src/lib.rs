@@ -8,8 +8,8 @@ mod tray;
 
 use serde::Serialize;
 use tauri::{
-    webview::{PageLoadEvent, WebviewWindowBuilder},
     App, AppHandle, Emitter, Listener, RunEvent, WebviewUrl,
+    webview::{PageLoadEvent, WebviewWindowBuilder},
 };
 
 #[derive(Clone, Serialize)]
@@ -204,12 +204,12 @@ pub fn run() {
 
     app.run(move |_app_handle, _event| {
         #[cfg(desktop)]
-        if let RunEvent::ExitRequested { code, api, .. } = &_event {
-            if code.is_none() {
-                // Keep the event loop running even if all windows are closed
-                // This allow us to catch system tray events when there is no window
-                api.prevent_exit();
-            }
+        if let RunEvent::ExitRequested { code, api, .. } = &_event
+            && code.is_none()
+        {
+            // Keep the event loop running even if all windows are closed
+            // This allow us to catch system tray events when there is no window
+            api.prevent_exit();
         }
     })
 }

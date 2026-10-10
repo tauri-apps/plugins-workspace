@@ -8,26 +8,29 @@ use crate::semver_compat::semver_compat_string;
 use crate::SingleInstanceCallback;
 use std::ffi::CStr;
 use tauri::{
-    plugin::{self, TauriPlugin},
     AppHandle, Manager, RunEvent, Runtime,
+    plugin::{self, TauriPlugin},
 };
 use windows_sys::Win32::{
-    Foundation::{CloseHandle, GetLastError, ERROR_ALREADY_EXISTS, HWND, LPARAM, LRESULT, WPARAM},
+    Foundation::{CloseHandle, ERROR_ALREADY_EXISTS, GetLastError, HWND, LPARAM, LRESULT, WPARAM},
     System::{
         DataExchange::COPYDATASTRUCT,
         LibraryLoader::GetModuleHandleW,
         Threading::{CreateMutexW, ReleaseMutex},
     },
     UI::WindowsAndMessaging::{
-        self as w32wm, AllowSetForegroundWindow, CreateWindowExW, DefWindowProcW, DestroyWindow,
-        FindWindowW, GetWindowThreadProcessId, RegisterClassExW, SendMessageW, CREATESTRUCTW,
-        GWLP_USERDATA, GWL_STYLE, WINDOW_LONG_PTR_INDEX, WM_COPYDATA, WM_CREATE, WM_DESTROY,
-        WNDCLASSEXW, WS_EX_LAYERED, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_EX_TRANSPARENT,
-        WS_OVERLAPPED, WS_POPUP, WS_VISIBLE,
+        self as w32wm, AllowSetForegroundWindow, CREATESTRUCTW, CreateWindowExW, DefWindowProcW,
+        DestroyWindow, FindWindowW, GWL_STYLE, GWLP_USERDATA, GetWindowThreadProcessId,
+        RegisterClassExW, SMTO_NORMAL, SendMessageTimeoutW, WINDOW_LONG_PTR_INDEX, WM_COPYDATA,
+        WM_CREATE, WM_DESTROY, WNDCLASSEXW, WS_EX_LAYERED, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW,
+        WS_EX_TRANSPARENT, WS_OVERLAPPED, WS_POPUP, WS_VISIBLE,
     },
 };
 
 const WMCOPYDATA_SINGLE_INSTANCE_DATA: usize = 1542;
+
+/// How long the second instance waits for the first instance to take its arguments.
+const FORWARD_TIMEOUT_MS: u32 = 10_000;
 
 struct MutexHandle(isize);
 
@@ -40,11 +43,11 @@ struct UserData<R: Runtime> {
 
 impl<R: Runtime> UserData<R> {
     unsafe fn from_hwnd_raw(hwnd: HWND) -> *mut Self {
-        GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut Self
+        unsafe { GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut Self }
     }
 
     unsafe fn from_hwnd<'a>(hwnd: HWND) -> &'a mut Self {
-        &mut *Self::from_hwnd_raw(hwnd)
+        unsafe { &mut *Self::from_hwnd_raw(hwnd) }
     }
 
     fn run_callback(&mut self, args: Vec<String>, cwd: String) {
@@ -86,9 +89,12 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
                         }
 
                         let cwd = std::env::current_dir().unwrap_or_default();
-                        let cwd = cwd.to_str().unwrap_or_default();
+                        let cwd = cwd.to_string_lossy();
 
-                        let args = std::env::args().collect::<Vec<String>>().join("|");
+                        let args = std::env::args_os()
+                            .map(|arg| arg.to_string_lossy().into_owned())
+                            .collect::<Vec<String>>()
+                            .join("|");
 
                         let data = format!("{cwd}|{args}\0",);
 
@@ -99,7 +105,21 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
                             lpData: bytes.as_ptr() as _,
                         };
 
-                        SendMessageW(hwnd, WM_COPYDATA, 0, &cds as *const _ as _);
+                        let sent = SendMessageTimeoutW(
+                            hwnd,
+                            WM_COPYDATA,
+                            0,
+                            &cds as *const _ as _,
+                            SMTO_NORMAL,
+                            FORWARD_TIMEOUT_MS,
+                            std::ptr::null_mut(),
+                        );
+                        if sent == 0 {
+                            tracing::warn!(
+                                "single_instance failed to forward arguments to the running instance within {FORWARD_TIMEOUT_MS}ms (error {})",
+                                GetLastError()
+                            );
+                        }
 
                         app.cleanup_before_exit();
                         std::process::exit(0);
@@ -147,18 +167,18 @@ unsafe extern "system" fn single_instance_window_proc<R: Runtime>(
 ) -> LRESULT {
     match msg {
         WM_CREATE => {
-            let create_struct = &*(lparam as *const CREATESTRUCTW);
+            let create_struct = unsafe { &*(lparam as *const CREATESTRUCTW) };
             let userdata = create_struct.lpCreateParams as *const UserData<R>;
-            SetWindowLongPtrW(hwnd, GWLP_USERDATA, userdata as _);
+            unsafe { SetWindowLongPtrW(hwnd, GWLP_USERDATA, userdata as _) };
             0
         }
 
         WM_COPYDATA => {
             let cds_ptr = lparam as *const COPYDATASTRUCT;
-            if (*cds_ptr).dwData == WMCOPYDATA_SINGLE_INSTANCE_DATA {
-                let userdata = UserData::<R>::from_hwnd(hwnd);
+            if unsafe { (*cds_ptr).dwData == WMCOPYDATA_SINGLE_INSTANCE_DATA } {
+                let userdata = unsafe { UserData::<R>::from_hwnd(hwnd) };
 
-                let data = CStr::from_ptr((*cds_ptr).lpData as _).to_string_lossy();
+                let data = unsafe { CStr::from_ptr((*cds_ptr).lpData as _).to_string_lossy() };
                 let mut s = data.split('|');
                 let cwd = s.next().unwrap();
                 let args = s.map(|s| s.to_string()).collect();
@@ -169,11 +189,11 @@ unsafe extern "system" fn single_instance_window_proc<R: Runtime>(
         }
 
         WM_DESTROY => {
-            let userdata = UserData::<R>::from_hwnd_raw(hwnd);
-            drop(Box::from_raw(userdata));
+            let userdata = unsafe { UserData::<R>::from_hwnd_raw(hwnd) };
+            drop(unsafe { Box::from_raw(userdata) });
             0
         }
-        _ => DefWindowProcW(hwnd, msg, wparam, lparam),
+        _ => unsafe { DefWindowProcW(hwnd, msg, wparam, lparam) },
     }
 }
 
@@ -245,23 +265,23 @@ pub fn encode_wide(string: impl AsRef<std::ffi::OsStr>) -> Vec<u16> {
 #[cfg(target_pointer_width = "32")]
 #[allow(non_snake_case)]
 unsafe fn SetWindowLongPtrW(hwnd: HWND, index: WINDOW_LONG_PTR_INDEX, value: isize) -> isize {
-    w32wm::SetWindowLongW(hwnd, index, value as _) as _
+    unsafe { w32wm::SetWindowLongW(hwnd, index, value as _) as _ }
 }
 
 #[cfg(target_pointer_width = "64")]
 #[allow(non_snake_case)]
 unsafe fn SetWindowLongPtrW(hwnd: HWND, index: WINDOW_LONG_PTR_INDEX, value: isize) -> isize {
-    w32wm::SetWindowLongPtrW(hwnd, index, value)
+    unsafe { w32wm::SetWindowLongPtrW(hwnd, index, value) }
 }
 
 #[cfg(target_pointer_width = "32")]
 #[allow(non_snake_case)]
 unsafe fn GetWindowLongPtrW(hwnd: HWND, index: WINDOW_LONG_PTR_INDEX) -> isize {
-    w32wm::GetWindowLongW(hwnd, index) as _
+    unsafe { w32wm::GetWindowLongW(hwnd, index) as _ }
 }
 
 #[cfg(target_pointer_width = "64")]
 #[allow(non_snake_case)]
 unsafe fn GetWindowLongPtrW(hwnd: HWND, index: WINDOW_LONG_PTR_INDEX) -> isize {
-    w32wm::GetWindowLongPtrW(hwnd, index)
+    unsafe { w32wm::GetWindowLongPtrW(hwnd, index) }
 }

@@ -18,6 +18,7 @@ import {
   FIXTURE_SERVER_PORT,
   type FixtureServer
 } from './test/helpers/server.js'
+import { executeAsync } from './test/helpers/execute.js'
 
 export type MobilePlatform = 'android' | 'ios'
 
@@ -197,6 +198,9 @@ export function mobileConfig(platform: MobilePlatform): WebdriverIO.Config {
         // because Appium may only have booted the emulator with the first
         // session.
         adbReverse(FIXTURE_SERVER_PORT)
+        // Still in the native context here, where UiAutomator2 sees system
+        // windows.
+        await dismissAnrDialogs(browser)
       }
 
       let webview: string | undefined
@@ -216,7 +220,20 @@ export function mobileConfig(platform: MobilePlatform): WebdriverIO.Config {
             ?? (platform === 'ios'
               ? contexts.find((name) => name.startsWith('WEBVIEW_'))
               : undefined)
-          return webview !== undefined
+          if (webview === undefined) {
+            return false
+          }
+          try {
+            await browser.switchAppiumContext(webview)
+            return true
+          } catch {
+            // On Android the context is listed as soon as the WebView's
+            // devtools socket exists, but switching to it fails with "No such
+            // context found" until the page is attachable. The suite would
+            // otherwise carry on in the native context, where every script
+            // fails with "Method has not yet been implemented".
+            return false
+          }
         },
         {
           // Covers a cold app start plus, on Android, the on-demand chromedriver
@@ -227,8 +244,7 @@ export function mobileConfig(platform: MobilePlatform): WebdriverIO.Config {
             'no WEBVIEW context appeared — is the app a debug build (webview debugging enabled)?'
         }
       )
-      await browser.switchAppiumContext(webview!)
-      // The specs run the page through `executeAsync`, and the XCUITest driver
+      // The specs run the page through async scripts, and the XCUITest driver
       // starts with a script timeout of 0 (every async script times out at
       // once) rather than the 30s the other drivers default to.
       await browser.setTimeout({ script: 30_000 })
@@ -236,7 +252,8 @@ export function mobileConfig(platform: MobilePlatform): WebdriverIO.Config {
       await browser.waitUntil(
         async () => {
           try {
-            const ready: unknown = await browser.executeAsync(
+            const ready: unknown = await executeAsync(
+              browser,
               'var done = arguments[arguments.length - 1]; done(typeof window.__TAURI__ !== "undefined");'
             )
             return ready === true
@@ -253,6 +270,16 @@ export function mobileConfig(platform: MobilePlatform): WebdriverIO.Config {
             'window.__TAURI__ never became available — the app did not load its page.'
         }
       )
+    },
+
+    // On Android, a failure is often down to the device rather than the app
+    // (e.g. a system dialog holding input focus), which the webview-side
+    // error alone does not show. Save what the device looked like next to the
+    // Appium log, which CI uploads on failure.
+    afterTest: (test, _context, { passed }) => {
+      if (platform === 'android' && !passed) {
+        androidDiagnostics(`${test.parent} ${test.title}`)
+      }
     },
 
     onComplete: () => {
@@ -313,18 +340,22 @@ function androidBuildEnv(): NodeJS.ProcessEnv {
 
 /** `adb` from the Android SDK, else whatever is on `PATH`. */
 function adb(args: string[]): SpawnSyncReturns<string> {
+  return spawnSync(adbBinary(), [...adbDeviceArgs(), ...args], {
+    encoding: 'utf8',
+    timeout: 20_000,
+    maxBuffer: 64 * 1024 * 1024
+  })
+}
+
+function adbBinary(): string {
   const sdk = process.env.ANDROID_HOME ?? process.env.ANDROID_SDK_ROOT
-  const binary = sdk ? path.join(sdk, 'platform-tools', 'adb') : 'adb'
-  return spawnSync(
-    binary,
-    [
-      ...(process.env.E2E_ANDROID_DEVICE
-        ? ['-s', process.env.E2E_ANDROID_DEVICE]
-        : []),
-      ...args
-    ],
-    { encoding: 'utf8', timeout: 20_000 }
-  )
+  return sdk ? path.join(sdk, 'platform-tools', 'adb') : 'adb'
+}
+
+function adbDeviceArgs(): string[] {
+  return process.env.E2E_ANDROID_DEVICE
+    ? ['-s', process.env.E2E_ANDROID_DEVICE]
+    : []
 }
 
 function adbReverse(port: number): void {
@@ -334,6 +365,63 @@ function adbReverse(port: number): void {
       `\`adb reverse tcp:${port}\` failed — the upload specs will not reach the fixture server.\n${result.stderr ?? ''}`
     )
   }
+}
+
+/**
+ * Closes any "<app> isn't responding" dialog. On a slow emulator the launcher
+ * or System UI regularly hits an ANR, and the dialog that follows holds input
+ * focus over the app under test until someone answers it, failing anything
+ * that needs focus (Android denies clipboard reads to apps without it) for
+ * the rest of the run, retries included. "Close app" kills the unresponsive
+ * process, so it does not come straight back like "Wait" could.
+ */
+async function dismissAnrDialogs(browser: WebdriverIO.Browser): Promise<void> {
+  // More than one process can be stuck (e.g. launcher and System UI).
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const close = browser.$('id=android:id/aerr_close')
+    if (!(await close.isExisting())) {
+      return
+    }
+    console.warn('[android] closing an "isn\'t responding" system dialog')
+    await close.click()
+    await browser.pause(500)
+  }
+}
+
+/**
+ * Writes the focused window, a screenshot and the recent logcat for a failed
+ * test to `logs/android-diagnostics/`.
+ */
+function androidDiagnostics(name: string): void {
+  const dir = path.join(dirname, 'logs', 'android-diagnostics')
+  const base = path.join(
+    dir,
+    `${new Date().toISOString().replace(/[:.]/g, '-')}-${name.replace(/[^\w-]+/g, '_').slice(0, 80)}`
+  )
+  fs.mkdirSync(dir, { recursive: true })
+
+  const focus = adb(['shell', 'dumpsys', 'window'])
+  const focusLines = (focus.stdout ?? '')
+    .split('\n')
+    .filter((line) => /mCurrentFocus|mFocusedApp|mFocusedWindow/.test(line))
+    .map((line) => line.trim())
+  console.warn(`[android diagnostics] ${name}\n  ${focusLines.join('\n  ')}`)
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
+  fs.writeFileSync(`${base}.window.txt`, focus.stdout ?? '')
+
+  const screenshot = spawnSync(
+    adbBinary(),
+    [...adbDeviceArgs(), 'exec-out', 'screencap', '-p'],
+    { timeout: 20_000 }
+  )
+  if (screenshot.status === 0) {
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    fs.writeFileSync(`${base}.png`, screenshot.stdout)
+  }
+
+  const logcat = adb(['logcat', '-d', '-t', '20000'])
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
+  fs.writeFileSync(`${base}.logcat.txt`, logcat.stdout ?? '')
 }
 
 function androidCapabilities(app: string): WebdriverIO.Capabilities {

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import { browser } from '@wdio/globals'
+import { executeAsync } from './execute.js'
 import type * as TauriApi from '@tauri-apps/api'
 import type * as Autostart from '@tauri-apps/plugin-autostart'
 import type * as BarcodeScanner from '@tauri-apps/plugin-barcode-scanner'
@@ -139,7 +140,12 @@ export async function tauri<R, A extends unknown[]>(
   // driver gets to interpret its shape: the Selenium atoms that Appium runs
   // scripts through on iOS turn any object with a numeric `length` property
   // into an array.
+  //
+  // The specs are transpiled by esbuild with `keepNames`, which wraps named
+  // functions declared inside `fn` in a `__name(...)` helper that only exists in
+  // the spec module, so the page gets a stand-in.
   const script = `
+    var __name = function (target) { return target; };
     var done = arguments[arguments.length - 1];
     var args = Array.prototype.slice.call(arguments, 0, arguments.length - 1);
     var fn = (${fn.toString()});
@@ -148,9 +154,19 @@ export async function tauri<R, A extends unknown[]>(
       .then(
         function (value) { return { ok: true, value: value === undefined ? null : value }; },
         function (error) {
+          // Mobile plugins reject with a \`{ message, code?, data? }\` object
+          // rather than a string or an Error.
+          var message =
+            error instanceof Error
+              ? error.message
+              : error && typeof error === 'object' && typeof error.message === 'string'
+                ? error.message
+                : typeof error === 'object'
+                  ? JSON.stringify(error)
+                  : String(error);
           return {
             ok: false,
-            error: error instanceof Error ? error.message : String(error),
+            error: message,
             stack: error instanceof Error ? error.stack : undefined
           };
         }
@@ -163,7 +179,7 @@ export async function tauri<R, A extends unknown[]>(
         }
       });
   `
-  const raw: unknown = await browser.executeAsync(script, ...args)
+  const raw: unknown = await executeAsync(browser, script, ...args)
   const outcome = (
     typeof raw === 'string' ? JSON.parse(raw) : raw
   ) as PageOutcome<Awaited<R>> | null

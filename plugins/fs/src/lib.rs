@@ -22,10 +22,10 @@ use std::sync::Mutex;
 
 use serde::Deserialize;
 use tauri::{
+    AppHandle, DragDropEvent, Manager, RunEvent, Runtime, WindowEvent,
     ipc::ScopeObject,
     plugin::{Builder as PluginBuilder, TauriPlugin},
     utils::{acl::Value, config::FsScope},
-    AppHandle, DragDropEvent, Manager, RunEvent, Runtime, WindowEvent,
 };
 
 #[cfg(target_os = "android")]
@@ -83,7 +83,9 @@ pub struct OpenOptions {
     #[serde(default)]
     #[allow(unused)]
     mode: Option<u32>,
-    #[serde(default)]
+    // Never deserialized: the webview must not be able to pass arbitrary `open(2)` flags
+    // (e.g. `O_TRUNC`), it can only be set from Rust with `OpenOptionsExt::custom_flags`.
+    #[serde(skip)]
     #[allow(unused)]
     custom_flags: Option<i32>,
 }
@@ -449,6 +451,7 @@ impl ScopeObject for scope::Entry {
 pub(crate) struct Scope {
     pub(crate) scope: tauri::fs::Scope,
     pub(crate) require_literal_leading_dot: Option<bool>,
+    pub(crate) scope_dropped_paths: bool,
 }
 
 /// Tracks which paths have active security-scoped resource access on iOS.
@@ -590,6 +593,11 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
                     .config()
                     .as_ref()
                     .and_then(|c| c.require_literal_leading_dot),
+                scope_dropped_paths: api
+                    .config()
+                    .as_ref()
+                    .and_then(|c| c.scope_dropped_paths)
+                    .unwrap_or(true),
                 scope: tauri::fs::Scope::new(app, &FsScope::default())?,
             };
 
@@ -617,7 +625,13 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
                 ..
             } = event
             {
-                let scope = app.fs_scope();
+                let Some(scope) = app.try_state::<Scope>() else {
+                    return;
+                };
+                if !scope.scope_dropped_paths {
+                    return;
+                }
+                let scope = &scope.scope;
                 for path in paths {
                     if path.is_file() {
                         let _ = scope.allow_file(path);
@@ -662,5 +676,13 @@ mod tests {
             mode(r#"{ "read": false, "write": true, "create": true }"#),
             "w"
         );
+    }
+
+    #[test]
+    fn open_options_ignore_custom_flags_from_ipc() {
+        let options: OpenOptions =
+            serde_json::from_str(r#"{ "read": true, "customFlags": 512 }"#).unwrap();
+        assert!(options.read);
+        assert_eq!(options.custom_flags, None);
     }
 }

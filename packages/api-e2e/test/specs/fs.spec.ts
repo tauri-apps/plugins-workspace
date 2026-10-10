@@ -99,6 +99,39 @@ describePlugin('fs', () => {
     expect(read).toEqual(bytes)
   })
 
+  it('writeFile with a stream overwrites or appends', async () => {
+    const result = await tauri(async (api, path) => {
+      const baseDir = api.fs.BaseDirectory.AppData
+      const encoder = new TextEncoder()
+      const streamOf = (...chunks: string[]) =>
+        new ReadableStream<Uint8Array>({
+          start(controller) {
+            for (const chunk of chunks) {
+              controller.enqueue(encoder.encode(chunk))
+            }
+            controller.close()
+          }
+        })
+      await api.fs.writeTextFile(path, 'a much longer previous content', {
+        baseDir
+      })
+      await api.fs.writeFile(path, streamOf('short', ' stream'), { baseDir })
+      const overwritten = await api.fs.readTextFile(path, { baseDir })
+      await api.fs.writeFile(path, streamOf(', appended'), {
+        baseDir,
+        append: true
+      })
+      return {
+        overwritten,
+        appended: await api.fs.readTextFile(path, { baseDir })
+      }
+    }, `${dir}/stream.txt`)
+    expect(result).toEqual({
+      overwritten: 'short stream',
+      appended: 'short stream, appended'
+    })
+  })
+
   it('stat, lstat and size describe files and directories', async () => {
     const result = await tauri(async (api, dir) => {
       const baseDir = api.fs.BaseDirectory.AppData
@@ -336,6 +369,19 @@ describePlugin('fs', () => {
       sizeAfterTruncate: 5,
       contents: 'hello'
     })
+  })
+
+  it('FileHandle.seek rejects a negative offset from the start', async () => {
+    const message = await tauriError(async (api, path) => {
+      const baseDir = api.fs.BaseDirectory.AppData
+      const file = await api.fs.create(path, { baseDir })
+      try {
+        await file.seek(-1, api.fs.SeekMode.Start)
+      } finally {
+        await file.close()
+      }
+    }, `${dir}/seek.txt`)
+    expect(message).toMatch(/must not be negative/)
   })
 
   it('a closed FileHandle cannot be used again', async () => {
