@@ -396,6 +396,25 @@ mod imp {
                         .to_string_lossy()
                 );
                 let scheme = format!("x-scheme-handler/{}", _protocol.as_ref());
+                // Drop the defaults first so a failed cache refresh below cannot leave them behind.
+                let mimeapps_path = self.app.path().config_dir()?.join("mimeapps.list");
+                match load_desktop_ini(&mimeapps_path) {
+                    Ok(mut mimeapps) => {
+                        let mut changed = false;
+                        for group in ["Default Applications", "Added Associations"] {
+                            if let Some(section) = mimeapps.section_mut(Some(group)) {
+                                changed |= remove_list_entry(section, &scheme, &file_name);
+                            }
+                        }
+                        if changed {
+                            mimeapps
+                                .write_to_file_policy(mimeapps_path, ini::EscapePolicy::Nothing)?;
+                        }
+                    }
+                    Err(ini::Error::Io(error)) if error.kind() == std::io::ErrorKind::NotFound => {}
+                    Err(error) => return Err(error.into()),
+                }
+
                 let target = self.app.path().data_dir()?.join("applications");
                 let desktop_path = target.join(&file_name);
                 match load_desktop_ini(&desktop_path) {
@@ -414,24 +433,6 @@ mod imp {
                 // Clear stale cache entries even after a failed update or a removed desktop file.
                 if target.try_exists()? {
                     run_command(Command::new("update-desktop-database").arg(&target))?;
-                }
-
-                let mimeapps_path = self.app.path().config_dir()?.join("mimeapps.list");
-                match load_desktop_ini(&mimeapps_path) {
-                    Ok(mut mimeapps) => {
-                        let mut changed = false;
-                        for group in ["Default Applications", "Added Associations"] {
-                            if let Some(section) = mimeapps.section_mut(Some(group)) {
-                                changed |= remove_list_entry(section, &scheme, &file_name);
-                            }
-                        }
-                        if changed {
-                            mimeapps
-                                .write_to_file_policy(mimeapps_path, ini::EscapePolicy::Nothing)?;
-                        }
-                    }
-                    Err(ini::Error::Io(error)) if error.kind() == std::io::ErrorKind::NotFound => {}
-                    Err(error) => return Err(error.into()),
                 }
 
                 Ok(())

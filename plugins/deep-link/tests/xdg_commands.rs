@@ -150,7 +150,27 @@ fn exercise_commands(mode: &str) {
         } else if mode == "unregister-failure" {
             // Registration leaves its desktop file when the cache update fails.
             assert!(matches!(deep_link.register(scheme), Err(Error::Io(_))));
-            deep_link.unregister(scheme).unwrap_err()
+            let mimeapps_path =
+                PathBuf::from(env::var_os("XDG_CONFIG_HOME").unwrap()).join("mimeapps.list");
+            fs::write(
+                &mimeapps_path,
+                format!(
+                    "[Default Applications]\nx-scheme-handler/{scheme}={}\n",
+                    desktop_file_name()
+                ),
+            )
+            .unwrap();
+            let error = deep_link.unregister(scheme).unwrap_err();
+            // The default is withdrawn even though the cache refresh failed.
+            let mimeapps = ini::Ini::load_from_file(&mimeapps_path).unwrap();
+            assert!(
+                mimeapps
+                    .section(Some("Default Applications"))
+                    .unwrap()
+                    .get(format!("x-scheme-handler/{scheme}"))
+                    .is_none()
+            );
+            error
         } else {
             deep_link.register(scheme).unwrap_err()
         };
