@@ -315,24 +315,13 @@ mod imp {
 
                 if let Ok(mut desktop_file) = ini::Ini::load_from_file(&target_file) {
                     if let Some(section) = desktop_file.section_mut(Some("Desktop Entry")) {
-                        let old_mimes = section.remove("MimeType").unwrap_or_default();
-                        let mut change = false;
-
-                        // if the mime type is not present, append it to the list
-                        if !old_mimes.split(';').any(|mime| mime == mime_type) {
-                            section.append("MimeType", format!("{mime_type};{old_mimes}"));
-                            change = true;
-                        } else {
-                            section.insert("MimeType".to_string(), old_mimes);
-                        }
+                        // if the mime type is not present, add it to the list
+                        let mut change = add_list_entry(section, "MimeType", &mime_type);
 
                         // if the exec command doesnt match, update to the new one
-                        let old_exec = section.remove("Exec").unwrap_or_default();
-                        if old_exec != qualified_exec {
-                            section.append("Exec", qualified_exec);
+                        if section.get("Exec") != Some(qualified_exec.as_str()) {
+                            section.insert("Exec", qualified_exec);
                             change = true;
-                        } else {
-                            section.insert("Exec".to_string(), old_exec.to_string());
                         }
 
                         // if any property has changed, rewrite the .desktop file
@@ -406,49 +395,12 @@ mod imp {
                         .to_string_lossy()
                 );
                 let scheme = format!("x-scheme-handler/{}", _protocol.as_ref());
-                let remove_entry = |section: &mut ini::Properties, key: &str, item: &str| {
-                    let Some(value) = section.get(key) else {
-                        return false;
-                    };
-                    let mut removed = false;
-                    let remaining = value
-                        .split(';')
-                        .filter(|entry| {
-                            if *entry == item {
-                                removed = true;
-                                false
-                            } else {
-                                !entry.is_empty()
-                            }
-                        })
-                        .collect::<Vec<_>>()
-                        .join(";");
-                    if removed {
-                        if remaining.is_empty() {
-                            section.remove(key);
-                        } else {
-                            section.insert(key.to_string(), format!("{remaining};"));
-                        }
-                    }
-                    removed
-                };
-                // Values are already desktop-file syntax. Preserve Exec quotes and escapes
-                // while removing only this app's scheme associations.
-                let load_ini = |path: &std::path::Path| {
-                    ini::Ini::load_from_file_opt(
-                        path,
-                        ini::ParseOption {
-                            enabled_quote: false,
-                            enabled_escape: false,
-                        },
-                    )
-                };
                 let target = self.app.path().data_dir()?.join("applications");
                 let desktop_path = target.join(&file_name);
-                match load_ini(&desktop_path) {
+                match load_desktop_ini(&desktop_path) {
                     Ok(mut desktop) => {
                         if let Some(section) = desktop.section_mut(Some("Desktop Entry"))
-                            && remove_entry(section, "MimeType", &scheme)
+                            && remove_list_entry(section, "MimeType", &scheme)
                         {
                             desktop
                                 .write_to_file_policy(&desktop_path, ini::EscapePolicy::Nothing)?;
@@ -464,12 +416,12 @@ mod imp {
                 }
 
                 let mimeapps_path = self.app.path().config_dir()?.join("mimeapps.list");
-                match load_ini(&mimeapps_path) {
+                match load_desktop_ini(&mimeapps_path) {
                     Ok(mut mimeapps) => {
                         let mut changed = false;
                         for group in ["Default Applications", "Added Associations"] {
                             if let Some(section) = mimeapps.section_mut(Some(group)) {
-                                changed |= remove_entry(section, &scheme, &file_name);
+                                changed |= remove_list_entry(section, &scheme, &file_name);
                             }
                         }
                         if changed {
@@ -563,6 +515,57 @@ mod imp {
                 "OS command `{command}` failed: {status}"
             )))
         }
+    }
+
+    /// Loads a desktop entry file keeping its values in desktop-file syntax, so quotes and
+    /// escapes (e.g. in `Exec`) survive a rewrite with [`ini::EscapePolicy::Nothing`].
+    #[cfg(target_os = "linux")]
+    fn load_desktop_ini(path: &std::path::Path) -> Result<ini::Ini, ini::Error> {
+        ini::Ini::load_from_file_opt(
+            path,
+            ini::ParseOption {
+                enabled_quote: false,
+                enabled_escape: false,
+            },
+        )
+    }
+
+    /// Adds `item` to the front of the `;`-separated list in `key`. Returns whether it changed.
+    #[cfg(target_os = "linux")]
+    fn add_list_entry(section: &mut ini::Properties, key: &str, item: &str) -> bool {
+        let value = section.get(key).unwrap_or_default();
+        if value.split(';').any(|entry| entry == item) {
+            return false;
+        }
+        let entries = std::iter::once(item)
+            .chain(value.split(';').filter(|entry| !entry.is_empty()))
+            .collect::<Vec<_>>()
+            .join(";");
+        section.insert(key, format!("{entries};"));
+        true
+    }
+
+    /// Removes `item` from the `;`-separated list in `key`, dropping the key once it is empty.
+    /// Returns whether it changed.
+    #[cfg(target_os = "linux")]
+    fn remove_list_entry(section: &mut ini::Properties, key: &str, item: &str) -> bool {
+        let Some(value) = section.get(key) else {
+            return false;
+        };
+        if !value.split(';').any(|entry| entry == item) {
+            return false;
+        }
+        let remaining = value
+            .split(';')
+            .filter(|entry| !entry.is_empty() && *entry != item)
+            .collect::<Vec<_>>()
+            .join(";");
+        if remaining.is_empty() {
+            section.remove(key);
+        } else {
+            section.insert(key, format!("{remaining};"));
+        }
+        true
     }
 }
 
