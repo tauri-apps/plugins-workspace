@@ -6,7 +6,6 @@
 use crate::semver_compat::semver_compat_string;
 
 use crate::SingleInstanceCallback;
-use std::ffi::CStr;
 use tauri::{
     AppHandle, Manager, RunEvent, Runtime,
     plugin::{self, TauriPlugin},
@@ -27,7 +26,12 @@ use windows_sys::Win32::{
     },
 };
 
+// TODO(v3): remove this
+/// Legacy payload: cwd and arguments joined by `|`, which splits any argument containing a `|`.
+/// Still accepted from second instances running an older version of the plugin.
 const WMCOPYDATA_SINGLE_INSTANCE_DATA: usize = 1542;
+/// Cwd and arguments separated by NUL, without a terminator.
+const WMCOPYDATA_SINGLE_INSTANCE_DATA_NUL: usize = 1543;
 
 /// How long the second instance waits for the first instance to take its arguments.
 const FORWARD_TIMEOUT_MS: u32 = 10_000;
@@ -88,19 +92,20 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
                             AllowSetForegroundWindow(pid);
                         }
 
-                        let cwd = std::env::current_dir().unwrap_or_default();
-                        let cwd = cwd.to_string_lossy();
-
-                        let args = std::env::args_os()
-                            .map(|arg| arg.to_string_lossy().into_owned())
-                            .collect::<Vec<String>>()
-                            .join("|");
-
-                        let data = format!("{cwd}|{args}\0",);
+                        // Neither the cwd nor an argument can contain a NUL on Windows, so it
+                        // separates them unambiguously.
+                        let mut data = std::env::current_dir()
+                            .unwrap_or_default()
+                            .to_string_lossy()
+                            .into_owned();
+                        for arg in std::env::args_os() {
+                            data.push('\0');
+                            data.push_str(&arg.to_string_lossy());
+                        }
 
                         let bytes = data.as_bytes();
                         let cds = COPYDATASTRUCT {
-                            dwData: WMCOPYDATA_SINGLE_INSTANCE_DATA,
+                            dwData: WMCOPYDATA_SINGLE_INSTANCE_DATA_NUL,
                             cbData: bytes.len() as _,
                             lpData: bytes.as_ptr() as _,
                         };
@@ -174,17 +179,33 @@ unsafe extern "system" fn single_instance_window_proc<R: Runtime>(
         }
 
         WM_COPYDATA => {
-            let cds_ptr = lparam as *const COPYDATASTRUCT;
-            if unsafe { (*cds_ptr).dwData == WMCOPYDATA_SINGLE_INSTANCE_DATA } {
-                let userdata = unsafe { UserData::<R>::from_hwnd(hwnd) };
+            let cds = unsafe { &*(lparam as *const COPYDATASTRUCT) };
+            let separator = match cds.dwData {
+                WMCOPYDATA_SINGLE_INSTANCE_DATA_NUL => '\0',
+                WMCOPYDATA_SINGLE_INSTANCE_DATA => '|',
+                _ => return 1,
+            };
 
-                let data = unsafe { CStr::from_ptr((*cds_ptr).lpData as _).to_string_lossy() };
-                let mut s = data.split('|');
-                let cwd = s.next().unwrap();
-                let args = s.map(|s| s.to_string()).collect();
+            let bytes = if cds.lpData.is_null() {
+                &[][..]
+            } else {
+                unsafe { std::slice::from_raw_parts(cds.lpData as *const u8, cds.cbData as _) }
+            };
+            // The legacy format ends with a NUL terminator. The new one doesn't: a trailing NUL
+            // there precedes an empty last argument.
+            let bytes = if separator == '|' {
+                bytes.split(|b| *b == 0).next().unwrap_or_default()
+            } else {
+                bytes
+            };
+            let data = String::from_utf8_lossy(bytes);
 
-                userdata.run_callback(args, cwd.to_string());
-            }
+            let mut s = data.split(separator);
+            let cwd = s.next().unwrap_or_default().to_string();
+            let args = s.map(|s| s.to_string()).collect();
+
+            let userdata = unsafe { UserData::<R>::from_hwnd(hwnd) };
+            userdata.run_callback(args, cwd);
             1
         }
 
