@@ -358,21 +358,12 @@ mod imp {
                     )?;
                 }
 
-                Command::new("update-desktop-database")
-                    .arg(target)
-                    .status()
-                    .and_then(|status| {
-                        crate::error::check_command_status("update-desktop-database", status)
-                    })
-                    .inspect_err(crate::error::inspect_command_error(
-                        "update-desktop-database",
-                    ))?;
-
-                Command::new("xdg-mime")
-                    .args(["default", &file_name, mime_type.as_str()])
-                    .status()
-                    .and_then(|status| crate::error::check_command_status("xdg-mime", status))
-                    .inspect_err(crate::error::inspect_command_error("xdg-mime"))?;
+                run_command(Command::new("update-desktop-database").arg(target))?;
+                run_command(Command::new("xdg-mime").args([
+                    "default",
+                    &file_name,
+                    mime_type.as_str(),
+                ]))?;
 
                 Ok(())
             }
@@ -469,15 +460,7 @@ mod imp {
 
                 // Clear stale cache entries even after a failed update or a removed desktop file.
                 if target.try_exists()? {
-                    Command::new("update-desktop-database")
-                        .arg(&target)
-                        .status()
-                        .and_then(|status| {
-                            crate::error::check_command_status("update-desktop-database", status)
-                        })
-                        .inspect_err(crate::error::inspect_command_error(
-                            "update-desktop-database",
-                        ))?;
+                    run_command(Command::new("update-desktop-database").arg(&target))?;
                 }
 
                 let mimeapps_path = self.app.path().config_dir()?.join("mimeapps.list");
@@ -549,12 +532,36 @@ mod imp {
                     .output()
                     .inspect_err(crate::error::inspect_command_error("xdg-mime"))?;
 
-                crate::error::check_command_status("xdg-mime", output.status)?;
+                check_command_status("xdg-mime", output.status)?;
                 Ok(String::from_utf8_lossy(&output.stdout).trim_end_matches('\n') == file_name)
             }
 
             #[cfg(not(any(windows, target_os = "linux")))]
             Err(crate::Error::UnsupportedPlatform)
+        }
+    }
+
+    /// Runs the command, failing if it cannot be spawned or exits unsuccessfully.
+    #[cfg(target_os = "linux")]
+    fn run_command(command: &mut Command) -> std::io::Result<()> {
+        let name = command.get_program().to_string_lossy().into_owned();
+        command
+            .status()
+            .and_then(|status| check_command_status(&name, status))
+            .inspect_err(crate::error::inspect_command_error(&name))
+    }
+
+    #[cfg(target_os = "linux")]
+    fn check_command_status(
+        command: &str,
+        status: std::process::ExitStatus,
+    ) -> std::io::Result<()> {
+        if status.success() {
+            Ok(())
+        } else {
+            Err(std::io::Error::other(format!(
+                "OS command `{command}` failed: {status}"
+            )))
         }
     }
 }
