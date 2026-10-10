@@ -53,22 +53,30 @@ pub fn init<R: Runtime>(
                 app_handle: app.clone(),
             };
 
-            match zbus::blocking::connection::Builder::session()
-                .unwrap()
-                .name(dbus_name.as_str())
-                .unwrap()
+            let builder = match zbus::blocking::connection::Builder::session() {
+                Ok(builder) => builder,
+                Err(error) => {
+                    tracing::warn!(
+                        "single-instance: invalid D-Bus session address, launching normally: {error}"
+                    );
+                    return Ok(());
+                }
+            };
+
+            match builder
+                .name(dbus_name.as_str())?
                 .replace_existing_names(false)
                 .allow_name_replacements(false)
-                .serve_at(dbus_path.as_str(), single_instance_dbus)
-                .unwrap()
+                .serve_at(dbus_path.as_str(), single_instance_dbus)?
                 .build()
             {
                 Ok(connection) => {
                     app.manage(ConnectionHandle(connection));
                 }
                 Err(zbus::Error::NameTaken) => {
-                    if let Ok(connection) = Connection::session() {
-                        let _ = connection.call_method(
+                    let connection = Connection::session()?;
+                    connection
+                        .call_method(
                             Some(dbus_name.as_str()),
                             dbus_path.as_str(),
                             Some("org.SingleInstance.DBus"),
@@ -82,12 +90,21 @@ pub fn init<R: Runtime>(
                                     .to_string_lossy()
                                     .as_ref(),
                             ),
-                        );
-                    }
+                        )
+                        .map_err(|error| {
+                            format!("failed to forward arguments to the running instance: {error}")
+                        })?;
+                    // Exit successfully only after the primary accepted the arguments.
                     app.cleanup_before_exit();
                     std::process::exit(0);
                 }
-                _ => {}
+                Err(error) => {
+                    // Without a session bus there is no way to find other instances.
+                    tracing::warn!(
+                        "single-instance: D-Bus session bus unavailable, launching normally: {error}"
+                    );
+                    return Ok(());
+                }
             }
 
             app.manage(DBusName(dbus_name));
