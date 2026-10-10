@@ -1151,19 +1151,22 @@ impl Update {
         use std::os::unix::fs::{MetadataExt, PermissionsExt};
         let extract_path_metadata = self.extract_path.metadata()?;
 
-        let tmp_dir_locations = vec![
-            Box::new(|| Some(std::env::temp_dir())) as Box<dyn FnOnce() -> Option<PathBuf>>,
-            Box::new(dirs::cache_dir),
-            Box::new(|| Some(self.extract_path.parent().unwrap().to_path_buf())),
-        ];
-
-        for tmp_dir_location in tmp_dir_locations {
-            if let Some(tmp_dir_location) = tmp_dir_location() {
-                let tmp_dir = tempfile::Builder::new()
-                    .prefix("tauri_current_app")
-                    .tempdir_in(tmp_dir_location)?;
-                let tmp_dir_metadata = tmp_dir.path().metadata()?;
-
+        for tmp_dir_location in self.tmp_dir_locations() {
+            // a location that cannot be used moves on to the next one
+            let tmp_dir = match tempfile::Builder::new()
+                .prefix("tauri_current_app")
+                .tempdir_in(&tmp_dir_location)
+            {
+                Ok(tmp_dir) => tmp_dir,
+                Err(err) => {
+                    log::debug!(
+                        "failed to create a temporary directory in {}: {err}",
+                        tmp_dir_location.display()
+                    );
+                    continue;
+                }
+            };
+            if let Ok(tmp_dir_metadata) = tmp_dir.path().metadata() {
                 if extract_path_metadata.dev() == tmp_dir_metadata.dev() {
                     let mut perms = tmp_dir_metadata.permissions();
                     perms.set_mode(0o700);
@@ -1220,6 +1223,15 @@ impl Update {
         Err(Error::TempDirNotOnSameMountPoint)
     }
 
+    /// Directories to try, in order, for the temporary files of an install: the system temporary
+    /// directory, the user cache directory and the directory holding the app.
+    fn tmp_dir_locations(&self) -> Vec<PathBuf> {
+        let mut locations = vec![std::env::temp_dir()];
+        locations.extend(dirs::cache_dir());
+        locations.extend(self.extract_path.parent().map(Path::to_path_buf));
+        locations
+    }
+
     fn install_deb(&self, bytes: &[u8]) -> Result<()> {
         // First verify the bytes are actually a .deb package
         if !infer::archive::is_deb(bytes) {
@@ -1245,31 +1257,18 @@ impl Update {
         install_arg: &str,
         package_extension: &str,
     ) -> Result<()> {
-        // Try different temp directories
-        let tmp_dir_locations = vec![
-            Box::new(|| Some(std::env::temp_dir())) as Box<dyn FnOnce() -> Option<PathBuf>>,
-            Box::new(dirs::cache_dir),
-            Box::new(|| Some(self.extract_path.parent().unwrap().to_path_buf())),
-        ];
-
         // Try writing to multiple temp locations until one succeeds
-        for tmp_dir_location in tmp_dir_locations {
-            if let Some(path) = tmp_dir_location() {
-                let prefix = format!("tauri_{package_extension}_update");
-                if let Ok(tmp_dir) = tempfile::Builder::new().prefix(&prefix).tempdir_in(path) {
-                    let pkg_path = tmp_dir.path().join(format!("package.{package_extension}"));
+        for path in self.tmp_dir_locations() {
+            let prefix = format!("tauri_{package_extension}_update");
+            if let Ok(tmp_dir) = tempfile::Builder::new().prefix(&prefix).tempdir_in(path) {
+                let pkg_path = tmp_dir.path().join(format!("package.{package_extension}"));
 
-                    // Try writing the .deb / .rpm file
-                    if std::fs::write(&pkg_path, bytes).is_ok() {
-                        // If write succeeds, proceed with installation
-                        return self.try_install_with_privileges(
-                            &pkg_path,
-                            install_cmd,
-                            install_arg,
-                        );
-                    }
-                    // If write fails, continue to next temp location
+                // Try writing the .deb / .rpm file
+                if std::fs::write(&pkg_path, bytes).is_ok() {
+                    // If write succeeds, proceed with installation
+                    return self.try_install_with_privileges(&pkg_path, install_cmd, install_arg);
                 }
+                // If write fails, continue to next temp location
             }
         }
 
