@@ -779,6 +779,18 @@ impl Update {
         mut on_chunk: C,
         on_download_finish: D,
     ) -> Result<Vec<u8>> {
+        // not enforced (unlike for the endpoints) as that would break existing releases, but the
+        // artifact then travels in plaintext: only its signature protects it
+        // TODO(v3): enforce it
+        if self.download_url.scheme() != "https"
+            && !self.context.config.dangerous_insecure_transport_protocol
+        {
+            log::warn!(
+                "the update download URL {} does not use the `https` protocol",
+                self.download_url
+            );
+        }
+
         // set our headers
         let mut headers = self.headers.clone();
         if !headers.contains_key(ACCEPT) {
