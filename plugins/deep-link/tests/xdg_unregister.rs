@@ -32,10 +32,13 @@ impl Drop for ChildProcess {
 }
 
 #[test]
-#[ignore = "requires xdg-mime and update-desktop-database"]
 fn xdg_unregister() {
     if std::env::var_os("TAURI_XDG_TEST_CHILD").is_some() {
         exercise_registration();
+        return;
+    }
+    if !(has_command("xdg-mime") && has_command("update-desktop-database")) {
+        eprintln!("skipping: xdg-mime or update-desktop-database is missing");
         return;
     }
 
@@ -59,7 +62,7 @@ fn xdg_unregister() {
     fs::copy(std::env::current_exe().unwrap(), &executable).unwrap();
     let mut child = ChildProcess(
         Command::new(&executable)
-            .args(["--ignored", "--exact", "xdg_unregister", "--nocapture"])
+            .args(["--exact", "xdg_unregister", "--nocapture"])
             // Use xdg-utils' generic backend without the operator's desktop or bus.
             .env_clear()
             .env("PATH", std::env::var_os("PATH").unwrap())
@@ -264,4 +267,10 @@ fn exercise_registration() {
         after.lines().find(|line| line.starts_with("Exec=")),
         desktop_text.lines().find(|line| line.starts_with("Exec="))
     );
+}
+
+/// Whether `command` is on `PATH`, so the test can be skipped where XDG tools are missing.
+fn has_command(command: &str) -> bool {
+    std::env::var_os("PATH")
+        .is_some_and(|path| std::env::split_paths(&path).any(|dir| dir.join(command).is_file()))
 }

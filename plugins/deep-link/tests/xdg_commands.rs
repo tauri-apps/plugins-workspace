@@ -34,7 +34,6 @@ impl Drop for TestChild {
 }
 
 #[test]
-#[ignore = "requires xdg-mime and update-desktop-database"]
 fn xdg_command_results() {
     if let Ok(mode) = env::var(MODE_ENV) {
         exercise_commands(&mode);
@@ -60,6 +59,13 @@ fn xdg_command_results() {
         "query-padded",
         "unregister-failure",
     ] {
+        // The stubbed modes run anywhere; only the real one needs the XDG tools.
+        if mode == "real" && !(has_command("xdg-mime") && has_command("update-desktop-database")) {
+            eprintln!(
+                "skipping the real XDG commands: xdg-mime or update-desktop-database is missing"
+            );
+            continue;
+        }
         let home = sandbox.0.join(mode);
         fs::create_dir(&home).unwrap();
         for directory in [
@@ -95,7 +101,7 @@ fn xdg_command_results() {
         }
         let mut child = TestChild(
             Command::new(env::current_exe().unwrap())
-                .args(["--ignored", "--exact", TEST_NAME, "--nocapture"])
+                .args(["--exact", TEST_NAME, "--nocapture"])
                 // Isolate real XDG tools from the operator's desktop, bus, and files.
                 .env_clear()
                 .env(
@@ -244,4 +250,10 @@ fn exercise_commands(mode: &str) {
         other_file
     );
     assert!(!deep_link.is_registered(scheme).unwrap());
+}
+
+/// Whether `command` is on `PATH`, so the test can be skipped where XDG tools are missing.
+fn has_command(command: &str) -> bool {
+    std::env::var_os("PATH")
+        .is_some_and(|path| std::env::split_paths(&path).any(|dir| dir.join(command).is_file()))
 }
