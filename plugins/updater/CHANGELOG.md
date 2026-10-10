@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.14.0]
+
+- [`b6f39cc5`](https://github.com/tauri-apps/plugins-workspace/commit/b6f39cc51c4be15fbc5f8623bcc775e23d0160af) ([#3688](https://github.com/tauri-apps/plugins-workspace/pull/3688) by [@followdarko](https://github.com/tauri-apps/plugins-workspace/../../followdarko)) On Linux, installing an AppImage update no longer fails with `Invalid cross-device link (os error 18)` when the temp or cache directory is a separate mount of the AppImage's file system, such as a bind-mounted or private `/tmp`. The backup now moves on to the next location, ending with the AppImage's own directory.
+- [`fce235c3`](https://github.com/tauri-apps/plugins-workspace/commit/fce235c3fbebaf4442362470d91c7b7be190caee) ([#3640](https://github.com/tauri-apps/plugins-workspace/pull/3640) by [@t8y2](https://github.com/tauri-apps/plugins-workspace/../../t8y2)) Add `Updater::restore_update` to restore an update from cached release metadata, and `Update::verify` to verify package bytes using the configured signing key and signed-version policy. Restored updates always require the signature to bind the announced version.
+    
+    `Update::install` now verifies the package bytes before installing them, and `Updater::check` resolves to `None` instead of a target error when the release is not an update and has no entry for the current target.
+
 ## [2.13.3]
 
 - [`81631888`](https://github.com/tauri-apps/plugins-workspace/commit/81631888e9482d88de5581769c2e03dea1e73222) ([#3658](https://github.com/tauri-apps/plugins-workspace/pull/3658)) Update `minisign-verify` to 0.3, which rejects signatures with a non-canonical Ed25519 `S` value. The `Error::Minisign` variant now wraps `minisign_verify` 0.3's `Error`, and its message reads like "The signature verification failed" instead of the variant name (`InvalidSignature`).

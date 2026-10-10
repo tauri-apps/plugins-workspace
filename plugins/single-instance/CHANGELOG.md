@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.4]
+
+- [`b53d1984`](https://github.com/tauri-apps/plugins-workspace/commit/b53d1984618da35083e91a2523f2b8aa53a2fcd1) ([#3686](https://github.com/tauri-apps/plugins-workspace/pull/3686) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) On Windows, an argument containing a `|` is no longer split into several arguments when it is forwarded to the running instance.
+
 ## [2.5.3]
 
 - [`818d2e04`](https://github.com/tauri-apps/plugins-workspace/commit/818d2e04d92fd208f11aafdf32bb4a0605f344b2) ([#3645](https://github.com/tauri-apps/plugins-workspace/pull/3645)) On Windows, a second instance no longer waits indefinitely for a first instance that stopped processing messages: it stops waiting after 10 seconds and exits. The first instance may still receive the arguments once it resumes processing messages.
