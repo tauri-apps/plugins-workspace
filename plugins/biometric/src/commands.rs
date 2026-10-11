@@ -4,7 +4,7 @@
 
 use tauri::{AppHandle, Runtime, State, command};
 
-use crate::{Biometric, Result, models::*};
+use crate::{Biometric, BiometricExt, Result, models::*};
 
 #[command]
 pub(crate) async fn status<R: Runtime>(
@@ -17,8 +17,7 @@ pub(crate) async fn status<R: Runtime>(
 #[command]
 #[allow(clippy::too_many_arguments)]
 pub(crate) async fn authenticate<R: Runtime>(
-    _app: AppHandle<R>,
-    biometric: State<'_, Biometric<R>>,
+    app: AppHandle<R>,
     reason: String,
     allow_device_credential: Option<bool>,
     cancel_title: Option<String>,
@@ -35,5 +34,11 @@ pub(crate) async fn authenticate<R: Runtime>(
         subtitle,
         confirmation_required,
     };
-    biometric.authenticate(reason, options)
+    // The prompt blocks until the user answers, so keep it off the async runtime workers.
+    tauri::async_runtime::spawn_blocking(move || app.biometric().authenticate(reason, options))
+        .await
+        .map_err(|e| crate::Error::AuthenticationFailed {
+            message: e.to_string(),
+            code: None,
+        })?
 }

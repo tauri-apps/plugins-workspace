@@ -6,14 +6,14 @@
 //!
 //! - Supported platforms: Android, iOS and macOS.
 
-use serde::Serialize;
 use tauri::{
     Manager, Runtime,
-    plugin::{Builder, PluginHandle, TauriPlugin},
+    plugin::{Builder, TauriPlugin},
 };
 
 pub use models::*;
 
+#[cfg(desktop)]
 mod commands;
 #[cfg(desktop)]
 mod desktop;
@@ -43,11 +43,16 @@ impl<R: Runtime, T: Manager<R>> crate::BiometricExt<R> for T {
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("biometric")
-        .invoke_handler(tauri::generate_handler![
-            commands::status,
-            commands::authenticate,
-        ])
+    let builder = Builder::new("biometric");
+
+    // On mobile the commands are routed directly to the native plugin.
+    #[cfg(desktop)]
+    let builder = builder.invoke_handler(tauri::generate_handler![
+        commands::status,
+        commands::authenticate,
+    ]);
+
+    builder
         .setup(|app, api| {
             #[cfg(mobile)]
             let biometric = mobile::init(app, api)?;
