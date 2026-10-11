@@ -355,7 +355,7 @@ mod imp {
         /// the payload their actions carry.
         pub(super) shown: Mutex<HashMap<u32, (i32, Value)>>,
         /// The `on_close` callbacks of the tracked notifications, by server id.
-        on_close: Mutex<HashMap<u32, crate::OnClose>>,
+        pub(super) on_close: Mutex<HashMap<u32, crate::OnClose>>,
     }
 
     /// The payload of an `actionPerformed` event, as the mobile plugins send it.
@@ -662,8 +662,12 @@ mod imp {
             Some("NotificationClosed") => {
                 if let Ok((server_id, _reason)) = body.deserialize::<(u32, u32)>() {
                     lock(&shared.tracker.shown).remove(&server_id);
-                    if let Some(on_close) = lock(&shared.tracker.on_close).remove(&server_id) {
-                        (on_close.0)();
+                    // Taken out first, so the callback runs without the lock held.
+                    let on_close = lock(&shared.tracker.on_close).remove(&server_id);
+                    if let Some(on_close) = on_close {
+                        // A panicking callback must not end the thread that reports the signals
+                        // of the other notifications.
+                        let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(on_close.0));
                     }
                 }
                 return;
@@ -833,6 +837,29 @@ mod tests {
 
         assert_eq!(*seen.lock().unwrap(), ["tap", "snooze"]);
         assert!(lock(&shared.tracker.shown).is_empty());
+    }
+
+    #[cfg(all(unix, not(target_os = "macos")))]
+    #[test]
+    fn on_close_runs_once_without_the_lock_held() {
+        let shared = Arc::new(Shared::default());
+        let closed = Arc::new(Mutex::new(0));
+        let (inner, count) = (Arc::clone(&shared), Arc::clone(&closed));
+        lock(&shared.tracker.on_close).insert(
+            41,
+            crate::OnClose(Box::new(move || {
+                // deadlocks if the callback runs with the lock held
+                assert!(lock(&inner.tracker.on_close).is_empty());
+                *count.lock().unwrap() += 1;
+            })),
+        );
+        lock(&shared.tracker.on_close).insert(42, crate::OnClose(Box::new(|| panic!("boom"))));
+
+        imp::on_signal(&shared, &signal("NotificationClosed", &(42u32, 2u32)));
+        imp::on_signal(&shared, &signal("NotificationClosed", &(41u32, 2u32)));
+        imp::on_signal(&shared, &signal("NotificationClosed", &(41u32, 2u32)));
+
+        assert_eq!(*closed.lock().unwrap(), 1);
     }
 
     #[test]
