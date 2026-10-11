@@ -74,4 +74,14 @@ describePlugin('updater', { desktopOnly: true }, () => {
     })
     expect(version).toBe(UPDATER_FIXTURE_VERSION)
   })
+
+  it('check does not modify the options it is given', async () => {
+    const headers = await tauri(async (api) => {
+      const options = { headers: { 'x-e2e-updater': 'yes' } }
+      const update = await api.updater.check(options)
+      await update?.close()
+      return options.headers
+    })
+    expect(headers).toEqual({ 'x-e2e-updater': 'yes' })
+  })
 })
