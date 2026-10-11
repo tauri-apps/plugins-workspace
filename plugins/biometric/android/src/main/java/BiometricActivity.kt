@@ -45,6 +45,18 @@ class BiometricActivity : AppCompatActivity() {
         ) as KeyguardManager
         val allowDeviceCredential = allowDeviceCredentialArg && manager.isDeviceSecure;
 
+        // Android requires a secure lock screen to enroll biometrics, so with the fallback
+        // allowed and no device credential set there is nothing to authenticate with.
+        // Report it up front (like iOS does) instead of relying on the prompt's error.
+        if (allowDeviceCredentialArg && !manager.isDeviceSecure) {
+            finishActivity(
+                BiometryResultType.ERROR,
+                BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL,
+                "No device credential set"
+            )
+            return
+        }
+
         if (title.isNullOrEmpty()) {
             title = "Authenticate"
         }
@@ -83,13 +95,6 @@ class BiometricActivity : AppCompatActivity() {
                     errorCode: Int,
                     errorMessage: CharSequence
                 ) {
-                    var errorCode = errorCode
-                    var errorMessage = errorMessage
-                    // override error to properly report no device credential if needed
-                    if (allowDeviceCredentialArg && errorCode == BiometricPrompt.ERROR_NO_BIOMETRICS) {
-                        errorCode = BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL
-                        errorMessage = "No device credential set"
-                    }
                     super.onAuthenticationError(errorCode, errorMessage)
                     finishActivity(
                         BiometryResultType.ERROR,
