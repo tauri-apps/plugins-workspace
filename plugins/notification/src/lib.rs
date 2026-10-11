@@ -57,7 +57,7 @@ pub struct NotificationBuilder<R: Runtime> {
 }
 
 #[cfg(all(desktop, unix, not(target_os = "macos")))]
-pub(crate) struct OnClose(Box<dyn Fn() + Send + 'static>);
+pub(crate) struct OnClose(Box<dyn FnOnce() + Send + 'static>);
 
 #[cfg(all(desktop, unix, not(target_os = "macos")))]
 impl fmt::Debug for OnClose {
@@ -230,7 +230,7 @@ impl<R: Runtime> NotificationBuilder<R> {
     }
 
     /// Sets a callback to run when the notification closes, whether the user dismissed it, it
-    /// expired or it was removed with [`Notification::remove_active`].
+    /// expired or the app removed it.
     ///
     /// The callback runs on a background thread and should return quickly. It does not run when
     /// the session bus cannot be reached, or when the app exits first.
@@ -239,7 +239,7 @@ impl<R: Runtime> NotificationBuilder<R> {
     ///
     /// - **Linux and the BSDs**: only available there.
     #[cfg(all(desktop, unix, not(target_os = "macos")))]
-    pub fn on_close<F: Fn() + Send + 'static>(mut self, handler: F) -> Self {
+    pub fn on_close<F: FnOnce() + Send + 'static>(mut self, handler: F) -> Self {
         self.on_close = Some(OnClose(Box::new(handler)));
         self
     }

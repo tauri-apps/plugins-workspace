@@ -1,6 +1,6 @@
 ---
-"tauri-plugin-notification": patch
-"@tauri-apps/plugin-notification": patch
+notification: patch
+notification-js: patch
 ---
 
-Fix notifications closing immediately on GNOME, and add a Linux `on_close` callback to the Rust notification builder.
+Fix notifications closing right after they show on GNOME: on Linux and the BSDs, every notification is now sent on the D-Bus connection the plugin keeps open.
