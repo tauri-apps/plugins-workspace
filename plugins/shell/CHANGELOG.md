@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.5.0]
+
+- [`42ae8b45`](https://github.com/tauri-apps/plugins-workspace/commit/42ae8b4501f3628cddeab3973eb38a7593304cc8) ([#3684](https://github.com/tauri-apps/plugins-workspace/pull/3684)) On iOS, mark the plugin's `init_plugin_*` entry point `public` so release builds made with Xcode 27 keep it global and link.
+- [`a8acd178`](https://github.com/tauri-apps/plugins-workspace/commit/a8acd178bdc03797e3d00c9fb45c161cf3d3b52e) ([#3351](https://github.com/tauri-apps/plugins-workspace/pull/3351)) Add `processGroup` option to spawn commands in a new process group (POSIX) or job object (Windows), allowing the entire process tree to be killed when calling `kill()` on the child process.
+
 ## [2.4.1]
 
 - [`65ce65bd`](https://github.com/tauri-apps/plugins-workspace/commit/65ce65bdbb4390f73076c8182fbf06a52036f241) ([#3672](https://github.com/tauri-apps/plugins-workspace/pull/3672) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Fix `Command::spawn` (and the JavaScript `Command` API) sometimes emitting the `Terminated` (`close`) event before the child's `stdout`/`stderr` output when the process exits quickly.

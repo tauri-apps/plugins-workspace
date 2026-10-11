@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-biometric"
-version = "2.4.1"
+version = "2.4.2"
 description = "Prompt the user for biometric authentication on Android, iOS, and macOS."
 edition = { workspace = true }
 rust-version = { workspace = true }
@@ -36,3 +36,6 @@ block2 = "0.6"
 objc2 = "0.6"
 objc2-foundation = { version = "0.3", default-features = false, features = ["NSError", "NSString"] }
 objc2-local-authentication = { version = "0.3", default-features = false, features = ["LAContext", "LAError", "LABiometryType", "block2"] }
+
+[target.'cfg(target_os = "ios")'.dependencies]
+tauri = { workspace = true, features = ["wry"] }

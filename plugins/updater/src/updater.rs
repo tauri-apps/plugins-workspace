@@ -24,8 +24,6 @@ use semver::Version;
 use serde::{Deserialize, Deserializer, Serialize, de::Error as DeError};
 #[cfg(any(windows, target_os = "linux"))]
 use std::ffi::OsStr;
-#[cfg(desktop)]
-use std::io::Cursor;
 use tauri::{
     AppHandle, Resource, Runtime,
     utils::{
@@ -539,11 +537,7 @@ impl Updater {
             headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
         }
 
-        let target = if let Some(target) = &self.target {
-            target
-        } else {
-            updater_os().ok_or(Error::UnsupportedOs)?
-        };
+        let target = self.current_target()?;
 
         let mut remote_release: Option<RemoteRelease> = None;
         let mut raw_json: Option<serde_json::Value> = None;
@@ -666,36 +660,84 @@ impl Updater {
         // Extracted remote metadata
         let release = remote_release.ok_or(Error::ReleaseNotFound)?;
 
+        self.update_from_release(release, raw_json.unwrap(), target)
+    }
+
+    /// Restores an update from a previously saved [`Update::raw_json`] without making a request.
+    ///
+    /// Applies the same target selection and version comparator as [`Self::check`]. Runtime
+    /// configuration, including the public key and installation path, comes from this updater,
+    /// not from the cached metadata. Returns `None` if the release is no longer an update.
+    ///
+    /// The cached metadata is not authenticated, so the restored update always requires the
+    /// package signature to bind the announced version, as if [`Config::require_signed_version`]
+    /// was enabled. Otherwise modified metadata could pair a newer version number with an older,
+    /// validly signed package. Packages signed without a version (by Tauri CLI releases that
+    /// predate `--app-version`) are rejected with [`Error::MissingSignedVersion`].
+    ///
+    /// [`Update::install`] verifies the bytes it is given, and [`Update::verify`] can be used to
+    /// check a cached package before installing it.
+    ///
+    /// # Errors
+    ///
+    /// - [`Error::UnsupportedOs`]: no target was set and the updater does not support the
+    ///   current operating system.
+    /// - A deserialization error when the metadata is not a valid release manifest.
+    /// - [`Error::TargetNotFound`] or [`Error::TargetsNotFound`]: the release is an update but
+    ///   the manifest has no entry for the current target.
+    pub fn restore_update(&self, raw_json: serde_json::Value) -> Result<Option<Update>> {
+        let target = self.current_target()?;
+        let release = serde_json::from_value(raw_json.clone())?;
+        let mut update = self.update_from_release(release, raw_json, target)?;
+        if let Some(update) = &mut update {
+            update.context.config.require_signed_version = true;
+        }
+        Ok(update)
+    }
+
+    /// The `{{target}}` value: the user provided target or the current operating system.
+    fn current_target(&self) -> Result<&str> {
+        match &self.target {
+            Some(target) => Ok(target),
+            None => updater_os().ok_or(Error::UnsupportedOs),
+        }
+    }
+
+    fn update_from_release(
+        &self,
+        release: RemoteRelease,
+        raw_json: serde_json::Value,
+        target: &str,
+    ) -> Result<Option<Update>> {
         let should_update = match self.version_comparator.as_ref() {
             Some(comparator) => comparator(self.current_version.clone(), release.clone()),
             None => release.version > self.current_version,
         };
 
+        // a release that is not an update is not an error, even if it has no entry for this target
+        if !should_update {
+            return Ok(None);
+        }
+
         let installer = installer_for_bundle_type(bundle_type());
         let (download_url, signature) = self.get_urls(&release, &installer)?;
 
-        let update = if should_update {
-            Some(Update {
-                current_version: self.current_version.to_string(),
-                target: target.to_owned(),
-                extract_path: self.extract_path.clone(),
-                version: release.version.to_string(),
-                date: release.pub_date,
-                download_url: download_url.clone(),
-                signature: signature.to_owned(),
-                body: release.notes,
-                raw_json: raw_json.unwrap(),
-                timeout: None,
-                proxy: self.proxy.clone(),
-                no_proxy: self.no_proxy,
-                headers: self.headers.clone(),
-                context: self.context.clone(),
-            })
-        } else {
-            None
-        };
-
-        Ok(update)
+        Ok(Some(Update {
+            current_version: self.current_version.to_string(),
+            target: target.to_owned(),
+            extract_path: self.extract_path.clone(),
+            version: release.version.to_string(),
+            date: release.pub_date,
+            download_url: download_url.clone(),
+            signature: signature.to_owned(),
+            body: release.notes,
+            raw_json,
+            timeout: None,
+            proxy: self.proxy.clone(),
+            no_proxy: self.no_proxy,
+            headers: self.headers.clone(),
+            context: self.context.clone(),
+        }))
     }
 
     fn get_urls<'a>(
@@ -779,6 +821,18 @@ impl Update {
         mut on_chunk: C,
         on_download_finish: D,
     ) -> Result<Vec<u8>> {
+        // not enforced (unlike for the endpoints) as that would break existing releases, but the
+        // artifact then travels in plaintext: only its signature protects it
+        // TODO(v3): enforce it
+        if self.download_url.scheme() != "https"
+            && !self.context.config.dangerous_insecure_transport_protocol
+        {
+            log::warn!(
+                "the update download URL {} does not use the `https` protocol",
+                self.download_url
+            );
+        }
+
         // set our headers
         let mut headers = self.headers.clone();
         if !headers.contains_key(ACCEPT) {
@@ -834,25 +888,40 @@ impl Update {
         }
         on_download_finish();
 
-        verify_signature(
-            &buffer,
-            &self.signature,
-            &self.context.config.pubkey,
-            &self.version,
-            self.context.config.require_signed_version,
-        )?;
+        self.verify(&buffer)?;
 
         Ok(buffer)
     }
 
-    /// Installs the updater package downloaded by [`Update::download`]
+    /// Verifies package bytes using this update's signature and the configured public key.
+    ///
+    /// This performs the same checks as [`Self::download`] and [`Self::install`], including
+    /// signed-version validation, without making a request or installing anything. Use it to
+    /// discard a corrupted or tampered cached package early.
+    pub fn verify(&self, bytes: &[u8]) -> Result<()> {
+        verify_signature(
+            bytes,
+            &self.signature,
+            &self.context.config.pubkey,
+            &self.version,
+            self.context.config.require_signed_version,
+        )
+    }
+
+    /// Installs the updater package downloaded by [`Update::download`] or cached from a previous
+    /// download.
+    ///
+    /// The bytes are verified with [`Self::verify`] first, so a package that does not match this
+    /// update's signature is never installed.
     ///
     /// ## Platform-specific:
     ///
     /// - **Windows:** This function exits the app after launching the updater installer successfully
     /// - **macOS / Linux:** You need to relaunch the app to run the newly install version
     pub fn install(&self, bytes: impl AsRef<[u8]>) -> Result<()> {
-        self.install_inner(bytes.as_ref())
+        let bytes = bytes.as_ref();
+        self.verify(bytes)?;
+        self.install_inner(bytes)
     }
 
     /// Downloads and installs the updater package
@@ -866,13 +935,15 @@ impl Update {
         on_chunk: C,
         on_download_finish: D,
     ) -> Result<()> {
+        // `download` already verified the bytes
         let bytes = self.download(on_chunk, on_download_finish).await?;
-        self.install(bytes)
+        self.install_inner(&bytes)
     }
 
+    /// Updates are not supported on mobile, where apps are updated through the app stores.
     #[cfg(mobile)]
     fn install_inner(&self, _bytes: &[u8]) -> Result<()> {
-        Ok(())
+        Err(Error::UnsupportedOs)
     }
 
     /// Whether the Windows installer should restart the app after installed, default is `true`
@@ -973,7 +1044,7 @@ impl Update {
             )
         };
         if result as isize <= 32 {
-            return Err(crate::Error::Io(std::io::Error::last_os_error()));
+            return Err(crate::Error::Io(shell_execute_error(result as isize)));
         }
 
         std::process::exit(0);
@@ -1070,7 +1141,7 @@ impl Update {
     fn extract_zip(&self, bytes: &[u8]) -> Result<WindowsUpdaterType> {
         let temp_dir = self.make_temp_dir()?;
 
-        let archive = Cursor::new(bytes);
+        let archive = std::io::Cursor::new(bytes);
         let mut extractor = zip::ZipArchive::new(archive)?;
         extractor.extract(&temp_dir)?;
 
@@ -1151,73 +1222,108 @@ impl Update {
         use std::os::unix::fs::{MetadataExt, PermissionsExt};
         let extract_path_metadata = self.extract_path.metadata()?;
 
-        let tmp_dir_locations = vec![
-            Box::new(|| Some(std::env::temp_dir())) as Box<dyn FnOnce() -> Option<PathBuf>>,
-            Box::new(dirs::cache_dir),
-            Box::new(|| Some(self.extract_path.parent().unwrap().to_path_buf())),
-        ];
+        // check the payload before touching the current AppImage
+        let is_gz = infer::archive::is_gz(bytes);
+        #[cfg(not(feature = "zip"))]
+        if is_gz {
+            log::error!(
+                "the update is a compressed AppImage, which can only be installed when the updater's `zip` feature is enabled"
+            );
+            return Err(Error::InvalidUpdaterFormat);
+        }
+        // AppImages are ELF executables
+        if !is_gz && !infer::app::is_elf(bytes) {
+            log::error!("the update is neither an AppImage nor a compressed AppImage");
+            return Err(Error::InvalidUpdaterFormat);
+        }
 
-        for tmp_dir_location in tmp_dir_locations {
-            if let Some(tmp_dir_location) = tmp_dir_location() {
-                let tmp_dir = tempfile::Builder::new()
-                    .prefix("tauri_current_app")
-                    .tempdir_in(tmp_dir_location)?;
-                let tmp_dir_metadata = tmp_dir.path().metadata()?;
-
-                if extract_path_metadata.dev() == tmp_dir_metadata.dev() {
-                    let mut perms = tmp_dir_metadata.permissions();
-                    perms.set_mode(0o700);
-                    std::fs::set_permissions(tmp_dir.path(), perms)?;
-
-                    let tmp_app_image = &tmp_dir.path().join("current_app.AppImage");
-
-                    let permissions = std::fs::metadata(&self.extract_path)?.permissions();
-
-                    // create a backup of our current app image
-                    std::fs::rename(&self.extract_path, tmp_app_image)?;
-
-                    #[cfg(feature = "zip")]
-                    if infer::archive::is_gz(bytes) {
-                        log::debug!("extracting AppImage");
-                        // extract the buffer to the tmp_dir
-                        // we extract our signed archive into our final directory without any temp file
-                        let archive = Cursor::new(bytes);
-                        let decoder = flate2::read::GzDecoder::new(archive);
-                        let mut archive = tar::Archive::new(decoder);
-                        for mut entry in archive.entries()?.flatten() {
-                            if let Ok(path) = entry.path()
-                                && path.extension() == Some(OsStr::new("AppImage"))
-                            {
-                                // if something went wrong during the extraction, we should restore previous app
-                                if let Err(err) = entry.unpack(&self.extract_path) {
-                                    std::fs::rename(tmp_app_image, &self.extract_path)?;
-                                    return Err(err.into());
-                                }
-                                // early finish we have everything we need here
-                                return Ok(());
-                            }
-                        }
-                        // if we have not returned early we should restore the backup
-                        std::fs::rename(tmp_app_image, &self.extract_path)?;
-                        return Err(Error::BinaryNotFoundInArchive);
-                    }
-
-                    log::debug!("rewriting AppImage");
-                    return match std::fs::write(&self.extract_path, bytes)
-                        .and_then(|_| std::fs::set_permissions(&self.extract_path, permissions))
-                    {
-                        Err(err) => {
-                            // if something went wrong during the extraction, we should restore previous app
-                            std::fs::rename(tmp_app_image, &self.extract_path)?;
-                            Err(err.into())
-                        }
-                        Ok(_) => Ok(()),
-                    };
+        for tmp_dir_location in self.tmp_dir_locations() {
+            let Some(tmp_dir_location) = tmp_dir_location() else {
+                continue;
+            };
+            // a location that cannot be used moves on to the next one
+            let tmp_dir = match tempfile::Builder::new()
+                .prefix("tauri_current_app")
+                .tempdir_in(&tmp_dir_location)
+            {
+                Ok(tmp_dir) => tmp_dir,
+                Err(err) => {
+                    log::debug!(
+                        "failed to create a temporary directory in {}: {err}",
+                        tmp_dir_location.display()
+                    );
+                    continue;
                 }
+            };
+            if let Ok(tmp_dir_metadata) = tmp_dir.path().metadata()
+                && extract_path_metadata.dev() == tmp_dir_metadata.dev()
+            {
+                let mut perms = tmp_dir_metadata.permissions();
+                perms.set_mode(0o700);
+                std::fs::set_permissions(tmp_dir.path(), perms)?;
+
+                let tmp_app_image = &tmp_dir.path().join("current_app.AppImage");
+
+                let permissions = std::fs::metadata(&self.extract_path)?.permissions();
+
+                // create a backup of our current app image
+                match std::fs::rename(&self.extract_path, tmp_app_image) {
+                    Ok(()) => {}
+                    Err(err) if err.kind() == std::io::ErrorKind::CrossesDevices => continue,
+                    Err(err) => return Err(err.into()),
+                }
+
+                #[cfg(feature = "zip")]
+                if is_gz {
+                    log::debug!("extracting AppImage");
+                    // extract the buffer to the tmp_dir
+                    // we extract our signed archive into our final directory without any temp file
+                    let archive = std::io::Cursor::new(bytes);
+                    let decoder = flate2::read::GzDecoder::new(archive);
+                    let mut archive = tar::Archive::new(decoder);
+                    for mut entry in archive.entries()?.flatten() {
+                        if let Ok(path) = entry.path()
+                            && path.extension() == Some(OsStr::new("AppImage"))
+                        {
+                            // if something went wrong during the extraction, we should restore previous app
+                            if let Err(err) = entry.unpack(&self.extract_path) {
+                                std::fs::rename(tmp_app_image, &self.extract_path)?;
+                                return Err(err.into());
+                            }
+                            // early finish we have everything we need here
+                            return Ok(());
+                        }
+                    }
+                    // if we have not returned early we should restore the backup
+                    std::fs::rename(tmp_app_image, &self.extract_path)?;
+                    return Err(Error::BinaryNotFoundInArchive);
+                }
+
+                log::debug!("rewriting AppImage");
+                return match std::fs::write(&self.extract_path, bytes)
+                    .and_then(|_| std::fs::set_permissions(&self.extract_path, permissions))
+                {
+                    Err(err) => {
+                        // if something went wrong during the extraction, we should restore previous app
+                        std::fs::rename(tmp_app_image, &self.extract_path)?;
+                        Err(err.into())
+                    }
+                    Ok(_) => Ok(()),
+                };
             }
         }
 
         Err(Error::TempDirNotOnSameMountPoint)
+    }
+
+    /// Directories to try, in order, for the temporary files of an install: the system temporary
+    /// directory, the user cache directory and the directory holding the app.
+    fn tmp_dir_locations(&self) -> Vec<Box<dyn FnOnce() -> Option<PathBuf> + '_>> {
+        vec![
+            Box::new(|| Some(std::env::temp_dir())),
+            Box::new(dirs::cache_dir),
+            Box::new(|| self.extract_path.parent().map(Path::to_path_buf)),
+        ]
     }
 
     fn install_deb(&self, bytes: &[u8]) -> Result<()> {
@@ -1245,31 +1351,21 @@ impl Update {
         install_arg: &str,
         package_extension: &str,
     ) -> Result<()> {
-        // Try different temp directories
-        let tmp_dir_locations = vec![
-            Box::new(|| Some(std::env::temp_dir())) as Box<dyn FnOnce() -> Option<PathBuf>>,
-            Box::new(dirs::cache_dir),
-            Box::new(|| Some(self.extract_path.parent().unwrap().to_path_buf())),
-        ];
-
         // Try writing to multiple temp locations until one succeeds
-        for tmp_dir_location in tmp_dir_locations {
-            if let Some(path) = tmp_dir_location() {
-                let prefix = format!("tauri_{package_extension}_update");
-                if let Ok(tmp_dir) = tempfile::Builder::new().prefix(&prefix).tempdir_in(path) {
-                    let pkg_path = tmp_dir.path().join(format!("package.{package_extension}"));
+        for tmp_dir_location in self.tmp_dir_locations() {
+            let Some(path) = tmp_dir_location() else {
+                continue;
+            };
+            let prefix = format!("tauri_{package_extension}_update");
+            if let Ok(tmp_dir) = tempfile::Builder::new().prefix(&prefix).tempdir_in(path) {
+                let pkg_path = tmp_dir.path().join(format!("package.{package_extension}"));
 
-                    // Try writing the .deb / .rpm file
-                    if std::fs::write(&pkg_path, bytes).is_ok() {
-                        // If write succeeds, proceed with installation
-                        return self.try_install_with_privileges(
-                            &pkg_path,
-                            install_cmd,
-                            install_arg,
-                        );
-                    }
-                    // If write fails, continue to next temp location
+                // Try writing the .deb / .rpm file
+                if std::fs::write(&pkg_path, bytes).is_ok() {
+                    // If write succeeds, proceed with installation
+                    return self.try_install_with_privileges(&pkg_path, install_cmd, install_arg);
                 }
+                // If write fails, continue to next temp location
             }
         }
 
@@ -1391,7 +1487,7 @@ impl Update {
         use flate2::read::GzDecoder;
         use std::os::unix::fs::{MetadataExt, PermissionsExt};
 
-        let cursor = Cursor::new(bytes);
+        let cursor = std::io::Cursor::new(bytes);
         let mut extracted_files: Vec<PathBuf> = Vec::new();
 
         // The app is moved with renames, which only work within one file system, so the
@@ -1889,6 +1985,48 @@ fn encode_wide(string: impl AsRef<OsStr>) -> Vec<u16> {
         .collect()
 }
 
+/// Converts a failed `ShellExecuteW` return value (`<= 32`) into an error.
+///
+/// `ShellExecuteW` reports failures through its return value, not reliably through
+/// `GetLastError`.
+#[cfg(windows)]
+fn shell_execute_error(code: isize) -> std::io::Error {
+    use std::io::{Error, ErrorKind};
+    use windows_sys::Win32::{
+        Foundation::ERROR_BAD_FORMAT,
+        UI::Shell::{
+            SE_ERR_ACCESSDENIED, SE_ERR_ASSOCINCOMPLETE, SE_ERR_DDEBUSY, SE_ERR_DDEFAIL,
+            SE_ERR_DDETIMEOUT, SE_ERR_DLLNOTFOUND, SE_ERR_FNF, SE_ERR_NOASSOC, SE_ERR_OOM,
+            SE_ERR_PNF, SE_ERR_SHARE,
+        },
+    };
+
+    let Ok(error) = u32::try_from(code) else {
+        return Error::other(format!("ShellExecuteW failed with code {code}"));
+    };
+
+    match error {
+        0 => Error::new(
+            ErrorKind::OutOfMemory,
+            "the system is out of memory or resources",
+        ),
+        // SE_ERR_FNF, SE_ERR_PNF, SE_ERR_ACCESSDENIED (also returned when the user declines the
+        // UAC prompt), SE_ERR_OOM and ERROR_BAD_FORMAT share the values of the Win32 error codes
+        SE_ERR_FNF | SE_ERR_PNF | SE_ERR_ACCESSDENIED | SE_ERR_OOM | ERROR_BAD_FORMAT => {
+            Error::from_raw_os_error(error as i32)
+        }
+        SE_ERR_SHARE => Error::other("a sharing violation occurred"),
+        SE_ERR_ASSOCINCOMPLETE | SE_ERR_NOASSOC => {
+            Error::other("no application is associated with the installer")
+        }
+        SE_ERR_DDETIMEOUT | SE_ERR_DDEFAIL | SE_ERR_DDEBUSY => {
+            Error::other("the DDE transaction failed")
+        }
+        SE_ERR_DLLNOTFOUND => Error::other("the specified DLL was not found"),
+        _ => Error::other(format!("ShellExecuteW failed with code {code}")),
+    }
+}
+
 #[cfg(windows)]
 trait PathExt {
     fn wrap_in_quotes(&self) -> Self;
@@ -1968,6 +2106,342 @@ fn escape_msi_property_arg(arg: impl AsRef<OsStr>) -> String {
         }
     } else {
         format!("\"\"{arg}\"\"")
+    }
+}
+
+#[cfg(test)]
+mod offline_tests {
+    use super::*;
+    use serde_json::{Value, json};
+
+    // A throwaway key pair generated with `tauri signer generate`, and the signature of the
+    // payload `test` made with `tauri signer sign --app-version 2.0.0`.
+    const PUBLIC_KEY: &str = "untrusted comment: minisign public key: A49EF4746FA6E6D7\nRWTX5qZvdPSepDGWg2bz8n6ArQnBMwgQK1geVosorcbLzcunD+KJ+cYe";
+    const SIGNATURE: &str = "untrusted comment: signature from tauri secret key\nRUTX5qZvdPSepPF2zsjvP/L/TQtBLRnWRvaq+4omK1UEugtQp/USrGiI1v762sDy3id3aor7bRC9ETyeot6lMHHrWoZ5hjUM1Qc=\ntrusted comment: timestamp:1791649051\tfile:payload\tversion:2.0.0\nDDq2CLOEl5cQmC2eJRHlnZPVViOZsu1CjpPKQoei4A/XBfkDqGO0B+QMrcrHgEQ5qV3mne75tdFWhJpqUXh9AA==";
+    // The public `test` payload vector from minisign-verify, signed without a version.
+    const UNVERSIONED_PUBLIC_KEY: &str = "untrusted comment: minisign public key E7620F1842B4E81F\nRWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3";
+    const UNVERSIONED_SIGNATURE: &str = "untrusted comment: signature from minisign secret key\nRUQf6LRCGA9i559r3g7V1qNyJDApGip8MfqcadIgT9CuhV3EMhHoN1mGTkUidF/z7SrlQgXdy8ofjb7bNJJylDOocrCo8KLzZwo=\ntrusted comment: timestamp:1633700835\tfile:test\tprehashed\nwLMDjy9FLAuxZ3q4NlEvkgtyhrr0gtTu6KC4KBJdITbbOeAi1zBIYo0v4iTgt8jJpIidRJnp94ABQkJAgAooBQ==";
+
+    fn encode(value: &str) -> String {
+        base64::engine::general_purpose::STANDARD.encode(value)
+    }
+
+    fn builder() -> UpdaterBuilder {
+        let app = tauri::test::mock_app();
+        let config = Config {
+            pubkey: encode(PUBLIC_KEY),
+            ..Default::default()
+        };
+        let mut builder = UpdaterBuilder::new(app.handle(), config)
+            .target("test-target")
+            .executable_path("runtime-path/app")
+            .timeout(Duration::from_secs(30))
+            .no_proxy()
+            .configure_client(|_| panic!("unexpected network request"))
+            .endpoints(vec!["https://example.invalid/update".parse().unwrap()])
+            .unwrap();
+        builder.current_version = Version::new(1, 0, 0);
+        builder
+    }
+
+    fn updater() -> Updater {
+        builder().build().unwrap()
+    }
+
+    fn manifest() -> Value {
+        json!({
+            "version": "2.0.0",
+            "notes": "Cached release notes",
+            "pub_date": "2025-01-01T00:00:00Z",
+            "platforms": {
+                "test-target": {
+                    "url": "https://example.invalid/package",
+                    "signature": encode(SIGNATURE)
+                }
+            }
+        })
+    }
+
+    #[test]
+    fn restores_release_metadata_with_runtime_context() {
+        let updater = builder()
+            .header("x-test", "runtime")
+            .unwrap()
+            .build()
+            .unwrap();
+        let mut metadata = manifest();
+        metadata["extract_path"] = json!("untrusted-path");
+        metadata["config"] = json!({ "pubkey": "untrusted-key" });
+        let update = updater.restore_update(metadata.clone()).unwrap().unwrap();
+
+        assert_eq!(update.raw_json, metadata);
+        assert_eq!(update.current_version, "1.0.0");
+        assert_eq!(update.version, "2.0.0");
+        assert_eq!(update.body.as_deref(), Some("Cached release notes"));
+        assert!(update.date.is_some());
+        assert_eq!(update.target, "test-target");
+        assert_eq!(update.extract_path, updater.extract_path);
+        assert_eq!(update.context.config.pubkey, updater.context.config.pubkey);
+        assert_eq!(update.headers, updater.headers);
+        assert!(update.no_proxy);
+        assert!(update.timeout.is_none());
+        update.verify(b"test").unwrap();
+    }
+
+    #[test]
+    fn restores_dynamic_manifests() {
+        let update = updater()
+            .restore_update(json!({
+                "version": "2.0.0",
+                "url": "https://example.invalid/dynamic-package",
+                "signature": encode(SIGNATURE)
+            }))
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            update.download_url.as_str(),
+            "https://example.invalid/dynamic-package"
+        );
+        update.verify(b"test").unwrap();
+    }
+
+    #[test]
+    fn respects_default_and_custom_version_comparators() {
+        let mut updater = updater();
+        for version in ["0.9.0", "1.0.0"] {
+            let mut metadata = manifest();
+            metadata["version"] = json!(version);
+            assert!(updater.restore_update(metadata).unwrap().is_none());
+        }
+        updater.version_comparator = Some(Arc::new(|_, _| false));
+        assert!(updater.restore_update(manifest()).unwrap().is_none());
+        updater.version_comparator = Some(Arc::new(|current, release| release.version != current));
+        let mut metadata = manifest();
+        metadata["version"] = json!("0.9.0");
+        assert!(updater.restore_update(metadata).unwrap().is_some());
+    }
+
+    #[test]
+    fn stale_release_without_this_target_is_not_an_update() {
+        let mut metadata = manifest();
+        metadata["version"] = json!("0.9.0");
+        metadata["platforms"] = json!({ "other-target": metadata["platforms"]["test-target"] });
+        assert!(updater().restore_update(metadata).unwrap().is_none());
+    }
+
+    #[test]
+    fn rejects_malformed_and_incompatible_manifests() {
+        let updater = updater();
+        assert!(updater.restore_update(json!({})).is_err());
+        let mut metadata = manifest();
+        metadata["platforms"] = json!({});
+        assert!(matches!(
+            updater.restore_update(metadata),
+            Err(Error::TargetNotFound(_))
+        ));
+        let mut metadata = manifest();
+        metadata["version"] = json!("not-a-version");
+        assert!(updater.restore_update(metadata).is_err());
+    }
+
+    #[test]
+    fn verifies_cached_bytes_and_rejects_tampering() {
+        let mut update = updater().restore_update(manifest()).unwrap().unwrap();
+        update.verify(b"test").unwrap();
+        assert!(update.verify(b"tampered").is_err());
+        update.signature = encode(&SIGNATURE.replace("file:payload", "file:other"));
+        assert!(update.verify(b"test").is_err());
+        update.signature = "invalid signature".into();
+        assert!(update.verify(b"test").is_err());
+        update.signature = encode(SIGNATURE);
+        update.context.config.pubkey = encode(&PUBLIC_KEY.replace("RWTX", "RWTY"));
+        assert!(update.verify(b"test").is_err());
+    }
+
+    #[test]
+    fn install_rejects_bytes_that_do_not_match_the_signature() {
+        let update = updater().restore_update(manifest()).unwrap().unwrap();
+        assert!(matches!(
+            update.install(b"tampered"),
+            Err(Error::Minisign(_))
+        ));
+    }
+
+    #[test]
+    fn restored_updates_require_a_signed_version() {
+        let mut builder = builder().pubkey(encode(UNVERSIONED_PUBLIC_KEY));
+        builder.context.config.require_signed_version = false;
+        let updater = builder.build().unwrap();
+        let mut metadata = manifest();
+        metadata["platforms"]["test-target"]["signature"] = json!(encode(UNVERSIONED_SIGNATURE));
+        metadata["config"] = json!({ "requireSignedVersion": false });
+        let update = updater.restore_update(metadata).unwrap().unwrap();
+        assert!(matches!(
+            update.verify(b"test"),
+            Err(Error::MissingSignedVersion)
+        ));
+        assert!(matches!(
+            update.install(b"test"),
+            Err(Error::MissingSignedVersion)
+        ));
+    }
+
+    #[test]
+    fn restored_updates_reject_a_version_the_package_was_not_signed_for() {
+        let mut metadata = manifest();
+        metadata["version"] = json!("3.0.0");
+        let update = updater().restore_update(metadata).unwrap().unwrap();
+        assert!(matches!(
+            update.verify(b"test"),
+            Err(Error::SignedVersionMismatch { .. })
+        ));
+    }
+
+    #[test]
+    fn online_and_restored_updates_use_the_same_metadata() {
+        use std::io::{BufRead, BufReader, Write};
+        use std::net::TcpListener;
+
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let address = listener.local_addr().unwrap();
+        let metadata = manifest();
+        let response = metadata.to_string();
+        let server = std::thread::spawn(move || {
+            let (mut socket, _) = listener.accept().unwrap();
+            socket
+                .set_read_timeout(Some(Duration::from_secs(5)))
+                .unwrap();
+            let mut reader = BufReader::new(&mut socket);
+            loop {
+                let mut line = String::new();
+                assert!(reader.read_line(&mut line).unwrap() > 0);
+                if line == "\r\n" {
+                    break;
+                }
+            }
+            write!(socket, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}", response.len(), response).unwrap();
+        });
+        let mut updater = updater();
+        updater.context.configure_client = None;
+        updater.endpoints = vec![format!("http://{address}").parse().unwrap()];
+        let online = tauri::async_runtime::block_on(updater.check())
+            .unwrap()
+            .unwrap();
+        server.join().unwrap();
+        let restored = updater
+            .restore_update(online.raw_json.clone())
+            .unwrap()
+            .unwrap();
+        assert_eq!(restored.raw_json, metadata);
+        assert_eq!(restored.version, online.version);
+        assert_eq!(restored.current_version, online.current_version);
+        assert_eq!(restored.target, online.target);
+        assert_eq!(restored.download_url, online.download_url);
+        assert_eq!(restored.signature, online.signature);
+        assert_eq!(restored.extract_path, online.extract_path);
+        assert_eq!(restored.timeout, online.timeout);
+        assert!(!online.context.config.require_signed_version);
+        assert!(restored.context.config.require_signed_version);
+    }
+
+    #[cfg(target_os = "linux")]
+    const INSTALLED_APPIMAGE: &[u8] = b"\x7fELF installed AppImage";
+
+    /// An update for an AppImage installed in a fresh directory.
+    #[cfg(target_os = "linux")]
+    fn appimage_update() -> (tempfile::TempDir, PathBuf, Update) {
+        let dir = tempfile::tempdir().unwrap();
+        let appimage = dir.path().join("app.AppImage");
+        std::fs::write(&appimage, INSTALLED_APPIMAGE).unwrap();
+        let update = builder()
+            .executable_path(&appimage)
+            .build()
+            .unwrap()
+            .restore_update(manifest())
+            .unwrap()
+            .unwrap();
+        (dir, appimage, update)
+    }
+
+    /// The smallest buffer `infer` recognizes as an ELF executable: a full ELF header.
+    #[cfg(target_os = "linux")]
+    fn new_appimage() -> Vec<u8> {
+        let mut appimage = b"\x7fELF new AppImage".to_vec();
+        appimage.resize(64, 0);
+        appimage
+    }
+
+    #[cfg(all(target_os = "linux", feature = "zip"))]
+    fn compressed_appimage(name: &str, contents: &[u8]) -> Vec<u8> {
+        let mut archive = tar::Builder::new(flate2::write::GzEncoder::new(
+            Vec::new(),
+            flate2::Compression::default(),
+        ));
+        let mut header = tar::Header::new_gnu();
+        header.set_size(contents.len() as u64);
+        header.set_mode(0o755);
+        header.set_cksum();
+        archive.append_data(&mut header, name, contents).unwrap();
+        archive.into_inner().unwrap().finish().unwrap()
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn appimage_install_rejects_a_payload_that_is_not_an_appimage() {
+        let (_dir, appimage, update) = appimage_update();
+        assert!(matches!(
+            update.install_appimage(b"not an AppImage"),
+            Err(Error::InvalidUpdaterFormat)
+        ));
+        assert_eq!(std::fs::read(&appimage).unwrap(), INSTALLED_APPIMAGE);
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn appimage_install_writes_an_appimage_payload() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let (_dir, appimage, update) = appimage_update();
+        std::fs::set_permissions(&appimage, std::fs::Permissions::from_mode(0o755)).unwrap();
+        update.install_appimage(&new_appimage()).unwrap();
+        assert_eq!(std::fs::read(&appimage).unwrap(), new_appimage());
+        assert_eq!(
+            std::fs::metadata(&appimage).unwrap().permissions().mode() & 0o777,
+            0o755
+        );
+    }
+
+    #[test]
+    #[cfg(all(target_os = "linux", feature = "zip"))]
+    fn appimage_install_extracts_a_compressed_appimage() {
+        let (_dir, appimage, update) = appimage_update();
+        update
+            .install_appimage(&compressed_appimage("app.AppImage", &new_appimage()))
+            .unwrap();
+        assert_eq!(std::fs::read(&appimage).unwrap(), new_appimage());
+    }
+
+    #[test]
+    #[cfg(all(target_os = "linux", feature = "zip"))]
+    fn appimage_install_restores_the_app_when_the_archive_has_no_appimage() {
+        let (_dir, appimage, update) = appimage_update();
+        assert!(matches!(
+            update.install_appimage(&compressed_appimage("readme.txt", b"hello")),
+            Err(Error::BinaryNotFoundInArchive)
+        ));
+        assert_eq!(std::fs::read(&appimage).unwrap(), INSTALLED_APPIMAGE);
+    }
+
+    #[test]
+    #[cfg(all(target_os = "linux", not(feature = "zip")))]
+    fn appimage_install_rejects_a_compressed_appimage_without_the_zip_feature() {
+        let (_dir, appimage, update) = appimage_update();
+        // the gzip magic, which is all the check looks at
+        assert!(matches!(
+            update.install_appimage(b"\x1f\x8b\x08\x00 compressed AppImage"),
+            Err(Error::InvalidUpdaterFormat)
+        ));
+        assert_eq!(std::fs::read(&appimage).unwrap(), INSTALLED_APPIMAGE);
     }
 }
 

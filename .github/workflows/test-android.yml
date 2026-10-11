@@ -27,21 +27,16 @@ jobs:
       matrix:
         platform: [ubuntu-latest, macos-latest, windows-latest]
 
-    # No caches on purpose: this workflow only runs on pull requests, so anything it saved
-    # would live on the merge ref where no other run can restore it, while still counting
-    # against the repository's 10 GB cache limit and evicting entries that `v2`/`v3` saved.
+    # Nothing is saved to the cache on purpose: this workflow only runs on pull requests, so
+    # anything it saved would live on the merge ref where no other run can restore it, while
+    # still counting against the repository's 10 GB cache limit and evicting entries that
+    # `v2`/`v3` saved. Restoring is fine, as setup-pnpm does with the pnpm store.
     steps:
       - uses: actions/checkout@v7
 
       - uses: dtolnay/rust-toolchain@1.90
 
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 'lts/*'
-
-      - uses: pnpm/action-setup@v6
-        with:
-          run_install: true
+      - uses: ./.github/actions/setup-pnpm
 
       - uses: actions/setup-java@v5
         with:
@@ -71,8 +66,10 @@ jobs:
       - name: build API
         run: pnpm build
 
+      # A release build, so R8 runs with the plugins' ProGuard rules, of a single ABI: the
+      # other three would only repeat the (uncached) release build of the Rust code.
       - name: build APK
         working-directory: ./examples/api
-        run: pnpm tauri android build
+        run: pnpm tauri android build --target aarch64
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}

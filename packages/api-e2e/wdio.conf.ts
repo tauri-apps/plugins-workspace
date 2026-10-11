@@ -11,6 +11,7 @@ import {
   startFixtureServer,
   type FixtureServer
 } from './test/helpers/server.js'
+import { executeAsync } from './test/helpers/execute.js'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(dirname, '..', '..')
@@ -190,7 +191,8 @@ export const config: WebdriverIO.Config = {
     await browser.waitUntil(
       async () => {
         try {
-          const ready: unknown = await browser.executeAsync(
+          const ready: unknown = await executeAsync(
+            browser,
             'var done = arguments[arguments.length - 1]; done(typeof window.__TAURI__ !== "undefined");'
           )
           return ready === true

@@ -8,6 +8,7 @@ import {
   tauriError,
   describePlugin,
   itDesktop,
+  itOn,
   scratchDir
 } from '../helpers/index.js'
 
@@ -97,6 +98,39 @@ describePlugin('fs', () => {
       bytes
     )
     expect(read).toEqual(bytes)
+  })
+
+  it('writeFile with a stream overwrites or appends', async () => {
+    const result = await tauri(async (api, path) => {
+      const baseDir = api.fs.BaseDirectory.AppData
+      const encoder = new TextEncoder()
+      const streamOf = (...chunks: string[]) =>
+        new ReadableStream<Uint8Array>({
+          start(controller) {
+            for (const chunk of chunks) {
+              controller.enqueue(encoder.encode(chunk))
+            }
+            controller.close()
+          }
+        })
+      await api.fs.writeTextFile(path, 'a much longer previous content', {
+        baseDir
+      })
+      await api.fs.writeFile(path, streamOf('short', ' stream'), { baseDir })
+      const overwritten = await api.fs.readTextFile(path, { baseDir })
+      await api.fs.writeFile(path, streamOf(', appended'), {
+        baseDir,
+        append: true
+      })
+      return {
+        overwritten,
+        appended: await api.fs.readTextFile(path, { baseDir })
+      }
+    }, `${dir}/stream.txt`)
+    expect(result).toEqual({
+      overwritten: 'short stream',
+      appended: 'short stream, appended'
+    })
   })
 
   it('stat, lstat and size describe files and directories', async () => {
@@ -338,6 +372,19 @@ describePlugin('fs', () => {
     })
   })
 
+  it('FileHandle.seek rejects a negative offset from the start', async () => {
+    const message = await tauriError(async (api, path) => {
+      const baseDir = api.fs.BaseDirectory.AppData
+      const file = await api.fs.create(path, { baseDir })
+      try {
+        await file.seek(-1, api.fs.SeekMode.Start)
+      } finally {
+        await file.close()
+      }
+    }, `${dir}/seek.txt`)
+    expect(message).toMatch(/must not be negative/)
+  })
+
   it('a closed FileHandle cannot be used again', async () => {
     const message = await tauriError(async (api, path) => {
       const baseDir = api.fs.BaseDirectory.AppData
@@ -347,6 +394,25 @@ describePlugin('fs', () => {
     }, `${dir}/closed.txt`)
     expect(message).toMatch(/resource id \d+ is invalid/)
   })
+
+  // `:` is not allowed in Windows file names
+  itOn(
+    ['linux', 'darwin', 'android', 'ios'],
+    'relative paths that look like a URL scheme are paths',
+    async () => {
+      const result = await tauri(async (api) => {
+        const baseDir = api.fs.BaseDirectory.AppData
+        const path = 'e2e-notes:2024.txt'
+        await api.fs.writeTextFile(path, 'notes', { baseDir })
+        try {
+          return await api.fs.readTextFile(path, { baseDir })
+        } finally {
+          await api.fs.remove(path, { baseDir })
+        }
+      })
+      expect(result).toBe('notes')
+    }
+  )
 
   it('rejects paths outside the configured scope', async () => {
     // `$HOME` itself is not in the example's fs scope (only the app dirs,

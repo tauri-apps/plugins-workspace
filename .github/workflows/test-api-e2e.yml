@@ -11,7 +11,7 @@ on:
   push:
     branches:
       - v2
-    paths:
+    paths: &paths
       - '.github/workflows/test-api-e2e.yml'
       - 'packages/api-e2e/**'
       - 'examples/api/**'
@@ -19,17 +19,16 @@ on:
       - 'plugins/*/src/**'
       - 'plugins/*/permissions/**'
       - 'plugins/*/build.rs'
+      # dependency bumps
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'plugins/*/Cargo.toml'
+      - 'pnpm-lock.yaml'
+      - '**/package.json'
   pull_request:
     branches:
       - v2
-    paths:
-      - '.github/workflows/test-api-e2e.yml'
-      - 'packages/api-e2e/**'
-      - 'examples/api/**'
-      - 'plugins/*/guest-js/**'
-      - 'plugins/*/src/**'
-      - 'plugins/*/permissions/**'
-      - 'plugins/*/build.rs'
+    paths: *paths
 
 env:
   RUST_BACKTRACE: 1
@@ -63,13 +62,7 @@ jobs:
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
-      - name: setup node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 'lts/*'
-      - uses: pnpm/action-setup@v6
-        with:
-          cache: true # the pnpm store, keyed by OS and lockfile hash and shared by every workflow
+      - uses: ./.github/actions/setup-pnpm
 
       - name: install Linux dependencies
         if: runner.os == 'Linux'
@@ -116,9 +109,6 @@ jobs:
           # merge ref, where nothing else can restore it, and every write evicts an entry
           # that other runs would have hit (10 GB repository limit, LRU eviction).
           save-if: ${{ github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3' }}
-
-      - name: install dependencies
-        run: pnpm i --frozen-lockfile
 
       - name: build plugins
         run: pnpm build

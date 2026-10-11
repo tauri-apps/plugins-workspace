@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.1]
+
+- [`fc18d055`](https://github.com/tauri-apps/plugins-workspace/commit/fc18d0551354c109b7d1fcbe57550649d693daaa) ([#3683](https://github.com/tauri-apps/plugins-workspace/pull/3683)) Release the shortcuts lock before running shortcut handlers, so a handler that calls back into the plugin, or pumps messages that dispatch another shortcut event, no longer deadlocks the app.
+
 ## [2.4.0]
 
 - [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
