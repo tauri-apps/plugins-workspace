@@ -15,8 +15,6 @@ use tauri::{
     plugin::{PermissionState, PluginApi},
 };
 
-#[cfg(target_os = "linux")]
-use crate::OnClose;
 use crate::{ActionPerformed, ActionType, NotificationBuilder};
 
 /// The event of the JavaScript `onAction` listeners.
@@ -141,33 +139,37 @@ impl<R: Runtime> crate::NotificationBuilder<R> {
         if let Some(sound) = self.data.sound.clone() {
             notification = notification.sound(sound);
         }
-        #[cfg(target_os = "linux")]
-        let on_close = self.on_close.unwrap_or_else(|| OnClose(Box::new(|| {})));
-        if shared.has_listeners() {
-            if let Some(action_type) = self
+        let report = shared.has_listeners();
+        if report
+            && let Some(action_type) = self
                 .data
                 .action_type_id
                 .as_ref()
                 .and_then(|id| lock(&shared.action_types).get(id).cloned())
-            {
-                for action in action_type.actions() {
-                    notification = notification.action(action.id(), action.title());
-                }
+        {
+            for action in action_type.actions() {
+                notification = notification.action(action.id(), action.title());
             }
-            let id = self.data.id;
-            let data = serde_json::to_value(&self.data).unwrap_or(Value::Null);
-            notification.show_tracked(
-                shared,
-                id,
-                data,
-                #[cfg(target_os = "linux")]
-                on_close,
-            )?;
+        }
+        let id = self.data.id;
+        let data = serde_json::to_value(&self.data).unwrap_or(Value::Null);
+        // Linux and the BSDs send every notification on the connection the plugin keeps open,
+        // since servers like GNOME's close a notification once the connection that sent it goes
+        // away.
+        #[cfg(all(unix, not(target_os = "macos")))]
+        notification.show_tracked(
+            shared,
+            id,
+            data,
+            report,
+            #[cfg(target_os = "linux")]
+            self.on_close,
+        )?;
+        #[cfg(any(windows, target_os = "macos"))]
+        if report {
+            notification.show_tracked(shared, id, data)?;
         } else {
-            notification.show(
-                #[cfg(target_os = "linux")]
-                on_close,
-            )?;
+            notification.show()?;
         }
 
         Ok(())
@@ -437,44 +439,42 @@ mod imp {
         ///   .run(tauri::generate_context!("test/tauri.conf.json"))
         ///   .expect("error while running tauri application");
         /// ```
-        pub fn show(
-            self,
-            #[cfg(target_os = "linux")] on_close: crate::OnClose,
-        ) -> crate::Result<()> {
+        #[cfg(any(windows, target_os = "macos", feature = "windows7-compat"))]
+        pub fn show(self) -> crate::Result<()> {
             let notification = self.build()?;
             tauri::async_runtime::spawn(async move {
-                #[cfg(target_os = "linux")]
-                if let Ok(handle) = notification.show() {
-                    handle.on_close(on_close.0);
-                }
-                #[cfg(not(target_os = "linux"))]
                 let _ = notification.show();
             });
 
             Ok(())
         }
 
-        /// Shows the notification and reports what the user does with it: a click on the
-        /// notification (`tap`) or on an action goes to `shared`'s listeners as an
-        /// `actionPerformed` event carrying `data`. Closing it reports nothing.
+        /// Shows the notification on the connection `shared` keeps open. When `report` is set,
+        /// what the user does with it is reported: a click on the notification (`tap`) or on an
+        /// action goes to `shared`'s listeners as an `actionPerformed` event carrying `data`.
+        /// `on_close` runs once the server reports the notification closed.
         #[cfg(all(unix, not(target_os = "macos")))]
         pub(crate) fn show_tracked(
             self,
             shared: Arc<Shared>,
             id: i32,
             data: Value,
-            #[cfg(target_os = "linux")] on_close: crate::OnClose,
+            report: bool,
+            #[cfg(target_os = "linux")] on_close: Option<crate::OnClose>,
         ) -> crate::Result<()> {
             let mut notification = self.build()?;
-            // The Desktop Notifications Specification reports a click on the notification itself
-            // as the action `default`, and only for a notification that offers that action.
-            notification.action("default", "");
+            if report {
+                // The Desktop Notifications Specification reports a click on the notification
+                // itself as the action `default`, and only for a notification that offers that
+                // action.
+                notification.action("default", "");
+            }
             tauri::async_runtime::spawn_blocking(move || {
                 track(
                     notification,
                     &shared,
                     id,
-                    data,
+                    report.then_some(data),
                     #[cfg(target_os = "linux")]
                     on_close,
                 )
@@ -548,10 +548,7 @@ mod imp {
         #[cfg_attr(docsrs, doc(cfg(feature = "windows7-compat")))]
         #[deprecated = "Tauri no longer supports Windows 7, use `Self::show` instead."]
         pub fn notify<R: tauri::Runtime>(self, _app: &tauri::AppHandle<R>) -> crate::Result<()> {
-            self.show(
-                #[cfg(target_os = "linux")]
-                crate::OnClose(Box::new(|| {})),
-            )
+            self.show()
         }
     }
 
@@ -564,25 +561,20 @@ mod imp {
     );
 
     /// Linux and the BSDs: shows the notification and records it, so the listener thread knows
-    /// which payload its signals carry.
+    /// which payload its signals carry, when there is one, and what to run once it closes.
     #[cfg(all(unix, not(target_os = "macos")))]
     fn track(
         notification: notify_rust::Notification,
         shared: &Arc<Shared>,
         id: i32,
-        data: Value,
-        #[cfg(target_os = "linux")] on_close: crate::OnClose,
+        data: Option<Value>,
+        #[cfg(target_os = "linux")] on_close: Option<crate::OnClose>,
     ) {
         let tracker = &shared.tracker;
         let Some(connection) = tracker
             .connection
             .get_or_init(|| listen(Arc::downgrade(shared)))
         else {
-            #[cfg(target_os = "linux")]
-            if let Ok(handle) = notification.show() {
-                handle.on_close(on_close.0);
-            }
-            #[cfg(not(target_os = "linux"))]
             let _ = notification.show();
             return;
         };
@@ -590,9 +582,13 @@ mod imp {
         // recorded waits for it instead of being missed.
         let mut shown = lock(&tracker.shown);
         if let Ok(server_id) = notify(connection, &notification) {
-            shown.insert(server_id, (id, data));
+            if let Some(data) = data {
+                shown.insert(server_id, (id, data));
+            }
             #[cfg(target_os = "linux")]
-            lock(&tracker.on_close).insert(server_id, on_close);
+            if let Some(on_close) = on_close {
+                lock(&tracker.on_close).insert(server_id, on_close);
+            }
         }
     }
 
