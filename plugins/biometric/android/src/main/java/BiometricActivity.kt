@@ -52,7 +52,7 @@ class BiometricActivity : AppCompatActivity() {
             finishActivity(
                 BiometryResultType.ERROR,
                 BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL,
-                "No device credential set"
+                getString(R.string.tauri_biometric_no_device_credential)
             )
             return
         }
