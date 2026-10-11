@@ -23,6 +23,7 @@ type Surface<T> = { [P in keyof T]: (keyof T[P])[] }
 
 /** Plugins the example registers on every platform. */
 const commonSurface: Surface<CommonPluginApi> = {
+  biometric: ['BiometryType', 'checkStatus', 'authenticate'],
   clipboardManager: [
     'writeText',
     'readText',
@@ -144,7 +145,6 @@ const mobileSurface: Surface<MobilePluginApi> = {
     'requestPermissions',
     'openAppSettings'
   ],
-  biometric: ['BiometryType', 'checkStatus', 'authenticate'],
   geolocation: [
     'watchPosition',
     'getCurrentPosition',
