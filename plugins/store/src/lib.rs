@@ -15,13 +15,13 @@ pub use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
-    sync::{Arc, Mutex},
+    sync::{Arc, RwLock},
     time::Duration,
 };
-pub use store::{resolve_store_path, DeserializeFn, SerializeFn, Store, StoreBuilder};
+pub use store::{DeserializeFn, SerializeFn, Store, StoreBuilder, resolve_store_path};
 use tauri::{
-    plugin::{self, TauriPlugin},
     AppHandle, Manager, ResourceId, RunEvent, Runtime, State,
+    plugin::{self, TauriPlugin},
 };
 
 mod error;
@@ -39,7 +39,7 @@ struct ChangePayload<'a> {
 
 #[derive(Debug)]
 struct StoreState {
-    stores: Arc<Mutex<HashMap<PathBuf, ResourceId>>>,
+    stores: Arc<RwLock<HashMap<PathBuf, ResourceId>>>,
     serialize_fns: HashMap<String, SerializeFn>,
     deserialize_fns: HashMap<String, DeserializeFn>,
     default_serialize: SerializeFn,
@@ -53,17 +53,36 @@ enum AutoSave {
     Bool(bool),
 }
 
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct LoadStoreOptions {
+    defaults: Option<HashMap<String, JsonValue>>,
+    auto_save: Option<AutoSave>,
+    serialize_fn_name: Option<String>,
+    deserialize_fn_name: Option<String>,
+    #[serde(default)]
+    create_new: bool,
+    #[serde(default)]
+    override_defaults: bool,
+}
+
 fn builder<R: Runtime>(
     app: AppHandle<R>,
     store_state: State<'_, StoreState>,
     path: PathBuf,
-    auto_save: Option<AutoSave>,
-    serialize_fn_name: Option<String>,
-    deserialize_fn_name: Option<String>,
-    create_new: bool,
+    options: Option<LoadStoreOptions>,
 ) -> Result<StoreBuilder<R>> {
     let mut builder = app.store_builder(path);
-    if let Some(auto_save) = auto_save {
+
+    let Some(options) = options else {
+        return Ok(builder);
+    };
+
+    if let Some(defaults) = options.defaults {
+        builder = builder.defaults(defaults);
+    }
+
+    if let Some(auto_save) = options.auto_save {
         match auto_save {
             AutoSave::DebounceDuration(duration) => {
                 builder = builder.auto_save(Duration::from_millis(duration));
@@ -75,7 +94,7 @@ fn builder<R: Runtime>(
         }
     }
 
-    if let Some(serialize_fn_name) = serialize_fn_name {
+    if let Some(serialize_fn_name) = options.serialize_fn_name {
         let serialize_fn = store_state
             .serialize_fns
             .get(&serialize_fn_name)
@@ -83,7 +102,7 @@ fn builder<R: Runtime>(
         builder = builder.serialize(*serialize_fn);
     }
 
-    if let Some(deserialize_fn_name) = deserialize_fn_name {
+    if let Some(deserialize_fn_name) = options.deserialize_fn_name {
         let deserialize_fn = store_state
             .deserialize_fns
             .get(&deserialize_fn_name)
@@ -91,8 +110,12 @@ fn builder<R: Runtime>(
         builder = builder.deserialize(*deserialize_fn);
     }
 
-    if create_new {
+    if options.create_new {
         builder = builder.create_new();
+    }
+
+    if options.override_defaults {
+        builder = builder.override_defaults();
     }
 
     Ok(builder)
@@ -103,20 +126,9 @@ async fn load<R: Runtime>(
     app: AppHandle<R>,
     store_state: State<'_, StoreState>,
     path: PathBuf,
-    auto_save: Option<AutoSave>,
-    serialize_fn_name: Option<String>,
-    deserialize_fn_name: Option<String>,
-    create_new: Option<bool>,
+    options: Option<LoadStoreOptions>,
 ) -> Result<ResourceId> {
-    let builder = builder(
-        app,
-        store_state,
-        path,
-        auto_save,
-        serialize_fn_name,
-        deserialize_fn_name,
-        create_new.unwrap_or_default(),
-    )?;
+    let builder = builder(app, store_state, path, options)?;
     let (_, rid) = builder.build_inner()?;
     Ok(rid)
 }
@@ -127,7 +139,7 @@ async fn get_store<R: Runtime>(
     store_state: State<'_, StoreState>,
     path: PathBuf,
 ) -> Result<Option<ResourceId>> {
-    let stores = store_state.stores.lock().unwrap();
+    let stores = store_state.stores.read().unwrap();
     Ok(stores.get(&resolve_store_path(&app, path)?).copied())
 }
 
@@ -209,9 +221,17 @@ async fn length<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<usize>
 }
 
 #[tauri::command]
-async fn reload<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
+async fn reload<R: Runtime>(
+    app: AppHandle<R>,
+    rid: ResourceId,
+    ignore_defaults: Option<bool>,
+) -> Result<()> {
     let store = app.resources_table().get::<Store<R>>(rid)?;
-    store.reload()
+    if ignore_defaults.unwrap_or_default() {
+        store.reload_ignore_defaults()
+    } else {
+        store.reload()
+    }
 }
 
 #[tauri::command]
@@ -220,6 +240,11 @@ async fn save<R: Runtime>(app: AppHandle<R>, rid: ResourceId) -> Result<()> {
     store.save()
 }
 
+/// Extension trait to access the store APIs on a [`Manager`] such as `App`, `AppHandle`,
+/// `WebviewWindow` or `Window`.
+///
+/// The plugin must be registered with [`Builder::build`] for these methods to work,
+/// as they rely on the state it manages.
 pub trait StoreExt<R: Runtime> {
     /// Create a store or load an existing store with default settings at the given path.
     ///
@@ -297,7 +322,7 @@ impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
 
     fn get_store(&self, path: impl AsRef<Path>) -> Option<Arc<Store<R>>> {
         let collection = self.state::<StoreState>();
-        let stores = collection.stores.lock().unwrap();
+        let stores = collection.stores.read().unwrap();
         stores
             .get(&resolve_store_path(self.app_handle(), path.as_ref()).ok()?)
             .and_then(|rid| self.resources_table().get(*rid).ok())
@@ -316,6 +341,17 @@ fn default_deserialize(
     serde_json::from_slice(bytes).map_err(Into::into)
 }
 
+/// Builder for the store plugin.
+///
+/// It is used to register custom serialize and deserialize functions the frontend can select by
+/// name when loading a store, and to change the functions used by default (pretty printed JSON).
+///
+/// # Examples
+///
+/// ```
+/// tauri::Builder::default()
+///   .plugin(tauri_plugin_store::Builder::default().build());
+/// ```
 pub struct Builder {
     serialize_fns: HashMap<String, SerializeFn>,
     deserialize_fns: HashMap<String, DeserializeFn>,
@@ -335,6 +371,10 @@ impl Default for Builder {
 }
 
 impl Builder {
+    /// Creates a new builder using the default serialize and deserialize functions,
+    /// which read and write pretty printed JSON.
+    ///
+    /// This is the same as [`Builder::default`].
     pub fn new() -> Self {
         Self::default()
     }
@@ -417,7 +457,7 @@ impl Builder {
             ])
             .setup(move |app_handle, _api| {
                 app_handle.manage(StoreState {
-                    stores: Arc::new(Mutex::new(HashMap::new())),
+                    stores: Arc::new(RwLock::new(HashMap::new())),
                     serialize_fns: self.serialize_fns,
                     deserialize_fns: self.deserialize_fns,
                     default_serialize: self.default_serialize,
@@ -428,12 +468,12 @@ impl Builder {
             .on_event(|app_handle, event| {
                 if let RunEvent::Exit = event {
                     let collection = app_handle.state::<StoreState>();
-                    let stores = collection.stores.lock().unwrap();
+                    let stores = collection.stores.read().unwrap();
                     for (path, rid) in stores.iter() {
-                        if let Ok(store) = app_handle.resources_table().get::<Store<R>>(*rid) {
-                            if let Err(err) = store.save() {
-                                tracing::error!("failed to save store {path:?} with error {err:?}");
-                            }
+                        if let Ok(store) = app_handle.resources_table().get::<Store<R>>(*rid)
+                            && let Err(err) = store.save()
+                        {
+                            tracing::error!("failed to save store {path:?} with error {err:?}");
                         }
                     }
                 }

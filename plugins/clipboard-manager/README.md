@@ -12,7 +12,7 @@ Read and write to the system clipboard.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.77.2**_
+_This plugin requires a Rust version of at least **1.90**_
 
 There are three general methods of installation that we can recommend.
 
@@ -33,21 +33,12 @@ tauri-plugin-clipboard-manager = { git = "https://github.com/tauri-apps/plugins-
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
-> Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
-
 ```sh
 pnpm add @tauri-apps/plugin-clipboard-manager
 # or
 npm add @tauri-apps/plugin-clipboard-manager
 # or
 yarn add @tauri-apps/plugin-clipboard-manager
-
-# alternatively with Git:
-pnpm add https://github.com/tauri-apps/tauri-plugin-clipboard-manager#v2
-# or
-npm add https://github.com/tauri-apps/tauri-plugin-clipboard-manager#v2
-# or
-yarn add https://github.com/tauri-apps/tauri-plugin-clipboard-manager#v2
 ```
 
 ## Usage

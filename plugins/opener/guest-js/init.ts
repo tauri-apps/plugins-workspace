@@ -2,6 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+/**
+ * Webview script injected by the opener plugin on every page load.
+ *
+ * It installs a `click` listener on `window` that intercepts clicks on `<a>` elements whose
+ * `target` is `_blank` (or that are clicked while holding `Ctrl` or `Shift`) and whose `href`
+ * uses the `http:`, `https:`, `mailto:` or `tel:` protocol, cancels the navigation and opens the
+ * link with the system's default browser through the `plugin:opener|open_url` command instead.
+ *
+ * @module
+ */
+
 import { invoke } from '@tauri-apps/api/core'
 
 // open <a href="..."> links with the API
@@ -46,10 +57,8 @@ window.addEventListener('click', function (evt) {
 
   // return early if
   if (
-    // same origin (internal navigation)
-    url.origin === window.location.origin
     // not default protocols
-    || ['http:', 'https:', 'mailto:', 'tel:'].every((p) => url.protocol !== p)
+    ['http:', 'https:', 'mailto:', 'tel:'].every((p) => url.protocol !== p)
   )
     return
 

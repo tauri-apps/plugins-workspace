@@ -7,10 +7,6 @@ license = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-PLUGIN_NAME"
 
-[package.metadata.docs.rs]
-rustc-args = ["--cfg", "docsrs"]
-rustdoc-args = ["--cfg", "docsrs"]
-
 # Platforms supported by the plugin
 # Support levels are "full", "partial", "none", "unknown"
 # Details of the support level are left to plugin maintainer

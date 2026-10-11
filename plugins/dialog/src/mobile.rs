@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use serde::{de::DeserializeOwned, Deserialize};
+use serde::{Deserialize, de::DeserializeOwned};
 use tauri::{
-    plugin::{PluginApi, PluginHandle},
     AppHandle, Runtime,
+    plugin::{PluginApi, PluginHandle},
 };
 
-use crate::{FileDialogBuilder, FilePath, MessageDialogBuilder};
+use crate::{FileDialogBuilder, FilePath, MessageDialogBuilder, MessageDialogResult};
 
 #[cfg(target_os = "android")]
 const PLUGIN_IDENTIFIER: &str = "app.tauri.dialog";
@@ -107,13 +107,11 @@ pub fn save_file<R: Runtime, F: FnOnce(Option<FilePath>) + Send + 'static>(
 
 #[derive(Debug, Deserialize)]
 struct ShowMessageDialogResponse {
-    #[allow(dead_code)]
-    cancelled: bool,
-    value: bool,
+    value: String,
 }
 
 /// Shows a message dialog
-pub fn show_message_dialog<R: Runtime, F: FnOnce(bool) + Send + 'static>(
+pub fn show_message_dialog<R: Runtime, F: FnOnce(MessageDialogResult) + Send + 'static>(
     dialog: MessageDialogBuilder<R>,
     f: F,
 ) {
@@ -122,6 +120,8 @@ pub fn show_message_dialog<R: Runtime, F: FnOnce(bool) + Send + 'static>(
             .dialog
             .0
             .run_mobile_plugin::<ShowMessageDialogResponse>("showMessageDialog", dialog.payload());
-        f(res.map(|r| r.value).unwrap_or_default())
+
+        let res = res.map(|res| res.value.into());
+        f(res.unwrap_or_default())
     });
 }

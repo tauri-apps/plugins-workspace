@@ -17,6 +17,7 @@ All fetch operations are enabled.
 permissions = [
   "allow-fetch",
   "allow-fetch-cancel",
-  "allow-fetch-read-body",
   "allow-fetch-send",
+  "allow-fetch-read-body",
+  "allow-fetch-cancel-body",
 ]

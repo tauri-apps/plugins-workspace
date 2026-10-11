@@ -6,7 +6,7 @@ use crate::{Result, Update, UpdaterExt};
 
 use http::{HeaderMap, HeaderName, HeaderValue};
 use serde::Serialize;
-use tauri::{ipc::Channel, Manager, Resource, ResourceId, Runtime, Webview};
+use tauri::{Manager, Resource, ResourceId, Runtime, Webview, ipc::Channel};
 
 use std::{str::FromStr, time::Duration};
 use url::Url;
@@ -138,12 +138,22 @@ pub(crate) async fn install<R: Runtime>(
     webview: Webview<R>,
     update_rid: ResourceId,
     bytes_rid: ResourceId,
+    restart_after_install: Option<bool>,
 ) -> Result<()> {
     let update = webview.resources_table().get::<Update>(update_rid)?;
     let bytes = webview
         .resources_table()
         .get::<DownloadedBytes>(bytes_rid)?;
-    update.install(&bytes.0)?;
+
+    if let Some(restart_after_install) = restart_after_install {
+        let update = (*update).clone();
+        update
+            .restart_after_install(restart_after_install)
+            .install(&bytes.0)?;
+    } else {
+        update.install(&bytes.0)?;
+    }
+
     let _ = webview.resources_table().close(bytes_rid);
     Ok(())
 }
@@ -155,6 +165,7 @@ pub(crate) async fn download_and_install<R: Runtime>(
     on_event: Channel<DownloadEvent>,
     headers: Option<Vec<(String, String)>>,
     timeout: Option<u64>,
+    restart_after_install: Option<bool>,
 ) -> Result<()> {
     let update = webview.resources_table().get::<Update>(rid)?;
 
@@ -170,6 +181,10 @@ pub(crate) async fn download_and_install<R: Runtime>(
 
     if let Some(timeout) = timeout {
         update.timeout = Some(Duration::from_millis(timeout));
+    }
+
+    if let Some(restart_after_install) = restart_after_install {
+        update = update.restart_after_install(restart_after_install);
     }
 
     let mut first_chunk = true;

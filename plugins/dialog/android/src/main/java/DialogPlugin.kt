@@ -5,7 +5,6 @@
 package app.tauri.dialog
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Handler
@@ -21,6 +20,7 @@ import app.tauri.plugin.Invoke
 import app.tauri.plugin.JSArray
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 @InvokeArg
 class Filter {
@@ -31,6 +31,7 @@ class Filter {
 class FilePickerOptions {
   lateinit var filters: Array<Filter>
   var multiple: Boolean? = null
+  var pickerMode: String? = null
 }
 
 @InvokeArg
@@ -38,6 +39,7 @@ class MessageOptions {
   var title: String? = null
   lateinit var message: String
   var okButtonLabel: String? = null
+  var noButtonLabel: String? = null
   var cancelButtonLabel: String? = null
 }
 
@@ -56,20 +58,27 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
     try {
       val args = invoke.parseArgs(FilePickerOptions::class.java)
       val parsedTypes = parseFiltersOption(args.filters)
-      
-      val intent = if (parsedTypes.isNotEmpty()) {
-        val intent = Intent(Intent.ACTION_PICK)
-        setIntentMimeTypes(intent, parsedTypes)
-        intent
-      } else {
-        val intent = Intent(Intent.ACTION_GET_CONTENT)
-        intent.addCategory(Intent.CATEGORY_OPENABLE)
+
+      // TODO: ACTION_OPEN_DOCUMENT ??
+      val intent = Intent(Intent.ACTION_GET_CONTENT)
+      intent.addCategory(Intent.CATEGORY_OPENABLE)
+
+      if (args.pickerMode == "image") {
+        intent.type = "image/*"
+      } else if (args.pickerMode == "video") {
+        intent.type = "video/*"
+      } else if (args.pickerMode == "media") {
         intent.type = "*/*"
-        intent
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("video/*", "image/*"))
+      } else if (parsedTypes.isNotEmpty()) {
+        intent.type = "*/*"
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, parsedTypes)
+      } else {
+        intent.type = "*/*"
       }
 
       intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, args.multiple ?: false)
-      
+
       startActivityForResult(invoke, intent, "filePickerResult")
     } catch (ex: Exception) {
       val message = ex.message ?: "Failed to pick file"
@@ -115,7 +124,7 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
     callResult.put("files", JSArray.from(uris.toTypedArray()))
     return callResult
   }
-  
+
   private fun parseFiltersOption(filters: Array<Filter>): Array<String> {
     val mimeTypes = mutableListOf<String>()
     for (filter in filters) {
@@ -132,77 +141,57 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
     return mimeTypes.toTypedArray()
   }
 
-  private fun setIntentMimeTypes(intent: Intent, mimeTypes: Array<String>) {
-    if (mimeTypes.isNotEmpty()) {
-      var uniqueMimeKind = true
-      var mimeKind: String? = null
-      for (mime in mimeTypes) {
-        val kind = mime.split("/")[0]
-        if (mimeKind == null) {
-          mimeKind = kind
-        } else if (mimeKind != kind) {
-          uniqueMimeKind = false
-        }
-      }
-
-      if (uniqueMimeKind) {
-        if (mimeTypes.size > 1) {
-          intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
-          intent.type = Intent.normalizeMimeType("$mimeKind/*")
-        } else {
-          intent.type = mimeTypes[0]
-        }
-      } else {
-        intent.type = "*/*"
-      }
-    } else {
-      intent.type = "*/*"
-    }
-  }
-  
   @Command
   fun showMessageDialog(invoke: Invoke) {
     val args = invoke.parseArgs(MessageOptions::class.java)
-    
+
     if (activity.isFinishing) {
       invoke.reject("App is finishing")
       return
     }
 
-    val handler = { cancelled: Boolean, value: Boolean ->
+    val handler = { value: String ->
       val ret = JSObject()
-      ret.put("cancelled", cancelled)
       ret.put("value", value)
       invoke.resolve(ret)
     }
 
     Handler(Looper.getMainLooper())
       .post {
-        val builder = AlertDialog.Builder(activity)
-        
+        val builder = MaterialAlertDialogBuilder(activity)
+
         if (args.title != null) {
           builder.setTitle(args.title)
         }
+
+        val okButtonLabel = args.okButtonLabel ?: "Ok"
+
         builder
           .setMessage(args.message)
-          .setPositiveButton(
-            args.okButtonLabel ?: "OK"
-          ) { dialog, _ ->
+          .setPositiveButton(okButtonLabel) { dialog, _ ->
             dialog.dismiss()
-            handler(false, true)
+            handler(okButtonLabel)
           }
           .setOnCancelListener { dialog ->
             dialog.dismiss()
-            handler(true, false)
+            handler(args.cancelButtonLabel ?: "Cancel")
           }
+
+        if (args.noButtonLabel != null) {
+          builder.setNeutralButton(args.noButtonLabel) { dialog, _ ->
+            dialog.dismiss()
+            handler(args.noButtonLabel!!)
+          }
+        }
+
         if (args.cancelButtonLabel != null) {
           builder.setNegativeButton( args.cancelButtonLabel) { dialog, _ ->
             dialog.dismiss()
-            handler(false, false)
+            handler(args.cancelButtonLabel!!)
           }
         }
-        val dialog = builder.create()
-        dialog.show()
+
+        builder.show()
       }
   }
 
@@ -213,10 +202,15 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
       val parsedTypes = parseFiltersOption(args.filters)
 
       val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
-      setIntentMimeTypes(intent, parsedTypes)
-
       intent.addCategory(Intent.CATEGORY_OPENABLE)
       intent.putExtra(Intent.EXTRA_TITLE, args.fileName ?: "")
+      if (parsedTypes.size == 1) {
+        intent.type = parsedTypes.first()
+      } else {
+        intent.type = "*/*"
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, parsedTypes)
+      }
+
       startActivityForResult(invoke, intent, "saveFileDialogResult")
     } catch (ex: Exception) {
       val message = ex.message ?: "Failed to pick save file"

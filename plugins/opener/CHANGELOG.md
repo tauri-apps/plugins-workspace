@@ -1,5 +1,70 @@
 # Changelog
 
+## [2.7.1]
+
+- [`42ae8b45`](https://github.com/tauri-apps/plugins-workspace/commit/42ae8b4501f3628cddeab3973eb38a7593304cc8) ([#3684](https://github.com/tauri-apps/plugins-workspace/pull/3684)) On iOS, mark the plugin's `init_plugin_*` entry point `public` so release builds made with Xcode 27 keep it global and link.
+
+## [2.7.0]
+
+- [`ecd3273e`](https://github.com/tauri-apps/plugins-workspace/commit/ecd3273e8e4c6e9b123bf9861bf7b925cad1c679) ([#3480](https://github.com/tauri-apps/plugins-workspace/pull/3480) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated `windows-rs` dependencies:
+    
+    - deep-link: updated `windows-registry` to 0.6 and `windows-result` to 0.4. The public `Error::Windows` variant wraps `windows_result::Error`; applications using this type directly should update their `windows-result` dependency.
+    - opener: updated `windows` to 0.62. The public `Error::Win32Error` variant wraps `windows::core::Error`; applications using this type directly should update their `windows` dependency.
+    - single-instance: updated `windows-sys` to 0.61
+    - updater: updated `windows-sys` to 0.61
+
+## [2.6.0]
+
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+## [2.5.5]
+
+- [`db9c5998`](https://github.com/tauri-apps/plugins-workspace/commit/db9c5998feff9384f9cbbefcbe0d45937c00a1fc) ([#3531](https://github.com/tauri-apps/plugins-workspace/pull/3531) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix missing `consumer-rules.pro` on Gradle v9.
+
+## \[2.5.4]
+
+- [`c1fd33b3`](https://github.com/tauri-apps/plugins-workspace/commit/c1fd33b3a2735f2e25c1d026dc524af932db3315) ([#3343](https://github.com/tauri-apps/plugins-workspace/pull/3343) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix `revealItemInDir`/`reveal_items_in_dir` can't reveal network paths like `\\wsl.localhost\Ubuntu\etc` on Windows
+
+## \[2.5.3]
+
+- [`3d0d2e04`](https://github.com/tauri-apps/plugins-workspace/commit/3d0d2e041bbad9766aebecaeba291a28d8d7bf5c) ([#3163](https://github.com/tauri-apps/plugins-workspace/pull/3163) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Properly ignore `with: inAppBrowser` on desktop. This prevents an issue were `open_url` seamingly did nothing on desktop.
+
+## \[2.5.2]
+
+- [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
+
+## \[2.5.1]
+
+- [`6c9b61fb`](https://github.com/tauri-apps/plugins-workspace/commit/6c9b61fb658145d13893626112fc489f7458aa17) ([#3039](https://github.com/tauri-apps/plugins-workspace/pull/3039) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) On Android, updated compileSdk to 36.
+- [`67a7bf80`](https://github.com/tauri-apps/plugins-workspace/commit/67a7bf80f8e6f3aec76ebaba0983f0cf0103d3ff) ([#3018](https://github.com/tauri-apps/plugins-workspace/pull/3018) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix opener doesn't open same origin links in the browser
+
+## \[2.5.0]
+
+### enhance
+
+- [`b8056f48`](https://github.com/tauri-apps/plugins-workspace/commit/b8056f484c7144af095d4d6ded1e8adbb9b8a865) ([#2897](https://github.com/tauri-apps/plugins-workspace/pull/2897) by [@petersamokhin](https://github.com/tauri-apps/plugins-workspace/../../petersamokhin)) Allow reveal multiple items in the file explorer.
+
+## \[2.4.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+## \[2.3.1]
+
+### feat
+
+- [`2aec8ff4`](https://github.com/tauri-apps/plugins-workspace/commit/2aec8ff4c41d178ea9804f7b6eff343c726be015) ([#2803](https://github.com/tauri-apps/plugins-workspace/pull/2803) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Add `inAppBrowser` option to open URLs in an in-app browser on Android and iOS.
+
+## \[2.3.0]
+
+- [`ce9888a2`](https://github.com/tauri-apps/plugins-workspace/commit/ce9888a2d4c9b449bd2a306f0fa6c76507fd46d3) ([#2762](https://github.com/tauri-apps/plugins-workspace/pull/2762)) Similar to the `fs` plugin the `opener` plugin now supports a `requireLiteralLeadingDot` configuration in `tauri.conf.json`.
+
+## \[2.2.7]
+
+- [`6c9e08dc`](https://github.com/tauri-apps/plugins-workspace/commit/6c9e08dccb3ac99fccfce586fa2b69717ba81b52) ([#2695](https://github.com/tauri-apps/plugins-workspace/pull/2695) by [@ShaunSHamilton](https://github.com/tauri-apps/plugins-workspace/../../ShaunSHamilton)) Adjust `open_url` url type to allow `URL`
+- [`dde6f3c3`](https://github.com/tauri-apps/plugins-workspace/commit/dde6f3c31c1b79942abb556be31757dc583f509e) ([#2549](https://github.com/tauri-apps/plugins-workspace/pull/2549) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update `windows` crate to 0.61 to align with Tauri 2.5
+
 ## \[2.2.6]
 
 - [`1a984659`](https://github.com/tauri-apps/plugins-workspace/commit/1a9846599b6a71faf330845847a30f6bf9735898) ([#2469](https://github.com/tauri-apps/plugins-workspace/pull/2469) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Update `objc2` crate to 0.6. No user facing changes.
@@ -28,6 +93,11 @@
 ## \[2.2.0]
 
 - [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
+
+## \[2.0.0]
+
+- [`383e636a`](https://github.com/tauri-apps/plugins-workspace/commit/383e636a8e595aec1300999a8aeb7d9bf8c14632) ([#2019](https://github.com/tauri-apps/plugins-workspace/pull/2019) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Initial Release
+h each other.
 
 ## \[2.0.0]
 

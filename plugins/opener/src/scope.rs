@@ -8,9 +8,9 @@ use std::{
     sync::Arc,
 };
 
-use tauri::{ipc::ScopeObject, utils::acl::Value, AppHandle, Manager, Runtime};
+use tauri::{AppHandle, Manager, Runtime, ipc::ScopeObject, utils::acl::Value};
 
-use crate::{scope_entry::EntryRaw, Error};
+use crate::{Error, scope_entry::EntryRaw};
 
 pub use crate::scope_entry::Application;
 
@@ -129,7 +129,10 @@ impl<'a, R: Runtime, M: Manager<R>> Scope<'a, R, M> {
             &tauri::utils::config::FsScope::Scope {
                 allow: self.allowed.iter().filter_map(|e| e.path()).collect(),
                 deny: self.denied.iter().filter_map(|e| e.path()).collect(),
-                require_literal_leading_dot: None,
+                require_literal_leading_dot: self
+                    .manager
+                    .state::<crate::Opener<R>>()
+                    .require_literal_leading_dot,
             },
         )?;
 

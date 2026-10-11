@@ -1,5 +1,30 @@
 # Changelog
 
+## [2.5.0]
+
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+## \[2.4.1]
+
+- [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
+
+## \[2.4.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+## \[2.3.0]
+
+- [`f6e11282`](https://github.com/tauri-apps/plugins-workspace/commit/f6e11282a7f4036dd6d1dbb8f100e777e9e42f11) ([#2787](https://github.com/tauri-apps/plugins-workspace/pull/2787) by [@mikew](https://github.com/tauri-apps/plugins-workspace/../../mikew)) Added `Cli.matches_from(args)`. This can be combined with the `args` passed to the callback of `tauri_plugin_single_instance::init` to parse the command line arguments passed to subsequent instances of the application.
+- [`37c2fb41`](https://github.com/tauri-apps/plugins-workspace/commit/37c2fb41201160e85c8dc3ad40f462cd4e17a304) ([#2772](https://github.com/tauri-apps/plugins-workspace/pull/2772) by [@floriskn](https://github.com/tauri-apps/plugins-workspace/../../floriskn)) Added a new `global` boolean flag to the `CliArg` struct to support global CLI arguments. This flag allows arguments like `--verbose` to be marked as global and automatically propagated to all subcommands, enabling consistent availability throughout the CLI.
+
+  The new field is optional and defaults to false.
+
+## \[2.2.1]
+
+- [`f634e524`](https://github.com/tauri-apps/plugins-workspace/commit/f634e5248ebe428f8305a59f74c13fc15147fb8e) This is an "empty" release to update the plugins' source files on crates.io and docs.rs. This should fix docs.rs build failures for projects using tauri plugins as dependencies.
+
 ## \[2.2.0]
 
 - [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.

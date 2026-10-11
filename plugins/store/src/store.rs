@@ -11,18 +11,32 @@ use std::{
     sync::{Arc, Mutex},
     time::Duration,
 };
-use tauri::{path::BaseDirectory, AppHandle, Emitter, Manager, Resource, ResourceId, Runtime};
+use tauri::{AppHandle, Emitter, Manager, Resource, ResourceId, Runtime, path::BaseDirectory};
 use tokio::{
     select,
-    sync::mpsc::{unbounded_channel, UnboundedSender},
+    sync::mpsc::{UnboundedSender, unbounded_channel},
     time::sleep,
 };
 
+/// Function used to serialize the store cache to the bytes written to the store file.
+///
+/// The default implementation writes pretty printed JSON.
 pub type SerializeFn =
     fn(&HashMap<String, JsonValue>) -> Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>>;
+/// Function used to deserialize the bytes read from the store file into the store cache.
+///
+/// The default implementation parses JSON.
 pub type DeserializeFn =
     fn(&[u8]) -> Result<HashMap<String, JsonValue>, Box<dyn std::error::Error + Send + Sync>>;
 
+/// Resolves the path of a store file, relative to the app data directory
+/// ([`BaseDirectory::AppData`]).
+///
+/// This is the path the [`Store`] created with the given `path` reads from and writes to.
+///
+/// # Errors
+///
+/// Returns an error if the app data directory cannot be resolved.
 pub fn resolve_store_path<R: Runtime>(
     app: &AppHandle<R>,
     path: impl AsRef<Path>,
@@ -39,6 +53,7 @@ pub struct StoreBuilder<R: Runtime> {
     deserialize_fn: DeserializeFn,
     auto_save: Option<Duration>,
     create_new: bool,
+    override_defaults: bool,
 }
 
 impl<R: Runtime> StoreBuilder<R> {
@@ -66,6 +81,7 @@ impl<R: Runtime> StoreBuilder<R> {
             deserialize_fn,
             auto_save: Some(Duration::from_millis(100)),
             create_new: false,
+            override_defaults: false,
         }
     }
 
@@ -178,9 +194,15 @@ impl<R: Runtime> StoreBuilder<R> {
         self
     }
 
+    /// Override the store values when creating the store, ignoring defaults.
+    pub fn override_defaults(mut self) -> Self {
+        self.override_defaults = true;
+        self
+    }
+
     pub(crate) fn build_inner(mut self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
         let stores = self.app.state::<StoreState>().stores.clone();
-        let mut stores = stores.lock().unwrap();
+        let mut stores = stores.write().unwrap();
 
         self.path = resolve_store_path(&self.app, self.path)?;
 
@@ -189,7 +211,10 @@ impl<R: Runtime> StoreBuilder<R> {
                 let _ = self.app.resources_table().take::<Store<R>>(rid);
             }
         } else if let Some(rid) = stores.get(&self.path) {
-            return Ok((self.app.resources_table().get(*rid).unwrap(), *rid));
+            // The resource id we stored can be invalid due to
+            // the resource table getting modified by an external source
+            // (e.g. `App::cleanup_before_exit` > `manager.resources_table.clear()`)
+            return Ok((self.app.resources_table().get(*rid)?, *rid));
         }
 
         // if stores.contains_key(&self.path) {
@@ -205,7 +230,11 @@ impl<R: Runtime> StoreBuilder<R> {
         );
 
         if !self.create_new {
-            let _ = store_inner.load();
+            if self.override_defaults {
+                let _ = store_inner.load_ignore_defaults();
+            } else {
+                let _ = store_inner.load();
+            }
         }
 
         let store = Store {
@@ -284,12 +313,21 @@ impl<R: Runtime> StoreInner<R> {
     }
 
     /// Update the store from the on-disk state
+    ///
+    /// Note: This method loads the data and merges it with the current store
     pub fn load(&mut self) -> crate::Result<()> {
         let bytes = fs::read(&self.path)?;
 
         self.cache
             .extend((self.deserialize_fn)(&bytes).map_err(crate::Error::Deserialize)?);
 
+        Ok(())
+    }
+
+    /// Load the store from the on-disk state, ignoring defaults
+    pub fn load_ignore_defaults(&mut self) -> crate::Result<()> {
+        let bytes = fs::read(&self.path)?;
+        self.cache = (self.deserialize_fn)(&bytes).map_err(crate::Error::Deserialize)?;
         Ok(())
     }
 
@@ -379,7 +417,7 @@ impl<R: Runtime> StoreInner<R> {
 
     fn emit_change_event(&self, key: &str, value: Option<&JsonValue>) -> crate::Result<()> {
         let state = self.app.state::<StoreState>();
-        let stores = state.stores.lock().unwrap();
+        let stores = state.stores.read().unwrap();
         let exists = value.is_some();
         self.app.emit(
             "store://change",
@@ -404,6 +442,15 @@ impl<R: Runtime> std::fmt::Debug for StoreInner<R> {
     }
 }
 
+/// A key-value store, persisted to a file resolved with [`resolve_store_path`].
+///
+/// The values are kept in memory and written to disk on [`Store::save`], and also automatically
+/// after each modification unless auto save has been disabled with
+/// [`StoreBuilder::disable_auto_save`]. Any pending auto save is applied when the store is dropped.
+///
+/// Create or load one with [`StoreExt::store`](crate::StoreExt::store) or [`StoreBuilder`].
+/// It is a [`Resource`], so it is also reachable from the frontend by its [`ResourceId`];
+/// closing that resource unregisters the store, meaning the next load creates a new instance.
 pub struct Store<R: Runtime> {
     auto_save: Option<Duration>,
     auto_save_debounce_sender: Arc<Mutex<Option<UnboundedSender<AutoSaveMessage>>>>,
@@ -414,7 +461,7 @@ impl<R: Runtime> Resource for Store<R> {
     fn close(self: Arc<Self>) {
         let store = self.store.lock().unwrap();
         let state = store.app.state::<StoreState>();
-        let mut stores = state.stores.lock().unwrap();
+        let mut stores = state.stores.write().unwrap();
         stores.remove(&store.path);
     }
 }
@@ -499,8 +546,22 @@ impl<R: Runtime> Store<R> {
     }
 
     /// Update the store from the on-disk state
+    ///
+    /// Note:
+    ///   - This method loads the data and merges it with the current store,
+    ///     this behavior will be changed to resetting to default first and then merging with the on-disk state in v3,
+    ///     to fully match the store with the on-disk state,
+    ///     use [`reload_ignore_defaults`](Self::reload_ignore_defaults) instead
+    ///   - This method does not emit change events
     pub fn reload(&self) -> crate::Result<()> {
         self.store.lock().unwrap().load()
+    }
+
+    /// Load the store from the on-disk state, ignoring defaults
+    ///
+    /// Note: This method does not emit change events
+    pub fn reload_ignore_defaults(&self) -> crate::Result<()> {
+        self.store.lock().unwrap().load_ignore_defaults()
     }
 
     /// Saves the store to disk at the store's `path`.
@@ -516,7 +577,7 @@ impl<R: Runtime> Store<R> {
         let store = self.store.lock().unwrap();
         let app = store.app.clone();
         let state = app.state::<StoreState>();
-        let stores = state.stores.lock().unwrap();
+        let stores = state.stores.read().unwrap();
         if let Some(rid) = stores.get(&store.path).copied() {
             drop(store);
             drop(stores);
@@ -562,7 +623,8 @@ impl<R: Runtime> Store<R> {
 
     fn apply_pending_auto_save(&self) {
         // Cancel and save if auto save is pending
-        if let Some(sender) = self.auto_save_debounce_sender.lock().unwrap().take() {
+        let auto_save_debounce_sender = self.auto_save_debounce_sender.lock().unwrap().take();
+        if let Some(sender) = auto_save_debounce_sender {
             let _ = sender.send(AutoSaveMessage::Cancel);
             let _ = self.save();
         };

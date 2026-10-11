@@ -1,5 +1,44 @@
 # Changelog
 
+## [2.5.0]
+
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+## [2.4.5]
+
+- [`c050e073`](https://github.com/tauri-apps/plugins-workspace/commit/c050e073b68205bae7389fb86958cb9331e1a3be) ([#3572](https://github.com/tauri-apps/plugins-workspace/pull/3572) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix `apply_pending_auto_save` can deadlock the store
+
+## \[2.4.4]
+
+- [`2ed6d6c1`](https://github.com/tauri-apps/plugins-workspace/commit/2ed6d6c1de4f5051b87cb6a2c5ac45320c444989) ([#3499](https://github.com/tauri-apps/plugins-workspace/pull/3499) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix `StoreOptions` requires `defaults` field
+
+## \[2.4.3]
+
+- [`964e13f1`](https://github.com/tauri-apps/plugins-workspace/commit/964e13f124ad1feeb93c10168b265dc4936f738c) ([#3395](https://github.com/tauri-apps/plugins-workspace/pull/3395) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix a deadlock when calling `Store::set` while exiting (on `RunEvent::Exit`)
+
+## \[2.4.2]
+
+- [`eebfd2ed`](https://github.com/tauri-apps/plugins-workspace/commit/eebfd2ed3e4bae4ef195f20c992f01657a5f5121) ([#3157](https://github.com/tauri-apps/plugins-workspace/pull/3157) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Return an error instead of panic when the internally tracked resource id is invalid on creating new stores
+
+## \[2.4.1]
+
+- [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
+
+## \[2.4.0]
+
+- [`5ac8fbb1`](https://github.com/tauri-apps/plugins-workspace/commit/5ac8fbb1fa76714aa8cc9c0d74e0aebab12f9755) ([#2857](https://github.com/tauri-apps/plugins-workspace/pull/2857) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Allow setting defaults from the JavaScript API
+- [`5ac8fbb1`](https://github.com/tauri-apps/plugins-workspace/commit/5ac8fbb1fa76714aa8cc9c0d74e0aebab12f9755) ([#2857](https://github.com/tauri-apps/plugins-workspace/pull/2857) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Add an new option `overrideDefaults` for creating/loading and reloading the store that overrides the store with the on-disk state, ignoring defaults
+
+## \[2.3.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+## \[2.2.1]
+
+- [`f634e524`](https://github.com/tauri-apps/plugins-workspace/commit/f634e5248ebe428f8305a59f74c13fc15147fb8e) This is an "empty" release to update the plugins' source files on crates.io and docs.rs. This should fix docs.rs build failures for projects using tauri plugins as dependencies.
+
 ## \[2.2.0]
 
 - [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.

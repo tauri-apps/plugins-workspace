@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-fs"
-version = "2.2.1"
+version = "2.7.0"
 description = "Access the file system."
 authors = { workspace = true }
 license = { workspace = true }
@@ -8,10 +8,13 @@ edition = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-fs"
-
-[package.metadata.docs.rs]
-rustc-args = ["--cfg", "docsrs"]
-rustdoc-args = ["--cfg", "docsrs"]
+exclude = [
+  "/banner.png",
+  "/guest-js",
+  "/package.json",
+  "/rollup.config.js",
+  "/tsconfig.json",
+]
 
 [package.metadata.platforms.support]
 windows = { level = "full", notes = "Apps installed via MSI or NSIS in `perMachine` and `both` mode require admin permissions for write access in `$RESOURCES` folder" }
@@ -24,8 +27,11 @@ ios = { level = "partial", notes = "Access is restricted to Application folder b
 tauri-plugin = { workspace = true, features = ["build"] }
 schemars = { workspace = true }
 serde = { workspace = true }
-toml = "0.8"
-tauri-utils = { workspace = true, features = ["build"] }
+toml = "1.0"
+tauri-utils = { workspace = true }
+
+[dev-dependencies]
+tauri = { workspace = true, features = ["wry"] }
 
 [dependencies]
 serde = { workspace = true }
@@ -34,6 +40,7 @@ serde_repr = "0.1"
 tauri = { workspace = true }
 thiserror = { workspace = true }
 url = { workspace = true }
+log = { workspace = true }
 anyhow = "1"
 glob = { workspace = true }
 # TODO: Remove `serialization-compat-6` in v3
@@ -41,9 +48,12 @@ notify = { version = "8", optional = true, features = [
   "serde",
   "serialization-compat-6",
 ] }
-notify-debouncer-full = { version = "0.5", optional = true }
+notify-debouncer-full = { version = "0.6", optional = true }
 dunce = { workspace = true }
 percent-encoding = "2"
+
+[target.'cfg(target_os = "ios")'.dependencies]
+objc2-foundation = { version = "0.3", features = ["NSURL", "NSString"] }
 
 [features]
 watch = ["notify", "notify-debouncer-full"]

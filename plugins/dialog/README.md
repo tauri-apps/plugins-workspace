@@ -12,7 +12,7 @@ Native system dialogs for opening and saving files along with message dialogs.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.77.2**_
+_This plugin requires a Rust version of at least **1.90**_
 
 There are three general methods of installation that we can recommend.
 
@@ -31,9 +31,25 @@ tauri-plugin-dialog = "2.0.0"
 tauri-plugin-dialog = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
-You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
+### Linux XDG Desktop Portal Support
 
-> Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
+By default, this plugin uses gtk to show dialogs, however since `v2.5.0` you can switch to using [XDG Desktop Portal](https://flatpak.github.io/xdg-desktop-portal/) by adding the following to your `Cargo.toml` file:
+
+```toml
+[dependencies]
+tauri-plugin-dialog = { version = "2.5.0", default-features = false, features = ["xdg-portal"] }
+# alternatively with Git:
+tauri-plugin-dialog = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2", default-features = false, features = ["xdg-portal"] }
+
+```
+
+Do note if you use the `xdg-portal` feature, you need to ensure that [`zenity`](https://gitlab.gnome.org/GNOME/zenity) and an [XDG Desktop Portal backend](https://flatpak.github.io/xdg-desktop-portal#using-portals) is installed with your program.
+
+For more information, see [XDG Desktop Portal documentation](https://flatpak.github.io/xdg-desktop-portal/) and [`rfd` documentation](https://docs.rs/rfd/latest/rfd#xdg-desktop-portal-backend).
+
+### JavaScript
+
+You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
 ```sh
 pnpm add @tauri-apps/plugin-dialog
@@ -41,13 +57,6 @@ pnpm add @tauri-apps/plugin-dialog
 npm add @tauri-apps/plugin-dialog
 # or
 yarn add @tauri-apps/plugin-dialog
-
-# alternatively with Git:
-pnpm add https://github.com/tauri-apps/tauri-plugin-dialog#v2
-# or
-npm add https://github.com/tauri-apps/tauri-plugin-dialog#v2
-# or
-yarn add https://github.com/tauri-apps/tauri-plugin-dialog#v2
 ```
 
 ## Usage

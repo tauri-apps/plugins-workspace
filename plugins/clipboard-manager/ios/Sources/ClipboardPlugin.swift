@@ -47,6 +47,6 @@ class ClipboardPlugin: Plugin {
 }
 
 @_cdecl("init_plugin_clipboard")
-func initPlugin() -> Plugin {
+public func initPlugin() -> Plugin {
   return ClipboardPlugin()
 }

@@ -7,8 +7,6 @@ operations are available from the upload plugin.
 
 All operations are enabled by default.
 
-
-
 #### This default permission set includes the following:
 
 - `allow-upload`

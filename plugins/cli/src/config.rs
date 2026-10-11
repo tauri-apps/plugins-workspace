@@ -114,6 +114,12 @@ pub struct Arg {
     /// It does not define position in the argument list as a whole. When utilized with multiple=true,
     /// only the last positional argument may be defined as multiple (i.e. the one with the highest index).
     pub index: Option<usize>,
+    /// Specifies whether the argument should be global.
+    ///
+    /// Global arguments are propagated to all subcommands automatically,
+    /// making them available throughout the CLI regardless of where they are defined.
+    #[serde(default)]
+    pub global: bool,
 }
 
 /// describes a CLI configuration

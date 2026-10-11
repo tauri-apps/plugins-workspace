@@ -5,12 +5,12 @@
 use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
-use tauri::{command, Manager, Runtime, State, Window};
+use tauri::{Manager, Runtime, State, Window, command};
 use tauri_plugin_fs::FsExt;
 
 use crate::{
-    Dialog, FileDialogBuilder, FilePath, MessageDialogButtons, MessageDialogKind, Result, CANCEL,
-    NO, OK, YES,
+    Dialog, FileAccessMode, FileDialogBuilder, FilePath, MessageDialogButtons, MessageDialogKind,
+    MessageDialogResult, PickerMode, Result,
 };
 
 #[derive(Serialize)]
@@ -56,6 +56,17 @@ pub struct OpenDialogOptions {
     recursive: bool,
     /// Whether to allow creating directories in the dialog **macOS Only**
     can_create_directories: Option<bool>,
+    /// The preferred mode of the dialog.
+    /// This is meant for mobile platforms (iOS and Android) which have distinct file and media pickers.
+    /// On desktop, this option is ignored.
+    /// If not provided, the dialog will automatically choose the best mode based on the MIME types of the filters.
+    #[serde(default)]
+    #[cfg_attr(mobile, allow(dead_code))]
+    picker_mode: Option<PickerMode>,
+    /// The file access mode of the dialog.
+    #[serde(default)]
+    #[cfg_attr(mobile, allow(dead_code))]
+    file_access_mode: Option<FileAccessMode>,
 }
 
 /// The options for the save dialog API.
@@ -127,9 +138,15 @@ pub(crate) async fn open<R: Runtime>(
     if let Some(can) = options.can_create_directories {
         dialog_builder = dialog_builder.set_can_create_directories(can);
     }
+    if let Some(picker_mode) = options.picker_mode {
+        dialog_builder = dialog_builder.set_picker_mode(picker_mode);
+    }
     for filter in options.filters {
         let extensions: Vec<&str> = filter.extensions.iter().map(|s| &**s).collect();
         dialog_builder = dialog_builder.add_filter(filter.name, &extensions);
+    }
+    if let Some(file_access_mode) = options.file_access_mode {
+        dialog_builder = dialog_builder.set_file_access_mode(file_access_mode);
     }
 
     let res = if options.directory {
@@ -154,13 +171,13 @@ pub(crate) async fn open<R: Runtime>(
                 )
             } else {
                 let folder = dialog_builder.blocking_pick_folder();
-                if let Some(folder) = &folder {
-                    if let Ok(path) = folder.clone().into_path() {
-                        if let Some(s) = window.try_fs_scope() {
-                            s.allow_directory(&path, options.recursive)?;
-                        }
-                        tauri_scope.allow_directory(&path, options.directory)?;
+                if let Some(folder) = &folder
+                    && let Ok(path) = folder.clone().into_path()
+                {
+                    if let Some(s) = window.try_fs_scope() {
+                        s.allow_directory(&path, options.recursive)?;
                     }
+                    tauri_scope.allow_directory(&path, options.directory)?;
                 }
                 OpenResponse::Folder(folder.map(|p| p.simplified()))
             }
@@ -187,13 +204,13 @@ pub(crate) async fn open<R: Runtime>(
         let tauri_scope = window.state::<tauri::scope::Scopes>();
         let file = dialog_builder.blocking_pick_file();
 
-        if let Some(file) = &file {
-            if let Ok(path) = file.clone().into_path() {
-                if let Some(s) = window.try_fs_scope() {
-                    s.allow_file(&path)?;
-                }
-                tauri_scope.allow_file(&path)?;
+        if let Some(file) = &file
+            && let Ok(path) = file.clone().into_path()
+        {
+            if let Some(s) = window.try_fs_scope() {
+                s.allow_file(&path)?;
             }
+            tauri_scope.allow_file(&path)?;
         }
         OpenResponse::File(file.map(|f| f.simplified()))
     };
@@ -229,29 +246,32 @@ pub(crate) async fn save<R: Runtime>(
     let tauri_scope = window.state::<tauri::scope::Scopes>();
 
     let path = dialog_builder.blocking_save_file();
-    if let Some(p) = &path {
-        if let Ok(path) = p.clone().into_path() {
-            if let Some(s) = window.try_fs_scope() {
-                s.allow_file(&path)?;
-            }
-            tauri_scope.allow_file(&path)?;
+    if let Some(p) = &path
+        && let Ok(path) = p.clone().into_path()
+    {
+        if let Some(s) = window.try_fs_scope() {
+            s.allow_file(&path)?;
         }
+        tauri_scope.allow_file(&path)?;
     }
 
     Ok(path.map(|p| p.simplified()))
 }
 
-fn message_dialog<R: Runtime>(
-    #[allow(unused_variables)] window: Window<R>,
+#[command]
+pub(crate) async fn message<R: Runtime>(
+    #[allow(unused)] window: Window<R>,
     dialog: State<'_, Dialog<R>>,
     title: Option<String>,
     message: String,
     kind: Option<MessageDialogKind>,
-    buttons: MessageDialogButtons,
-) -> bool {
+    buttons: Option<MessageDialogButtons>,
+) -> Result<MessageDialogResult> {
     let mut builder = dialog.message(message);
 
-    builder = builder.buttons(buttons);
+    if let Some(buttons) = buttons {
+        builder = builder.buttons(buttons);
+    }
 
     if let Some(title) = title {
         builder = builder.title(title);
@@ -266,86 +286,5 @@ fn message_dialog<R: Runtime>(
         builder = builder.kind(kind);
     }
 
-    builder.blocking_show()
-}
-
-#[command]
-pub(crate) async fn message<R: Runtime>(
-    window: Window<R>,
-    dialog: State<'_, Dialog<R>>,
-    title: Option<String>,
-    message: String,
-    kind: Option<MessageDialogKind>,
-    ok_button_label: Option<String>,
-) -> Result<bool> {
-    Ok(message_dialog(
-        window,
-        dialog,
-        title,
-        message,
-        kind,
-        if let Some(ok_button_label) = ok_button_label {
-            MessageDialogButtons::OkCustom(ok_button_label)
-        } else {
-            MessageDialogButtons::Ok
-        },
-    ))
-}
-
-#[command]
-pub(crate) async fn ask<R: Runtime>(
-    window: Window<R>,
-    dialog: State<'_, Dialog<R>>,
-    title: Option<String>,
-    message: String,
-    kind: Option<MessageDialogKind>,
-    yes_button_label: Option<String>,
-    no_button_label: Option<String>,
-) -> Result<bool> {
-    Ok(message_dialog(
-        window,
-        dialog,
-        title,
-        message,
-        kind,
-        if let Some(yes_button_label) = yes_button_label {
-            MessageDialogButtons::OkCancelCustom(
-                yes_button_label,
-                no_button_label.unwrap_or(NO.to_string()),
-            )
-        } else if let Some(no_button_label) = no_button_label {
-            MessageDialogButtons::OkCancelCustom(YES.to_string(), no_button_label)
-        } else {
-            MessageDialogButtons::YesNo
-        },
-    ))
-}
-
-#[command]
-pub(crate) async fn confirm<R: Runtime>(
-    window: Window<R>,
-    dialog: State<'_, Dialog<R>>,
-    title: Option<String>,
-    message: String,
-    kind: Option<MessageDialogKind>,
-    ok_button_label: Option<String>,
-    cancel_button_label: Option<String>,
-) -> Result<bool> {
-    Ok(message_dialog(
-        window,
-        dialog,
-        title,
-        message,
-        kind,
-        if let Some(ok_button_label) = ok_button_label {
-            MessageDialogButtons::OkCancelCustom(
-                ok_button_label,
-                cancel_button_label.unwrap_or(CANCEL.to_string()),
-            )
-        } else if let Some(cancel_button_label) = cancel_button_label {
-            MessageDialogButtons::OkCancelCustom(OK.to_string(), cancel_button_label)
-        } else {
-            MessageDialogButtons::OkCancel
-        },
-    ))
+    Ok(builder.blocking_show_with_result())
 }

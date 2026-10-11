@@ -12,7 +12,7 @@ Save window positions and sizes and restore them when the app is reopened.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.77.2**_
+_This plugin requires a Rust version of at least **1.90**_
 
 There are three general methods of installation that we can recommend.
 
@@ -33,21 +33,12 @@ tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-works
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
-> Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
-
 ```sh
 pnpm add @tauri-apps/plugin-window-state
 # or
 npm add @tauri-apps/plugin-window-state
 # or
 yarn add @tauri-apps/plugin-window-state
-
-# alternatively with Git:
-pnpm add https://github.com/tauri-apps/tauri-plugin-window-state#v2
-# or
-npm add https://github.com/tauri-apps/tauri-plugin-window-state#v2
-# or
-yarn add https://github.com/tauri-apps/tauri-plugin-window-state#v2
 ```
 
 ## Usage

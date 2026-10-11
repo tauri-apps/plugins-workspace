@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-stop-accessing-security-scoped-resource"
+description = "Enables the stop_accessing_security_scoped_resource command without any pre-configured scope."
+commands.allow = ["stop_accessing_security_scoped_resource"]
+
+[[permission]]
+identifier = "deny-stop-accessing-security-scoped-resource"
+description = "Denies the stop_accessing_security_scoped_resource command without any pre-configured scope."
+commands.deny = ["stop_accessing_security_scoped_resource"]

@@ -13,7 +13,7 @@ Download files from a remote HTTP server to disk.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.77.2**_
+_This plugin requires a Rust version of at least **1.90**_
 
 There are three general methods of installation that we can recommend.
 
@@ -34,21 +34,12 @@ tauri-plugin-upload = { git = "https://github.com/tauri-apps/plugins-workspace",
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
-> Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
-
 ```sh
 pnpm add @tauri-apps/plugin-upload
 # or
 npm add @tauri-apps/plugin-upload
 # or
 yarn add @tauri-apps/plugin-upload
-
-# alternatively with Git:
-pnpm add https://github.com/tauri-apps/tauri-plugin-upload#v2
-# or
-npm add https://github.com/tauri-apps/tauri-plugin-upload#v2
-# or
-yarn add https://github.com/tauri-apps/tauri-plugin-upload#v2
 ```
 
 ## Usage
@@ -69,13 +60,25 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { upload } from '@tauri-apps/plugin-upload'
+import { upload, HttpMethod } from '@tauri-apps/plugin-upload'
 
+// Upload with default POST method
 upload(
   'https://example.com/file-upload',
   './path/to/my/file.txt',
-  (progress, total) => console.log(`Uploaded ${progress} of ${total} bytes`), // a callback that will be called with the upload progress
+  ({ progressTotal, total }) =>
+    console.log(`Uploaded ${progressTotal} of ${total} bytes`), // a callback that will be called with the upload progress
   { 'Content-Type': 'text/plain' } // optional headers to send with the request
+)
+
+// Upload with specific HTTP method
+upload(
+  'https://example.com/file-upload',
+  './path/to/my/file.txt',
+  ({ progressTotal, total }) =>
+    console.log(`Uploaded ${progressTotal} of ${total} bytes`),
+  { 'Content-Type': 'text/plain' },
+  HttpMethod.Put // Use HttpMethod enum - supports POST, PUT, PATCH
 )
 ```
 
@@ -85,7 +88,8 @@ import { download } from '@tauri-apps/plugin-upload'
 download(
   'https://example.com/file-download-link',
   './path/to/save/my/file.txt',
-  (progress, total) => console.log(`Downloaded ${progress} of ${total} bytes`), // a callback that will be called with the download progress
+  ({ progressTotal, total }) =>
+    console.log(`Downloaded ${progressTotal} of ${total} bytes`), // a callback that will be called with the download progress
   { 'Content-Type': 'text/plain' } // optional headers to send with the request
 )
 ```

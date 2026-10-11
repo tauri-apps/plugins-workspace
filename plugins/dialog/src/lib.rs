@@ -3,16 +3,21 @@
 // SPDX-License-Identifier: MIT
 
 //! Native system dialogs for opening and saving files along with message dialogs.
+//!
+//! ## Cargo features
+//!
+//! - **gtk3** *(enabled by default)*: Uses GTK for dialogs on Linux & BSDs; has no effect on Windows and macOS
+//! - **xdg-portal**:  Uses XDG Desktop Portal instead of GTK on Linux & BSDs
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tauri::{
-    plugin::{Builder, TauriPlugin},
     Manager, Runtime,
+    plugin::{Builder, TauriPlugin},
 };
 
 use std::{
@@ -44,9 +49,37 @@ pub use desktop::Dialog;
 #[cfg(mobile)]
 pub use mobile::Dialog;
 
+/// The preferred mode of the file picker on mobile platforms (iOS and Android), which have
+/// distinct file and media pickers. On desktop, this option is ignored.
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "lowercase")]
+pub enum PickerMode {
+    /// Show the generic document picker.
+    Document,
+    /// Show the media picker, allowing both images and videos to be selected.
+    Media,
+    /// Show the media picker restricted to images.
+    Image,
+    /// Show the media picker restricted to videos.
+    Video,
+}
+
+/// The file access mode of the dialog, used to control how a picked file is exposed to the app on iOS.
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "lowercase")]
+pub enum FileAccessMode {
+    /// Copy the picked file into the app's sandbox so it can be freely read, edited or deleted.
+    Copy,
+    /// Keep the file at its original location and let the system manage security-scoped access to it.
+    Scoped,
+}
+
 pub(crate) const OK: &str = "Ok";
+#[cfg(mobile)]
 pub(crate) const CANCEL: &str = "Cancel";
+#[cfg(mobile)]
 pub(crate) const YES: &str = "Yes";
+#[cfg(mobile)]
 pub(crate) const NO: &str = "No";
 
 macro_rules! blocking_fn {
@@ -62,6 +95,7 @@ macro_rules! blocking_fn {
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the dialog APIs.
 pub trait DialogExt<R: Runtime> {
+    /// Returns the [`Dialog`] instance associated with this app/window.
     fn dialog(&self) -> &Dialog<R>;
 }
 
@@ -79,7 +113,7 @@ impl<R: Runtime> Dialog<R> {
     ///
     /// - Message dialog:
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     ///
     /// tauri::Builder::default()
@@ -96,14 +130,14 @@ impl<R: Runtime> Dialog<R> {
     ///
     /// - Ask dialog:
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
     ///
     /// tauri::Builder::default()
     ///   .setup(|app| {
     ///     app.dialog()
     ///       .message("Are you sure?")
-    ///       .buttons(MessageDialogButtons::OkCancelCustom("Yes", "No"))
+    ///       .buttons(MessageDialogButtons::OkCancelCustom("Yes".to_string(), "No".to_string()))
     ///       .show(|yes| {
     ///         println!("user said {}", if yes { "yes" } else { "no" });
     ///       });
@@ -113,7 +147,7 @@ impl<R: Runtime> Dialog<R> {
     ///
     /// - Message dialog with OK button:
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
     ///
     /// tauri::Builder::default()
@@ -135,7 +169,7 @@ impl<R: Runtime> Dialog<R> {
     /// To block the current thread until the user acted on the dialog, you can use `blocking_show`,
     /// but note that it cannot be executed on the main thread as it will freeze your application.
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
     ///
     /// tauri::Builder::default()
@@ -144,7 +178,7 @@ impl<R: Runtime> Dialog<R> {
     ///     std::thread::spawn(move || {
     ///       let yes = handle.dialog()
     ///         .message("Are you sure?")
-    ///         .buttons(MessageDialogButtons::OkCancelCustom("Yes", "No"))
+    ///         .buttons(MessageDialogButtons::OkCancelCustom("Yes".to_string(), "No".to_string()))
     ///         .blocking_show();
     ///     });
     ///
@@ -181,8 +215,6 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::open,
             commands::save,
             commands::message,
-            commands::ask,
-            commands::confirm
         ])
         .setup(|app, api| {
             #[cfg(mobile)]
@@ -216,6 +248,7 @@ pub(crate) struct MessageDialogPayload<'a> {
     message: &'a String,
     kind: &'a MessageDialogKind,
     ok_button_label: Option<&'a str>,
+    no_button_label: Option<&'a str>,
     cancel_button_label: Option<&'a str>,
 }
 
@@ -229,8 +262,8 @@ impl<R: Runtime> MessageDialogBuilder<R> {
             dialog,
             title: title.into(),
             message: message.into(),
-            kind: Default::default(),
-            buttons: Default::default(),
+            kind: MessageDialogKind::default(),
+            buttons: MessageDialogButtons::default(),
             #[cfg(desktop)]
             parent: None,
         }
@@ -238,13 +271,17 @@ impl<R: Runtime> MessageDialogBuilder<R> {
 
     #[cfg(mobile)]
     pub(crate) fn payload(&self) -> MessageDialogPayload<'_> {
-        let (ok_button_label, cancel_button_label) = match &self.buttons {
-            MessageDialogButtons::Ok => (Some(OK), None),
-            MessageDialogButtons::OkCancel => (Some(OK), Some(CANCEL)),
-            MessageDialogButtons::YesNo => (Some(YES), Some(NO)),
-            MessageDialogButtons::OkCustom(ok) => (Some(ok.as_str()), Some(CANCEL)),
+        let (ok_button_label, no_button_label, cancel_button_label) = match &self.buttons {
+            MessageDialogButtons::Ok => (Some(OK), None, None),
+            MessageDialogButtons::OkCancel => (Some(OK), None, Some(CANCEL)),
+            MessageDialogButtons::YesNo => (Some(YES), Some(NO), None),
+            MessageDialogButtons::YesNoCancel => (Some(YES), Some(NO), Some(CANCEL)),
+            MessageDialogButtons::OkCustom(ok) => (Some(ok.as_str()), None, None),
             MessageDialogButtons::OkCancelCustom(ok, cancel) => {
-                (Some(ok.as_str()), Some(cancel.as_str()))
+                (Some(ok.as_str()), None, Some(cancel.as_str()))
+            }
+            MessageDialogButtons::YesNoCancelCustom(yes, no, cancel) => {
+                (Some(yes.as_str()), Some(no.as_str()), Some(cancel.as_str()))
             }
         };
         MessageDialogPayload {
@@ -252,6 +289,7 @@ impl<R: Runtime> MessageDialogBuilder<R> {
             message: &self.message,
             kind: &self.kind,
             ok_button_label,
+            no_button_label,
             cancel_button_label,
         }
     }
@@ -295,15 +333,54 @@ impl<R: Runtime> MessageDialogBuilder<R> {
     }
 
     /// Shows a message dialog
+    ///
+    /// Returns `true` if the user pressed the OK/Yes button,
     pub fn show<F: FnOnce(bool) + Send + 'static>(self, f: F) {
+        let ok_label = match &self.buttons {
+            MessageDialogButtons::OkCustom(ok) => Some(ok.clone()),
+            MessageDialogButtons::OkCancelCustom(ok, _) => Some(ok.clone()),
+            MessageDialogButtons::YesNoCancelCustom(yes, _, _) => Some(yes.clone()),
+            _ => None,
+        };
+
+        show_message_dialog(self, move |res| {
+            let sucess = match res {
+                MessageDialogResult::Ok | MessageDialogResult::Yes => true,
+                MessageDialogResult::Custom(s) => {
+                    ok_label.map_or(s == OK, |ok_label| ok_label == s)
+                }
+                _ => false,
+            };
+
+            f(sucess)
+        })
+    }
+
+    /// Shows a message dialog and returns the button that was pressed.
+    ///
+    /// Returns a [`MessageDialogResult`] enum that indicates which button was pressed.
+    pub fn show_with_result<F: FnOnce(MessageDialogResult) + Send + 'static>(self, f: F) {
         show_message_dialog(self, f)
     }
 
     /// Shows a message dialog.
+    ///
+    /// Returns `true` if the user pressed the OK/Yes button,
+    ///
     /// This is a blocking operation,
     /// and should *NOT* be used when running on the main thread context.
     pub fn blocking_show(self) -> bool {
         blocking_fn!(self, show)
+    }
+
+    /// Shows a message dialog and returns the button that was pressed.
+    ///
+    /// Returns a [`MessageDialogResult`] enum that indicates which button was pressed.
+    ///
+    /// This is a blocking operation,
+    /// and should *NOT* be used when running on the main thread context.
+    pub fn blocking_show_with_result(self) -> MessageDialogResult {
+        blocking_fn!(self, show_with_result)
     }
 }
 #[derive(Debug, Serialize)]
@@ -324,6 +401,8 @@ pub struct FileDialogBuilder<R: Runtime> {
     pub(crate) file_name: Option<String>,
     pub(crate) title: Option<String>,
     pub(crate) can_create_directories: Option<bool>,
+    pub(crate) picker_mode: Option<PickerMode>,
+    pub(crate) file_access_mode: Option<FileAccessMode>,
     #[cfg(desktop)]
     pub(crate) parent: Option<crate::desktop::WindowHandle>,
 }
@@ -335,6 +414,8 @@ pub(crate) struct FileDialogPayload<'a> {
     file_name: &'a Option<String>,
     filters: &'a Vec<Filter>,
     multiple: bool,
+    picker_mode: &'a Option<PickerMode>,
+    file_access_mode: &'a Option<FileAccessMode>,
 }
 
 // raw window handle :(
@@ -350,6 +431,8 @@ impl<R: Runtime> FileDialogBuilder<R> {
             file_name: None,
             title: None,
             can_create_directories: None,
+            picker_mode: None,
+            file_access_mode: None,
             #[cfg(desktop)]
             parent: None,
         }
@@ -361,6 +444,8 @@ impl<R: Runtime> FileDialogBuilder<R> {
             file_name: &self.file_name,
             filters: &self.filters,
             multiple,
+            picker_mode: &self.picker_mode,
+            file_access_mode: &self.file_access_mode,
         }
     }
 
@@ -421,15 +506,33 @@ impl<R: Runtime> FileDialogBuilder<R> {
         self
     }
 
+    /// Set the picker mode of the dialog.
+    /// This is meant for mobile platforms (iOS and Android) which have distinct file and media pickers.
+    /// On desktop, this option is ignored.
+    /// If not provided, the dialog will automatically choose the best mode based on the MIME types of the filters.
+    pub fn set_picker_mode(mut self, mode: PickerMode) -> Self {
+        self.picker_mode.replace(mode);
+        self
+    }
+
+    /// Set the file access mode of the dialog.
+    /// This is only used on iOS.
+    /// On desktop and Android, this option is ignored.
+    pub fn set_file_access_mode(mut self, mode: FileAccessMode) -> Self {
+        self.file_access_mode.replace(mode);
+        self
+    }
+
     /// Shows the dialog to select a single file.
+    ///
     /// This is not a blocking operation,
     /// and should be used when running on the main thread to avoid deadlocks with the event loop.
     ///
-    /// For usage in other contexts such as commands, prefer [`Self::pick_file`].
+    /// See [`Self::blocking_pick_file`] for a blocking version for use in other contexts.
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
     ///   .setup(|app| {
@@ -445,15 +548,18 @@ impl<R: Runtime> FileDialogBuilder<R> {
     }
 
     /// Shows the dialog to select multiple files.
+    ///
     /// This is not a blocking operation,
     /// and should be used when running on the main thread to avoid deadlocks with the event loop.
+    ///
+    /// See [`Self::blocking_pick_files`] for a blocking version for use in other contexts.
     ///
     /// # Reading the files
     ///
     /// The file paths cannot be read directly on Android as they are behind a content URI.
     /// The recommended way to read the files is using the [`fs`](https://v2.tauri.app/plugin/file-system/) plugin:
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// use tauri_plugin_fs::FsExt;
     /// tauri::Builder::default()
@@ -474,7 +580,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
     ///   .setup(|app| {
@@ -490,12 +596,15 @@ impl<R: Runtime> FileDialogBuilder<R> {
     }
 
     /// Shows the dialog to select a single folder.
+    ///
     /// This is not a blocking operation,
     /// and should be used when running on the main thread to avoid deadlocks with the event loop.
     ///
+    /// See [`Self::blocking_pick_folder`] for a blocking version for use in other contexts.
+    ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
     ///   .setup(|app| {
@@ -512,12 +621,15 @@ impl<R: Runtime> FileDialogBuilder<R> {
     }
 
     /// Shows the dialog to select multiple folders.
+    ///
     /// This is not a blocking operation,
     /// and should be used when running on the main thread to avoid deadlocks with the event loop.
     ///
+    /// See [`Self::blocking_pick_folders`] for a blocking version for use in other contexts.
+    ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
     ///   .setup(|app| {
@@ -538,9 +650,11 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// This is not a blocking operation,
     /// and should be used when running on the main thread to avoid deadlocks with the event loop.
     ///
+    /// See [`Self::blocking_save_file`] for a blocking version for use in other contexts.
+    ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
     ///   .setup(|app| {
@@ -559,12 +673,15 @@ impl<R: Runtime> FileDialogBuilder<R> {
 /// Blocking APIs.
 impl<R: Runtime> FileDialogBuilder<R> {
     /// Shows the dialog to select a single file.
+    ///
     /// This is a blocking operation,
-    /// and should *NOT* be used when running on the main thread context.
+    /// and should *NOT* be used when running on the main thread.
+    ///
+    /// See [`Self::pick_file`] for a non-blocking version for use in main-thread contexts.
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
     /// async fn my_command(app: tauri::AppHandle) {
@@ -578,12 +695,15 @@ impl<R: Runtime> FileDialogBuilder<R> {
     }
 
     /// Shows the dialog to select multiple files.
+    ///
     /// This is a blocking operation,
-    /// and should *NOT* be used when running on the main thread context.
+    /// and should *NOT* be used when running on the main thread.
+    ///
+    /// See [`Self::pick_files`] for a non-blocking version for use in main-thread contexts.
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
     /// async fn my_command(app: tauri::AppHandle) {
@@ -597,12 +717,15 @@ impl<R: Runtime> FileDialogBuilder<R> {
     }
 
     /// Shows the dialog to select a single folder.
+    ///
     /// This is a blocking operation,
-    /// and should *NOT* be used when running on the main thread context.
+    /// and should *NOT* be used when running on the main thread.
+    ///
+    /// See [`Self::pick_folder`] for a non-blocking version for use in main-thread contexts.
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
     /// async fn my_command(app: tauri::AppHandle) {
@@ -617,12 +740,15 @@ impl<R: Runtime> FileDialogBuilder<R> {
     }
 
     /// Shows the dialog to select multiple folders.
+    ///
     /// This is a blocking operation,
-    /// and should *NOT* be used when running on the main thread context.
+    /// and should *NOT* be used when running on the main thread.
+    ///
+    /// See [`Self::pick_folders`] for a non-blocking version for use in main-thread contexts.
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
     /// async fn my_command(app: tauri::AppHandle) {
@@ -637,12 +763,15 @@ impl<R: Runtime> FileDialogBuilder<R> {
     }
 
     /// Shows the dialog to save a file.
+    ///
     /// This is a blocking operation,
-    /// and should *NOT* be used when running on the main thread context.
+    /// and should *NOT* be used when running on the main thread.
+    ///
+    /// See [`Self::save_file`] for a non-blocking version for use in main-thread contexts.
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
     /// async fn my_command(app: tauri::AppHandle) {

@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: MIT
 
 import eslint from '@eslint/js'
+import { defineConfig } from 'eslint/config'
 import eslintConfigPrettier from 'eslint-config-prettier'
 import eslintPluginSecurity from 'eslint-plugin-security'
 import tseslint from 'typescript-eslint'
 
-export default tseslint.config(
+export default defineConfig(
   {
     ignores: [
       '**/target',

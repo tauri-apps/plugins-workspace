@@ -1,5 +1,324 @@
 # Changelog
 
+## [2.0.51]
+
+### Dependencies
+
+- Upgraded to `dialog-js@2.8.2`
+- Upgraded to `fs-js@2.7.0`
+- Upgraded to `global-shortcut-js@2.4.1`
+- Upgraded to `barcode-scanner-js@2.5.2`
+- Upgraded to `biometric-js@2.4.2`
+- Upgraded to `clipboard-manager-js@2.4.2`
+- Upgraded to `log-js@2.10.1`
+- Upgraded to `nfc-js@2.4.2`
+- Upgraded to `notification-js@2.6.0`
+- Upgraded to `opener-js@2.7.1`
+- Upgraded to `shell-js@2.5.0`
+- Upgraded to `updater-js@2.13.3`
+- Upgraded to `http-js@2.8.2`
+
+## [2.0.50]
+
+### Dependencies
+
+- Upgraded to `shell-js@2.4.1`
+
+## [2.0.49]
+
+### Dependencies
+
+- Upgraded to `http-js@2.8.1`
+- Upgraded to `updater-js@2.13.2`
+
+## [2.0.48]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner-js@2.5.1`
+- Upgraded to `biometric-js@2.4.1`
+- Upgraded to `clipboard-manager-js@2.4.1`
+- Upgraded to `dialog-js@2.8.1`
+- Upgraded to `nfc-js@2.4.1`
+- Upgraded to `notification-js@2.5.1`
+
+## [2.0.47]
+
+### Dependencies
+
+- Upgraded to `opener-js@2.7.0`
+- Upgraded to `updater-js@2.13.1`
+- Upgraded to `http-js@2.8.0`
+
+## [2.0.46]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.6.0`
+- Upgraded to `notification-js@2.5.0`
+- Upgraded to `barcode-scanner-js@2.5.0`
+- Upgraded to `biometric-js@2.4.0`
+- Upgraded to `cli-js@2.5.0`
+- Upgraded to `clipboard-manager-js@2.4.0`
+- Upgraded to `dialog-js@2.8.0`
+- Upgraded to `global-shortcut-js@2.4.0`
+- Upgraded to `http-js@2.7.0`
+- Upgraded to `log-js@2.10.0`
+- Upgraded to `nfc-js@2.4.0`
+- Upgraded to `opener-js@2.6.0`
+- Upgraded to `os-js@2.4.0`
+- Upgraded to `process-js@2.4.0`
+- Upgraded to `shell-js@2.4.0`
+- Upgraded to `store-js@2.5.0`
+- Upgraded to `updater-js@2.13.0`
+
+## [2.0.45]
+
+### Dependencies
+
+- Upgraded to `log-js@2.9.2`
+- Upgraded to `updater-js@2.12.0`
+
+## [2.0.44]
+
+### Dependencies
+
+- Upgraded to `http-js@2.6.1`
+- Upgraded to `store-js@2.4.5`
+
+## [2.0.43]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner-js@2.4.6`
+- Upgraded to `biometric-js@2.3.3`
+- Upgraded to `clipboard-manager-js@2.3.3`
+- Upgraded to `dialog-js@2.7.3`
+- Upgraded to `fs-js@2.5.2`
+- Upgraded to `nfc-js@2.3.6`
+- Upgraded to `notification-js@2.4.0`
+- Upgraded to `opener-js@2.5.5`
+- Upgraded to `shell-js@2.3.6`
+- Upgraded to `http-js@2.6.0`
+- Upgraded to `log-js@2.9.1`
+- Upgraded to `updater-js@2.11.0`
+
+## \[2.0.42]
+
+### Dependencies
+
+- Upgraded to `dialog-js@2.7.2`
+- Upgraded to `store-js@2.4.4`
+
+## \[2.0.41]
+
+### Dependencies
+
+- Upgraded to `log-js@2.9.0`
+
+## \[2.0.40]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner-js@2.4.5`
+- Upgraded to `global-shortcut-js@2.3.2`
+
+## \[2.0.39]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.5.1`
+- Upgraded to `opener-js@2.5.4`
+- Upgraded to `store-js@2.4.3`
+- Upgraded to `dialog-js@2.7.1`
+- Upgraded to `http-js@2.5.9`
+
+## \[2.0.38]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.5.0`
+- Upgraded to `http-js@2.5.8`
+- Upgraded to `updater-js@2.10.1`
+- Upgraded to `nfc-js@2.3.5`
+- Upgraded to `dialog-js@2.7.0`
+
+## \[2.0.37]
+
+### Dependencies
+
+- Upgraded to `updater-js@2.10.0`
+- Upgraded to `barcode-scanner-js@2.4.4`
+- Upgraded to `http-js@2.5.7`
+- Upgraded to `shell-js@2.3.5`
+
+## \[2.0.36]
+
+### Dependencies
+
+- Upgraded to `http-js@2.5.6`
+- Upgraded to `dialog-js@2.6.0`
+
+## \[2.0.35]
+
+### Dependencies
+
+- Upgraded to `dialog-js@2.5.0`
+- Upgraded to `log-js@2.8.0`
+- Upgraded to `shell-js@2.3.4`
+- Upgraded to `barcode-scanner-js@2.4.3`
+- Upgraded to `fs-js@2.4.5`
+- Upgraded to `http-js@2.5.5`
+- Upgraded to `nfc-js@2.3.4`
+- Upgraded to `opener-js@2.5.3`
+- Upgraded to `store-js@2.4.2`
+
+## \[2.0.34]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner-js@2.4.2`
+- Upgraded to `biometric-js@2.3.2`
+- Upgraded to `cli-js@2.4.1`
+- Upgraded to `clipboard-manager-js@2.3.2`
+- Upgraded to `dialog-js@2.4.2`
+- Upgraded to `fs-js@2.4.4`
+- Upgraded to `global-shortcut-js@2.3.1`
+- Upgraded to `http-js@2.5.4`
+- Upgraded to `log-js@2.7.1`
+- Upgraded to `nfc-js@2.3.3`
+- Upgraded to `notification-js@2.3.3`
+- Upgraded to `opener-js@2.5.2`
+- Upgraded to `os-js@2.3.2`
+- Upgraded to `process-js@2.3.1`
+- Upgraded to `shell-js@2.3.3`
+- Upgraded to `store-js@2.4.1`
+
+## \[2.0.33]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner-js@2.4.1`
+- Upgraded to `biometric-js@2.3.1`
+- Upgraded to `clipboard-manager-js@2.3.1`
+- Upgraded to `dialog-js@2.4.1`
+- Upgraded to `fs-js@2.4.3`
+- Upgraded to `nfc-js@2.3.2`
+- Upgraded to `notification-js@2.3.2`
+- Upgraded to `opener-js@2.5.1`
+- Upgraded to `shell-js@2.3.2`
+- Upgraded to `http-js@2.5.3`
+
+## \[2.0.32]
+
+### Dependencies
+
+- Upgraded to `dialog-js@2.4.0`
+- Upgraded to `log-js@2.7.0`
+
+## \[2.0.31]
+
+### Dependencies
+
+- Upgraded to `shell-js@2.3.1`
+
+## \[2.0.30]
+
+### Dependencies
+
+- Upgraded to `notification-js@2.3.1`
+
+## \[2.0.29]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.4.2`
+- Upgraded to `nfc-js@2.3.1`
+- Upgraded to `opener-js@2.5.0`
+- Upgraded to `os-js@2.3.1`
+- Upgraded to `store-js@2.4.0`
+- Upgraded to `dialog-js@2.3.3`
+- Upgraded to `http-js@2.5.2`
+
+## \[2.0.28]
+
+### Dependencies
+
+- Upgraded to `dialog-js@2.3.2`
+
+## \[2.0.27]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner-js@2.4.0`
+- Upgraded to `fs-js@2.4.1`
+- Upgraded to `dialog-js@2.3.1`
+- Upgraded to `http-js@2.5.1`
+
+## \[2.0.26]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner-js@2.3.0`
+- Upgraded to `biometric-js@2.3.0`
+- Upgraded to `cli-js@2.4.0`
+- Upgraded to `clipboard-manager-js@2.3.0`
+- Upgraded to `fs-js@2.4.0`
+- Upgraded to `dialog-js@2.3.0`
+- Upgraded to `global-shortcut-js@2.3.0`
+- Upgraded to `opener-js@2.4.0`
+- Upgraded to `http-js@2.5.0`
+- Upgraded to `log-js@2.6.0`
+- Upgraded to `nfc-js@2.3.0`
+- Upgraded to `notification-js@2.3.0`
+- Upgraded to `os-js@2.3.0`
+- Upgraded to `process-js@2.3.0`
+- Upgraded to `shell-js@2.3.0`
+- Upgraded to `store-js@2.3.0`
+- Upgraded to `updater-js@2.9.0`
+
+## \[2.0.25]
+
+### Dependencies
+
+- Upgraded to `cli-js@2.3.0`
+- Upgraded to `log-js@2.5.1`
+- Upgraded to `opener-js@2.3.1`
+
+## \[2.0.24]
+
+### Dependencies
+
+- Upgraded to `updater-js@2.8.1`
+
+## \[2.0.23]
+
+### Dependencies
+
+- Upgraded to `updater-js@2.8.0`
+- Upgraded to `barcode-scanner-js@2.2.1`
+- Upgraded to `biometric-js@2.2.2`
+- Upgraded to `cli-js@2.2.1`
+- Upgraded to `clipboard-manager-js@2.2.3`
+- Upgraded to `nfc-js@2.2.1`
+- Upgraded to `notification-js@2.2.3`
+- Upgraded to `os-js@2.2.2`
+- Upgraded to `process-js@2.2.2`
+- Upgraded to `shell-js@2.2.2`
+- Upgraded to `store-js@2.2.1`
+- Upgraded to `log-js@2.5.0`
+- Upgraded to `opener-js@2.3.0`
+
+## \[2.0.22]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.3.0`
+- Upgraded to `global-shortcut-js@2.2.1`
+- Upgraded to `http-js@2.4.4`
+- Upgraded to `opener-js@2.2.7`
+- Upgraded to `dialog-js@2.2.2`
+
 ## \[2.0.21]
 
 ### Dependencies

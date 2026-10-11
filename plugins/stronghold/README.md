@@ -12,7 +12,7 @@ Store secrets and keys using the [IOTA Stronghold](https://github.com/iotaledger
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.77.2**_
+_This plugin requires a Rust version of at least **1.90**_
 
 There are three general methods of installation that we can recommend.
 
@@ -31,6 +31,13 @@ tauri-plugin-stronghold = "2.0.0"
 tauri-plugin-stronghold = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
+Due to an [upstream bug](https://github.com/tauri-apps/plugins-workspace/issues/2048) we also recommend that you add this to your `Cargo.toml` file:
+
+```toml
+[profile.dev.package.scrypt]
+opt-level = 3
+```
+
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
 > Note: If your JavaScript package manager cannot install packages from git monorepos, you can still use the code by manually copying the [Guest bindings](./guest-js/index.ts) into your source files.
@@ -41,13 +48,6 @@ pnpm add @tauri-apps/plugin-stronghold
 npm add @tauri-apps/plugin-stronghold
 # or
 yarn add @tauri-apps/plugin-stronghold
-
-# alternatively with Git:
-pnpm add https://github.com/tauri-apps/tauri-plugin-stronghold#v2
-# or
-npm add https://github.com/tauri-apps/tauri-plugin-stronghold#v2
-# or
-yarn add https://github.com/tauri-apps/tauri-plugin-stronghold#v2
 ```
 
 ## Usage

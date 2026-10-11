@@ -6,7 +6,7 @@
 
 use std::{
     path::PathBuf,
-    sync::{mpsc::Receiver, Mutex},
+    sync::{Mutex, mpsc::Receiver},
 };
 
 use cookie_store::{CookieStore, RawCookie, RawCookieParseError};
@@ -30,7 +30,7 @@ fn set_cookies(
 fn cookies(cookie_store: &CookieStore, url: &url::Url) -> Option<HeaderValue> {
     let s = cookie_store
         .get_request_values(url)
-        .map(|(name, value)| format!("{}={}", name, value))
+        .map(|(name, value)| format!("{name}={value}"))
         .collect::<Vec<_>>()
         .join("; ");
 
