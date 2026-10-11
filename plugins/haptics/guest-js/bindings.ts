@@ -73,12 +73,26 @@ export const commands = {
 /** user-defined types **/
 
 export type Error = never
+/**
+ * The style of an impact-feedback haptic.
+ *
+ * On iOS this maps directly to a `UIImpactFeedbackGenerator.FeedbackStyle` case. On Android,
+ * which has no equivalent system API, each style instead plays a distinct vibration waveform of
+ * increasing intensity. Has no effect on desktop platforms. Defaults to `Medium`.
+ */
 export type ImpactFeedbackStyle =
   | 'light'
   | 'medium'
   | 'heavy'
   | 'soft'
   | 'rigid'
+/**
+ * The type of notification feedback, indicating the outcome of a task or action.
+ *
+ * On iOS this maps directly to a `UINotificationFeedbackGenerator.FeedbackType` case. On
+ * Android, which has no equivalent system API, each type instead plays a distinct vibration
+ * waveform. Has no effect on desktop platforms. Defaults to `Success`.
+ */
 export type NotificationFeedbackType = 'success' | 'warning' | 'error'
 //export type RandomNumber = number;
 
