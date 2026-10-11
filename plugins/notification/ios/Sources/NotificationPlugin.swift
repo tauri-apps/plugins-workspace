@@ -120,7 +120,8 @@ func showNotification(invoke: Invoke, notification: Notification)
 }
 
 struct CancelArgs: Decodable {
-  let notifications: [Int]
+  // `cancelAll()` sends no list: cancel every pending notification
+  let notifications: [Int]?
 }
 
 struct Action: Decodable {
@@ -216,9 +217,13 @@ class NotificationPlugin: Plugin {
   @objc func cancel(_ invoke: Invoke) throws {
     let args = try invoke.parseArgs(CancelArgs.self)
 
-    UNUserNotificationCenter.current().removePendingNotificationRequests(
-      withIdentifiers: args.notifications.map { String($0) }
-    )
+    if let notifications = args.notifications {
+      UNUserNotificationCenter.current().removePendingNotificationRequests(
+        withIdentifiers: notifications.map { String($0) }
+      )
+    } else {
+      UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+    }
     invoke.resolve()
   }
 

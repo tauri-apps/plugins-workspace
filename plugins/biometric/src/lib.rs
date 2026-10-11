@@ -2,9 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+//! Prompt the user for biometric authentication.
+//!
+//! - Supported platforms: Android, iOS and macOS.
+
+use serde::Serialize;
 use tauri::{
-    plugin::{Builder, TauriPlugin},
     Manager, Runtime,
+    plugin::{Builder, PluginHandle, TauriPlugin},
 };
 
 pub use models::*;
@@ -26,6 +31,7 @@ pub use mobile::Biometric;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the biometric APIs.
 pub trait BiometricExt<R: Runtime> {
+    /// Returns the [`Biometric`] instance managed by the app.
     fn biometric(&self) -> &Biometric<R>;
 }
 

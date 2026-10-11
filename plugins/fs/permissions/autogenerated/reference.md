@@ -22,7 +22,9 @@ the `mkdir` command.
 
 This default permission set prevents access to critical components
 of the Tauri application by default.
-On Windows the webview data folder access is denied.
+
+- On Windows the access to webview data folder `$APPLOCALDATA/EBWebView` is denied.
+- On Linux the access to webview data paths inside `$APPLOCALDATA` are denied.
 
 #### This default permission set includes the following:
 
@@ -3435,6 +3437,32 @@ Denies the size command without any pre-configured scope.
 <tr>
 <td>
 
+`fs:allow-start-accessing-security-scoped-resource`
+
+</td>
+<td>
+
+Enables the start_accessing_security_scoped_resource command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fs:deny-start-accessing-security-scoped-resource`
+
+</td>
+<td>
+
+Denies the start_accessing_security_scoped_resource command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `fs:allow-stat`
 
 </td>
@@ -3454,6 +3482,32 @@ Enables the stat command without any pre-configured scope.
 <td>
 
 Denies the stat command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fs:allow-stop-accessing-security-scoped-resource`
+
+</td>
+<td>
+
+Enables the stop_accessing_security_scoped_resource command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fs:deny-stop-accessing-security-scoped-resource`
+
+</td>
+<td>
+
+Denies the stop_accessing_security_scoped_resource command without any pre-configured scope.
 
 </td>
 </tr>
@@ -3649,8 +3703,19 @@ This denies access to dangerous Tauri relevant files and folders by default.
 </td>
 <td>
 
-This denies read access to the
-`$APPLOCALDATA` folder on linux as the webview data and configuration values are stored here.
+This denies access to the following paths
+
+- `$APPLOCALDATA/CacheStorage/**`
+- `$APPLOCALDATA/cookies`
+- `$APPLOCALDATA/hsts-storage.sqlite`
+- `$APPLOCALDATA/serviceworkers/**`
+- `$APPLOCALDATA/WebKitCache/**`
+- `$APPLOCALDATA/databases/**`
+- `$APPLOCALDATA/localstorage/**`
+- `$APPLOCALDATA/mediakeys/**`
+- `$APPLOCALDATA/storage/**`
+
+on linux as the webview data and configuration values are stored here.
 Allowing access can lead to sensitive information disclosure and should be well considered.
 
 </td>
@@ -3664,7 +3729,7 @@ Allowing access can lead to sensitive information disclosure and should be well 
 </td>
 <td>
 
-This denies read access to the
+This denies access to the
 `$APPLOCALDATA/EBWebView` folder on windows as the webview data and configuration values are stored here.
 Allowing access can lead to sensitive information disclosure and should be well considered.
 
@@ -3693,7 +3758,7 @@ This enables all read related commands without any pre-configured accessible pat
 <td>
 
 This permission allows recursive read functionality on the application
-specific base directories. 
+specific base directories.
 
 
 </td>

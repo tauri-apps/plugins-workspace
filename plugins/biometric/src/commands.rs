@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use tauri::{command, AppHandle, Runtime, State};
+use tauri::{AppHandle, Runtime, State, command};
 
-use crate::{models::*, Biometric, Result};
+use crate::{Biometric, Result, models::*};
 
 #[command]
 pub(crate) async fn status<R: Runtime>(

@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 use tauri::{
-    plugin::{PluginApi, PluginHandle},
     AppHandle, Runtime,
+    plugin::{PluginApi, PluginHandle},
 };
 
 use crate::models::*;
@@ -38,10 +38,16 @@ struct AuthenticatePayload {
 }
 
 impl<R: Runtime> Biometric<R> {
+    /// Checks the device's availability and type of biometric authentication, as reported by the
+    /// operating system. Errors if the underlying mobile plugin invocation fails.
     pub fn status(&self) -> crate::Result<Status> {
         self.0.run_mobile_plugin("status", ()).map_err(Into::into)
     }
 
+    /// Prompts the user for biometric authentication using the system UI (Android
+    /// `BiometricPrompt` or iOS `LocalAuthentication`), showing `reason` as the purpose of the
+    /// request. Resolves once the user is authenticated and errors if authentication fails, is
+    /// canceled, or the underlying mobile plugin invocation fails.
     pub fn authenticate(&self, reason: String, options: AuthOptions) -> crate::Result<()> {
         self.0
             .run_mobile_plugin("authenticate", AuthenticatePayload { reason, options })

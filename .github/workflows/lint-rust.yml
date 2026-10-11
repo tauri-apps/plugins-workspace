@@ -28,6 +28,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   changes:
     runs-on: ubuntu-latest
@@ -35,8 +38,9 @@ jobs:
       pull-requests: read
     outputs:
       packages: ${{ steps.filter.outputs.changes }}
+      saver: ${{ steps.saver.outputs.saver }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v2
         id: filter
         with:
@@ -126,33 +130,78 @@ jobs:
               - .github/workflows/lint-rust.yml
               - plugins/window-state/**
 
+      # Every package job for a platform restores the same rust-cache entry, and exactly one
+      # of them saves it (see the `save-if` of the rust-cache step). Prefer the packages whose
+      # dependency tree covers most of the other plugins' dependencies, so the entry is as
+      # useful as possible for the packages that did not save it.
+      - name: pick the package that saves the cache
+        id: saver
+        env:
+          PACKAGES: ${{ steps.filter.outputs.changes }}
+        run: |
+          saver="$(jq -rn --argjson packages "${PACKAGES:-[]}" '
+            ["tauri-plugin-upload", "tauri-plugin-sql", "tauri-plugin-updater", "tauri-plugin-single-instance"]
+            | map(select(. as $p | $packages | index($p) != null))
+            | first // $packages[0] // empty
+          ')"
+          echo "saver=$saver" >> "$GITHUB_OUTPUT"
+
   clippy:
     needs: changes
     if: ${{ needs.changes.outputs.packages != '[]' && needs.changes.outputs.packages != '' }}
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.platform.os }}
     strategy:
       fail-fast: false
       matrix:
         package: ${{ fromJSON(needs.changes.outputs.packages) }}
+        platform:
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            cargo: 'cargo'
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            cargo: 'cargo'
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            cargo: 'cargo'
+          - target: aarch64-apple-ios
+            os: macos-latest
+            cargo: 'cargo'
+          - target: aarch64-linux-android
+            os: ubuntu-latest
+            cargo: 'cross'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - name: install webkit2gtk
+      - name: install Linux dependencies
+        if: contains(matrix.platform.target, 'unknown-linux')
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev
+          sudo apt-get install -y libgtk-3-dev webkit2gtk-4.1 libayatana-appindicator3-dev
+
+      - name: Install cross
+        if: ${{ matrix.platform.cargo == 'cross' }}
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cross@0.2.5
 
       - name: Install clippy with stable toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
+          targets: ${{ matrix.platform.target }}
 
       - uses: Swatinem/rust-cache@v2
+        with:
+          # One entry shared by every package job (the default key is per job, not per
+          # matrix entry), only written from `v2`/`v3` and by a single package job; see
+          # test-rust.yml for the reasoning.
+          save-if: ${{ (github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3') && matrix.package == needs.changes.outputs.saver }}
 
       - name: clippy ${{ matrix.package }}
-        run: cargo clippy --package ${{ matrix.package }} --all-targets -- -D warnings
+        run: ${{ matrix.platform.cargo }} clippy --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets -- -D warnings
 
       - name: clippy ${{ matrix.package }} --all-features
         if: matrix.package != 'tauri-plugin-dialog'
-        run: cargo clippy --package ${{ matrix.package }} --all-targets --all-features -- -D warnings
+        run: ${{ matrix.platform.cargo }} clippy --package ${{ matrix.package }} --target ${{ matrix.platform.target }} --all-targets --all-features -- -D warnings

@@ -12,6 +12,7 @@ on:
     paths:
       - '.github/workflows/lint-javascript.yml'
       - 'plugins/*/guest-js/**'
+      - 'packages/**'
       - '.eslintignore'
       - '.eslintrc.json'
       - '.prettierignore'
@@ -23,6 +24,7 @@ on:
     paths:
       - '.github/workflows/lint-javascript.yml'
       - 'plugins/*/guest-js/**'
+      - 'packages/**'
       - '.eslintignore'
       - '.eslintrc.json'
       - '.prettierignore'
@@ -32,24 +34,26 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   eslint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Cache pnpm modules
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 'lts/*'
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
-          version: 10.x.x
           run_install: true
+          cache: true # the pnpm store, keyed by OS and lockfile hash and shared by every workflow
+      # the type-checked lint rules (and packages/api-e2e) resolve the plugins'
+      # types from their dist-js build output
+      - name: build
+        run: pnpm build
       - name: eslint
         run: pnpm lint
+      - name: ts:check
+        run: pnpm ts:check

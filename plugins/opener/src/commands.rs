@@ -5,11 +5,11 @@
 use std::path::{Path, PathBuf};
 
 use tauri::{
-    ipc::{CommandScope, GlobalScope},
     AppHandle, Runtime,
+    ipc::{CommandScope, GlobalScope},
 };
 
-use crate::{scope::Scope, Error, OpenerExt};
+use crate::{Error, OpenerExt, scope::Scope};
 
 #[tauri::command]
 pub async fn open_url<R: Runtime>(

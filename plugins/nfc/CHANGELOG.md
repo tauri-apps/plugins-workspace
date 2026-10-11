@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.4.1]
+
+- [`569ee82c`](https://github.com/tauri-apps/plugins-workspace/commit/569ee82cf61a358b4c73ba52f2e99f3317ec05d0) Fix the docs.rs build for Android: the build script now detects docs.rs through the `DOCS_RS` environment variable, since `cfg(docsrs)` is never set for build scripts.
+
+## [2.4.0]
+
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+## [2.3.6]
+
+- [`db9c5998`](https://github.com/tauri-apps/plugins-workspace/commit/db9c5998feff9384f9cbbefcbe0d45937c00a1fc) ([#3531](https://github.com/tauri-apps/plugins-workspace/pull/3531) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix missing `consumer-rules.pro` on Gradle v9.
+- [`52672616`](https://github.com/tauri-apps/plugins-workspace/commit/526726162f8ddddf9469797436123704a261df87) ([#3419](https://github.com/tauri-apps/plugins-workspace/pull/3419) by [@pascalauroboa](https://github.com/tauri-apps/plugins-workspace/../../pascalauroboa)) Expect a `NFCTag` as input and return a `ScanResponse` in the `scan` function.
+
+## \[2.3.5]
+
+- [`ab037b70`](https://github.com/tauri-apps/plugins-workspace/commit/ab037b70d6fb54f1ad07d5fe21c41bd1997b34dd) ([#3339](https://github.com/tauri-apps/plugins-workspace/pull/3339) by [@crazy-genius](https://github.com/tauri-apps/plugins-workspace/../../crazy-genius)) Fixed syntax error in kotlin files potentially causing issues when trying to write to tags when no prior session existed.
+
 ## \[2.3.4]
 
 - [`b4348cee`](https://github.com/tauri-apps/plugins-workspace/commit/b4348cee926ee3d1db151bc831cdb9049bee717f) ([#3101](https://github.com/tauri-apps/plugins-workspace/pull/3101) by [@bclarke123](https://github.com/tauri-apps/plugins-workspace/../../bclarke123)) Update return value of `isAvailable` to match TypeScript function signature
@@ -102,6 +121,10 @@
   commit/fe79adb5c7febd0e912efb5581264d671709fbb0)([#830](https://github.com/tauri-apps/plugins-workspace/pull/830)) Initial release.
   30]\(https://github.com/tauri-apps/plugins-workspace/pull/830)) Initial release.
   commit/fe79adb5c7febd0e912efb5581264d671709fbb0)([#830](https://github.com/tauri-apps/plugins-workspace/pull/830)) Initial release.
+  .
+  commit/fe79adb5c7febd0e912efb5581264d671709fbb0)([#830](https://github.com/tauri-apps/plugins-workspace/pull/830)) Initial release.
+  ithub.com/tauri-apps/plugins-workspace/pull/830)) Initial release.
+264d671709fbb0)([#830](https://github.com/tauri-apps/plugins-workspace/pull/830)) Initial release.
   .
   commit/fe79adb5c7febd0e912efb5581264d671709fbb0)([#830](https://github.com/tauri-apps/plugins-workspace/pull/830)) Initial release.
   ithub.com/tauri-apps/plugins-workspace/pull/830)) Initial release.
