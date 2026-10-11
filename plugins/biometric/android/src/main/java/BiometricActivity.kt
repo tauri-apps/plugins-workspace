@@ -94,7 +94,7 @@ class BiometricActivity : AppCompatActivity() {
                     finishActivity(
                         BiometryResultType.ERROR,
                         errorCode,
-                        errorMessage as String
+                        errorMessage.toString()
                     )
                 }
 
