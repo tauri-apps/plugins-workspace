@@ -108,7 +108,6 @@ const commonSurface: Surface<CommonPluginApi> = {
   // the `Database` class itself
   sql: ['load', 'get'],
   store: ['load', 'getStore', 'LazyStore', 'Store'],
-  stronghold: ['Location', 'Client', 'Store', 'Vault', 'Stronghold'],
   upload: ['download', 'upload', 'HttpMethod'],
   // the `WebSocket` class itself
   websocket: ['connect']

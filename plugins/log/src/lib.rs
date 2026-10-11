@@ -27,12 +27,12 @@ use std::{
     iter::FromIterator,
     path::{Path, PathBuf},
 };
-use tauri::{
-    plugin::{self, TauriPlugin},
-    Manager, Runtime,
-};
 use tauri::{AppHandle, Emitter};
-use time::{macros::format_description, OffsetDateTime};
+use tauri::{
+    Manager, Runtime,
+    plugin::{self, TauriPlugin},
+};
+use time::{OffsetDateTime, macros::format_description};
 
 pub use fern;
 pub use log;

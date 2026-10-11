@@ -1,5 +1,38 @@
 # Changelog
 
+## [2.5.3]
+
+- [`818d2e04`](https://github.com/tauri-apps/plugins-workspace/commit/818d2e04d92fd208f11aafdf32bb4a0605f344b2) ([#3645](https://github.com/tauri-apps/plugins-workspace/pull/3645)) On Windows, a second instance no longer waits indefinitely for a first instance that stopped processing messages: it stops waiting after 10 seconds and exits. The first instance may still receive the arguments once it resumes processing messages.
+- [`323fe80d`](https://github.com/tauri-apps/plugins-workspace/commit/323fe80df1f0a78fb2c8d1dfca7a635fd5e0a3c3) ([#3644](https://github.com/tauri-apps/plugins-workspace/pull/3644)) A second instance no longer panics when a command-line argument is not valid Unicode: such an argument is forwarded with its invalid parts replaced by U+FFFD. A working directory that is not valid Unicode is now forwarded the same way instead of as an empty string.
+
+## [2.5.2]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.6.1`
+
+## [2.5.1]
+
+- [`ecd3273e`](https://github.com/tauri-apps/plugins-workspace/commit/ecd3273e8e4c6e9b123bf9861bf7b925cad1c679) ([#3480](https://github.com/tauri-apps/plugins-workspace/pull/3480) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated `windows-rs` dependencies:
+    
+    - deep-link: updated `windows-registry` to 0.6 and `windows-result` to 0.4. The public `Error::Windows` variant wraps `windows_result::Error`; applications using this type directly should update their `windows-result` dependency.
+    - opener: updated `windows` to 0.62. The public `Error::Win32Error` variant wraps `windows::core::Error`; applications using this type directly should update their `windows` dependency.
+    - single-instance: updated `windows-sys` to 0.61
+    - updater: updated `windows-sys` to 0.61
+
+### Dependencies
+
+- Upgraded to `deep-link@2.6.0`
+
+## [2.5.0]
+
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.5.0`
+
 ## [2.4.5]
 
 - [`67cd25a1`](https://github.com/tauri-apps/plugins-workspace/commit/67cd25a10ce3deb1b935e725228e528766f24ad7) ([#3592](https://github.com/tauri-apps/plugins-workspace/pull/3592)) On Windows, the second instance now allows the first instance to bring its window to the front before exiting, so focusing a window from the callback no longer gets refused by Windows.

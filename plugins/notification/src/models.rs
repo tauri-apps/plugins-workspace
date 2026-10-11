@@ -4,14 +4,14 @@
 
 use std::{collections::HashMap, fmt::Display};
 
-use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Error as DeError};
 
 use url::Url;
 
 /// A media file attached to a notification.
 ///
 /// Attachments are only used on mobile; desktop notifications ignore them.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Attachment {
     id: String,
@@ -31,7 +31,7 @@ impl Attachment {
 ///
 /// Fields left as [`None`] match any value, so the notification fires on every date
 /// whose remaining components match. Used by [`Schedule::Interval`].
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ScheduleInterval {
     /// The year the notification fires on.
@@ -55,7 +55,7 @@ pub struct ScheduleInterval {
 /// The unit of the repeating interval used by [`Schedule::Every`].
 ///
 /// It is serialized as its lowercase camelCase name, e.g. `twoWeeks`.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ScheduleEvery {
     /// Repeats every year.
     ///
@@ -133,7 +133,7 @@ impl<'de> Deserialize<'de> for ScheduleEvery {
 ///
 /// Scheduling is only implemented on mobile; the desktop implementation delivers the
 /// notification immediately and ignores the schedule.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Schedule {
     /// Fires at a specific date and time, which must be in the future.
@@ -188,11 +188,11 @@ pub enum Schedule {
 
 // custom ISO-8601 serialization that does not use 6 digits for years.
 mod iso8601 {
-    use serde::{ser::Error as _, Serialize, Serializer};
+    use serde::{Serialize, Serializer, ser::Error as _};
     use time::{
-        format_description::well_known::iso8601::{Config, EncodedConfig},
-        format_description::well_known::Iso8601,
         OffsetDateTime,
+        format_description::well_known::Iso8601,
+        format_description::well_known::iso8601::{Config, EncodedConfig},
     };
 
     const SERDE_CONFIG: EncodedConfig = Config::DEFAULT.encode();
@@ -315,7 +315,7 @@ impl PendingNotification {
 /// Returned by `Notification::active`, which is only available on mobile.
 /// Which fields are populated depends on the platform, since Android and iOS expose
 /// different information about delivered notifications.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ActiveNotification {
     id: i32,
@@ -416,30 +416,31 @@ impl ActiveNotification {
 /// [`NotificationBuilder::action_type_id`](crate::NotificationBuilder::action_type_id).
 ///
 /// Register it with `Notification::register_action_types` before sending a notification that uses it.
-/// It maps to a `UNNotificationCategory` on iOS and to an action group on Android.
+/// It maps to a `UNNotificationCategory` on iOS, to an action group on Android and to the
+/// buttons of the notification on desktop.
 ///
-/// Only available on mobile. Use [`ActionType::builder`] to construct one.
-#[cfg(mobile)]
-#[derive(Debug, Serialize)]
+/// Use [`ActionType::builder`] to construct one.
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ActionType {
     id: String,
+    #[serde(default)]
     actions: Vec<Action>,
     hidden_previews_body_placeholder: Option<String>,
+    #[serde(default)]
     custom_dismiss_action: bool,
+    #[serde(default)]
     allow_in_car_play: bool,
+    #[serde(default)]
     hidden_previews_show_title: bool,
+    #[serde(default)]
     hidden_previews_show_subtitle: bool,
 }
 
 /// Builder for an [`ActionType`], created with [`ActionType::builder`].
-///
-/// Only available on mobile.
-#[cfg(mobile)]
 #[derive(Debug)]
 pub struct ActionTypeBuilder(ActionType);
 
-#[cfg(mobile)]
 impl ActionType {
     /// Creates a builder for an action type with the given identifier.
     ///
@@ -503,7 +504,6 @@ impl ActionType {
     }
 }
 
-#[cfg(mobile)]
 impl ActionTypeBuilder {
     /// Sets the actions associated with this action type.
     pub fn actions(mut self, actions: Vec<Action>) -> Self {
@@ -565,31 +565,30 @@ impl ActionTypeBuilder {
 /// A button the user can tap on a notification, belonging to an [`ActionType`].
 ///
 /// It maps to a `UNNotificationAction` on iOS. On Android only the identifier, the title
-/// and the input flag are used.
+/// and the input flag are used, on desktop only the identifier and the title.
 ///
-/// Only available on mobile. Use [`Action::builder`] to construct one.
-#[cfg(mobile)]
-#[derive(Debug, Serialize)]
+/// Use [`Action::builder`] to construct one.
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Action {
     id: String,
     title: String,
+    #[serde(default)]
     requires_authentication: bool,
+    #[serde(default)]
     foreground: bool,
+    #[serde(default)]
     destructive: bool,
+    #[serde(default)]
     input: bool,
     input_button_title: Option<String>,
     input_placeholder: Option<String>,
 }
 
 /// Builder for an [`Action`], created with [`Action::builder`].
-///
-/// Only available on mobile.
-#[cfg(mobile)]
 #[derive(Debug)]
 pub struct ActionBuilder(Action);
 
-#[cfg(mobile)]
 impl Action {
     /// Creates a builder for an action with the given identifier and button title.
     ///
@@ -659,7 +658,6 @@ impl Action {
     }
 }
 
-#[cfg(mobile)]
 impl ActionBuilder {
     /// Sets whether the device must be unlocked for the action to run.
     ///
@@ -713,6 +711,47 @@ impl ActionBuilder {
     }
 }
 
+/// An action the user performed on a notification, delivered to the handlers of
+/// `Notification::on_action` and to the `onAction` listeners of the JavaScript API.
+///
+/// On desktop it is emitted when the user clicks the notification body (`actionId` = `tap`) or
+/// one of the actions of its [`ActionType`], as far as the notification server reports it.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ActionPerformed {
+    action_id: String,
+    input_value: Option<String>,
+    /// Read leniently: the platforms describe the notification differently, and an action is
+    /// still worth reporting when its notification cannot be read.
+    #[serde(default, deserialize_with = "lenient_notification")]
+    notification: Option<ActiveNotification>,
+}
+
+fn lenient_notification<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Option<ActiveNotification>, D::Error> {
+    let value = serde_json::Value::deserialize(deserializer)?;
+    Ok(serde_json::from_value(value).ok())
+}
+
+impl ActionPerformed {
+    /// The identifier of the performed action: `tap` for a click on the notification itself,
+    /// `dismiss` for a dismissal reported on iOS, otherwise the identifier of the [`Action`].
+    pub fn action_id(&self) -> &str {
+        &self.action_id
+    }
+
+    /// The text the user typed, for an [`Action`] with an input field (mobile only).
+    pub fn input_value(&self) -> Option<&str> {
+        self.input_value.as_deref()
+    }
+
+    /// The notification the action was performed on, as far as the platform reports it.
+    pub fn notification(&self) -> Option<&ActiveNotification> {
+        self.notification.as_ref()
+    }
+}
+
 #[cfg(target_os = "android")]
 pub use android::*;
 
@@ -725,7 +764,7 @@ mod android {
     ///
     /// It maps to the `NotificationManager.IMPORTANCE_*` constants and is serialized as its
     /// integer value. Only available on Android.
-    #[derive(Debug, Clone, Copy, Serialize_repr, Deserialize_repr)]
+    #[derive(Debug, Default, Clone, Copy, Serialize_repr, Deserialize_repr)]
     #[repr(u8)]
     pub enum Importance {
         /// The notifications are not shown.
@@ -737,15 +776,10 @@ mod android {
         /// The notifications are shown and make a sound.
         ///
         /// This is the value used when the channel does not define an importance.
+        #[default]
         Default = 3,
         /// The notifications are shown, make a sound and pop up as a heads-up notification.
         High = 4,
-    }
-
-    impl Default for Importance {
-        fn default() -> Self {
-            Self::Default
-        }
     }
 
     /// How much of a notification is shown on the lock screen.

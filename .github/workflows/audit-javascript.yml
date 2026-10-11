@@ -38,12 +38,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 'lts/*'
-      - uses: pnpm/action-setup@v6
-        with:
-          run_install: true
-          cache: true # the pnpm store, keyed by OS and lockfile hash and shared by every workflow
+      - uses: ./.github/actions/setup-pnpm
       - name: audit
         run: pnpm audit

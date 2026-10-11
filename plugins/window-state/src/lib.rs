@@ -13,9 +13,9 @@
 use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use tauri::{
-    plugin::{Builder as PluginBuilder, TauriPlugin},
     AppHandle, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime, WebviewWindow,
     Window, WindowEvent,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
 };
 
 use std::{

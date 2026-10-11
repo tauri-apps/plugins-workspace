@@ -4,9 +4,9 @@
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{
+    Manager, Runtime, WebviewUrl, WebviewWindowBuilder,
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    Manager, Runtime, WebviewUrl, WebviewWindowBuilder,
 };
 
 pub fn create_tray<R: Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<()> {

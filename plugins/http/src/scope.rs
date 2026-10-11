@@ -154,11 +154,13 @@ mod tests {
         assert!(scope.is_allowed(&"http://localhost:8080/file.png".parse().unwrap()));
         assert!(scope.is_allowed(&"http://localhost:8080/file.png#head".parse().unwrap()));
         assert!(scope.is_allowed(&"http://localhost:8080/assets/file.png".parse().unwrap()));
-        assert!(scope.is_allowed(
-            &"http://localhost:8080/assets/file.png?width=100&height=200"
-                .parse()
-                .unwrap()
-        ));
+        assert!(
+            scope.is_allowed(
+                &"http://localhost:8080/assets/file.png?width=100&height=200"
+                    .parse()
+                    .unwrap()
+            )
+        );
 
         assert!(!scope.is_allowed(&"http://localhost:8080/file.jpeg".parse().unwrap()));
     }
@@ -172,11 +174,13 @@ mod tests {
         assert!(scope.is_allowed(&"http://something.else#tauri".parse().unwrap()));
         assert!(scope.is_allowed(&"http://something.else/path/to/file".parse().unwrap()));
         assert!(scope.is_allowed(&"http://something.else?rel=tauri".parse().unwrap()));
-        assert!(scope.is_allowed(
-            &"http://something.else/path/to/file.mp4?start=500"
-                .parse()
-                .unwrap()
-        ));
+        assert!(
+            scope.is_allowed(
+                &"http://something.else/path/to/file.mp4?start=500"
+                    .parse()
+                    .unwrap()
+            )
+        );
 
         assert!(!scope.is_allowed(&"https://something.else".parse().unwrap()));
 

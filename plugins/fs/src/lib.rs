@@ -22,10 +22,10 @@ use std::sync::Mutex;
 
 use serde::Deserialize;
 use tauri::{
+    AppHandle, DragDropEvent, Manager, RunEvent, Runtime, WindowEvent,
     ipc::ScopeObject,
     plugin::{Builder as PluginBuilder, TauriPlugin},
     utils::{acl::Value, config::FsScope},
-    AppHandle, DragDropEvent, Manager, RunEvent, Runtime, WindowEvent,
 };
 
 #[cfg(target_os = "android")]
@@ -83,7 +83,9 @@ pub struct OpenOptions {
     #[serde(default)]
     #[allow(unused)]
     mode: Option<u32>,
-    #[serde(default)]
+    // Never deserialized: the webview must not be able to pass arbitrary `open(2)` flags
+    // (e.g. `O_TRUNC`), it can only be set from Rust with `OpenOptionsExt::custom_flags`.
+    #[serde(skip)]
     #[allow(unused)]
     custom_flags: Option<i32>,
 }
@@ -361,24 +363,23 @@ impl std::os::unix::fs::OpenOptionsExt for OpenOptions {
 }
 
 impl OpenOptions {
-    #[cfg(target_os = "android")]
-    fn android_mode(&self) -> String {
-        let mut mode = String::new();
-
-        if self.read {
-            mode.push('r');
+    /// The mode passed to `ContentResolver.openAssetFileDescriptor` / `ParcelFileDescriptor.parseMode`,
+    /// which only accept `r`, `w`, `wt`, `wa`, `rw` and `rwt`.
+    ///
+    /// `create` and `create_new` have no equivalent: whether a missing file is created
+    /// depends on the content provider.
+    #[cfg(any(target_os = "android", test))]
+    fn android_mode(&self) -> &'static str {
+        match (self.read, self.write || self.append) {
+            (_, false) => "r",
+            // there is no read + append mode, and `read` defaults to `true` from JavaScript:
+            // honor the explicit append
+            (_, true) if self.append => "wa",
+            (true, true) if self.truncate => "rwt",
+            (true, true) => "rw",
+            (false, true) if self.truncate => "wt",
+            (false, true) => "w",
         }
-        if self.write {
-            mode.push('w');
-        }
-        if self.truncate {
-            mode.push('t');
-        }
-        if self.append {
-            mode.push('a');
-        }
-
-        mode
     }
 }
 
@@ -450,6 +451,7 @@ impl ScopeObject for scope::Entry {
 pub(crate) struct Scope {
     pub(crate) scope: tauri::fs::Scope,
     pub(crate) require_literal_leading_dot: Option<bool>,
+    pub(crate) scope_dropped_paths: bool,
 }
 
 /// Tracks which paths have active security-scoped resource access on iOS.
@@ -591,6 +593,11 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
                     .config()
                     .as_ref()
                     .and_then(|c| c.require_literal_leading_dot),
+                scope_dropped_paths: api
+                    .config()
+                    .as_ref()
+                    .and_then(|c| c.scope_dropped_paths)
+                    .unwrap_or(true),
                 scope: tauri::fs::Scope::new(app, &FsScope::default())?,
             };
 
@@ -618,7 +625,13 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
                 ..
             } = event
             {
-                let scope = app.fs_scope();
+                let Some(scope) = app.try_state::<Scope>() else {
+                    return;
+                };
+                if !scope.scope_dropped_paths {
+                    return;
+                }
+                let scope = &scope.scope;
                 for path in paths {
                     if path.is_file() {
                         let _ = scope.allow_file(path);
@@ -629,4 +642,47 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
             }
         })
         .build()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::OpenOptions;
+
+    #[test]
+    fn android_modes_are_valid() {
+        let mode = |json: &str| {
+            serde_json::from_str::<OpenOptions>(json)
+                .unwrap()
+                .android_mode()
+        };
+
+        // `read` defaults to true when deserialized
+        assert_eq!(mode(r#"{}"#), "r");
+        assert_eq!(mode(r#"{ "read": false }"#), "r");
+        assert_eq!(mode(r#"{ "write": true }"#), "rw");
+        assert_eq!(mode(r#"{ "write": true, "truncate": true }"#), "rwt");
+        assert_eq!(mode(r#"{ "append": true }"#), "wa");
+        assert_eq!(mode(r#"{ "read": false, "write": true }"#), "w");
+        assert_eq!(
+            mode(r#"{ "read": false, "write": true, "truncate": true }"#),
+            "wt"
+        );
+        assert_eq!(mode(r#"{ "read": false, "append": true }"#), "wa");
+        assert_eq!(
+            mode(r#"{ "read": false, "write": true, "truncate": true, "append": true }"#),
+            "wa"
+        );
+        assert_eq!(
+            mode(r#"{ "read": false, "write": true, "create": true }"#),
+            "w"
+        );
+    }
+
+    #[test]
+    fn open_options_ignore_custom_flags_from_ipc() {
+        let options: OpenOptions =
+            serde_json::from_str(r#"{ "read": true, "customFlags": 512 }"#).unwrap();
+        assert!(options.read);
+        assert_eq!(options.custom_flags, None);
+    }
 }

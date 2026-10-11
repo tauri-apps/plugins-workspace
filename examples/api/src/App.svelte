@@ -37,7 +37,6 @@
   import DeepLink from './views/DeepLink.svelte'
   import Positioner from './views/Positioner.svelte'
   import Sql from './views/Sql.svelte'
-  import Stronghold from './views/Stronghold.svelte'
   import WebSocket from './views/WebSocket.svelte'
 
   import TitleBar from './lib/TitleBar.svelte'
@@ -146,11 +145,6 @@
       label: 'SQL',
       component: Sql,
       icon: 'i-ph-database'
-    },
-    {
-      label: 'Stronghold',
-      component: Stronghold,
-      icon: 'i-ph-lock-key'
     },
     {
       label: 'Deep link',

@@ -4,7 +4,7 @@
 
 use arboard::ImageData;
 use serde::de::DeserializeOwned;
-use tauri::{image::Image, plugin::PluginApi, AppHandle, Runtime};
+use tauri::{AppHandle, Runtime, image::Image, plugin::PluginApi};
 
 use std::{borrow::Cow, sync::Mutex};
 

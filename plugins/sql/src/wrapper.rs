@@ -8,7 +8,7 @@ use std::fs::create_dir_all;
 use indexmap::IndexMap;
 use serde_json::Value as JsonValue;
 #[cfg(any(feature = "sqlite", feature = "mysql", feature = "postgres"))]
-use sqlx::{migrate::MigrateDatabase, Column, Executor, Pool, Row};
+use sqlx::{Column, Executor, Pool, Row, migrate::MigrateDatabase};
 #[cfg(any(feature = "sqlite", feature = "mysql", feature = "postgres"))]
 use tauri::Manager;
 use tauri::{AppHandle, Runtime};
