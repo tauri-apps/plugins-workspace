@@ -14,7 +14,7 @@
 )]
 
 use serde::Serialize;
-#[cfg(target_os = "linux")]
+#[cfg(all(desktop, unix, not(target_os = "macos")))]
 use std::fmt;
 #[cfg(desktop)]
 use tauri::AppHandle;
@@ -52,14 +52,14 @@ pub struct NotificationBuilder<R: Runtime> {
     #[cfg(mobile)]
     handle: PluginHandle<R>,
     pub(crate) data: NotificationData,
-    #[cfg(target_os = "linux")]
+    #[cfg(all(desktop, unix, not(target_os = "macos")))]
     on_close: Option<OnClose>,
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(all(desktop, unix, not(target_os = "macos")))]
 pub(crate) struct OnClose(Box<dyn Fn() + Send + 'static>);
 
-#[cfg(target_os = "linux")]
+#[cfg(all(desktop, unix, not(target_os = "macos")))]
 impl fmt::Debug for OnClose {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("OnClose")
@@ -72,7 +72,7 @@ impl<R: Runtime> NotificationBuilder<R> {
         Self {
             app,
             data: Default::default(),
-            #[cfg(target_os = "linux")]
+            #[cfg(all(desktop, unix, not(target_os = "macos")))]
             on_close: None,
         }
     }
@@ -229,8 +229,16 @@ impl<R: Runtime> NotificationBuilder<R> {
         self
     }
 
-    /// Sets a callback to run when the notification closes.
-    #[cfg(target_os = "linux")]
+    /// Sets a callback to run when the notification closes, whether the user dismissed it, it
+    /// expired or it was removed with [`Notification::remove_active`].
+    ///
+    /// The callback runs on a background thread and should return quickly. It does not run when
+    /// the session bus cannot be reached, or when the app exits first.
+    ///
+    /// ## Platform-specific
+    ///
+    /// - **Linux and the BSDs**: only available there.
+    #[cfg(all(desktop, unix, not(target_os = "macos")))]
     pub fn on_close<F: Fn() + Send + 'static>(mut self, handler: F) -> Self {
         self.on_close = Some(OnClose(Box::new(handler)));
         self

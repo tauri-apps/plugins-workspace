@@ -157,14 +157,7 @@ impl<R: Runtime> crate::NotificationBuilder<R> {
         // since servers like GNOME's close a notification once the connection that sent it goes
         // away.
         #[cfg(all(unix, not(target_os = "macos")))]
-        notification.show_tracked(
-            shared,
-            id,
-            data,
-            report,
-            #[cfg(target_os = "linux")]
-            self.on_close,
-        )?;
+        notification.show_tracked(shared, id, data, report, self.on_close)?;
         #[cfg(any(windows, target_os = "macos"))]
         if report {
             notification.show_tracked(shared, id, data)?;
@@ -362,7 +355,6 @@ mod imp {
         /// the payload their actions carry.
         pub(super) shown: Mutex<HashMap<u32, (i32, Value)>>,
         /// The `on_close` callbacks of the tracked notifications, by server id.
-        #[cfg(target_os = "linux")]
         on_close: Mutex<HashMap<u32, crate::OnClose>>,
     }
 
@@ -460,7 +452,7 @@ mod imp {
             id: i32,
             data: Value,
             report: bool,
-            #[cfg(target_os = "linux")] on_close: Option<crate::OnClose>,
+            on_close: Option<crate::OnClose>,
         ) -> crate::Result<()> {
             let mut notification = self.build()?;
             if report {
@@ -470,14 +462,7 @@ mod imp {
                 notification.action("default", "");
             }
             tauri::async_runtime::spawn_blocking(move || {
-                track(
-                    notification,
-                    &shared,
-                    id,
-                    report.then_some(data),
-                    #[cfg(target_os = "linux")]
-                    on_close,
-                )
+                track(notification, &shared, id, report.then_some(data), on_close)
             });
             Ok(())
         }
@@ -568,7 +553,7 @@ mod imp {
         shared: &Arc<Shared>,
         id: i32,
         data: Option<Value>,
-        #[cfg(target_os = "linux")] on_close: Option<crate::OnClose>,
+        on_close: Option<crate::OnClose>,
     ) {
         let tracker = &shared.tracker;
         let Some(connection) = tracker
@@ -585,7 +570,6 @@ mod imp {
             if let Some(data) = data {
                 shown.insert(server_id, (id, data));
             }
-            #[cfg(target_os = "linux")]
             if let Some(on_close) = on_close {
                 lock(&tracker.on_close).insert(server_id, on_close);
             }
@@ -678,7 +662,6 @@ mod imp {
             Some("NotificationClosed") => {
                 if let Ok((server_id, _reason)) = body.deserialize::<(u32, u32)>() {
                     lock(&shared.tracker.shown).remove(&server_id);
-                    #[cfg(target_os = "linux")]
                     if let Some(on_close) = lock(&shared.tracker.on_close).remove(&server_id) {
                         (on_close.0)();
                     }
