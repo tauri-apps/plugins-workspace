@@ -13,7 +13,7 @@
 
 use std::path::Path;
 
-use tauri::{plugin::TauriPlugin, Manager, Runtime};
+use tauri::{Manager, Runtime, plugin::TauriPlugin};
 
 #[cfg(mobile)]
 use tauri::plugin::PluginHandle;

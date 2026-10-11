@@ -49,7 +49,9 @@ export interface FixtureServer {
  * - `ws /ws` — a WebSocket echo endpoint: text and binary messages are sent
  *   back as-is, and {@link WEBSOCKET_CLOSE_REQUEST} makes the server close the
  *   connection with {@link WEBSOCKET_CLOSE_CODE}. On `/ws/headers` the server
- *   first sends the upgrade request's headers as a JSON text message.
+ *   answers the first message with the upgrade request's headers as a JSON
+ *   text message instead (not sent on connect, where it could arrive before
+ *   the client attached a listener).
  */
 export function startFixtureServer(): Promise<FixtureServer> {
   const server = http.createServer((req, res) => {
@@ -111,11 +113,12 @@ export function startFixtureServer(): Promise<FixtureServer> {
       return
     }
     wss.handleUpgrade(req, socket, head, (ws) => {
-      if (pathname === '/ws/headers') {
-        ws.send(JSON.stringify(req.headers))
-      }
+      let sendHeaders = pathname === '/ws/headers'
       ws.on('message', (data, isBinary) => {
-        if (
+        if (sendHeaders) {
+          sendHeaders = false
+          ws.send(JSON.stringify(req.headers))
+        } else if (
           !isBinary
           && Buffer.isBuffer(data)
           && data.toString('utf8') === WEBSOCKET_CLOSE_REQUEST

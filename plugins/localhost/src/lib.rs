@@ -15,8 +15,8 @@ use std::collections::HashMap;
 
 use http::Uri;
 use tauri::{
-    plugin::{Builder as PluginBuilder, TauriPlugin},
     Runtime,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
 };
 use tiny_http::{Header, Response as HttpResponse, Server};
 

@@ -6,16 +6,16 @@ members = [
   "plugins/*/examples/*/src-tauri",
   "examples/*/src-tauri",
 ]
-resolver = "2"
+resolver = "3"
 
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }
 tracing = "0.1"
 log = "0.4.21"
-tauri = { version = "2.10", default-features = false }
-tauri-build = "2.5"
-tauri-plugin = "2.5"
-tauri-utils = "2.8"
+tauri = { version = "2.12", default-features = false }
+tauri-build = "2.7"
+tauri-plugin = "2.7.1"
+tauri-utils = "2.10"
 serde_json = "1"
 thiserror = "2"
 url = "2"
@@ -26,28 +26,11 @@ glob = "0.3"
 zbus = "5.9"
 
 [workspace.package]
-edition = "2021"
+edition = "2024"
 authors = ["Tauri Programme within The Commons Conservancy"]
 license = "Apache-2.0 OR MIT"
-rust-version = "1.77.2"
+rust-version = "1.90"
 repository = "https://github.com/tauri-apps/plugins-workspace"
-
-# Stronghold encrypts its snapshots with scrypt: unoptimized, saving or loading one
-# takes ~45s instead of ~1s, which stalls the (debug) example app and its e2e suite.
-[profile.dev.package.scrypt]
-opt-level = 3
-[profile.dev.package.salsa20]
-opt-level = 3
-[profile.dev.package.pbkdf2]
-opt-level = 3
-[profile.dev.package.sha2]
-opt-level = 3
-[profile.dev.package.hmac]
-opt-level = 3
-[profile.dev.package.iota-crypto]
-opt-level = 3
-[profile.dev.package.rust-argon2]
-opt-level = 3
 
 # default to small, optimized release binaries
 [profile.release]

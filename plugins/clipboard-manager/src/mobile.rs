@@ -5,9 +5,9 @@
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use tauri::{
+    AppHandle, Runtime,
     image::Image,
     plugin::{PluginApi, PluginHandle},
-    AppHandle, Runtime,
 };
 
 use std::borrow::Cow;

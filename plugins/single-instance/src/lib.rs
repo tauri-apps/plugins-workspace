@@ -15,7 +15,7 @@
 )]
 #![cfg(not(any(target_os = "android", target_os = "ios")))]
 
-use tauri::{plugin::TauriPlugin, AppHandle, Manager, Runtime};
+use tauri::{AppHandle, Manager, Runtime, plugin::TauriPlugin};
 
 #[cfg(target_os = "windows")]
 #[path = "platform_impl/windows.rs"]
@@ -39,8 +39,9 @@ pub(crate) type SingleInstanceCallback<R> =
 /// [`Builder::build`]. Use [`Builder`] directly if you need to set a custom [`Builder::dbus_id`].
 ///
 /// `f` is called with the app handle, the second instance's command line arguments
-/// (as collected by [`std::env::args`], so the first element is the executable path) and its
-/// current working directory. If the `deep-link` feature is enabled, the arguments are first
+/// (as collected by [`std::env::args_os`], so the first element is the executable path) and its
+/// current working directory. Arguments and the working directory that are not valid Unicode
+/// have their invalid parts replaced by U+FFFD. If the `deep-link` feature is enabled, the arguments are first
 /// forwarded to [`tauri-plugin-deep-link`](https://crates.io/crates/tauri-plugin-deep-link)
 /// before `f` runs.
 ///
