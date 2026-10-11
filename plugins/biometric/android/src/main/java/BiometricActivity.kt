@@ -43,7 +43,7 @@ class BiometricActivity : AppCompatActivity() {
         val manager = getSystemService(
             Context.KEYGUARD_SERVICE
         ) as KeyguardManager
-        val allowDeviceCredential = allowDeviceCredentialArg && manager.isDeviceSecure;
+        val allowDeviceCredential = allowDeviceCredentialArg && manager.isDeviceSecure
 
         // Android requires a secure lock screen to enroll biometrics, so with the fallback
         // allowed and no device credential set there is nothing to authenticate with.
