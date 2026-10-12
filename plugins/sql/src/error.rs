@@ -26,7 +26,8 @@ pub enum Error {
     /// Contains the connection string of the database.
     #[error("database {0} not loaded")]
     DatabaseNotLoaded(String),
-    /// The database does not exist.
+    /// The database does not exist and `autoCreate` was disabled when loading it.
+    /// Contains the connection string of the database.
     #[error("database {0} does not exist")]
     DatabaseDoesNotExist(String),
     /// A value selected from the database has a SQL type that cannot be converted
