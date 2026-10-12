@@ -320,19 +320,20 @@ impl DbPool {
 
 /// Creates the database if it does not exist yet, or fails with
 /// [`crate::Error::DatabaseDoesNotExist`] when `auto_create` is `false`.
+/// Errors of the existence check itself (unreachable server, bad credentials)
+/// are returned as they are, not as a missing database.
 #[cfg(any(feature = "sqlite", feature = "mysql", feature = "postgres"))]
 async fn ensure_database<DB: MigrateDatabase>(
     conn_url: &str,
     auto_create: bool,
 ) -> Result<(), crate::Error> {
-    if !DB::database_exists(conn_url).await.unwrap_or(false) {
-        if auto_create {
-            DB::create_database(conn_url).await?;
-        } else {
-            return Err(crate::Error::DatabaseDoesNotExist(conn_url.to_string()));
-        }
+    match DB::database_exists(conn_url).await {
+        Ok(true) => Ok(()),
+        // When the check fails, creating reports the actual error (or fixes it).
+        Ok(false) | Err(_) if auto_create => Ok(DB::create_database(conn_url).await?),
+        Ok(false) => Err(crate::Error::DatabaseDoesNotExist(conn_url.to_string())),
+        Err(e) => Err(e.into()),
     }
-    Ok(())
 }
 
 #[cfg(feature = "sqlite")]
