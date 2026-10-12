@@ -78,6 +78,7 @@ impl DbPool {
     pub(crate) async fn connect<R: Runtime>(
         conn_url: &str,
         _app: &AppHandle<R>,
+        auto_create: bool,
     ) -> Result<Self, crate::Error> {
         match conn_url
             .split_once(':')
@@ -95,22 +96,37 @@ impl DbPool {
 
                 let conn_url = &path_mapper(app_path, conn_url);
 
-                if !Sqlite::database_exists(conn_url).await.unwrap_or(false) {
-                    Sqlite::create_database(conn_url).await?;
+                let exists = Sqlite::database_exists(conn_url).await.unwrap_or(false);
+                if !exists {
+                    if auto_create {
+                        Sqlite::create_database(conn_url).await?;
+                    } else {
+                        return Err(crate::Error::DatabaseDoesNotExist(conn_url.to_string()));
+                    }
                 }
                 Ok(Self::Sqlite(Pool::connect(conn_url).await?))
             }
             #[cfg(feature = "mysql")]
             "mysql" => {
-                if !MySql::database_exists(conn_url).await.unwrap_or(false) {
-                    MySql::create_database(conn_url).await?;
+                let exists = MySql::database_exists(conn_url).await.unwrap_or(false);
+                if !exists {
+                    if auto_create {
+                        MySql::create_database(conn_url).await?;
+                    } else {
+                        return Err(crate::Error::DatabaseDoesNotExist(conn_url.to_string()));
+                    }
                 }
                 Ok(Self::MySql(Pool::connect(conn_url).await?))
             }
             #[cfg(feature = "postgres")]
             "postgres" => {
-                if !Postgres::database_exists(conn_url).await.unwrap_or(false) {
-                    Postgres::create_database(conn_url).await?;
+                let exists = Postgres::database_exists(conn_url).await.unwrap_or(false);
+                if !exists {
+                    if auto_create {
+                        Postgres::create_database(conn_url).await?;
+                    } else {
+                        return Err(crate::Error::DatabaseDoesNotExist(conn_url.to_string()));
+                    }
                 }
                 Ok(Self::Postgres(Pool::connect(conn_url).await?))
             }
