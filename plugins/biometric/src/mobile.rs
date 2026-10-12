@@ -53,4 +53,17 @@ impl<R: Runtime> Biometric<R> {
             .run_mobile_plugin("authenticate", AuthenticatePayload { reason, options })
             .map_err(Into::into)
     }
+
+    /// Prompts the user for biometric authentication and, on success, encrypts
+    /// [`AuthOptions::data_to_encrypt`] or decrypts [`AuthOptions::data_to_decrypt`] using a key
+    /// protected by the device's strong biometrics. **Android only.**
+    pub fn biometric_cipher(
+        &self,
+        reason: String,
+        options: AuthOptions,
+    ) -> crate::Result<CipherResult> {
+        self.0
+            .run_mobile_plugin("biometricCipher", AuthenticatePayload { reason, options })
+            .map_err(Into::into)
+    }
 }
