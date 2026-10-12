@@ -5,7 +5,11 @@ biometric features are by default exposed.
 
 #### Granted Permissions
 
-It allows acccess to all biometric commands.
+It allows checking the biometric status and
+prompting for authentication. Encrypting and
+decrypting data with `biometric_cipher` is not
+included and must be enabled explicitly with
+`biometric:allow-biometric-cipher`.
 
 #### This default permission set includes the following:
 

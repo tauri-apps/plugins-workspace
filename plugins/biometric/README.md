@@ -92,6 +92,16 @@ if (status.isAvailable) {
 }
 ```
 
+## Permissions
+
+The default permission set (`biometric:default`) only allows `status` and `authenticate`. To use `biometricCipher`, add the `biometric:allow-biometric-cipher` permission to your capability:
+
+```json
+{
+  "permissions": ["biometric:default", "biometric:allow-biometric-cipher"]
+}
+```
+
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
