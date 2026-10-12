@@ -309,12 +309,14 @@
         {
           "description": "Enables the biometric_cipher command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-biometric-cipher"
+          "const": "allow-biometric-cipher",
+          "markdownDescription": "Enables the biometric_cipher command without any pre-configured scope."
         },
         {
           "description": "Denies the biometric_cipher command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-biometric-cipher"
+          "const": "deny-biometric-cipher",
+          "markdownDescription": "Denies the biometric_cipher command without any pre-configured scope."
         },
         {
           "description": "Enables the status command without any pre-configured scope.",

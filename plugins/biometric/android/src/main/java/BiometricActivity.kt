@@ -41,10 +41,12 @@ class BiometricActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.auth_activity)
 
-        val promptInfo = createPromptInfo()
-        val prompt = createBiometricPrompt()
-        
         cipherOperation = intent.hasExtra(BiometricPlugin.ENCRYPT_DECRYPT_OPERATION)
+
+        // null when the activity already finished with an error
+        val promptInfo = createPromptInfo() ?: return
+        val prompt = createBiometricPrompt()
+
         if (!cipherOperation) {
             prompt.authenticate(promptInfo)
             return
@@ -120,23 +122,29 @@ class BiometricActivity : AppCompatActivity() {
         finish()
     }
 
-    private fun createPromptInfo(): BiometricPrompt.PromptInfo {
+    private fun createPromptInfo(): BiometricPrompt.PromptInfo? {
         val builder = BiometricPrompt.PromptInfo.Builder()
         val intent = intent
         var title = intent.getStringExtra(BiometricPlugin.TITLE)
         val subtitle = intent.getStringExtra(BiometricPlugin.SUBTITLE)
         val description = intent.getStringExtra(BiometricPlugin.REASON)
-        
-        allowDeviceCredential = false
-        cipherOperation = intent.hasExtra(BiometricPlugin.ENCRYPT_DECRYPT_OPERATION)
-
+        val allowDeviceCredentialArg = intent.getBooleanExtra(BiometricPlugin.DEVICE_CREDENTIAL, false)
         // Android docs say we should check if the device is secure before enabling device credential fallback
         val manager = getSystemService(
             Context.KEYGUARD_SERVICE
         ) as KeyguardManager
-        if (manager.isDeviceSecure) {
-            allowDeviceCredential =
-                intent.getBooleanExtra(BiometricPlugin.DEVICE_CREDENTIAL, false)
+        val allowDeviceCredential = allowDeviceCredentialArg && manager.isDeviceSecure
+
+        // Android requires a secure lock screen to enroll biometrics, so with the fallback
+        // allowed and no device credential set there is nothing to authenticate with.
+        // Report it up front (like iOS does) instead of relying on the prompt's error.
+        if (allowDeviceCredentialArg && !manager.isDeviceSecure) {
+            finishActivity(
+                BiometryResultType.ERROR,
+                BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL,
+                getString(R.string.tauri_biometric_no_device_credential)
+            )
+            return null
         }
 
         if (title.isNullOrEmpty()) {
@@ -168,13 +176,13 @@ class BiometricActivity : AppCompatActivity() {
                 if (negativeButtonText.isNullOrEmpty()) "Cancel" else negativeButtonText
             )
         }
+
         builder.setConfirmationRequired(
             intent.getBooleanExtra(BiometricPlugin.CONFIRMATION_REQUIRED, true)
         )
-        
         return builder.build()
     }
-    
+
     private fun createBiometricPrompt(): BiometricPrompt {
         val executor = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             this.mainExecutor
@@ -195,7 +203,7 @@ class BiometricActivity : AppCompatActivity() {
                 finishActivity(
                     BiometryResultType.ERROR,
                     errorCode,
-                    errorMessage as String
+                    errorMessage.toString()
                 )
             }
 
@@ -269,7 +277,6 @@ class BiometricActivity : AppCompatActivity() {
     }
 
     companion object {
-        var allowDeviceCredential = false
         var cipherOperation = false
         var encryptDecryptData: String = ""
         var authenticationResult: BiometricPrompt.AuthenticationResult? = null

@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-os"
-version = "2.2.1"
+version = "2.4.0"
 description = "Read information about the operating system."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -8,10 +8,13 @@ license = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-os"
-
-[package.metadata.docs.rs]
-rustc-args = ["--cfg", "docsrs"]
-rustdoc-args = ["--cfg", "docsrs"]
+exclude = [
+  "/banner.png",
+  "/guest-js",
+  "/package.json",
+  "/rollup.config.js",
+  "/tsconfig.json",
+]
 
 [package.metadata.platforms.support]
 windows = { level = "full", notes = "" }
@@ -32,4 +35,4 @@ thiserror = { workspace = true }
 os_info = "3"
 sys-locale = "0.3"
 gethostname = "1.0"
-serialize-to-javascript = "=0.1.1"
+serialize-to-javascript = "0.1.1"

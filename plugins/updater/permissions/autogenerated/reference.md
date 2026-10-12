@@ -8,8 +8,6 @@ updater functions are exposed to the frontend.
 The full workflow from checking for updates to installing them
 is enabled.
 
-
-
 #### This default permission set includes the following:
 
 - `allow-check`

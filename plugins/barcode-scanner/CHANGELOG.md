@@ -1,5 +1,59 @@
 # Changelog
 
+## [2.5.2]
+
+- [`42ae8b45`](https://github.com/tauri-apps/plugins-workspace/commit/42ae8b4501f3628cddeab3973eb38a7593304cc8) ([#3684](https://github.com/tauri-apps/plugins-workspace/pull/3684)) On iOS, mark the plugin's `init_plugin_*` entry point `public` so release builds made with Xcode 27 keep it global and link.
+
+## [2.5.1]
+
+- [`569ee82c`](https://github.com/tauri-apps/plugins-workspace/commit/569ee82cf61a358b4c73ba52f2e99f3317ec05d0) Fix the docs.rs build for Android: the build script now detects docs.rs through the `DOCS_RS` environment variable, since `cfg(docsrs)` is never set for build scripts.
+
+## [2.5.0]
+
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+## [2.4.6]
+
+- [`db9c5998`](https://github.com/tauri-apps/plugins-workspace/commit/db9c5998feff9384f9cbbefcbe0d45937c00a1fc) ([#3531](https://github.com/tauri-apps/plugins-workspace/pull/3531) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix missing `consumer-rules.pro` on Gradle v9.
+
+## \[2.4.5]
+
+- [`d8645ab3`](https://github.com/tauri-apps/plugins-workspace/commit/d8645ab3e5b508456681eb53275c0837db25aeee) ([#3393](https://github.com/tauri-apps/plugins-workspace/pull/3393) by [@AlexisZankowitch](https://github.com/tauri-apps/plugins-workspace/../../AlexisZankowitch)) Fixed a crash on iOS when `cancel()` is invoked by running the cancel handler on the main thread.
+
+## \[2.4.4]
+
+- [`82fbb0c7`](https://github.com/tauri-apps/plugins-workspace/commit/82fbb0c790288eca72af9ade13828ded7700ff90) ([#3221](https://github.com/tauri-apps/plugins-workspace/pull/3221)) On iOS, fixed an application crash happening when the scanner was started when user denied permission before.
+- [`b60dd887`](https://github.com/tauri-apps/plugins-workspace/commit/b60dd88702a2be2af942a3d104d728970a4c42d6) ([#3223](https://github.com/tauri-apps/plugins-workspace/pull/3223)) On iOS, start the scanning session on a separate thread to fix performance issues.
+- [`c27af912`](https://github.com/tauri-apps/plugins-workspace/commit/c27af9128d6cc7a2424ec49e98005e68b2d0eb1a) ([#3222](https://github.com/tauri-apps/plugins-workspace/pull/3222)) On iOS, fixed an application crash happening when the scanner was started on the iOS Simulator (no camera available).
+
+## \[2.4.3]
+
+- [`d8bfe61f`](https://github.com/tauri-apps/plugins-workspace/commit/d8bfe61f20f235314bad93a9c50d8b7f3eade734) ([#3121](https://github.com/tauri-apps/plugins-workspace/pull/3121) by [@NKIPSC](https://github.com/tauri-apps/plugins-workspace/../../NKIPSC)) Remove unnecessary checks on Android when requesting camera permission.
+- [`631d0e25`](https://github.com/tauri-apps/plugins-workspace/commit/631d0e256a37946b6a9102ca35511abfbebb92c5) ([#2440](https://github.com/tauri-apps/plugins-workspace/pull/2440) by [@kingsword09](https://github.com/tauri-apps/plugins-workspace/../../kingsword09)) Fix the `cameraView` is not removed after scanning in iOS.
+
+## \[2.4.2]
+
+- [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
+
+## \[2.4.1]
+
+- [`654bf489`](https://github.com/tauri-apps/plugins-workspace/commit/654bf4891a35769f7e82971641d3ad99974b2dfe) ([#3038](https://github.com/tauri-apps/plugins-workspace/pull/3038) by [@daniel-mader](https://github.com/tauri-apps/plugins-workspace/../../daniel-mader)) Update `androidx.camera` from `1.1.0` to `1.5.1` to support 16 KB memory page sizes.
+- [`6c9b61fb`](https://github.com/tauri-apps/plugins-workspace/commit/6c9b61fb658145d13893626112fc489f7458aa17) ([#3039](https://github.com/tauri-apps/plugins-workspace/pull/3039) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) On Android, updated compileSdk to 36.
+
+## \[2.4.0]
+
+- [`aa9140e1`](https://github.com/tauri-apps/plugins-workspace/commit/aa9140e1ac239ab9f015f92b2ed52bbf0eda7c12) ([#2437](https://github.com/tauri-apps/plugins-workspace/pull/2437) by [@enkhjile](https://github.com/tauri-apps/plugins-workspace/../../enkhjile)) Added support for GS1 DataBar on iOS 15.4+
+
+## \[2.3.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+## \[2.2.1]
+
+- [`f634e524`](https://github.com/tauri-apps/plugins-workspace/commit/f634e5248ebe428f8305a59f74c13fc15147fb8e) This is an "empty" release to update the plugins' source files on crates.io and docs.rs. This should fix docs.rs build failures for projects using tauri plugins as dependencies.
+
 ## \[2.2.0]
 
 - [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
@@ -110,6 +164,10 @@
   commit/454428cd50ce4962f0bad8e355aebc68af8cc61f)([#536](https://github.com/tauri-apps/plugins-workspace/pull/536)) Initial release.
   36]\(https://github.com/tauri-apps/plugins-workspace/pull/536)) Initial release.
   commit/454428cd50ce4962f0bad8e355aebc68af8cc61f)([#536](https://github.com/tauri-apps/plugins-workspace/pull/536)) Initial release.
+  .
+  commit/454428cd50ce4962f0bad8e355aebc68af8cc61f)([#536](https://github.com/tauri-apps/plugins-workspace/pull/536)) Initial release.
+  github.com/tauri-apps/plugins-workspace/pull/536)) Initial release.
+ebc68af8cc61f)([#536](https://github.com/tauri-apps/plugins-workspace/pull/536)) Initial release.
   .
   commit/454428cd50ce4962f0bad8e355aebc68af8cc61f)([#536](https://github.com/tauri-apps/plugins-workspace/pull/536)) Initial release.
   github.com/tauri-apps/plugins-workspace/pull/536)) Initial release.

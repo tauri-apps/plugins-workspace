@@ -5,34 +5,10 @@
 import SwiftRs
 import Tauri
 import UIKit
-
-#if targetEnvironment(simulator)
-  var logReady = false
-#else
-  var logReady = true
-#endif
+import os.log
 
 @_cdecl("tauri_log")
-func log(level: Int, message: NSString) {
-  if logReady {
-    os_log(level, message)
-  } else {
-    dispatch_log(level, message)
-  }
-}
-
-func dispatch_log(_ level: Int, _ message: NSString) {
-  // delay logging when the logger isn't immediately available
-  // in some cases when using the simulator the app would hang when calling os_log too soon
-  // better be safe here and wait a few seconds than actually freeze the app in dev mode
-  // in production this isn't a problem
-  DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-    os_log(level, message)
-    logReady = true
-  }
-}
-
-func os_log(_ level: Int, _ message: NSString) {
+public func log(level: Int, message: NSString) {
   switch level {
   case 1: Logger.debug(message as String)
   case 2: Logger.info(message as String)

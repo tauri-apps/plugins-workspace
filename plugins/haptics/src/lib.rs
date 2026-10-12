@@ -2,9 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+//! Trigger haptic feedback on supported devices.
+//!
+//! ## Cargo features
+//!
+//! - **specta**: Add support for [`specta::specta`](https://docs.rs/specta/2.0.0-rc.25/specta/attr.specta.html) on structs like [`ImpactFeedbackStyle`], [`NotificationFeedbackType`].
+
 use tauri::{
-    plugin::{Builder, TauriPlugin},
     Manager, Runtime,
+    plugin::{Builder, TauriPlugin},
 };
 
 pub use models::*;
@@ -27,6 +33,7 @@ pub use mobile::Haptics;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the haptics APIs.
 pub trait HapticsExt<R: Runtime> {
+    /// Returns a handle to the [`Haptics`] APIs.
     fn haptics(&self) -> &Haptics<R>;
 }
 

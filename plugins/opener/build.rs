@@ -12,19 +12,15 @@ mod scope;
 #[derive(schemars::JsonSchema)]
 #[serde(untagged)]
 #[allow(unused)]
+#[derive(Default)]
 enum Application {
     /// Open in default application.
+    #[default]
     Default,
     /// If true, allow open with any application.
     Enable(bool),
     /// Allow specific application to open with.
     App(String),
-}
-
-impl Default for Application {
-    fn default() -> Self {
-        Self::Default
-    }
 }
 
 /// Opener scope entry.

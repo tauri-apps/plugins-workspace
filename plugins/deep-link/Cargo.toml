@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-deep-link"
-version = "2.3.0"
+version = "2.6.1"
 description = "Set your Tauri application as the default handler for an URL"
 authors = { workspace = true }
 license = { workspace = true }
@@ -8,24 +8,33 @@ edition = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
 links = "tauri-plugin-deep-link"
+exclude = [
+  "/banner.png",
+  "/examples",
+  "/guest-js",
+  "/package.json",
+  "/rollup.config.js",
+  "/tsconfig.json",
+]
 
 [package.metadata.docs.rs]
-rustc-args = ["--cfg", "docsrs"]
-rustdoc-args = ["--cfg", "docsrs"]
 targets = ["x86_64-linux-android"]
 
 [package.metadata.platforms.support]
 windows = { level = "full", notes = "" }
 linux = { level = "full", notes = "" }
-macos = { level = "partial", notes = "Runtime deep link registration is not supported" }
-android = { level = "partial", notes = "Runtime deep link registration is not supported" }
-ios = { level = "partial", notes = "Runtime deep link registration is not supported" }
+macos = { level = "partial", notes = "Deep links must be registered in config. Dynamic registration at runtime is not supported." }
+android = { level = "partial", notes = "Deep links must be registered in config. Dynamic registration at runtime is not supported." }
+ios = { level = "partial", notes = "Deep links must be registered in config. Dynamic registration at runtime is not supported." }
 
 [build-dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
 tauri-utils = { workspace = true }
 tauri-plugin = { workspace = true, features = ["build"] }
+
+[target."cfg(target_os = \"macos\")".build-dependencies]
+plist = "1"
 
 [dependencies]
 serde = { workspace = true }
@@ -36,10 +45,13 @@ tracing = { workspace = true }
 thiserror = { workspace = true }
 url = { workspace = true }
 
+[dev-dependencies]
+tauri = { workspace = true, features = ["test"] }
+
 [target."cfg(windows)".dependencies]
 dunce = "1"
-windows-registry = "0.5"
-windows-result = "0.3"
+windows-registry = "0.6"
+windows-result = "0.4"
 
 [target."cfg(target_os = \"linux\")".dependencies]
 rust-ini = "0.21"

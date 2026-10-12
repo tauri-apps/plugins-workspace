@@ -5,7 +5,7 @@
 use indexmap::IndexMap;
 use serde_json::Value as JsonValue;
 use sqlx::migrate::Migrator;
-use tauri::{command, AppHandle, Runtime, State};
+use tauri::{AppHandle, Runtime, State, command};
 
 use crate::{DbInstances, DbPool, Error, LastInsertId, Migrations};
 

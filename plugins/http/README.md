@@ -12,7 +12,7 @@ Access the HTTP client written in Rust.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.77.2**_
+_This plugin requires a Rust version of at least **1.90**_
 
 There are three general methods of installation that we can recommend.
 
@@ -33,21 +33,12 @@ tauri-plugin-http = { git = "https://github.com/tauri-apps/plugins-workspace", b
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
-> Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
-
 ```sh
 pnpm add @tauri-apps/plugin-http
 # or
 npm add @tauri-apps/plugin-http
 # or
 yarn add @tauri-apps/plugin-http
-
-# alternatively with Git:
-pnpm add https://github.com/tauri-apps/tauri-plugin-http#v2
-# or
-npm add https://github.com/tauri-apps/tauri-plugin-http#v2
-# or
-yarn add https://github.com/tauri-apps/tauri-plugin-http#v2
 ```
 
 ## Usage
@@ -71,7 +62,7 @@ Afterwards all the plugin's APIs are available through the JavaScript guest bind
 import { fetch } from '@tauri-apps/plugin-http'
 const response = await fetch('http://localhost:3003/users/2', {
   method: 'GET',
-  timeout: 30
+  connectTimeout: 30
 })
 ```
 

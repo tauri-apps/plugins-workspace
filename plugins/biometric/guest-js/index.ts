@@ -2,22 +2,40 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+/**
+ * Prompt the user for biometric authentication on Android, iOS and macOS.
+ *
+ * @module
+ */
+
 import { invoke } from '@tauri-apps/api/core'
 
+/**
+ * The kind of biometry hardware detected on the device.
+ */
 export enum BiometryType {
+  /** No biometry hardware is available, or it is not enrolled with the operating system. */
   None = 0,
-  // Apple TouchID or Android fingerprint
+  /** Apple TouchID or Android fingerprint. */
   TouchID = 1,
-  // Apple FaceID or Android face authentication
+  /** Apple FaceID or Android face authentication. */
   FaceID = 2,
-  // Android iris authentication
+  /** Android iris authentication. */
   Iris = 3
 }
 
+/**
+ * The result of {@linkcode checkStatus}, describing whether biometric authentication can
+ * currently be used.
+ */
 export interface Status {
+  /** Whether the device can currently authenticate using biometrics. */
   isAvailable: boolean
+  /** The kind of biometry hardware detected on the device, even when {@linkcode isAvailable} is `false`. */
   biometryType: BiometryType
+  /** A human-readable reason why biometric authentication is unavailable. Only set when {@linkcode isAvailable} is `false`. */
   error?: string
+  /** A platform-specific error code describing why biometric authentication is unavailable. Only set when {@linkcode isAvailable} is `false`. */
   errorCode?:
     | 'appCancel'
     | 'authenticationFailed'
@@ -32,34 +50,47 @@ export interface Status {
     | 'biometryNotEnrolled'
 }
 
+/**
+ * Options for the {@linkcode authenticate} biometric prompt.
+ */
 export interface AuthOptions {
-  /** Enables authentication using the device's password. This feature is available on both Android and iOS. */
+  /** Enables authentication using the device's password or PIN. Available on Android, iOS and macOS. */
   allowDeviceCredential?: boolean
-  /** Label for the Cancel button. This feature is available on both Android and iOS. */
+  /** Label for the cancel button. Available on Android, iOS and macOS. */
   cancelTitle?: string
-  /** The plain data that must be encrypted after successfull biometric authentication */
+  /** The plain data that must be encrypted after successful biometric authentication. Used by {@linkcode biometricCipher}. **Android only.** */
   dataToEncrypt?: string
-  /** The encrypted data that must be decrypted after successfull biometric authentication */
+  /** The encrypted data that must be decrypted after successful biometric authentication. Used by {@linkcode biometricCipher}. **Android only.** */
   dataToDecrypt?: string
 
-
-  // iOS options
-  /** Specifies the text displayed on the fallback button if biometric authentication fails. This feature is available iOS only. */
+  // iOS and macOS options
+  /** Text displayed on the fallback button if biometric authentication fails. **iOS and macOS only.** */
   fallbackTitle?: string
 
   // android options
-  /** Title indicating the purpose of biometric verification. This feature is available Android only. */
+  /** Title indicating the purpose of the biometric verification. **Android only.** */
   title?: string
-  /** SubTitle providing contextual information of biometric verification. This feature is available Android only. */
+  /** Subtitle providing contextual information of the biometric verification. **Android only.** */
   subtitle?: string
-  /**  Specifies whether additional user confirmation is required, such as pressing a button after successful biometric authentication. This feature is available Android only. */
+  /** Whether additional user confirmation is required, such as pressing a button, after successful biometric authentication. **Android only.** */
   confirmationRequired?: boolean
+  /** Maximum number of attempts allowed before the prompt is dismissed. Defaults to `3`. **Android only.** */
   maxAttemps?: number
 }
 
 /**
  * Checks if the biometric authentication is available.
+ * @example
+ * ```typescript
+ * import { checkStatus } from '@tauri-apps/plugin-biometric';
+ *
+ * const status = await checkStatus();
+ * if (status.isAvailable) {
+ *   // do something
+ * }
+ * ```
  * @returns a promise resolving to an object containing all the information about the status of the biometry.
+ * @since 2.0.0
  */
 export async function checkStatus(): Promise<Status> {
   return await invoke('plugin:biometric|status')
@@ -67,15 +98,17 @@ export async function checkStatus(): Promise<Status> {
 
 /**
  * Prompts the user for authentication using the system interface (touchID, faceID or Android Iris).
- * Rejects if the authentication fails.
+ * Rejects if the authentication fails, with an error object containing a `message` and, when the platform provides one, a `code` (e.g. `userCancel`).
  *
- * ```javascript
+ * @example
+ * ```typescript
  * import { authenticate } from "@tauri-apps/plugin-biometric";
  * await authenticate('Open your wallet');
  * ```
- * @param reason
- * @param options
- * @returns
+ * @param reason A message shown to the user explaining why authentication is requested.
+ * @param options Configuration for the biometric prompt.
+ * @returns a promise resolving to `void` once the user is successfully authenticated.
+ * @since 2.0.0
  */
 export async function authenticate(
   reason: string,
@@ -87,25 +120,24 @@ export async function authenticate(
   })
 }
 
-
 /**
  * Encrypts/Decrypts some payload using biometric authentication. It will Prompt the user to authenticate
  * using the system interface (touchID, faceID or Android Iris).
  * Rejects if the authentication fails.
- * 
- * Warning: consider that if the data is encrypted and the user changes the biometric settings, the key needed 
- * to decrypt the data will be lost. So, it's recommended to use this only to data that the user can get back 
+ *
+ * Warning: consider that if the data is encrypted and the user changes the biometric settings, the key needed
+ * to decrypt the data will be lost. So, it's recommended to use this only to data that the user can get back
  * by other means (i.e. storing their password in a secure way so they can login passwordless with biometric authentication).
  *
  * ```javascript
  * import { biometricCipher } from "@tauri-apps/plugin-biometric";
- * 
+ *
  * // how to encrypt some data
  * const options = {
  *   dataToEncrypt: "...", // if not empty, will encrypt this data
  * };
  * const encryptedData = await biometricCipher('Open your wallet', options);
- * 
+ *
  * // how to decrypt the encrypted data
  * const options = {
  *   dataToDecrypt: encryptedData // if not empty, will decrypt the data (that was previously encrypted by this method)
@@ -119,10 +151,9 @@ export async function authenticate(
 export async function biometricCipher(
   reason: string,
   options?: AuthOptions
-): Promise<{data: string}> {
-  return await invoke<{data: string}>('plugin:biometric|biometric_cipher', {
+): Promise<{ data: string }> {
+  return await invoke<{ data: string }>('plugin:biometric|biometric_cipher', {
     reason,
     ...options
-  });
+  })
 }
-

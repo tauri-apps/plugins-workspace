@@ -12,7 +12,7 @@ In-app updates for Tauri applications.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.77.2**_
+_This plugin requires a Rust version of at least **1.90**_
 
 There are three general methods of installation that we can recommend.
 
@@ -34,21 +34,12 @@ tauri-plugin-updater = { git = "https://github.com/tauri-apps/plugins-workspace"
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
-> Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
-
 ```sh
 pnpm add @tauri-apps/plugin-updater
 # or
 npm add @tauri-apps/plugin-updater
 # or
 yarn add @tauri-apps/plugin-updater
-
-# alternatively with Git:
-pnpm add https://github.com/tauri-apps/tauri-plugin-updater#v2
-# or
-npm add https://github.com/tauri-apps/tauri-plugin-updater#v2
-# or
-yarn add https://github.com/tauri-apps/tauri-plugin-updater#v2
 ```
 
 ## Usage
@@ -78,6 +69,7 @@ import { relaunch } from '@tauri-apps/plugin-process'
 const update = await check()
 if (update) {
   await update.downloadAndInstall()
+  // Relaunch the app on macOS and Linux to run the newly install version
   await relaunch()
 }
 ```

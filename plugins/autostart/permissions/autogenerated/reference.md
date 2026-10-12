@@ -9,8 +9,6 @@ starting the application on boot.
 It allows all to check, enable and
 disable the automatic start on boot.
 
-
-
 #### This default permission set includes the following:
 
 - `allow-enable`

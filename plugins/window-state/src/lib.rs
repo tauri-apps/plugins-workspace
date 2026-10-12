@@ -13,9 +13,9 @@
 use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use tauri::{
-    plugin::{Builder as PluginBuilder, TauriPlugin},
     AppHandle, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime, WebviewWindow,
     Window, WindowEvent,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
 };
 
 use std::{
@@ -35,37 +35,54 @@ type FilterCallbackFn = dyn Fn(&str) -> bool + Send + Sync;
 /// If using a custom filename, you should probably use [`AppHandleExt::filename`] instead.
 pub const DEFAULT_FILENAME: &str = ".window-state.json";
 
+/// The error type returned by this plugin's fallible functions.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    /// An I/O error occurred while reading or writing the window state file.
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    /// An error occurred while calling into Tauri, e.g. while resolving the app config directory
+    /// or manipulating a window.
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
+    /// An error occurred while serializing or deserializing the window state file.
     #[error(transparent)]
     SerdeJson(#[from] serde_json::Error),
 }
 
+/// Alias for a [`Result`](std::result::Result) with the error type [`Error`].
 pub type Result<T> = std::result::Result<T, Error>;
 
 bitflags! {
+    /// Flags controlling which parts of a window's state are saved and restored.
+    ///
+    /// Flags can be combined with the bitwise OR operator (`|`), e.g. `StateFlags::SIZE | StateFlags::POSITION`.
     #[derive(Clone, Copy, Debug)]
     pub struct StateFlags: u32 {
+        /// Save and restore the window size.
         const SIZE        = 1 << 0;
+        /// Save and restore the window position.
         const POSITION    = 1 << 1;
+        /// Save and restore whether the window is maximized.
         const MAXIMIZED   = 1 << 2;
+        /// Save and restore whether the window is visible.
         const VISIBLE     = 1 << 3;
+        /// Save and restore whether the window has decorations.
         const DECORATIONS = 1 << 4;
+        /// Save and restore whether the window is fullscreen.
         const FULLSCREEN  = 1 << 5;
     }
 }
 
 impl Default for StateFlags {
+    /// Default to [`all`](Self::all)
     fn default() -> Self {
         Self::all()
     }
 }
 
 struct PluginState {
+    pub(crate) state_flags: StateFlags,
     filename: String,
     map_label: Option<Box<LabelMapperFn>>,
 }
@@ -108,6 +125,7 @@ struct WindowStateCache(Arc<Mutex<HashMap<String, WindowState>>>);
 /// Used to prevent deadlocks from resize and position event listeners setting the cached state on restoring states
 struct RestoringWindowState(Mutex<()>);
 
+/// Extension trait for [`AppHandle`] exposing window state APIs.
 pub trait AppHandleExt {
     /// Saves all open windows state to disk
     fn save_window_state(&self, flags: StateFlags) -> Result<()>;
@@ -149,6 +167,7 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
     }
 }
 
+/// Extension trait for [`Window`] and [`WebviewWindow`] exposing window state APIs.
 pub trait WindowExt {
     /// Restores this window state from disk
     fn restore_state(&self, flags: StateFlags) -> tauri::Result<()>;
@@ -319,6 +338,7 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
     }
 }
 
+/// Builder for the window-state [plugin](TauriPlugin).
 #[derive(Default)]
 pub struct Builder {
     denylist: HashSet<String>,
@@ -330,6 +350,8 @@ pub struct Builder {
 }
 
 impl Builder {
+    /// Creates a new [`Builder`] with the default configuration:
+    /// all [`StateFlags`] enabled, no denylist, no filter, and the [`DEFAULT_FILENAME`].
     pub fn new() -> Self {
         Self::default()
     }
@@ -380,8 +402,14 @@ impl Builder {
         self
     }
 
+    /// Builds the [`TauriPlugin`].
+    ///
+    /// The plugin loads the previously saved window state on setup, restores each window's
+    /// state when it becomes ready (unless denylisted, filtered out, or opted out with
+    /// [`Builder::skip_initial_state`]), tracks move/resize events to keep the state up to date,
+    /// and saves the state of all windows to disk when the app exits.
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
-        let flags = self.state_flags;
+        let state_flags = self.state_flags;
         let filename = self.filename.unwrap_or_else(|| DEFAULT_FILENAME.into());
         let map_label = self.map_label;
 
@@ -391,11 +419,12 @@ impl Builder {
                 cmd::restore_state,
                 cmd::filename
             ])
-            .setup(|app, _api| {
+            .setup(move |app, _api| {
                 let cache = load_saved_window_states(app, &filename).unwrap_or_default();
                 app.manage(WindowStateCache(Arc::new(Mutex::new(cache))));
                 app.manage(RestoringWindowState(Mutex::new(())));
                 app.manage(PluginState {
+                    state_flags,
                     filename,
                     map_label,
                 });
@@ -423,14 +452,13 @@ impl Builder {
                 }
 
                 if !self.skip_initial_state.contains(label) {
-                    let _ = window.restore_state(self.state_flags);
+                    let _ = window.restore_state(state_flags);
                 }
 
                 let cache = window.state::<WindowStateCache>();
                 let cache = cache.0.clone();
                 let label = label.to_string();
                 let window_clone = window.clone();
-                let flags = self.state_flags;
 
                 // insert a default state if this window should be tracked and
                 // the disk cache doesn't have a state for it
@@ -446,51 +474,51 @@ impl Builder {
                     WindowEvent::CloseRequested { .. } => {
                         let mut c = cache.lock().unwrap();
                         if let Some(state) = c.get_mut(&label) {
-                            let _ = window_clone.update_state(state, flags);
+                            let _ = window_clone.update_state(state, state_flags);
                         }
                     }
 
-                    WindowEvent::Moved(position) if flags.contains(StateFlags::POSITION) => {
-                        if window_clone
-                            .state::<RestoringWindowState>()
-                            .0
-                            .try_lock()
-                            .is_ok()
-                            && !window_clone.is_minimized().unwrap_or_default()
+                    WindowEvent::Moved(position)
+                        if state_flags.contains(StateFlags::POSITION)
+                            && window_clone
+                                .state::<RestoringWindowState>()
+                                .0
+                                .try_lock()
+                                .is_ok()
+                            && !window_clone.is_minimized().unwrap_or_default() =>
+                    {
+                        let mut c = cache.lock().unwrap();
+                        if let Some(state) = c.get_mut(&label) {
+                            state.prev_x = state.x;
+                            state.prev_y = state.y;
+
+                            state.x = position.x;
+                            state.y = position.y;
+                        }
+                    }
+                    WindowEvent::Resized(size)
+                        if state_flags.contains(StateFlags::SIZE)
+                            && window_clone
+                                .state::<RestoringWindowState>()
+                                .0
+                                .try_lock()
+                                .is_ok() =>
+                    {
+                        // TODO: Remove once https://github.com/tauri-apps/tauri/issues/5812 is resolved.
+                        let is_maximized = if cfg!(target_os = "macos")
+                            && (!window_clone.is_decorated().unwrap_or_default()
+                                || !window_clone.is_resizable().unwrap_or_default())
                         {
+                            false
+                        } else {
+                            window_clone.is_maximized().unwrap_or_default()
+                        };
+
+                        if !window_clone.is_minimized().unwrap_or_default() && !is_maximized {
                             let mut c = cache.lock().unwrap();
                             if let Some(state) = c.get_mut(&label) {
-                                state.prev_x = state.x;
-                                state.prev_y = state.y;
-
-                                state.x = position.x;
-                                state.y = position.y;
-                            }
-                        }
-                    }
-                    WindowEvent::Resized(size) if flags.contains(StateFlags::SIZE) => {
-                        if window_clone
-                            .state::<RestoringWindowState>()
-                            .0
-                            .try_lock()
-                            .is_ok()
-                        {
-                            // TODO: Remove once https://github.com/tauri-apps/tauri/issues/5812 is resolved.
-                            let is_maximized = if cfg!(target_os = "macos")
-                                && (!window_clone.is_decorated().unwrap_or_default()
-                                    || !window_clone.is_resizable().unwrap_or_default())
-                            {
-                                false
-                            } else {
-                                window_clone.is_maximized().unwrap_or_default()
-                            };
-
-                            if !window_clone.is_minimized().unwrap_or_default() && !is_maximized {
-                                let mut c = cache.lock().unwrap();
-                                if let Some(state) = c.get_mut(&label) {
-                                    state.width = size.width;
-                                    state.height = size.height;
-                                }
+                                state.width = size.width;
+                                state.height = size.height;
                             }
                         }
                     }
@@ -499,7 +527,7 @@ impl Builder {
             })
             .on_event(move |app, event| {
                 if let RunEvent::Exit = event {
-                    let _ = app.save_window_state(flags);
+                    let _ = app.save_window_state(state_flags);
                 }
             })
             .build()

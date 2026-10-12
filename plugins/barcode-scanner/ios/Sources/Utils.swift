@@ -52,6 +52,15 @@ func discoverCaptureDevices() -> [AVCaptureDevice] {
 }
 
 func formatStringFromMetadata(_ type: AVMetadataObject.ObjectType) -> String {
+  if #available(iOS 15.4, *) {
+    if type == .gs1DataBar {
+        return "GS1_DATA_BAR"
+    } else if type == .gs1DataBarLimited {
+        return "GS1_DATA_BAR_LIMITED"
+    } else if type == .gs1DataBarExpanded {
+        return "GS1_DATA_BAR_EXPANDED"
+    }
+  }
   switch type {
   case AVMetadataObject.ObjectType.upce:
     return "UPC_E"

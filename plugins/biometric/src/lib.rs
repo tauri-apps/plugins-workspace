@@ -2,58 +2,36 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-#![cfg(mobile)]
+//! Prompt the user for biometric authentication.
+//!
+//! - Supported platforms: Android, iOS and macOS.
 
-use serde::Serialize;
 use tauri::{
-    plugin::{Builder, PluginHandle, TauriPlugin},
     Manager, Runtime,
+    plugin::{Builder, TauriPlugin},
 };
 
 pub use models::*;
 
+#[cfg(desktop)]
+mod commands;
+#[cfg(desktop)]
+mod desktop;
 mod error;
+#[cfg(mobile)]
+mod mobile;
 mod models;
 
 pub use error::{Error, Result};
 
-#[cfg(target_os = "android")]
-const PLUGIN_IDENTIFIER: &str = "app.tauri.biometric";
-
-#[cfg(target_os = "ios")]
-tauri::ios_plugin_binding!(init_plugin_biometric);
-
-
-/// Access to the biometric APIs.
-pub struct Biometric<R: Runtime>(PluginHandle<R>);
-
-#[derive(Serialize)]
-struct AuthenticatePayload {
-    reason: String,
-    #[serde(flatten)]
-    options: AuthOptions,
-}
-
-impl<R: Runtime> Biometric<R> {
-    pub fn status(&self) -> crate::Result<Status> {
-        self.0.run_mobile_plugin("status", ()).map_err(Into::into)
-    }
-
-    pub fn authenticate(&self, reason: String, options: AuthOptions) -> crate::Result<()> {
-        self.0
-            .run_mobile_plugin("authenticate", AuthenticatePayload { reason, options })
-            .map_err(Into::into)
-    }
-
-    pub fn biometric_cipher(&self, reason: String, options: AuthOptions) -> crate::Result<CipherResult> {
-        self.0
-            .run_mobile_plugin("biometricCipher", AuthenticatePayload { reason, options })
-            .map_err(Into::into)
-    }
-}
+#[cfg(desktop)]
+pub use desktop::Biometric;
+#[cfg(mobile)]
+pub use mobile::Biometric;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the biometric APIs.
 pub trait BiometricExt<R: Runtime> {
+    /// Returns the [`Biometric`] instance managed by the app.
     fn biometric(&self) -> &Biometric<R>;
 }
 
@@ -65,13 +43,22 @@ impl<R: Runtime, T: Manager<R>> crate::BiometricExt<R> for T {
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("biometric")
+    let builder = Builder::new("biometric");
+
+    // On mobile the commands are routed directly to the native plugin.
+    #[cfg(desktop)]
+    let builder = builder.invoke_handler(tauri::generate_handler![
+        commands::status,
+        commands::authenticate,
+    ]);
+
+    builder
         .setup(|app, api| {
-            #[cfg(target_os = "android")]
-            let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "BiometricPlugin")?;
-            #[cfg(target_os = "ios")]
-            let handle = api.register_ios_plugin(init_plugin_biometric)?;
-            app.manage(Biometric(handle));
+            #[cfg(mobile)]
+            let biometric = mobile::init(app, api)?;
+            #[cfg(desktop)]
+            let biometric = desktop::init(app, api)?;
+            app.manage(biometric);
             Ok(())
         })
         .build()

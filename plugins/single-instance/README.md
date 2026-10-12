@@ -12,7 +12,7 @@ Ensure a single instance of your tauri app is running.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.77.2**_
+_This plugin requires a Rust version of at least **1.90**_
 
 There are three general methods of installation that we can recommend.
 
@@ -58,6 +58,10 @@ fn main() {
 ```
 
 Note that currently, plugins run in the order they were added in to the builder, so make sure that this plugin is registered first.
+
+## Usage with Flatpak/Snap
+
+If you use Flatpak/Snap to publish your package and your Tauri identifier doesn't match the package id, set the `DBUS_ID` variable using the builder for the plugin, look at example.
 
 ## Contributing
 

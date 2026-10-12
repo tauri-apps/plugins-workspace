@@ -1,14 +1,14 @@
 ![biometric](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/biometric/banner.png)
 
-Prompt the user for biometric authentication on Android and iOS. Also allows to use assymetric cryptography with the keys protected by biometric authentication.
+Prompt the user for biometric authentication on Android, iOS and macOS. On Android, it also allows encrypting and decrypting data with keys protected by biometric authentication.
 
-| Platform | Supported |
-| -------- | --------- |
-| Linux    | x         |
-| Windows  | x         |
-| macOS    | x         |
-| Android  | ✓         |
-| iOS      | ✓ (except biometric cryptography ) |
+| Platform | Supported                     |
+| -------- | ----------------------------- |
+| Linux    | x                             |
+| Windows  | x                             |
+| macOS    | ✓                             |
+| Android  | ✓                             |
+| iOS      | ✓ (no biometric cryptography) |
 
 ## Install
 
@@ -33,8 +33,6 @@ tauri-plugin-biometric = { git = "https://github.com/tauri-apps/plugins-workspac
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
-> Note: Since most JavaScript package managers are unable to install packages from git monorepos we provide read-only mirrors of each plugin. This makes installation option 2 more ergonomic to use.
-
 <!-- Add the branch for installations using git! -->
 
 ```sh
@@ -43,13 +41,6 @@ pnpm add @tauri-apps/plugin-biometric
 npm add @tauri-apps/plugin-biometric
 # or
 yarn add @tauri-apps/plugin-biometric
-
-# alternatively with Git:
-pnpm add https://github.com/tauri-apps/tauri-plugin-biometric#v2
-# or
-npm add https://github.com/tauri-apps/tauri-plugin-biometric#v2
-# or
-yarn add https://github.com/tauri-apps/tauri-plugin-biometric#v2
 ```
 
 ## Usage
@@ -70,27 +61,35 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { checkStatus, authenticate, biometricCipher } from '@tauri-apps/plugin-biometric'
+import {
+  checkStatus,
+  authenticate,
+  biometricCipher
+} from '@tauri-apps/plugin-biometric'
 
-const status = await checkStatus();
-if (status.isAvailble) {
+const status = await checkStatus()
+if (status.isAvailable) {
   await authenticate('Open your wallet')
 }
 
 // ... or using biometric-protected cryptography:
 if (status.isAvailable) {
   const encryptOptions = {
-    dataToEncrypt: getData(),
-  };
-  const encrypted = await biometricCipher('Login without typing password', encryptOptions);
+    dataToEncrypt: getData()
+  }
+  const encrypted = await biometricCipher(
+    'Login without typing password',
+    encryptOptions
+  )
 
   const decryptOptions = {
-    dataToDecrypt: encrypted.data,
-  };
-  const originalData = await biometricCipher('Login without typing password', decryptOptions);
+    dataToDecrypt: encrypted.data
+  }
+  const originalData = await biometricCipher(
+    'Login without typing password',
+    decryptOptions
+  )
 }
-
-
 ```
 
 ## Contributing
