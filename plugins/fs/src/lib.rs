@@ -588,17 +588,25 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
             watcher::watch,
         ])
         .setup(|app, api| {
+            let require_literal_leading_dot = api
+                .config()
+                .as_ref()
+                .and_then(|c| c.require_literal_leading_dot);
             let scope = Scope {
-                require_literal_leading_dot: api
-                    .config()
-                    .as_ref()
-                    .and_then(|c| c.require_literal_leading_dot),
+                require_literal_leading_dot,
                 scope_dropped_paths: api
                     .config()
                     .as_ref()
                     .and_then(|c| c.scope_dropped_paths)
                     .unwrap_or(true),
-                scope: tauri::fs::Scope::new(app, &FsScope::default())?,
+                scope: tauri::fs::Scope::new(
+                    app,
+                    &FsScope::Scope {
+                        allow: Vec::new(),
+                        deny: Vec::new(),
+                        require_literal_leading_dot,
+                    },
+                )?,
             };
 
             #[cfg(target_os = "android")]
