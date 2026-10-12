@@ -96,38 +96,17 @@ impl DbPool {
 
                 let conn_url = &path_mapper(app_path, conn_url);
 
-                let exists = Sqlite::database_exists(conn_url).await.unwrap_or(false);
-                if !exists {
-                    if _auto_create {
-                        Sqlite::create_database(conn_url).await?;
-                    } else {
-                        return Err(crate::Error::DatabaseDoesNotExist(conn_url.to_string()));
-                    }
-                }
+                ensure_database::<Sqlite>(conn_url, _auto_create).await?;
                 Ok(Self::Sqlite(Pool::connect(conn_url).await?))
             }
             #[cfg(feature = "mysql")]
             "mysql" => {
-                let exists = MySql::database_exists(conn_url).await.unwrap_or(false);
-                if !exists {
-                    if _auto_create {
-                        MySql::create_database(conn_url).await?;
-                    } else {
-                        return Err(crate::Error::DatabaseDoesNotExist(conn_url.to_string()));
-                    }
-                }
+                ensure_database::<MySql>(conn_url, _auto_create).await?;
                 Ok(Self::MySql(Pool::connect(conn_url).await?))
             }
             #[cfg(feature = "postgres")]
             "postgres" => {
-                let exists = Postgres::database_exists(conn_url).await.unwrap_or(false);
-                if !exists {
-                    if _auto_create {
-                        Postgres::create_database(conn_url).await?;
-                    } else {
-                        return Err(crate::Error::DatabaseDoesNotExist(conn_url.to_string()));
-                    }
-                }
+                ensure_database::<Postgres>(conn_url, _auto_create).await?;
                 Ok(Self::Postgres(Pool::connect(conn_url).await?))
             }
             #[cfg(not(any(feature = "sqlite", feature = "postgres", feature = "mysql")))]
@@ -337,6 +316,23 @@ impl DbPool {
             DbPool::None => Vec::new(),
         })
     }
+}
+
+/// Creates the database if it does not exist yet, or fails with
+/// [`crate::Error::DatabaseDoesNotExist`] when `auto_create` is `false`.
+#[cfg(any(feature = "sqlite", feature = "mysql", feature = "postgres"))]
+async fn ensure_database<DB: MigrateDatabase>(
+    conn_url: &str,
+    auto_create: bool,
+) -> Result<(), crate::Error> {
+    if !DB::database_exists(conn_url).await.unwrap_or(false) {
+        if auto_create {
+            DB::create_database(conn_url).await?;
+        } else {
+            return Err(crate::Error::DatabaseDoesNotExist(conn_url.to_string()));
+        }
+    }
+    Ok(())
 }
 
 #[cfg(feature = "sqlite")]
