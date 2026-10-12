@@ -18,6 +18,7 @@ import androidx.biometric.BiometricPrompt
 import java.util.concurrent.Executor
 import android.util.Base64
 import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.security.keystore.KeyProperties
 import java.security.KeyStore
 import javax.crypto.Cipher
@@ -68,7 +69,18 @@ class BiometricActivity : AppCompatActivity() {
             return
         }
 
-        val cipher = getCipher()
+        // Fails on malformed encrypted data or a key that is no longer valid
+        // (e.g. invalidated by a new biometric enrollment).
+        val cipher = try {
+            getCipher()
+        } catch (e: Exception) {
+            finishActivity(
+                BiometryResultType.ERROR,
+                0,
+                "Failed to initialize the cipher: ${e.message ?: e.javaClass.simpleName}"
+            )
+            return
+        }
         prompt.authenticate(promptInfo, BiometricPrompt.CryptoObject(cipher))
     }
 
@@ -93,33 +105,39 @@ class BiometricActivity : AppCompatActivity() {
             )
         
         if (resultType == BiometryResultType.SUCCESS && cipherOperation) {
-            val cryptoObject = requireNotNull(authenticationResult?.cryptoObject)
-            val cipher = requireNotNull(cryptoObject.cipher)
-            var dataToProcess = if (cipherType == CipherType.ENCRYPT) {
-                encryptDecryptData.toByteArray()
-            } else {
-                val (_, encryptedData) = decodeEncryptedData(encryptDecryptData)
-                encryptedData
-            }
-            var processedData: ByteArray = cipher.doFinal(dataToProcess)
-
-            if (cipherType == CipherType.ENCRYPT) {
-                // Converts the encrypted data to Base64 string
-                val encodedString = encodeEncryptedData(cipher, processedData)
-                intent.putExtra(
-                    prefix + BiometricPlugin.RESULT_ENCRYPT_DECRYPT_DATA,
-                    encodedString
+            // Decrypting data that was tampered with or encrypted with another key fails here.
+            val processedData = try {
+                processCipherData()
+            } catch (e: Exception) {
+                finishActivity(
+                    BiometryResultType.ERROR,
+                    0,
+                    "Failed to ${if (cipherType == CipherType.ENCRYPT) "encrypt" else "decrypt"} the data: ${e.message ?: e.javaClass.simpleName}"
                 )
-            } else {
-                // For decryption, return the decrypted string
-                intent.putExtra(
-                    prefix + BiometricPlugin.RESULT_ENCRYPT_DECRYPT_DATA,
-                    String(processedData, Charset.forName("UTF-8"))
-                )
+                return
             }
+            intent.putExtra(
+                prefix + BiometricPlugin.RESULT_ENCRYPT_DECRYPT_DATA,
+                processedData
+            )
         }
         setResult(Activity.RESULT_OK, intent)
         finish()
+    }
+
+    /**
+     * Encrypts or decrypts [encryptDecryptData] with the cipher unlocked by the authentication.
+     * Encrypted data is returned as Base64 `data;iv`, decrypted data as a UTF-8 string.
+     */
+    private fun processCipherData(): String {
+        val cryptoObject = requireNotNull(authenticationResult?.cryptoObject)
+        val cipher = requireNotNull(cryptoObject.cipher)
+        return if (cipherType == CipherType.ENCRYPT) {
+            encodeEncryptedData(cipher, cipher.doFinal(encryptDecryptData.toByteArray()))
+        } else {
+            val (_, encryptedData) = decodeEncryptedData(encryptDecryptData)
+            String(cipher.doFinal(encryptedData), Charset.forName("UTF-8"))
+        }
     }
 
     private fun createPromptInfo(): BiometricPrompt.PromptInfo? {
@@ -244,13 +262,26 @@ class BiometricActivity : AppCompatActivity() {
         return keyGenerator.generateKey()
     }
 
+    private fun deleteEncryptionKey() {
+        val keyStore = KeyStore.getInstance(KEYSTORE_NAME)
+        keyStore.load(null)
+        keyStore.deleteEntry(KEY_ALIAS)
+    }
+
     private fun getCipher(): Cipher {
         val biometricKey = getEncryptionKey()
 
         val cipher = Cipher.getInstance("$ENCRYPTION_ALGORITHM/$ENCRYPTION_BLOCK_MODE/$ENCRYPTION_PADDING")
 
         if (cipherType == CipherType.ENCRYPT) {
-            cipher.init(Cipher.ENCRYPT_MODE, biometricKey)
+            try {
+                cipher.init(Cipher.ENCRYPT_MODE, biometricKey)
+            } catch (e: KeyPermanentlyInvalidatedException) {
+                // The key was invalidated by a biometric enrollment change or the lock screen
+                // being removed. Whatever it encrypted can no longer be decrypted, so replace it.
+                deleteEncryptionKey()
+                cipher.init(Cipher.ENCRYPT_MODE, getEncryptionKey())
+            }
         } else {
             // Decodes the Base64 string to get the encrypted data and IV
             val (iv, _) = decodeEncryptedData(encryptDecryptData)

@@ -216,6 +216,11 @@ class BiometricPlugin(private val activity: Activity): Plugin(activity) {
     fun biometricCipher(invoke: Invoke) {
         val args: AuthOptions = invoke.parseArgs(AuthOptions::class.java)
         
+        if (args.dataToEncrypt == null && args.dataToDecrypt == null) {
+            invoke.reject("Either dataToEncrypt or dataToDecrypt must be provided")
+            return
+        }
+
         val intent = configBiometricPrompt(args)
         var operationType: CipherType
 
