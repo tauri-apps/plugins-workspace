@@ -4,6 +4,8 @@
 
 use serde::Deserialize;
 
+use crate::RequestHeaderRule;
+
 /// HTTP plugin configuration, defined on the `plugins > http` object of your `tauri.conf.json`.
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -23,6 +25,22 @@ pub struct Config {
     // TODO(v3): enforce the scope on redirects by default and remove this option
     #[serde(default)]
     pub scope_redirects: bool,
+    /// The `User-Agent` sent when the frontend does not set one. Defaults to
+    /// `tauri-plugin-http/<version>`.
+    ///
+    /// Overridden by [`Builder::user_agent`](crate::Builder::user_agent).
+    #[serde(default)]
+    pub user_agent: Option<String>,
+    /// Headers to set or remove on requests to the URLs matching a pattern, applied in order after
+    /// the plugin's default `User-Agent` and `Origin`. See [`RequestHeaderRule`].
+    ///
+    /// The patterns do not change the scope: they only decide which allowed requests get the
+    /// headers. Rules can set headers the frontend is not allowed to send, such as `Origin`, for
+    /// any destination they match, so review changes to them like a capability change.
+    ///
+    /// Overridden by [`Builder::request_headers`](crate::Builder::request_headers).
+    #[serde(default)]
+    pub request_headers: Vec<RequestHeaderRule>,
 }
 
 #[cfg(test)]
@@ -43,5 +61,20 @@ mod tests {
 
         // a typo must not silently disable the scope check
         assert!(serde_json::from_str::<Config>(r#"{ "scopeRedirect": true }"#).is_err());
+
+        let config: Config = serde_json::from_str(
+            r#"{
+                "userAgent": "my-app/1.0",
+                "requestHeaders": [
+                    { "url": "https://api.example.com/*", "headers": { "Origin": "https://desktop.example.com" } },
+                    { "url": "https://*.thirdparty.example/*", "headers": { "Origin": null }, "mode": "override" }
+                ]
+            }"#,
+        )
+        .unwrap();
+        assert_eq!(config.user_agent.as_deref(), Some("my-app/1.0"));
+        assert_eq!(config.request_headers.len(), 2);
+
+        assert!(serde_json::from_str::<Config>(r#"{ "requestHeader": [] }"#).is_err());
     }
 }

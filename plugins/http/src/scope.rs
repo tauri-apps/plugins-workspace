@@ -14,7 +14,7 @@ pub struct Entry {
     pub url: UrlPattern,
 }
 
-fn parse_url_pattern(s: &str) -> Result<UrlPattern, urlpattern::quirks::Error> {
+pub(crate) fn parse_url_pattern(s: &str) -> Result<UrlPattern, urlpattern::quirks::Error> {
     let mut init = urlpattern::UrlPatternInit::parse_constructor_string::<regex::Regex>(s, None)?;
     if init.search.as_ref().map(|p| p.is_empty()).unwrap_or(true) {
         init.search.replace("*".to_string());

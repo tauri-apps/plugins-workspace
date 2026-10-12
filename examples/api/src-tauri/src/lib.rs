@@ -48,7 +48,11 @@ pub fn run() {
         .plugin(tauri_plugin_biometric::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_http::init())
+        .plugin(
+            tauri_plugin_http::Builder::new()
+                .on_request(cmd::http_on_request)
+                .build(),
+        )
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_process::init())
@@ -136,6 +140,19 @@ pub fn run() {
                     if let Ok(mut request) = server.recv() {
                         let mut body = Vec::new();
                         let _ = request.as_reader().read_to_end(&mut body);
+
+                        // `.../redirect/<path>` redirects to `/<path>`
+                        if let Some((_, target)) = request.url().split_once("/redirect/") {
+                            let location = tiny_http::Header::from_bytes(
+                                &b"Location"[..],
+                                format!("/{target}").as_bytes(),
+                            )
+                            .unwrap();
+                            let _ = request
+                                .respond(tiny_http::Response::empty(302).with_header(location));
+                            continue;
+                        }
+
                         let mut headers = request.headers().to_vec();
 
                         if !headers.iter().any(|header| header.field == tiny_http::HeaderField::from_bytes(b"Cookie").unwrap()) {
@@ -195,6 +212,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             cmd::log_operation,
             cmd::perform_request,
+            cmd::http_hook_urls,
+            cmd::http_native_cookie,
+            cmd::http_clear_cookies,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");
