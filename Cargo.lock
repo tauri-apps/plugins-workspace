@@ -241,6 +241,7 @@ dependencies = [
  "tauri-plugin-shell",
  "tauri-plugin-sql",
  "tauri-plugin-store",
+ "tauri-plugin-torch",
  "tauri-plugin-updater",
  "tauri-plugin-upload",
  "tauri-plugin-websocket",
@@ -7117,6 +7118,18 @@ dependencies = [
  "tauri-plugin",
  "thiserror 2.0.12",
  "zeroize",
+]
+
+[[package]]
+name = "tauri-plugin-torch"
+version = "2.0.0"
+dependencies = [
+ "log",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 2.0.12",
 ]
 
 [[package]]

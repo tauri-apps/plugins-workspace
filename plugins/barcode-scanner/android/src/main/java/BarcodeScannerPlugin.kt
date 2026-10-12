@@ -62,11 +62,6 @@ class ScanOptions {
     var cameraDirection: String? = null
 }
 
-@InvokeArg
-class ToggleTorchArgs {
-    var enabled: Boolean = false
-}
-
 @TauriPlugin(
     permissions = [
         Permission(strings = [Manifest.permission.CAMERA], alias = "camera")
@@ -80,6 +75,10 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
     private var cameraProvider: ProcessCameraProvider? = null
     private var graphicOverlay: GraphicOverlay? = null
     private var camera: Camera? = null
+        set(value) {
+            field = value
+            activeCamera = value
+        }
     private var vibrator: Vibrator? = null
 
     private var scannerOptions: BarcodeScannerOptions? = null
@@ -359,18 +358,6 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
             }
         }
     }
-    @Command
-    fun toggleTorch(invoke: Invoke) {
-        activity.runOnUiThread {
-            try {
-                val args = invoke.parseArgs(ToggleTorchArgs::class.java)
-                camera?.cameraControl?.enableTorch(args.enabled)
-                invoke.resolve()
-            } catch (e: Exception) {
-                invoke.reject("Impossible d'activer la torche: ${e.message}")
-            }
-        }
-    }
 
     @SuppressLint("ObsoleteSdkInt")
     @PermissionCallback
@@ -432,5 +419,20 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
     @ActivityCallback
     private fun openSettingsResult(invoke: Invoke, result: ActivityResult) {
         invoke.resolve()
+    }
+
+    companion object {
+        @Volatile
+        private var activeCamera: Camera? = null
+
+        /**
+         * The camera bound by an active scan, or `null` when no scan is running.
+         *
+         * Looked up through reflection by the torch plugin (`app.tauri.torch`): while a scan holds the
+         * camera, Android rejects `CameraManager.setTorchMode`, so the flash must be driven through
+         * this camera's `CameraControl` instead. Keep the name and signature stable.
+         */
+        @JvmStatic
+        fun getActiveCamera(): Camera? = activeCamera
     }
 }
