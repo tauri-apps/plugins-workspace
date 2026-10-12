@@ -171,7 +171,7 @@
       component: Nfc,
       icon: 'i-ph-nfc'
     },
-    isMobile && {
+    {
       label: 'Biometric',
       component: Biometric,
       icon: 'i-ph-scan'

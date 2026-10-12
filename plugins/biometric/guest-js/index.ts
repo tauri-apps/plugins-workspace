@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 /**
- * Prompt the user for biometric authentication on Android and iOS.
+ * Prompt the user for biometric authentication on Android, iOS and macOS.
  *
  * @module
  */
@@ -54,13 +54,13 @@ export interface Status {
  * Options for the {@linkcode authenticate} biometric prompt.
  */
 export interface AuthOptions {
-  /** Enables authentication using the device's password or PIN. Available on both Android and iOS. */
+  /** Enables authentication using the device's password or PIN. Available on Android, iOS and macOS. */
   allowDeviceCredential?: boolean
-  /** Label for the cancel button. Available on both Android and iOS. */
+  /** Label for the cancel button. Available on Android, iOS and macOS. */
   cancelTitle?: string
 
-  // iOS options
-  /** Text displayed on the fallback button if biometric authentication fails. **iOS only.** */
+  // iOS and macOS options
+  /** Text displayed on the fallback button if biometric authentication fails. **iOS and macOS only.** */
   fallbackTitle?: string
 
   // android options
@@ -94,7 +94,7 @@ export async function checkStatus(): Promise<Status> {
 
 /**
  * Prompts the user for authentication using the system interface (touchID, faceID or Android Iris).
- * Rejects if the authentication fails.
+ * Rejects if the authentication fails, with an error object containing a `message` and, when the platform provides one, a `code` (e.g. `userCancel`).
  *
  * @example
  * ```typescript

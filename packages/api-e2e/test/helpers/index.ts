@@ -39,6 +39,7 @@ import type * as WindowState from '@tauri-apps/plugin-window-state'
  * only have a default export, so their global is that class itself.
  */
 export interface CommonPluginApi {
+  biometric: typeof Biometric
   clipboardManager: typeof ClipboardManager
   deepLink: typeof DeepLink
   dialog: typeof Dialog
@@ -69,7 +70,6 @@ export interface DesktopPluginApi {
 /** The plugin APIs the example only registers on mobile (`#[cfg(mobile)]`). */
 export interface MobilePluginApi {
   barcodeScanner: typeof BarcodeScanner
-  biometric: typeof Biometric
   geolocation: typeof Geolocation
   haptics: typeof Haptics
   nfc: typeof Nfc
@@ -265,8 +265,8 @@ export interface DescribePluginOptions {
   desktopOnly?: boolean
   /**
    * The example only registers the plugin on mobile (`barcode-scanner`,
-   * `biometric`, `geolocation`, `haptics`, `nfc`), so the whole suite is
-   * skipped on desktop.
+   * `geolocation`, `haptics`, `nfc`), so the whole suite is skipped on
+   * desktop.
    */
   mobileOnly?: boolean
 }

@@ -42,6 +42,7 @@ tauri-plugin-sql = { path = "../../../plugins/sql", version = "2.4.1", features 
   "sqlite",
 ] }
 tauri-plugin-websocket = { path = "../../../plugins/websocket", version = "2.4.3" }
+tauri-plugin-biometric = { path = "../../../plugins/biometric/", version = "2.4.1" }
 
 # WebDriver automation bridge, used by the plugins e2e suite (packages/api-e2e).
 # Desktop-only and behind the off-by-default `automation` feature so it never ships in a
@@ -76,7 +77,6 @@ tauri-plugin-window-state = { path = "../../../plugins/window-state", version = 
 [target."cfg(any(target_os = \"android\", target_os = \"ios\"))".dependencies]
 tauri-plugin-barcode-scanner = { path = "../../../plugins/barcode-scanner/", version = "2.5.2" }
 tauri-plugin-nfc = { path = "../../../plugins/nfc", version = "2.4.2" }
-tauri-plugin-biometric = { path = "../../../plugins/biometric/", version = "2.4.2" }
 tauri-plugin-geolocation = { path = "../../../plugins/geolocation/", version = "2.4.2" }
 tauri-plugin-haptics = { path = "../../../plugins/haptics/", version = "2.4.2" }
 

@@ -8,11 +8,11 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AuthOptions {
-    /// Enables authentication using the device's password. This feature is available on both Android and iOS.
+    /// Enables authentication using the device's password. This feature is available on Android, iOS and macOS.
     pub allow_device_credential: bool,
-    /// Label for the Cancel button. This feature is available on both Android and iOS.
+    /// Label for the Cancel button. This feature is available on Android, iOS and macOS.
     pub cancel_title: Option<String>,
-    /// Specifies the text displayed on the fallback button if biometric authentication fails. This feature is available iOS only.
+    /// Specifies the text displayed on the fallback button if biometric authentication fails. This feature is available on iOS and macOS only.
     pub fallback_title: Option<String>,
     /// Title indicating the purpose of biometric verification. This feature is available Android only.
     pub title: Option<String>,
@@ -23,7 +23,7 @@ pub struct AuthOptions {
 }
 
 /// The kind of biometry hardware detected on the device.
-#[derive(Debug, Clone, serde_repr::Deserialize_repr)]
+#[derive(Debug, Clone, serde_repr::Deserialize_repr, serde_repr::Serialize_repr)]
 #[repr(u8)]
 pub enum BiometryType {
     /// No biometry hardware is available, or it is not enrolled with the operating system.
@@ -36,7 +36,7 @@ pub enum BiometryType {
 
 /// The result of [`Biometric::status`](crate::Biometric::status), describing whether biometric
 /// authentication can currently be used.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Status {
     /// Whether the device can currently authenticate using biometrics.
