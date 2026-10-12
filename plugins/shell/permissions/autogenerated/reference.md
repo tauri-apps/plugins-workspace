@@ -103,6 +103,32 @@ Denies the open command without any pre-configured scope.
 <tr>
 <td>
 
+`shell:allow-sidecar-path`
+
+</td>
+<td>
+
+Enables the sidecar_path command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`shell:deny-sidecar-path`
+
+</td>
+<td>
+
+Denies the sidecar_path command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `shell:allow-spawn`
 
 </td>

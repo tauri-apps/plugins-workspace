@@ -186,6 +186,11 @@ fn relative_command_path(command: &Path) -> crate::Result<PathBuf> {
     Ok(command_path)
 }
 
+/// Resolves the path to the sidecar binary.
+pub fn sidecar_path<S: AsRef<Path>>(program: S) -> crate::Result<PathBuf> {
+    relative_command_path(program.as_ref())
+}
+
 impl From<Command> for StdCommand {
     fn from(cmd: Command) -> StdCommand {
         cmd.cmd
@@ -215,6 +220,11 @@ impl Command {
 
     pub(crate) fn new_sidecar<S: AsRef<Path>>(program: S) -> crate::Result<Self> {
         Ok(Self::new(relative_command_path(program.as_ref())?))
+    }
+
+    /// Resolves the path to the sidecar binary.
+    pub fn sidecar_path<S: AsRef<Path>>(program: S) -> crate::Result<PathBuf> {
+        relative_command_path(program.as_ref())
     }
 
     /// Appends an argument to the command.
@@ -597,6 +607,14 @@ mod tests {
             } else {
                 "Tauri.Example"
             })
+        );
+        assert_eq!(
+            sidecar_path("Tauri.Example").unwrap(),
+            relative_command_path(Path::new("Tauri.Example")).unwrap()
+        );
+        assert_eq!(
+            Command::sidecar_path("Tauri.Example").unwrap(),
+            relative_command_path(Path::new("Tauri.Example")).unwrap()
         );
     }
 

@@ -246,6 +246,32 @@ impl ShellScope<'_> {
         self._prepare(command_name, args, Some(command_script))
     }
 
+    /// Validates the sidecar command exists in scope and returns its binary path.
+    pub fn prepare_sidecar_path(
+        &self,
+        command_name: &str,
+        command_script: &str,
+    ) -> Result<std::path::PathBuf, Error> {
+        let command = match self.scopes.iter().find(|s| s.name == command_name) {
+            Some(command) => command,
+            None => return Err(Error::NotFound(command_name.into())),
+        };
+
+        if !command.sidecar {
+            return Err(Error::BadSidecarFlag);
+        }
+
+        let command_s = std::path::PathBuf::from(command_script)
+            .components()
+            .next_back()
+            .unwrap()
+            .as_os_str()
+            .to_string_lossy()
+            .into_owned();
+
+        crate::process::sidecar_path(command_s).map_err(|e| Error::Sidecar(e.to_string()))
+    }
+
     /// Validates argument inputs and creates a Tauri [`Command`].
     pub fn prepare(&self, command_name: &str, args: ExecuteArgs) -> Result<Command, Error> {
         self._prepare(command_name, args, None)

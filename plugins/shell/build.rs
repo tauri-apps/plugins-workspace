@@ -163,7 +163,14 @@ fn _f() {
     };
 }
 
-const COMMANDS: &[&str] = &["execute", "spawn", "stdin_write", "kill", "open"];
+const COMMANDS: &[&str] = &[
+    "execute",
+    "spawn",
+    "stdin_write",
+    "kill",
+    "open",
+    "sidecar_path",
+];
 
 fn main() {
     tauri_plugin::Builder::new(COMMANDS)

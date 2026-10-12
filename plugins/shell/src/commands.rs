@@ -328,3 +328,44 @@ pub async fn open<R: Runtime>(
 ) -> crate::Result<()> {
     crate::open::open(Some(&shell.open_scope), path, with)
 }
+
+#[tauri::command]
+pub async fn sidecar_path<R: Runtime>(
+    window: Window<R>,
+    program: String,
+    command_scope: CommandScope<crate::scope::ScopeAllowedCommand>,
+    global_scope: GlobalScope<crate::scope::ScopeAllowedCommand>,
+) -> crate::Result<PathBuf> {
+    let scope = crate::scope::ShellScope {
+        scopes: command_scope
+            .allows()
+            .iter()
+            .chain(global_scope.allows())
+            .collect(),
+    };
+
+    let program_path = PathBuf::from(&program);
+    let program_as_string = program_path.display().to_string();
+    let has_extension = program_path.extension().is_some_and(|ext| ext == "exe");
+    let program_no_ext_as_string = if has_extension {
+        program_path.with_extension("").display().to_string()
+    } else {
+        program_as_string.clone()
+    };
+    let configured_sidecar = window
+        .config()
+        .bundle
+        .external_bin
+        .as_ref()
+        .and_then(|bins| {
+            bins.iter()
+                .find(|b| b == &&program_as_string || b == &&program_no_ext_as_string)
+        })
+        .cloned();
+
+    if let Some(sidecar) = configured_sidecar {
+        Ok(scope.prepare_sidecar_path(&program_path.to_string_lossy(), &sidecar)?)
+    } else {
+        Err(crate::Error::SidecarNotAllowed(program_path))
+    }
+}

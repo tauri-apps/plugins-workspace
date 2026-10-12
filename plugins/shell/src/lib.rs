@@ -72,6 +72,14 @@ impl<R: Runtime> Shell<R> {
         Command::new_sidecar(program)
     }
 
+    /// Resolves the path to the sidecar binary.
+    ///
+    /// A sidecar program is a embedded external binary in order to make your application work
+    /// or to prevent users having to install additional dependencies (e.g. Node.js, Python, etc).
+    pub fn sidecar_path(&self, program: impl AsRef<Path>) -> Result<std::path::PathBuf> {
+        process::sidecar_path(program)
+    }
+
     /// Open a (url) path with a default or specific browser opening program.
     ///
     /// See [`crate::open::open`] for how it handles security-related measures.
@@ -139,7 +147,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
             commands::spawn,
             commands::stdin_write,
             commands::kill,
-            commands::open
+            commands::open,
+            commands::sidecar_path
         ])
         .setup(|app, api| {
             let default_config = config::Config::default();

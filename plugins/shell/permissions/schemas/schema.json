@@ -331,6 +331,18 @@
           "markdownDescription": "Denies the open command without any pre-configured scope."
         },
         {
+          "description": "Enables the sidecar_path command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-sidecar-path",
+          "markdownDescription": "Enables the sidecar_path command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the sidecar_path command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-sidecar-path",
+          "markdownDescription": "Denies the sidecar_path command without any pre-configured scope."
+        },
+        {
           "description": "Enables the spawn command without any pre-configured scope.",
           "type": "string",
           "const": "allow-spawn",
