@@ -89,6 +89,8 @@ if (await isAvailable()) {
 
 `isEnabled` reads the hardware state, so it also reflects the torch being turned off by the system, another app, or a barcode scan ending.
 
+On iOS, apps can't see the torch state set by Control Center or another app: while the flashlight is on from there, `isEnabled` returns `false` and `toggle` tries to turn the torch on.
+
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.

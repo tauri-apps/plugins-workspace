@@ -85,6 +85,9 @@ export async function isAvailable(): Promise<boolean> {
  * This reads the hardware state, so it also reflects the torch being turned off by the system,
  * another app, or a barcode scan ending.
  *
+ * On iOS, the torch turned on from Control Center or by another app is not visible to the app,
+ * so this returns `false` for it.
+ *
  * @example
  * ```typescript
  * import { isEnabled } from '@tauri-apps/plugin-torch'

@@ -8,6 +8,8 @@
     "nfc:allow-write",
     "nfc:allow-scan",
     "biometric:allow-authenticate",
+    "biometric:allow-status",
+    "biometric:allow-biometric-cipher",
     "barcode-scanner:allow-scan",
     "barcode-scanner:allow-cancel",
     "barcode-scanner:allow-request-permissions",

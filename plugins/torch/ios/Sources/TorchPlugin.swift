@@ -60,7 +60,7 @@ class TorchPlugin: Plugin {
   }
 
   @objc public func toggle(_ invoke: Invoke) {
-    let enabled = torchDevice()?.torchMode != .on
+    let enabled = !(torchDevice()?.isTorchActive ?? false)
     if setTorch(invoke, enabled: enabled) {
       invoke.resolve(["enabled": enabled])
     }
@@ -71,7 +71,7 @@ class TorchPlugin: Plugin {
   }
 
   @objc public func isEnabled(_ invoke: Invoke) {
-    invoke.resolve(["enabled": torchDevice()?.torchMode == .on])
+    invoke.resolve(["enabled": torchDevice()?.isTorchActive ?? false])
   }
 }
 
