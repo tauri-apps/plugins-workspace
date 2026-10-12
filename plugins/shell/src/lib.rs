@@ -72,10 +72,13 @@ impl<R: Runtime> Shell<R> {
         Command::new_sidecar(program)
     }
 
-    /// Resolves the path to the sidecar binary.
+    /// Resolves the path to the given sidecar program, the same path [`Self::sidecar`] runs.
     ///
-    /// A sidecar program is a embedded external binary in order to make your application work
-    /// or to prevent users having to install additional dependencies (e.g. Node.js, Python, etc).
+    /// The path is resolved next to the current executable; this does not check that the file exists.
+    ///
+    /// ## Platform-specific
+    ///
+    /// - **Android / iOS:** Sidecars are not supported, the returned path is meaningless.
     pub fn sidecar_path(&self, program: impl AsRef<Path>) -> Result<std::path::PathBuf> {
         process::sidecar_path(program)
     }

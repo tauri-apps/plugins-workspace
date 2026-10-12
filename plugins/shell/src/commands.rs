@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::{collections::HashMap, future::Future, path::PathBuf, pin::Pin, string::FromUtf8Error};
+use std::{
+    collections::HashMap,
+    future::Future,
+    path::{Path, PathBuf},
+    pin::Pin,
+    string::FromUtf8Error,
+};
 
 use encoding_rs::Encoding;
 use serde::{Deserialize, Serialize};
@@ -99,6 +105,28 @@ fn default_env() -> Option<HashMap<String, String>> {
     Some(HashMap::default())
 }
 
+/// Finds `program` under `tauri.conf.json > bundle > externalBin`, with or without an `.exe` extension.
+fn configured_sidecar<R: Runtime>(window: &Window<R>, program: &Path) -> crate::Result<String> {
+    let program_as_string = program.display().to_string();
+    let has_extension = program.extension().is_some_and(|ext| ext == "exe");
+    let program_no_ext_as_string = if has_extension {
+        program.with_extension("").display().to_string()
+    } else {
+        program_as_string.clone()
+    };
+    window
+        .config()
+        .bundle
+        .external_bin
+        .as_ref()
+        .and_then(|bins| {
+            bins.iter()
+                .find(|b| b == &&program_as_string || b == &&program_no_ext_as_string)
+        })
+        .cloned()
+        .ok_or_else(|| crate::Error::SidecarNotAllowed(program.to_path_buf()))
+}
+
 #[inline(always)]
 fn prepare_cmd<R: Runtime>(
     window: Window<R>,
@@ -118,28 +146,8 @@ fn prepare_cmd<R: Runtime>(
 
     let mut command = if options.sidecar {
         let program = PathBuf::from(program);
-        let program_as_string = program.display().to_string();
-        let has_extension = program.extension().is_some_and(|ext| ext == "exe");
-        let program_no_ext_as_string = if has_extension {
-            program.with_extension("").display().to_string()
-        } else {
-            program_as_string.clone()
-        };
-        let configured_sidecar = window
-            .config()
-            .bundle
-            .external_bin
-            .as_ref()
-            .and_then(|bins| {
-                bins.iter()
-                    .find(|b| b == &&program_as_string || b == &&program_no_ext_as_string)
-            })
-            .cloned();
-        if let Some(sidecar) = configured_sidecar {
-            scope.prepare_sidecar(&program.to_string_lossy(), &sidecar, args)?
-        } else {
-            return Err(crate::Error::SidecarNotAllowed(program));
-        }
+        let sidecar = configured_sidecar(&window, &program)?;
+        scope.prepare_sidecar(&program.to_string_lossy(), &sidecar, args)?
     } else {
         match scope.prepare(&program, args) {
             Ok(cmd) => cmd,
@@ -344,28 +352,7 @@ pub async fn sidecar_path<R: Runtime>(
             .collect(),
     };
 
-    let program_path = PathBuf::from(&program);
-    let program_as_string = program_path.display().to_string();
-    let has_extension = program_path.extension().is_some_and(|ext| ext == "exe");
-    let program_no_ext_as_string = if has_extension {
-        program_path.with_extension("").display().to_string()
-    } else {
-        program_as_string.clone()
-    };
-    let configured_sidecar = window
-        .config()
-        .bundle
-        .external_bin
-        .as_ref()
-        .and_then(|bins| {
-            bins.iter()
-                .find(|b| b == &&program_as_string || b == &&program_no_ext_as_string)
-        })
-        .cloned();
-
-    if let Some(sidecar) = configured_sidecar {
-        Ok(scope.prepare_sidecar_path(&program_path.to_string_lossy(), &sidecar)?)
-    } else {
-        Err(crate::Error::SidecarNotAllowed(program_path))
-    }
+    let program = PathBuf::from(program);
+    let sidecar = configured_sidecar(&window, &program)?;
+    Ok(scope.prepare_sidecar_path(&program.to_string_lossy(), &sidecar)?)
 }

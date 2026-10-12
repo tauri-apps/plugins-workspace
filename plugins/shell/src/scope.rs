@@ -235,6 +235,15 @@ impl OpenScope {
     }
 }
 
+/// The file name of a sidecar configured under `tauri.conf.json > bundle > externalBin`.
+fn sidecar_file_name(sidecar: &str) -> Result<String, Error> {
+    std::path::Path::new(sidecar)
+        .components()
+        .next_back()
+        .map(|c| c.as_os_str().to_string_lossy().into_owned())
+        .ok_or_else(|| Error::Sidecar(format!("invalid sidecar path `{sidecar}`")))
+}
+
 impl ShellScope<'_> {
     /// Validates argument inputs and creates a Tauri sidecar [`Command`].
     pub fn prepare_sidecar(
@@ -261,15 +270,8 @@ impl ShellScope<'_> {
             return Err(Error::BadSidecarFlag);
         }
 
-        let command_s = std::path::PathBuf::from(command_script)
-            .components()
-            .next_back()
-            .unwrap()
-            .as_os_str()
-            .to_string_lossy()
-            .into_owned();
-
-        crate::process::sidecar_path(command_s).map_err(|e| Error::Sidecar(e.to_string()))
+        crate::process::sidecar_path(sidecar_file_name(command_script)?)
+            .map_err(|e| Error::Sidecar(e.to_string()))
     }
 
     /// Validates argument inputs and creates a Tauri [`Command`].
@@ -330,17 +332,10 @@ impl ShellScope<'_> {
             (Some(_), _) => Err(Error::InvalidInput(command_name.into())),
         }?;
 
-        let command_s = sidecar
-            .map(|s| {
-                std::path::PathBuf::from(s)
-                    .components()
-                    .next_back()
-                    .unwrap()
-                    .as_os_str()
-                    .to_string_lossy()
-                    .into_owned()
-            })
-            .unwrap_or_else(|| command.command.to_string_lossy().into_owned());
+        let command_s = match sidecar {
+            Some(s) => sidecar_file_name(s)?,
+            None => command.command.to_string_lossy().into_owned(),
+        };
         let command = if command.sidecar {
             Command::new_sidecar(command_s).map_err(|e| Error::Sidecar(e.to_string()))?
         } else {

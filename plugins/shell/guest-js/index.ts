@@ -782,6 +782,8 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
   /**
    * Resolves the path to the given sidecar program.
    *
+   * Desktop only: sidecars are not supported on Android and iOS.
+   *
    * @example
    * ```typescript
    * import { Command } from '@tauri-apps/plugin-shell';
@@ -792,12 +794,13 @@ class Command<O extends IOPayload> extends EventEmitter<CommandEvents> {
    * It must be configured in your project's capabilities
    * and defined on `tauri.conf.json > bundle > externalBin`.
    *
-   * @returns A promise resolving to the absolute path of the sidecar binary.
+   * @returns A promise resolving to the absolute path of the sidecar binary,
+   * the one {@link Command.sidecar} runs. It does not check that the file exists.
    *
    * @since 2.6.0
    */
   static async sidecarPath(program: string): Promise<string> {
-    return await sidecarPath(program)
+    return await invoke('plugin:shell|sidecar_path', { program })
   }
 
   /**
@@ -948,30 +951,7 @@ async function open(path: string, openWith?: string): Promise<void> {
   })
 }
 
-/**
- * Resolves the path to the given sidecar program.
- *
- * @example
- * ```typescript
- * import { sidecarPath } from '@tauri-apps/plugin-shell';
- * const path = await sidecarPath('my-sidecar');
- * ```
- *
- * @param program The sidecar program to resolve the path of.
- * It must be configured in your project's capabilities
- * and defined on `tauri.conf.json > bundle > externalBin`.
- *
- * @returns A promise resolving to the absolute path of the sidecar binary.
- *
- * @since 2.6.0
- */
-async function sidecarPath(program: string): Promise<string> {
-  return await invoke('plugin:shell|sidecar_path', {
-    program
-  })
-}
-
-export { Command, Child, EventEmitter, open, sidecarPath }
+export { Command, Child, EventEmitter, open }
 export type {
   IOPayload,
   CommandEvents,
