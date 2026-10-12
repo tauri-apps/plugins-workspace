@@ -92,7 +92,9 @@ impl DbPool {
                     .app_config_dir()
                     .expect("No App config path was found!");
 
-                create_dir_all(&app_path).expect("Couldn't create app config dir");
+                if _auto_create {
+                    create_dir_all(&app_path).expect("Couldn't create app config dir");
+                }
 
                 let db_url = &path_mapper(app_path, conn_url);
 
