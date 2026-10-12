@@ -78,7 +78,7 @@ impl DbPool {
     pub(crate) async fn connect<R: Runtime>(
         conn_url: &str,
         _app: &AppHandle<R>,
-        auto_create: bool,
+        _auto_create: bool,
     ) -> Result<Self, crate::Error> {
         match conn_url
             .split_once(':')
@@ -98,7 +98,7 @@ impl DbPool {
 
                 let exists = Sqlite::database_exists(conn_url).await.unwrap_or(false);
                 if !exists {
-                    if auto_create {
+                    if _auto_create {
                         Sqlite::create_database(conn_url).await?;
                     } else {
                         return Err(crate::Error::DatabaseDoesNotExist(conn_url.to_string()));
@@ -110,7 +110,7 @@ impl DbPool {
             "mysql" => {
                 let exists = MySql::database_exists(conn_url).await.unwrap_or(false);
                 if !exists {
-                    if auto_create {
+                    if _auto_create {
                         MySql::create_database(conn_url).await?;
                     } else {
                         return Err(crate::Error::DatabaseDoesNotExist(conn_url.to_string()));
@@ -122,7 +122,7 @@ impl DbPool {
             "postgres" => {
                 let exists = Postgres::database_exists(conn_url).await.unwrap_or(false);
                 if !exists {
-                    if auto_create {
+                    if _auto_create {
                         Postgres::create_database(conn_url).await?;
                     } else {
                         return Err(crate::Error::DatabaseDoesNotExist(conn_url.to_string()));
