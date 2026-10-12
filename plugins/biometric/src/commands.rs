@@ -33,6 +33,7 @@ pub(crate) async fn authenticate<R: Runtime>(
         title,
         subtitle,
         confirmation_required,
+        ..Default::default()
     };
     // The prompt blocks until the user answers, so keep it off the async runtime workers.
     tauri::async_runtime::spawn_blocking(move || app.biometric().authenticate(reason, options))

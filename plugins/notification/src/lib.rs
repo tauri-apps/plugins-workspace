@@ -14,6 +14,8 @@
 )]
 
 use serde::Serialize;
+#[cfg(all(desktop, unix, not(target_os = "macos")))]
+use std::fmt;
 #[cfg(desktop)]
 use tauri::AppHandle;
 #[cfg(mobile)]
@@ -50,6 +52,18 @@ pub struct NotificationBuilder<R: Runtime> {
     #[cfg(mobile)]
     handle: PluginHandle<R>,
     pub(crate) data: NotificationData,
+    #[cfg(all(desktop, unix, not(target_os = "macos")))]
+    on_close: Option<OnClose>,
+}
+
+#[cfg(all(desktop, unix, not(target_os = "macos")))]
+pub(crate) struct OnClose(Box<dyn FnOnce() + Send + 'static>);
+
+#[cfg(all(desktop, unix, not(target_os = "macos")))]
+impl fmt::Debug for OnClose {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("OnClose")
+    }
 }
 
 impl<R: Runtime> NotificationBuilder<R> {
@@ -58,6 +72,8 @@ impl<R: Runtime> NotificationBuilder<R> {
         Self {
             app,
             data: Default::default(),
+            #[cfg(all(desktop, unix, not(target_os = "macos")))]
+            on_close: None,
         }
     }
 
@@ -210,6 +226,21 @@ impl<R: Runtime> NotificationBuilder<R> {
     /// Changes the notification presentation to be silent on iOS (no badge, no sound, not listed).
     pub fn silent(mut self) -> Self {
         self.data.silent = true;
+        self
+    }
+
+    /// Sets a callback to run when the notification closes, whether the user dismissed it, it
+    /// expired or the app removed it.
+    ///
+    /// The callback runs on a background thread and should return quickly. It does not run when
+    /// the session bus cannot be reached, or when the app exits first.
+    ///
+    /// ## Platform-specific
+    ///
+    /// - **Linux and the BSDs**: only available there.
+    #[cfg(all(desktop, unix, not(target_os = "macos")))]
+    pub fn on_close<F: FnOnce() + Send + 'static>(mut self, handler: F) -> Self {
+        self.on_close = Some(OnClose(Box::new(handler)));
         self
     }
 }
