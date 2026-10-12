@@ -377,3 +377,59 @@ fn path_mapper(mut app_path: std::path::PathBuf, connection_string: &str) -> Str
             .expect("Problem creating fully qualified path to Database file!")
     )
 }
+
+#[cfg(test)]
+mod tests {
+    #[cfg(feature = "sqlite")]
+    #[test]
+    fn ensure_database_respects_auto_create() {
+        use super::ensure_database;
+        use sqlx::Sqlite;
+
+        let path = std::env::temp_dir().join(format!("tauri-plugin-sql-{}.db", std::process::id()));
+        let _ = std::fs::remove_file(&path);
+        let url = format!("sqlite:{}", path.display());
+
+        tauri::async_runtime::block_on(async {
+            let err = ensure_database::<Sqlite>(&url, "sqlite:test.db", false)
+                .await
+                .unwrap_err();
+            assert_eq!(err.to_string(), "database sqlite:test.db does not exist");
+            assert!(!path.exists());
+
+            ensure_database::<Sqlite>(&url, "sqlite:test.db", true)
+                .await
+                .unwrap();
+            assert!(path.exists());
+
+            ensure_database::<Sqlite>(&url, "sqlite:test.db", false)
+                .await
+                .unwrap();
+        });
+
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[cfg(any(feature = "mysql", feature = "postgres"))]
+    #[test]
+    fn redact_password() {
+        use super::redact_password;
+
+        assert_eq!(
+            redact_password("mysql://user:secret@localhost:3306/db"),
+            "mysql://user:***@localhost:3306/db"
+        );
+        assert_eq!(
+            redact_password("postgres://user:p@ss@host/db?sslmode=require"),
+            "postgres://user:***@host/db?sslmode=require"
+        );
+        assert_eq!(
+            redact_password("postgres://user@host/db"),
+            "postgres://user@host/db"
+        );
+        assert_eq!(
+            redact_password("postgres://host/db?user=a@b"),
+            "postgres://host/db?user=a@b"
+        );
+    }
+}
