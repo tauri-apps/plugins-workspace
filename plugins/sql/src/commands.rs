@@ -10,14 +10,9 @@ use tauri::{AppHandle, Runtime, State, command};
 use crate::{DbInstances, DbPool, Error, LastInsertId, Migrations};
 
 #[derive(Debug, Clone, Copy, serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", default)]
 pub(crate) struct LoadOptions {
-    #[serde(default = "default_auto_create")]
     pub auto_create: bool,
-}
-
-const fn default_auto_create() -> bool {
-    true
 }
 
 impl Default for LoadOptions {
@@ -34,8 +29,8 @@ pub(crate) async fn load<R: Runtime>(
     db: String,
     options: Option<LoadOptions>,
 ) -> Result<String, crate::Error> {
-    let auto_create = options.map(|o| o.auto_create).unwrap_or(true);
-    let pool = DbPool::connect(&db, &app, auto_create).await?;
+    let options = options.unwrap_or_default();
+    let pool = DbPool::connect(&db, &app, options.auto_create).await?;
 
     if let Some(migrations) = migrations.0.lock().await.remove(&db) {
         let migrator = Migrator::new(migrations).await?;
