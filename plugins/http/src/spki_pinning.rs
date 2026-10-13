@@ -105,8 +105,8 @@ impl Default for SpkiPinning {
     }
 }
 
-impl<R: tauri::Runtime> HttpTransportExtension<R> for SpkiPinning {
-    fn validate(&self, request: &RequestContext) -> Result<(), ExtensionError> {
+impl SpkiPinning {
+    fn validate_request(&self, request: &RequestContext) -> Result<(), ExtensionError> {
         if request.danger_accept_invalid_certs() || request.danger_accept_invalid_hostnames() {
             return Err(extension_error(PinningFailure::new(
                 ERROR_CODE_DANGEROUS_SETTINGS,
@@ -128,17 +128,23 @@ impl<R: tauri::Runtime> HttpTransportExtension<R> for SpkiPinning {
         }
 
         if self.require_pins_for_all_hosts {
-            let host = request.url().host_str().unwrap_or_default();
-            if !self.pins.contains_key(host) {
+            let host = pin_lookup_host(request.url().host_str().unwrap_or_default());
+            if !self.pins.contains_key(&host) {
                 return Err(extension_error(PinningFailure::new(
                     ERROR_CODE_HOST_NOT_PINNED,
                     "no SPKI pins are configured for the request host",
-                    Some(host),
+                    Some(&host),
                 )));
             }
         }
 
         Ok(())
+    }
+}
+
+impl<R: tauri::Runtime> HttpTransportExtension<R> for SpkiPinning {
+    fn validate(&self, request: &RequestContext) -> Result<(), ExtensionError> {
+        self.validate_request(request)
     }
 
     fn configure(
@@ -229,6 +235,12 @@ fn normalize_host(host: &str) -> Result<String, SpkiPinError> {
     }
 }
 
+/// The key a request or server name is looked up with: the same form
+/// [`normalize_host`] stores pins under.
+fn pin_lookup_host(host: &str) -> String {
+    host.trim_end_matches('.').to_ascii_lowercase()
+}
+
 fn parse_pin(pin: &str) -> Result<[u8; 32], SpkiPinError> {
     let encoded = pin
         .strip_prefix("sha256/")
@@ -304,10 +316,7 @@ impl ServerCertVerifier for PinnedServerCertVerifier {
             now,
         )?;
 
-        let host = server_name
-            .to_str()
-            .trim_end_matches('.')
-            .to_ascii_lowercase();
+        let host = pin_lookup_host(&server_name.to_str());
         let Some(pins) = self.pins.get(&host) else {
             return if self.require_pins_for_all_hosts {
                 Err(PinRejection::HostNotPinned(host).into())
@@ -466,6 +475,42 @@ mod tests {
             .unwrap();
 
         assert_eq!(extension.pins["api.example.com"].len(), 2);
+    }
+
+    #[test]
+    fn validate_matches_fully_qualified_hosts() {
+        let extension = SpkiPinning::new()
+            .pin("api.example.com", EXAMPLE_PIN)
+            .unwrap();
+        let request = |url: &str| {
+            RequestContext::new(
+                http::Method::GET,
+                url::Url::parse(url).unwrap(),
+                http::HeaderMap::new(),
+                false,
+                None,
+                None,
+                false,
+                false,
+                false,
+            )
+        };
+
+        assert!(
+            extension
+                .validate_request(&request("https://api.example.com./v1"))
+                .is_ok()
+        );
+        assert!(
+            extension
+                .validate_request(&request("https://API.example.com/v1"))
+                .is_ok()
+        );
+        let error = extension
+            .validate_request(&request("https://other.example.com./v1"))
+            .unwrap_err();
+        assert_eq!(error.value()["code"], ERROR_CODE_HOST_NOT_PINNED);
+        assert_eq!(error.value()["host"], "other.example.com");
     }
 
     #[test]
