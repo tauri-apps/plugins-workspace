@@ -30,7 +30,8 @@ const commonSurface: Surface<CommonPluginApi> = {
     'writeHtml',
     'clear',
     'readImage',
-    'writeImage'
+    'writeImage',
+    'writeSecret'
   ],
   deepLink: [
     'getCurrent',
