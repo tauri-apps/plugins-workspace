@@ -4,7 +4,7 @@
 
 use std::{
     collections::{HashMap, HashSet},
-    sync::Arc,
+    sync::{Arc, OnceLock},
 };
 
 use crate::{ExtensionError, HttpTransportExtension, RequestContext};
@@ -38,6 +38,9 @@ pub struct SpkiPinning {
     roots: Option<Arc<RootCertStore>>,
     require_pins_for_all_hosts: bool,
     allow_http: bool,
+    /// The TLS config built from the settings above on first use, shared by
+    /// every request. Builder methods that change those settings reset it.
+    tls: Arc<OnceLock<Result<rustls::ClientConfig, String>>>,
 }
 
 impl SpkiPinning {
@@ -52,6 +55,7 @@ impl SpkiPinning {
             roots: None,
             require_pins_for_all_hosts: true,
             allow_http: false,
+            tls: Default::default(),
         }
     }
 
@@ -69,6 +73,7 @@ impl SpkiPinning {
             .entry(host)
             .or_default()
             .insert(pin);
+        self.tls = Default::default();
         Ok(self)
     }
 
@@ -80,12 +85,14 @@ impl SpkiPinning {
     /// validated against these roots.
     pub fn root_certificates(mut self, roots: RootCertStore) -> Self {
         self.roots = Some(Arc::new(roots));
+        self.tls = Default::default();
         self
     }
 
     /// Allows hosts without configured pins to use normal WebPKI validation.
     pub fn allow_unpinned_hosts(mut self) -> Self {
         self.require_pins_for_all_hosts = false;
+        self.tls = Default::default();
         self
     }
 
@@ -106,6 +113,18 @@ impl Default for SpkiPinning {
 }
 
 impl SpkiPinning {
+    fn tls_config(&self) -> Result<rustls::ClientConfig, String> {
+        self.tls
+            .get_or_init(|| {
+                build_tls_config(
+                    self.pins.clone(),
+                    self.roots.clone(),
+                    self.require_pins_for_all_hosts,
+                )
+            })
+            .clone()
+    }
+
     fn validate_request(&self, request: &RequestContext) -> Result<(), ExtensionError> {
         if request.danger_accept_invalid_certs() || request.danger_accept_invalid_hostnames() {
             return Err(extension_error(PinningFailure::new(
@@ -152,12 +171,7 @@ impl<R: tauri::Runtime> HttpTransportExtension<R> for SpkiPinning {
         builder: reqwest::ClientBuilder,
         _request: &RequestContext,
     ) -> Result<reqwest::ClientBuilder, ExtensionError> {
-        let tls = build_tls_config(
-            self.pins.clone(),
-            self.roots.clone(),
-            self.require_pins_for_all_hosts,
-        )
-        .map_err(|message| {
+        let tls = self.tls_config().map_err(|message| {
             extension_error(PinningFailure::new(
                 ERROR_CODE_INITIALIZATION,
                 message,
@@ -592,6 +606,24 @@ mod tests {
             .root_certificates(roots);
         assert_eq!(extension.roots.as_ref().unwrap().len(), 1);
         build_tls_config(extension.pins, extension.roots, true).unwrap();
+    }
+
+    #[test]
+    fn reuses_the_tls_config_until_settings_change() {
+        let extension = SpkiPinning::new().pin("example.com", EXAMPLE_PIN).unwrap();
+        extension.tls_config().unwrap();
+        let shared = extension.clone();
+        assert!(Arc::ptr_eq(&extension.tls, &shared.tls));
+        assert!(shared.tls.get().is_some());
+
+        // a clone changed afterwards gets its own config, without touching the original's
+        let changed = shared
+            .pin("example.org", EXAMPLE_PIN)
+            .unwrap()
+            .allow_unpinned_hosts();
+        assert!(changed.tls.get().is_none());
+        assert!(extension.tls.get().is_some());
+        changed.tls_config().unwrap();
     }
 
     #[test]
