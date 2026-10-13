@@ -11,6 +11,10 @@ enum WriteOptions: Codable {
   case plainText(text: String)
 }
 
+struct WriteSecretArgs: Decodable {
+  let text: String
+}
+
 enum ReadClipData: Codable {
   case plainText(text: String)
 }
@@ -28,6 +32,15 @@ class ClipboardPlugin: Plugin {
     }
     invoke.resolve()
 
+  }
+
+  @objc public func writeSecret(_ invoke: Invoke) throws {
+    let args = try invoke.parseArgs(WriteSecretArgs.self)
+    UIPasteboard.general.setItems(
+      [["public.utf8-plain-text": args.text]],
+      options: [.localOnly: true]
+    )
+    invoke.resolve()
   }
 
   @objc public func readText(_ invoke: Invoke) throws {
