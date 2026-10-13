@@ -32,6 +32,7 @@
   import Biometric from './views/Biometric.svelte'
   import Geolocation from './views/Geolocation.svelte'
   import Haptics from './views/Haptics.svelte'
+  import Torch from './views/Torch.svelte'
   import Nfc from './views/Nfc.svelte'
   import Autostart from './views/Autostart.svelte'
   import DeepLink from './views/DeepLink.svelte'
@@ -185,6 +186,11 @@
       label: 'Haptics',
       component: Haptics,
       icon: 'i-ph-vibrate'
+    },
+    isMobile && {
+      label: 'Torch',
+      component: Torch,
+      icon: 'i-ph-flashlight'
     }
   ].filter(Boolean) as {
     label: string
