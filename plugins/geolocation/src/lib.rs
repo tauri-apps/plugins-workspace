@@ -9,8 +9,8 @@
 //! - **specta**: Add support for [`specta::specta`](https://docs.rs/specta/2.0.0-rc.25/specta/attr.specta.html) on structs like [`PermissionStatus`], [`PositionOptions`].
 
 use tauri::{
-    plugin::{Builder, TauriPlugin},
     Manager, Runtime,
+    plugin::{Builder, TauriPlugin},
 };
 
 pub use models::*;
@@ -33,6 +33,7 @@ pub use mobile::Geolocation;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the geolocation APIs.
 pub trait GeolocationExt<R: Runtime> {
+    /// Returns the handle to the geolocation APIs.
     fn geolocation(&self) -> &Geolocation<R>;
 }
 

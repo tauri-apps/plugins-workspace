@@ -76,8 +76,20 @@ export function createConfig(options = {}) {
         banner: "if ('__TAURI__' in window) {",
         // the last `}` closes the if in the banner
         footer: `Object.defineProperty(window.__TAURI__, '${pluginJsName}', { value: ${iifeVarName} }) }`,
-        file: 'api-iife.js'
+        file: 'api-iife.js',
+        // The global API script only ever runs with `withGlobalTauri`, where the
+        // core API is already on `window.__TAURI__` (it is injected before any
+        // plugin script), so resolve `@tauri-apps/api/<module>` to
+        // `window.__TAURI__.<module>` instead of bundling a private copy. This
+        // keeps the plugin on the same `Image`, `Resource`, `Channel`, ... classes
+        // as the app's `window.__TAURI__`, so `instanceof` checks like
+        // `transformImage` work on values crossing the two.
+        globals: (id) =>
+          id.startsWith('@tauri-apps/api/')
+            ? `window.__TAURI__.${id.slice('@tauri-apps/api/'.length)}`
+            : id
       },
+      external: [/^@tauri-apps\/api\//],
       // and var is not guaranteed to assign to the global `window` object so we make sure to assign it
       plugins: [typescript(), terser(), nodeResolve()],
       onwarn: (warning) => {

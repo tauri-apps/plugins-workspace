@@ -13,28 +13,53 @@ use tauri::Monitor;
 use tauri::{PhysicalPosition, PhysicalSize, Result, Runtime, WebviewWindow, Window};
 
 /// Well known window positions.
+///
+/// The `Tray*` variants require the `tray-icon` feature and only resolve once the tray icon has
+/// reported its position (see `on_tray_event`); using one before that happens returns an error.
 #[derive(Debug, Deserialize_repr)]
 #[repr(u16)]
 pub enum Position {
+    /// Top left corner of the current screen.
     TopLeft = 0,
+    /// Top right corner of the current screen.
     TopRight,
+    /// Bottom left corner of the current screen.
     BottomLeft,
+    /// Bottom right corner of the current screen.
     BottomRight,
+    /// Top center of the current screen.
     TopCenter,
+    /// Bottom center of the current screen.
     BottomCenter,
+    /// Vertically centered on the left edge of the current screen.
     LeftCenter,
+    /// Vertically centered on the right edge of the current screen.
     RightCenter,
+    /// Center of the current screen.
     Center,
+    /// Above the tray icon, aligning the window's left edge with the tray icon's left edge. On
+    /// Windows and macOS the window moves below the icon instead when there is not enough room
+    /// above.
     #[cfg(feature = "tray-icon")]
     TrayLeft,
+    /// Directly below the tray icon, aligning the window's left edge with the tray icon's left
+    /// edge.
     #[cfg(feature = "tray-icon")]
     TrayBottomLeft,
+    /// Above the tray icon, aligning the window's left edge with the tray icon's right edge. On
+    /// Windows and macOS the window moves below the icon instead when there is not enough room
+    /// above.
     #[cfg(feature = "tray-icon")]
     TrayRight,
+    /// Directly below the tray icon, aligning the window's left edge with the tray icon's right
+    /// edge.
     #[cfg(feature = "tray-icon")]
     TrayBottomRight,
+    /// Above the tray icon, horizontally centered on it. On Windows and macOS the window moves
+    /// below the icon instead when there is not enough room above.
     #[cfg(feature = "tray-icon")]
     TrayCenter,
+    /// Directly below the tray icon, horizontally centered on it.
     #[cfg(feature = "tray-icon")]
     TrayBottomCenter,
 }
