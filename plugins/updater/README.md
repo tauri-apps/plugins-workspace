@@ -12,7 +12,7 @@ In-app updates for Tauri applications.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.77.2**_
+_This plugin requires a Rust version of at least **1.90**_
 
 There are three general methods of installation that we can recommend.
 
@@ -69,6 +69,7 @@ import { relaunch } from '@tauri-apps/plugin-process'
 const update = await check()
 if (update) {
   await update.downloadAndInstall()
+  // Relaunch the app on macOS and Linux to run the newly install version
   await relaunch()
 }
 ```
