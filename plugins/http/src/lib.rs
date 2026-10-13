@@ -44,20 +44,37 @@
 //! - **unsafe-headers**: Allows webview requests to send any headers.
 //! - **dangerous-settings**: Allows dangerous client settings such as accepting invalid certificates or hostnames.
 //! - **spki-pinning**: Adds the native [`SpkiPinning`] transport extension for exact-host leaf SPKI pinning with Rustls.
+//!
+//! ## Configuration
+//!
+//! See [`Config`] for the options that can be set on the `plugins > http` object of your
+//! `tauri.conf.json`:
+//!
+//! ```json
+//! {
+//!   "plugins": {
+//!     "http": {
+//!       "scopeRedirects": true
+//!     }
+//!   }
+//! }
+//! ```
 
 pub use reqwest;
 
 use std::sync::Arc;
 
 use tauri::{
-    plugin::{Builder as PluginBuilder, TauriPlugin},
     Manager, Runtime,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
 };
 
+pub use config::Config;
 pub use error::{Error, Result};
 pub use extension::{ExtensionError, HttpTransportExtension, RequestContext};
 
 mod commands;
+mod config;
 mod error;
 mod extension;
 #[cfg(feature = "cookies")]
@@ -73,6 +90,7 @@ pub use spki_pinning::{SpkiPinError, SpkiPinning};
 const COOKIES_FILENAME: &str = ".cookies";
 
 pub(crate) struct Http<R: Runtime> {
+    pub(crate) config: Config,
     extensions: extension::ExtensionList<R>,
     #[cfg(feature = "cookies")]
     cookies_jar: Arc<crate::reqwest_cookie_store::CookieStoreMutex>,
@@ -113,11 +131,18 @@ impl<R: Runtime> Builder<R> {
     }
 
     /// Builds the HTTP plugin.
-    pub fn build(self) -> TauriPlugin<R> {
+    ///
+    /// The plugin reads its [`Config`] from the `plugins > http` object of the `tauri.conf.json` file;
+    /// when that object is missing, [`Config::default`] is used.
+    ///
+    /// With the `cookies` Cargo feature (enabled by default), a cookie jar is loaded from a `.cookies`
+    /// file in the application cache directory on setup and written back to it when the application
+    /// exits. A jar that cannot be read is replaced by an empty one.
+    pub fn build(self) -> TauriPlugin<R, Option<Config>> {
         let extensions = Arc::new(self.extensions);
 
-        PluginBuilder::<R>::new("http")
-            .setup(|app, _| {
+        PluginBuilder::<R, Option<Config>>::new("http")
+            .setup(|app, api| {
                 #[cfg(feature = "cookies")]
                 let cookies_jar = {
                     use crate::reqwest_cookie_store::*;
@@ -149,6 +174,7 @@ impl<R: Runtime> Builder<R> {
                 }
 
                 let state = Http {
+                    config: api.config().clone().unwrap_or_default(),
                     extensions,
                     #[cfg(feature = "cookies")]
                     cookies_jar: Arc::new(cookies_jar),
@@ -185,7 +211,11 @@ impl<R: Runtime> Builder<R> {
     }
 }
 
-/// Creates the HTTP plugin with the default transport behavior.
-pub fn init<R: Runtime>() -> TauriPlugin<R> {
+/// Initializes the plugin with the default transport behavior.
+///
+/// See [`Builder::build`] for the configuration and cookie behavior.
+///
+/// Register it on the Tauri builder with `.plugin(tauri_plugin_http::init())`.
+pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
     Builder::new().build()
 }

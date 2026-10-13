@@ -8,11 +8,11 @@ use std::{
 };
 
 use crate::{ExtensionError, HttpTransportExtension, RequestContext};
-use base64::{engine::general_purpose::STANDARD, Engine};
+use base64::{Engine, engine::general_purpose::STANDARD};
 use rustls::{
+    DigitallySignedStruct, Error as RustlsError, RootCertStore, SignatureScheme,
     client::danger::{HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier},
     pki_types::{CertificateDer, ServerName, UnixTime},
-    DigitallySignedStruct, Error as RustlsError, RootCertStore, SignatureScheme,
 };
 use serde::Serialize;
 use sha2::{Digest, Sha256};
