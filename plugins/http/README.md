@@ -138,6 +138,11 @@ validation for hosts without pins. The client is HTTPS-only by default so
 redirects cannot downgrade to plain HTTP; `allow_http()` is an explicit native
 opt-in. Dangerous certificate and hostname settings are rejected.
 
+Certificate chains are validated against Mozilla's root store (`webpki-roots`),
+not the operating system's. To pin a server with a private or self-signed CA,
+or to trust the system roots, pass your own store with
+`root_certificates(tauri_plugin_http::rustls::RootCertStore)`.
+
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.

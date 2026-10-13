@@ -30,9 +30,14 @@ const RUSTLS_HOST_NOT_PINNED_MARKER: &str = "TAURI_HTTP_SPKI_HOST_NOT_PINNED:";
 /// Normal WebPKI chain and hostname validation runs before the leaf
 /// certificate's SubjectPublicKeyInfo SHA-256 digest is compared with the
 /// pins configured for the request host.
+///
+/// Certificate chains are validated against Mozilla's root store
+/// (`webpki-roots`) unless [`root_certificates`](Self::root_certificates)
+/// replaces it.
 #[derive(Debug, Clone)]
 pub struct SpkiPinning {
     pins: Arc<HashMap<String, HashSet<[u8; 32]>>>,
+    roots: Option<Arc<RootCertStore>>,
     require_pins_for_all_hosts: bool,
     allow_http: bool,
 }
@@ -46,6 +51,7 @@ impl SpkiPinning {
     pub fn new() -> Self {
         Self {
             pins: Arc::new(HashMap::new()),
+            roots: None,
             require_pins_for_all_hosts: true,
             allow_http: false,
         }
@@ -66,6 +72,17 @@ impl SpkiPinning {
             .or_default()
             .insert(pin);
         Ok(self)
+    }
+
+    /// Replaces the trusted root certificates used for chain validation.
+    ///
+    /// Use this to pin servers whose certificates are issued by a private or
+    /// self-signed CA, or to trust the operating system's roots (for example,
+    /// loaded with `rustls-native-certs`). Pins are checked after the chain is
+    /// validated against these roots.
+    pub fn root_certificates(mut self, roots: RootCertStore) -> Self {
+        self.roots = Some(Arc::new(roots));
+        self
     }
 
     /// Allows hosts without configured pins to use normal WebPKI validation.
@@ -131,15 +148,18 @@ impl<R: tauri::Runtime> HttpTransportExtension<R> for SpkiPinning {
         builder: reqwest::ClientBuilder,
         _request: &RequestContext,
     ) -> Result<reqwest::ClientBuilder, ExtensionError> {
-        let tls = build_tls_config(self.pins.clone(), self.require_pins_for_all_hosts).map_err(
-            |message| {
-                extension_error(PinningFailure::new(
-                    ERROR_CODE_INITIALIZATION,
-                    message,
-                    None,
-                ))
-            },
-        )?;
+        let tls = build_tls_config(
+            self.pins.clone(),
+            self.roots.clone(),
+            self.require_pins_for_all_hosts,
+        )
+        .map_err(|message| {
+            extension_error(PinningFailure::new(
+                ERROR_CODE_INITIALIZATION,
+                message,
+                None,
+            ))
+        })?;
         Ok(builder
             .https_only(!self.allow_http)
             .use_preconfigured_tls(tls))
@@ -310,18 +330,19 @@ impl ServerCertVerifier for PinnedServerCertVerifier {
 
 fn build_tls_config(
     pins: Arc<HashMap<String, HashSet<[u8; 32]>>>,
+    roots: Option<Arc<RootCertStore>>,
     require_pins_for_all_hosts: bool,
 ) -> Result<rustls::ClientConfig, String> {
-    let roots = RootCertStore {
-        roots: webpki_roots::TLS_SERVER_ROOTS.to_vec(),
-    };
+    let roots = roots.unwrap_or_else(|| {
+        Arc::new(RootCertStore {
+            roots: webpki_roots::TLS_SERVER_ROOTS.to_vec(),
+        })
+    });
     let provider = Arc::new(rustls::crypto::ring::default_provider());
-    let web_pki = rustls::client::WebPkiServerVerifier::builder_with_provider(
-        Arc::new(roots),
-        provider.clone(),
-    )
-    .build()
-    .map_err(|error| error.to_string())?;
+    let web_pki =
+        rustls::client::WebPkiServerVerifier::builder_with_provider(roots, provider.clone())
+            .build()
+            .map_err(|error| error.to_string())?;
     let verifier = Arc::new(PinnedServerCertVerifier {
         web_pki,
         pins,
@@ -480,9 +501,26 @@ mod tests {
     }
 
     #[test]
+    fn builds_a_rustls_client_config_with_custom_roots() {
+        let ca_key = KeyPair::generate().unwrap();
+        let mut ca_params = CertificateParams::new(Vec::<String>::new()).unwrap();
+        ca_params.is_ca = IsCa::Ca(BasicConstraints::Unconstrained);
+        let ca = ca_params.self_signed(&ca_key).unwrap();
+        let mut roots = RootCertStore::empty();
+        roots.add(ca.der().clone()).unwrap();
+
+        let extension = SpkiPinning::new()
+            .pin("example.com", EXAMPLE_PIN)
+            .unwrap()
+            .root_certificates(roots);
+        assert_eq!(extension.roots.as_ref().unwrap().len(), 1);
+        build_tls_config(extension.pins, extension.roots, true).unwrap();
+    }
+
+    #[test]
     fn builds_a_rustls_client_config() {
         let extension = SpkiPinning::new().pin("example.com", EXAMPLE_PIN).unwrap();
-        let config = build_tls_config(extension.pins, true).unwrap();
+        let config = build_tls_config(extension.pins, None, true).unwrap();
         assert_eq!(config.alpn_protocols.last().unwrap(), b"http/1.1");
         #[cfg(feature = "http2")]
         assert_eq!(config.alpn_protocols.first().unwrap(), b"h2");

@@ -84,6 +84,8 @@ mod scope;
 mod spki_pinning;
 
 #[cfg(feature = "spki-pinning")]
+pub use rustls;
+#[cfg(feature = "spki-pinning")]
 pub use spki_pinning::{SpkiPinError, SpkiPinning};
 
 #[cfg(feature = "cookies")]
