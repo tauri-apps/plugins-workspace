@@ -10,14 +10,19 @@ import android.location.Location
 import android.location.LocationManager
 import android.location.LocationRequest
 import android.os.Build
+import android.os.CancellationSignal
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import androidx.core.content.ContextCompat
 import androidx.core.location.LocationListenerCompat
 import androidx.core.location.LocationManagerCompat
 import androidx.core.location.LocationRequestCompat
+import androidx.core.os.CancellationSignal as CompatCancellationSignal
 import app.tauri.Logger
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest as GmsLocationRequest
@@ -80,38 +85,73 @@ public class Geolocation(private val context: Context) {
 
     // Asks each provider in turn for a fresh fix, so one that is enabled but can't produce a fix
     // (e.g. network without Wi-Fi or cell signal) falls back to the next.
+    // The timeout covers all attempts; 0 or less means no timeout.
     @SuppressLint("MissingPermission")
-    private fun androidCurrentLocation(providers: List<String>, enableHighAccuracy: Boolean, successCallback: (location: Location) -> Unit, errorCallback: (error: String) -> Unit) {
-        val provider = providers.firstOrNull()
-        if (provider == null) {
-            errorCallback("Location unavailable.")
-            return
-        }
-        val onResult = { location: Location? ->
-            if (location == null) {
-                androidCurrentLocation(providers.drop(1), enableHighAccuracy, successCallback, errorCallback)
-            } else {
-                successCallback(location)
+    private fun androidCurrentLocation(providers: List<String>, enableHighAccuracy: Boolean, timeout: Long, successCallback: (location: Location) -> Unit, errorCallback: (error: String) -> Unit) {
+        // Everything below runs on the main thread, so no synchronization is needed.
+        val handler = Handler(Looper.getMainLooper())
+        var done = false
+        var cancelAttempt: (() -> Unit)? = null
+        val onTimeout = Runnable {
+            if (!done) {
+                done = true
+                cancelAttempt?.invoke()
+                errorCallback("Timeout expired.")
             }
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // On API 31+ the provider is usually fused, so the request quality is what honors enableHighAccuracy.
-            val request = LocationRequest.Builder(0)
-                .setQuality(if (enableHighAccuracy) LocationRequest.QUALITY_HIGH_ACCURACY else LocationRequest.QUALITY_BALANCED_POWER_ACCURACY)
-                .build()
-            locationManager.getCurrentLocation(provider, request, null, context.mainExecutor) { onResult(it) }
-        } else {
-            LocationManagerCompat.getCurrentLocation(locationManager, provider, null, ContextCompat.getMainExecutor(context)) { onResult(it) }
+        if (timeout > 0) {
+            handler.postDelayed(onTimeout, timeout)
         }
+
+        fun attempt(remaining: List<String>) {
+            val provider = remaining.firstOrNull()
+            if (provider == null) {
+                done = true
+                handler.removeCallbacks(onTimeout)
+                errorCallback("Location unavailable.")
+                return
+            }
+            val onResult = { location: Location? ->
+                if (!done) {
+                    if (location == null) {
+                        attempt(remaining.drop(1))
+                    } else {
+                        done = true
+                        handler.removeCallbacks(onTimeout)
+                        successCallback(location)
+                    }
+                }
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                // On API 31+ the provider is usually fused, so the request quality is what honors enableHighAccuracy.
+                val request = LocationRequest.Builder(0)
+                    .setQuality(if (enableHighAccuracy) LocationRequest.QUALITY_HIGH_ACCURACY else LocationRequest.QUALITY_BALANCED_POWER_ACCURACY)
+                    .build()
+                val signal = CancellationSignal()
+                cancelAttempt = { signal.cancel() }
+                locationManager.getCurrentLocation(provider, request, signal, context.mainExecutor) { onResult(it) }
+            } else {
+                val signal = CompatCancellationSignal()
+                cancelAttempt = { signal.cancel() }
+                LocationManagerCompat.getCurrentLocation(locationManager, provider, signal, ContextCompat.getMainExecutor(context)) { onResult(it) }
+            }
+        }
+
+        attempt(providers)
     }
 
     @SuppressLint("MissingPermission")
-    fun sendLocation(enableHighAccuracy: Boolean, successCallback: (location: Location) -> Unit, errorCallback: (error: String) -> Unit) {
+    fun sendLocation(enableHighAccuracy: Boolean, timeout: Long, successCallback: (location: Location) -> Unit, errorCallback: (error: String) -> Unit) {
         if (isGmsAvailable()) {
             if (this.isLocationServicesEnabled()) {
+                val currentLocationRequest = CurrentLocationRequest.Builder()
+                    .setPriority(gmsPriority(enableHighAccuracy))
+                if (timeout > 0) {
+                    currentLocationRequest.setDurationMillis(timeout)
+                }
                 LocationServices
                     .getFusedLocationProviderClient(context)
-                    .getCurrentLocation(gmsPriority(enableHighAccuracy), null)
+                    .getCurrentLocation(currentLocationRequest.build(), null)
                     .addOnFailureListener { e -> e.message?.let { errorCallback(it) } }
                     .addOnSuccessListener { location ->
                         if (location == null) {
@@ -125,7 +165,7 @@ public class Geolocation(private val context: Context) {
             }
         } else {
             val providers = androidProviders(enableHighAccuracy, errorCallback) ?: return
-            androidCurrentLocation(providers, enableHighAccuracy, successCallback, errorCallback)
+            androidCurrentLocation(providers, enableHighAccuracy, timeout, successCallback, errorCallback)
         }
     }
 

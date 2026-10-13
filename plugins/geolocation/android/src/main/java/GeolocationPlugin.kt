@@ -108,7 +108,7 @@ class GeolocationPlugin(private val activity: Activity): Plugin(activity) {
         if (location != null) {
             invoke.resolve(convertLocation(location))
         } else {
-            implementation.sendLocation(args.enableHighAccuracy,
+            implementation.sendLocation(args.enableHighAccuracy, args.timeout,
                 { loc -> invoke.resolve(convertLocation(loc)) },
                 { error -> invoke.reject(error) })
         }
