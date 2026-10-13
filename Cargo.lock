@@ -6765,6 +6765,7 @@ name = "tauri-plugin-clipboard-manager"
 version = "2.4.2"
 dependencies = [
  "arboard",
+ "image",
  "log",
  "serde",
  "serde_json",
