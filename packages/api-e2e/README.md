@@ -88,12 +88,20 @@ skipped on desktop, and the rest run everywhere with the odd test gated.
 | `websocket`         | Text/binary echo, ping/pong, handshake headers, listener removal, server and client close, connection and argument errors, against the fixture server.                                                                                                                                                                                                                         | Same (through `adb reverse` on Android).                                                 |
 | `window-state`      | `filename`, save/restore, and that a re-created window gets its saved size (WM dependent).                                                                                                                                                                                                                                                                                     | Skipped — desktop-only plugin.                                                           |
 | `biometric`         | The `passcodeNotSet` rejection when `allowDeviceCredential` is set and the device has no lock screen (checked over `adb`). On an emulator without a lock screen, a PIN and fingerprint are enrolled (then removed) to cover `biometricCipher`: the encrypt/decrypt round trip, tampered and malformed input, and canceling the prompt, with the sensor touched over `adb emu`. | Android only; skipped on desktop.                                                        |
-| mobile-only plugins | `barcode-scanner`, `geolocation`, `haptics` and `nfc` need hardware or native UI the driver cannot operate, so only their global API surface is asserted.                                                                                                                                                                                                                      | Only there.                                                                              |
+| `geolocation`       | `getCurrentPosition`, `watchPosition` (several at once) and `clearWatch` against a location simulated from the host, the granted permission state, and the rejections with location services off (Android).                                                                                                                                                                    |
+| mobile-only plugins | `barcode-scanner`, `haptics` and `nfc` need hardware or native UI the driver cannot operate, so only their global API surface is asserted.                                                                                                                                                                                                                                     | Only there.                                                                              |
 
 The notification permission specs are desktop-only: a mobile app starts out ungranted and
 `requestPermission` puts up a system dialog the session would then block on. The rest of the
 notification API (action types, channels, the pending/active lists, listeners) only exists on
 mobile, and is covered there without the permission.
+
+The geolocation specs move the device with `adb emu geo fix` (Android) and
+`xcrun simctl location` (iOS), so on Android they need an emulator rather than a device.
+Location access is granted up front, by `appium:autoGrantPermissions` on Android and by
+`xcrun simctl privacy … grant location` at the start of the spec on iOS (the simulator
+forgets the grant whenever Appium reinstalls the app), so the permission prompt itself is
+not covered.
 
 The [`plugins.spec.ts`](test/specs/plugins.spec.ts) spec additionally asserts that every
 plugin the platform registers injects its global API with its documented members, and that
