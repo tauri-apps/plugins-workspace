@@ -54,7 +54,6 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::write_image,
             commands::write_html,
             commands::clear,
-            #[cfg(desktop)]
             commands::write_secret,
         ])
         .setup(|app, api| {
