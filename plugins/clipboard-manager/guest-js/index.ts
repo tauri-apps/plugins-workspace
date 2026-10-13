@@ -157,10 +157,23 @@ async function clear(): Promise<void> {
 }
 
 /**
- * Writes text to clipboard and sets hints for clipboard managers to exclude it
- * from history
+ * Writes sensitive plain text, such as a password, to the clipboard.
  *
+ * The text is marked so the system doesn't keep or share it: on Windows it is excluded from
+ * clipboard history and cloud sync, on macOS and Linux clipboard managers are asked to skip it,
+ * on Android it is flagged as sensitive so the clipboard preview hides it,
+ * and on iOS it is not synced to other devices.
+ *
+ * @example
+ * ```typescript
+ * import { writeSecret } from '@tauri-apps/plugin-clipboard-manager';
+ * await writeSecret('my-password');
+ * ```
+ *
+ * @param text The plain text to write to the clipboard.
  * @returns A promise indicating the success or failure of the operation.
+ *
+ * @since 2.5.0
  */
 async function writeSecret(text: string): Promise<void> {
   await invoke('plugin:clipboard-manager|write_secret', { text })
