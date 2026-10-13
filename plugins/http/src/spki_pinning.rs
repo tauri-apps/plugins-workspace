@@ -328,15 +328,24 @@ fn build_tls_config(
         require_pins_for_all_hosts,
     });
 
-    rustls::ClientConfig::builder_with_provider(provider)
+    let mut config = rustls::ClientConfig::builder_with_provider(provider)
         .with_safe_default_protocol_versions()
-        .map_err(|error| error.to_string())
-        .map(|builder| {
-            builder
-                .dangerous()
-                .with_custom_certificate_verifier(verifier)
-                .with_no_client_auth()
-        })
+        .map_err(|error| error.to_string())?
+        .dangerous()
+        .with_custom_certificate_verifier(verifier)
+        .with_no_client_auth();
+    // reqwest uses a preconfigured TLS config as-is, so it must advertise the
+    // ALPN protocols reqwest would otherwise set itself, or HTTP/2 is never negotiated.
+    config.alpn_protocols = alpn_protocols();
+    Ok(config)
+}
+
+fn alpn_protocols() -> Vec<Vec<u8>> {
+    vec![
+        #[cfg(feature = "http2")]
+        b"h2".to_vec(),
+        b"http/1.1".to_vec(),
+    ]
 }
 
 #[cfg(test)]
@@ -473,6 +482,9 @@ mod tests {
     #[test]
     fn builds_a_rustls_client_config() {
         let extension = SpkiPinning::new().pin("example.com", EXAMPLE_PIN).unwrap();
-        let _config = build_tls_config(extension.pins, true).unwrap();
+        let config = build_tls_config(extension.pins, true).unwrap();
+        assert_eq!(config.alpn_protocols.last().unwrap(), b"http/1.1");
+        #[cfg(feature = "http2")]
+        assert_eq!(config.alpn_protocols.first().unwrap(), b"h2");
     }
 }
