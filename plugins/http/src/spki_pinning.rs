@@ -194,6 +194,18 @@ impl<R: tauri::Runtime> HttpTransportExtension<R> for SpkiPinning {
         error: &reqwest::Error,
         _request: &RequestContext,
     ) -> Option<ExtensionError> {
+        // `https_only` stopped a redirect to a non-HTTPS URL
+        let downgrade = error
+            .url()
+            .filter(|url| !self.allow_http && error.is_redirect() && url.scheme() != "https");
+        if let Some(url) = downgrade {
+            return Some(extension_error(PinningFailure::new(
+                ERROR_CODE_HTTP_NOT_ALLOWED,
+                "SPKI pinning is HTTPS-only unless plain HTTP is explicitly enabled",
+                url.host_str(),
+            )));
+        }
+
         let rejection = pin_rejection(error)?;
         Some(extension_error(match rejection {
             PinRejection::Mismatch(host) => PinningFailure::new(
