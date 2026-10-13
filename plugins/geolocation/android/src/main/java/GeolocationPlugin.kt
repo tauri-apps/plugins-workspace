@@ -126,6 +126,7 @@ class GeolocationPlugin(private val activity: Activity): Plugin(activity) {
     fun watchPosition(invoke: Invoke) {
         val args = invoke.parseArgs(WatchArgs::class.java)
         startWatch(invoke, args)
+        invoke.resolve()
     }
 
     private fun startWatch(invoke: Invoke, args: WatchArgs) {
@@ -136,8 +137,6 @@ class GeolocationPlugin(private val activity: Activity): Plugin(activity) {
             { error -> args.channel.sendObject(error) })
 
         watchers[args.channel.id] = Pair(invoke, args)
-
-        invoke.resolve()
     }
 
     @Command
