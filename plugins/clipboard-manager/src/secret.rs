@@ -2,46 +2,22 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-#[cfg(all(
-    unix,
-    not(any(target_os = "macos", target_os = "android", target_os = "emscripten")),
-))]
-use arboard::SetExtLinux;
-
 #[cfg(windows)]
 use arboard::SetExtWindows;
 
 #[cfg(target_os = "macos")]
 use arboard::SetExtApple;
 
-/// Trait to expose exclude from history functionality from [`arboard`] crate's `SetExt*` extensions.
-/// On Linux, it calls [`arboard::SetExtLinux::exclude_from_history`]
-/// On MacOS, it calls [`arboard::SetExtApple::exclude_from_history`]
-/// On Windows, it calls [`arboard::SetExtWindows::exclude_from_monitoring`], which also covers history and cloud sync
-pub trait ExcludeSecret<'clipboard> {
-    fn exclude_secret(self) -> arboard::Set<'clipboard>;
-}
+#[cfg(not(any(windows, target_os = "macos")))]
+use arboard::SetExtLinux;
 
-#[cfg(all(
-    unix,
-    not(any(target_os = "macos", target_os = "android", target_os = "emscripten"))
-))]
-impl<'clipboard> ExcludeSecret<'clipboard> for arboard::Set<'clipboard> {
-    fn exclude_secret(self) -> arboard::Set<'clipboard> {
-        self.exclude_from_history()
-    }
-}
-
-#[cfg(windows)]
-impl<'clipboard> ExcludeSecret<'clipboard> for arboard::Set<'clipboard> {
-    fn exclude_secret(self) -> arboard::Set<'clipboard> {
-        self.exclude_from_monitoring()
-    }
-}
-
-#[cfg(target_os = "macos")]
-impl<'clipboard> ExcludeSecret<'clipboard> for arboard::Set<'clipboard> {
-    fn exclude_secret(self) -> arboard::Set<'clipboard> {
-        self.exclude_from_history()
-    }
+/// Hints clipboard managers to exclude the data from history.
+///
+/// On Windows, it calls [`arboard::SetExtWindows::exclude_from_monitoring`], which also covers history and cloud sync.
+/// On macOS and Linux, it calls `exclude_from_history`.
+pub(crate) fn exclude_secret(set: arboard::Set<'_>) -> arboard::Set<'_> {
+    #[cfg(windows)]
+    return set.exclude_from_monitoring();
+    #[cfg(not(windows))]
+    return set.exclude_from_history();
 }

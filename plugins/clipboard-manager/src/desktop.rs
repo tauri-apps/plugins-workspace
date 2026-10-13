@@ -8,9 +8,6 @@ use tauri::{AppHandle, Runtime, image::Image, plugin::PluginApi};
 
 use std::{borrow::Cow, sync::Mutex};
 
-#[cfg(desktop)]
-use crate::secret::ExcludeSecret;
-
 pub fn init<R: Runtime, C: DeserializeOwned>(
     app: &AppHandle<R>,
     _api: PluginApi<R, C>,
@@ -149,19 +146,15 @@ impl<R: Runtime> Clipboard<R> {
         }
     }
 
-    /// This is the same as write_text but it will set hints using [`arboard::SetExtLinux`], [`arboard::SetExtWindows`], or [`arboard::SetExtApple`] depending on the platform.
+    /// This is the same as write_text but it will set hints using `arboard`'s `SetExt*` extensions so clipboard managers exclude the text from history.
     #[cfg(desktop)]
     pub fn write_secret<'a, T: Into<Cow<'a, str>>>(&self, text: T) -> crate::Result<()> {
         match &self.clipboard {
-            Ok(clipboard) => clipboard
-                .lock()
-                .unwrap()
-                .as_mut()
-                .unwrap()
-                .set()
-                .exclude_secret()
-                .text(text)
-                .map_err(Into::into),
+            Ok(clipboard) => {
+                crate::secret::exclude_secret(clipboard.lock().unwrap().as_mut().unwrap().set())
+                    .text(text)
+                    .map_err(Into::into)
+            }
             Err(e) => Err(crate::Error::Clipboard(e.to_string())),
         }
     }
