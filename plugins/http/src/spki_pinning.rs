@@ -22,8 +22,6 @@ const ERROR_CODE_HOST_NOT_PINNED: &str = "SPKI_HOST_NOT_PINNED";
 const ERROR_CODE_HTTP_NOT_ALLOWED: &str = "SPKI_HTTP_NOT_ALLOWED";
 const ERROR_CODE_DANGEROUS_SETTINGS: &str = "SPKI_DANGEROUS_SETTINGS";
 const ERROR_CODE_INITIALIZATION: &str = "SPKI_INITIALIZATION_FAILED";
-const RUSTLS_PIN_MISMATCH_MARKER: &str = "TAURI_HTTP_SPKI_PIN_MISMATCH:";
-const RUSTLS_HOST_NOT_PINNED_MARKER: &str = "TAURI_HTTP_SPKI_HOST_NOT_PINNED:";
 
 /// Native SPKI pinning transport extension.
 ///
@@ -170,21 +168,19 @@ impl<R: tauri::Runtime> HttpTransportExtension<R> for SpkiPinning {
         error: &reqwest::Error,
         _request: &RequestContext,
     ) -> Option<ExtensionError> {
-        if let Some(host) = error_chain_marker_value(error, RUSTLS_PIN_MISMATCH_MARKER) {
-            return Some(extension_error(PinningFailure::new(
+        let rejection = pin_rejection(error)?;
+        Some(extension_error(match rejection {
+            PinRejection::Mismatch(host) => PinningFailure::new(
                 ERROR_CODE_PIN_MISMATCH,
                 "the server certificate public key does not match a configured SPKI pin",
-                Some(&host),
-            )));
-        }
-        if let Some(host) = error_chain_marker_value(error, RUSTLS_HOST_NOT_PINNED_MARKER) {
-            return Some(extension_error(PinningFailure::new(
+                Some(host.as_str()),
+            ),
+            PinRejection::HostNotPinned(host) => PinningFailure::new(
                 ERROR_CODE_HOST_NOT_PINNED,
                 "no SPKI pins are configured for the request host",
-                Some(&host),
-            )));
-        }
-        None
+                Some(host.as_str()),
+            ),
+        }))
     }
 }
 
@@ -243,14 +239,43 @@ fn parse_pin(pin: &str) -> Result<[u8; 32], SpkiPinError> {
     decoded.try_into().map_err(|_| SpkiPinError::InvalidLength)
 }
 
-fn error_chain_marker_value(error: &reqwest::Error, marker: &str) -> Option<String> {
-    let mut source: Option<&(dyn std::error::Error + 'static)> = Some(error);
+/// Why the pinned verifier rejected a certificate, carried through the TLS
+/// stack as `rustls::Error::Other`.
+#[derive(Debug, thiserror::Error)]
+enum PinRejection {
+    #[error("the server certificate public key does not match a configured SPKI pin for {0}")]
+    Mismatch(String),
+    #[error("no SPKI pins are configured for {0}")]
+    HostNotPinned(String),
+}
+
+impl From<PinRejection> for RustlsError {
+    fn from(rejection: PinRejection) -> Self {
+        RustlsError::Other(rustls::OtherError(Arc::new(rejection)))
+    }
+}
+
+/// Finds the [`PinRejection`] behind a transport error.
+///
+/// The TLS stack wraps the rustls error in (nested) `io::Error`s, whose
+/// `source()` skips the error they wrap, so those are unwrapped with
+/// `get_ref()` instead.
+fn pin_rejection<'a>(error: &'a (dyn std::error::Error + 'static)) -> Option<&'a PinRejection> {
+    let mut source = Some(error);
     while let Some(current) = source {
-        let message = current.to_string();
-        if let Some((_, value)) = message.split_once(marker) {
-            return value.split_whitespace().next().map(ToOwned::to_owned);
+        let rejection = match current.downcast_ref::<RustlsError>() {
+            Some(RustlsError::Other(other)) => other.0.downcast_ref::<PinRejection>(),
+            _ => None,
+        };
+        if rejection.is_some() {
+            return rejection;
         }
-        source = current.source();
+        source = match current.downcast_ref::<std::io::Error>() {
+            Some(error) => error
+                .get_ref()
+                .map(|error| error as &(dyn std::error::Error + 'static)),
+            None => current.source(),
+        };
     }
     None
 }
@@ -285,9 +310,7 @@ impl ServerCertVerifier for PinnedServerCertVerifier {
             .to_ascii_lowercase();
         let Some(pins) = self.pins.get(&host) else {
             return if self.require_pins_for_all_hosts {
-                Err(RustlsError::General(format!(
-                    "{RUSTLS_HOST_NOT_PINNED_MARKER}{host}"
-                )))
+                Err(PinRejection::HostNotPinned(host).into())
             } else {
                 Ok(ServerCertVerified::assertion())
             };
@@ -299,9 +322,7 @@ impl ServerCertVerifier for PinnedServerCertVerifier {
         if pins.contains(&digest) {
             Ok(ServerCertVerified::assertion())
         } else {
-            Err(RustlsError::General(format!(
-                "{RUSTLS_PIN_MISMATCH_MARKER}{host}"
-            )))
+            Err(PinRejection::Mismatch(host).into())
         }
     }
 
@@ -487,17 +508,28 @@ mod tests {
         pins.insert("api.example.test".into(), HashSet::from([[0; 32]]));
         let (verifier, leaf, _) = test_verifier(pins);
 
-        let mismatch = verify(&verifier, &leaf, "api.example.test").unwrap_err();
-        assert_eq!(
-            mismatch.to_string(),
-            format!("unexpected error: {RUSTLS_PIN_MISMATCH_MARKER}api.example.test")
-        );
+        // as reqwest reports it: the rustls error inside two nested io::Errors
+        let wrapped = |error: RustlsError| -> Box<dyn std::error::Error + Send + Sync> {
+            Box::new(std::io::Error::other(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                error,
+            )))
+        };
 
-        let redirect = verify(&verifier, &leaf, "redirect.example.test").unwrap_err();
-        assert_eq!(
-            redirect.to_string(),
-            format!("unexpected error: {RUSTLS_HOST_NOT_PINNED_MARKER}redirect.example.test")
-        );
+        let mismatch = wrapped(verify(&verifier, &leaf, "api.example.test").unwrap_err());
+        assert!(matches!(
+            pin_rejection(mismatch.as_ref()),
+            Some(PinRejection::Mismatch(host)) if host == "api.example.test"
+        ));
+
+        let redirect = wrapped(verify(&verifier, &leaf, "redirect.example.test").unwrap_err());
+        assert!(matches!(
+            pin_rejection(redirect.as_ref()),
+            Some(PinRejection::HostNotPinned(host)) if host == "redirect.example.test"
+        ));
+
+        let unrelated = wrapped(RustlsError::General("handshake failed".into()));
+        assert!(pin_rejection(unrelated.as_ref()).is_none());
     }
 
     #[test]
