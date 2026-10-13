@@ -34,8 +34,9 @@ import com.google.android.gms.location.Priority
 public class Geolocation(private val context: Context) {
     private val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     private var fusedLocationClient: FusedLocationProviderClient? = null
-    private var locationCallback: LocationCallback? = null // For gms
-    private var locationListener: LocationListenerCompat? = null // For android
+    // Active watches, keyed by watch id.
+    private val locationCallbacks = HashMap<Long, LocationCallback>() // For gms
+    private val locationListeners = HashMap<Long, LocationListenerCompat>() // For android
 
     fun isLocationServicesEnabled(): Boolean {
         return LocationManagerCompat.isLocationEnabled(locationManager)
@@ -170,8 +171,8 @@ public class Geolocation(private val context: Context) {
     }
 
     @SuppressLint("MissingPermission")
-    fun requestLocationUpdates(enableHighAccuracy: Boolean, timeout: Long, successCallback: (location: Location) -> Unit, errorCallback: (error: String) -> Unit) {
-        clearLocationUpdates()
+    fun requestLocationUpdates(id: Long, enableHighAccuracy: Boolean, timeout: Long, successCallback: (location: Location) -> Unit, errorCallback: (error: String) -> Unit) {
+        clearLocationUpdates(id)
 
         if (isGmsAvailable()) {
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
@@ -183,7 +184,7 @@ public class Geolocation(private val context: Context) {
                     .setPriority(gmsPriority(enableHighAccuracy))
                     .build()
 
-                locationCallback =
+                val locationCallback =
                     object : LocationCallback() {
                         override fun onLocationResult(locationResult: LocationResult) {
                             val lastLocation = locationResult.lastLocation
@@ -195,7 +196,8 @@ public class Geolocation(private val context: Context) {
                         }
                     }
 
-                fusedLocationClient?.requestLocationUpdates(locationRequest, locationCallback!!, null)
+                locationCallbacks[id] = locationCallback
+                fusedLocationClient?.requestLocationUpdates(locationRequest, locationCallback, null)
             } else {
                 errorCallback("Location disabled.")
             }
@@ -213,19 +215,19 @@ public class Geolocation(private val context: Context) {
                     errorCallback("Location disabled.")
                 }
             }
-            locationListener = listener
+            locationListeners[id] = listener
             LocationManagerCompat.requestLocationUpdates(locationManager, provider, request, ContextCompat.getMainExecutor(context), listener)
         }
     }
 
-    fun clearLocationUpdates() {
-        if (locationCallback != null) {
-            fusedLocationClient?.removeLocationUpdates(locationCallback!!)
-            locationCallback = null
-        }
-        if (locationListener != null) {
-            LocationManagerCompat.removeUpdates(locationManager, locationListener!!)
-            locationListener = null
+    fun clearLocationUpdates(id: Long) {
+        locationCallbacks.remove(id)?.let { fusedLocationClient?.removeLocationUpdates(it) }
+        locationListeners.remove(id)?.let { LocationManagerCompat.removeUpdates(locationManager, it) }
+    }
+
+    fun clearAllLocationUpdates() {
+        for (id in locationCallbacks.keys + locationListeners.keys) {
+            clearLocationUpdates(id)
         }
     }
 

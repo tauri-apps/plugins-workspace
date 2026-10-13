@@ -71,7 +71,7 @@ class GeolocationPlugin(private val activity: Activity): Plugin(activity) {
     override fun onPause() {
         super.onPause()
         // Clear all location updates on pause to avoid possible background location calls
-        implementation.clearLocationUpdates()
+        implementation.clearAllLocationUpdates()
     }
 
     override fun onResume() {
@@ -131,6 +131,7 @@ class GeolocationPlugin(private val activity: Activity): Plugin(activity) {
 
     private fun startWatch(invoke: Invoke, args: WatchArgs) {
         implementation.requestLocationUpdates(
+            args.channel.id,
             args.options.enableHighAccuracy,
             args.options.timeout,
             { location -> args.channel.send(convertLocation(location)) },
@@ -144,10 +145,7 @@ class GeolocationPlugin(private val activity: Activity): Plugin(activity) {
         val args = invoke.parseArgs(ClearWatchArgs::class.java)
 
         watchers.remove(args.channelId)
-
-        if (watchers.isEmpty()) {
-            implementation.clearLocationUpdates()
-        }
+        implementation.clearLocationUpdates(args.channelId)
 
         invoke.resolve()
     }
