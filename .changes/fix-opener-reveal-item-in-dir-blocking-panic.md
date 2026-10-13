@@ -3,4 +3,4 @@
 "opener-js": "patch"
 ---
 
-Fixed `revealItemInDir` panicking on Linux (and other zbus-based platforms) with `Cannot start a runtime from within a runtime` when called from an async command context. The blocking D-Bus call now runs via `spawn_blocking` instead of on the async runtime worker thread.
+Fixed `revealItemInDir` and the `reveal_item_in_dir` / `reveal_items_in_dir` Rust APIs panicking on Linux and the BSDs with `Cannot start a runtime from within a runtime` when zbus is built with its `tokio` feature and the call happens inside an async runtime. The blocking D-Bus calls now run on a dedicated thread.
