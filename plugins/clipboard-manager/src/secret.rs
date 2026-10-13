@@ -17,7 +17,7 @@ use arboard::SetExtApple;
 /// Trait to expose exclude from history functionality from [`arboard`] crate's `SetExt*` extensions.
 /// On Linux, it calls [`arboard::SetExtLinux::exclude_from_history`]
 /// On MacOS, it calls [`arboard::SetExtApple::exclude_from_history`]
-/// On Windows, it calls [`arboard::SetExtWindows::exclude_from_history`], [`arboard::SetExtWindows::exclude_from_cloud`], and [`arboard::SetExtWindows::exclude_from_monitoring`]
+/// On Windows, it calls [`arboard::SetExtWindows::exclude_from_monitoring`], which also covers history and cloud sync
 pub trait ExcludeSecret<'clipboard> {
     fn exclude_secret(self) -> arboard::Set<'clipboard>;
 }
@@ -35,9 +35,7 @@ impl<'clipboard> ExcludeSecret<'clipboard> for arboard::Set<'clipboard> {
 #[cfg(windows)]
 impl<'clipboard> ExcludeSecret<'clipboard> for arboard::Set<'clipboard> {
     fn exclude_secret(self) -> arboard::Set<'clipboard> {
-        self.exclude_from_history()
-            .exclude_from_cloud()
-            .exclude_from_monitoring()
+        self.exclude_from_monitoring()
     }
 }
 
