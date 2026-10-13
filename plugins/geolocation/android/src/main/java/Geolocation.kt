@@ -62,13 +62,7 @@ public class Geolocation(private val context: Context) {
     }
 
     // Lists the enabled LocationManager providers for devices without Google Play Services, best first.
-    // Reports an error and returns null when there is none.
-    private fun androidProviders(enableHighAccuracy: Boolean, errorCallback: (error: String) -> Unit): List<String>? {
-        if (!isLocationServicesEnabled()) {
-            errorCallback("Location disabled.")
-            return null
-        }
-
+    private fun androidProviders(enableHighAccuracy: Boolean): List<String> {
         val fused = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) listOf(LocationManager.FUSED_PROVIDER) else emptyList()
         val candidates = if (enableHighAccuracy) {
             fused + LocationManager.GPS_PROVIDER + LocationManager.NETWORK_PROVIDER
@@ -76,12 +70,7 @@ public class Geolocation(private val context: Context) {
             fused + LocationManager.NETWORK_PROVIDER + LocationManager.GPS_PROVIDER
         }
         val enabled = locationManager.getProviders(true)
-        val providers = candidates.filter { it in enabled }
-        if (providers.isEmpty()) {
-            errorCallback("Location unavailable.")
-            return null
-        }
-        return providers
+        return candidates.filter { it in enabled }
     }
 
     // Asks each provider in turn for a fresh fix, so one that is enabled but can't produce a fix
@@ -164,9 +153,11 @@ public class Geolocation(private val context: Context) {
             } else {
                 errorCallback("Location disabled.")
             }
+        } else if (!this.isLocationServicesEnabled()) {
+            errorCallback("Location disabled.")
         } else {
-            val providers = androidProviders(enableHighAccuracy, errorCallback) ?: return
-            androidCurrentLocation(providers, enableHighAccuracy, timeout, successCallback, errorCallback)
+            // Reports "Location unavailable." itself when there is no provider.
+            androidCurrentLocation(androidProviders(enableHighAccuracy), enableHighAccuracy, timeout, successCallback, errorCallback)
         }
     }
 
@@ -201,8 +192,14 @@ public class Geolocation(private val context: Context) {
             } else {
                 errorCallback("Location disabled.")
             }
+        } else if (!this.isLocationServicesEnabled()) {
+            errorCallback("Location disabled.")
         } else {
-            val provider = androidProviders(enableHighAccuracy, errorCallback)?.first() ?: return
+            val provider = androidProviders(enableHighAccuracy).firstOrNull()
+            if (provider == null) {
+                errorCallback("Location unavailable.")
+                return
+            }
             val request = LocationRequestCompat.Builder(timeout)
                 .setQuality(if (enableHighAccuracy) LocationRequestCompat.QUALITY_HIGH_ACCURACY else LocationRequestCompat.QUALITY_LOW_POWER)
                 .build()
