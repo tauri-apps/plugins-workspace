@@ -267,7 +267,7 @@ pub async fn fetch<R: Runtime>(
             continue;
         }
 
-        headers.append(name, HeaderValue::from_str(&v)?);
+        headers.append(name, byte_string_to_header_value(&v)?);
     }
 
     match scheme {
@@ -423,6 +423,20 @@ pub fn fetch_cancel<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> crate::
 // as a valid ByteString for `new Headers()` on the JS side.
 fn header_value_to_byte_string(value: &HeaderValue) -> String {
     value.as_bytes().iter().map(|&b| b as char).collect()
+}
+
+// The inverse of `header_value_to_byte_string`: a ByteString from `Headers` on the
+// JS side carries one byte per char, so send those bytes as-is like a browser does.
+// Values with chars above U+00FF can't come from `Headers`; keep encoding those as UTF-8.
+fn byte_string_to_header_value(value: &str) -> crate::Result<HeaderValue> {
+    let bytes = value
+        .chars()
+        .map(|c| u8::try_from(c).ok())
+        .collect::<Option<Vec<u8>>>();
+    Ok(match bytes {
+        Some(bytes) => HeaderValue::from_bytes(&bytes)?,
+        None => HeaderValue::from_str(value)?,
+    })
 }
 
 #[command]
@@ -761,5 +775,22 @@ mod tests {
     fn non_utf8_header_bytes_are_preserved() {
         let value = HeaderValue::from_bytes(b"x\xff").unwrap();
         assert_byte_string(&value);
+    }
+
+    #[test]
+    fn request_byte_string_is_sent_as_raw_bytes() {
+        let wire = b"attachment; filename=\"\xe4\xb8\xad\xe6\x96\x87-EN.pdf\"";
+        let byte_string = header_value_to_byte_string(&HeaderValue::from_bytes(wire).unwrap());
+        let value = byte_string_to_header_value(&byte_string).unwrap();
+        assert_eq!(value.as_bytes(), wire);
+
+        let value = byte_string_to_header_value("x\u{ff}").unwrap();
+        assert_eq!(value.as_bytes(), b"x\xff");
+    }
+
+    #[test]
+    fn request_non_byte_string_falls_back_to_utf8() {
+        let value = byte_string_to_header_value("中文").unwrap();
+        assert_eq!(value.as_bytes(), "中文".as_bytes());
     }
 }
