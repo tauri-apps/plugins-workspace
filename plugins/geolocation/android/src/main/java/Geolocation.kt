@@ -8,6 +8,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
 import android.location.LocationManager
+import android.location.LocationRequest
 import android.os.Build
 import android.os.SystemClock
 import androidx.core.content.ContextCompat
@@ -96,12 +97,21 @@ public class Geolocation(private val context: Context) {
             }
         } else {
             val provider = androidProvider(enableHighAccuracy, errorCallback) ?: return
-            LocationManagerCompat.getCurrentLocation(locationManager, provider, null, ContextCompat.getMainExecutor(context)) { location ->
+            val onResult = { location: Location? ->
                 if (location == null) {
                     errorCallback("Location unavailable.")
                 } else {
                     successCallback(location)
                 }
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                // On API 31+ the provider is usually fused, so the request quality is what honors enableHighAccuracy.
+                val request = LocationRequest.Builder(0)
+                    .setQuality(if (enableHighAccuracy) LocationRequest.QUALITY_HIGH_ACCURACY else LocationRequest.QUALITY_BALANCED_POWER_ACCURACY)
+                    .build()
+                locationManager.getCurrentLocation(provider, request, null, context.mainExecutor) { onResult(it) }
+            } else {
+                LocationManagerCompat.getCurrentLocation(locationManager, provider, null, ContextCompat.getMainExecutor(context)) { onResult(it) }
             }
         }
     }
