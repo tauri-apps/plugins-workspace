@@ -46,6 +46,7 @@
     }
 
     if (permissions.location === 'granted') {
+      await stopWatching()
       watchId = await watchPosition({
         enableHighAccuracy: true,
         timeout: 5000,
@@ -61,7 +62,14 @@
   }
 
   async function stopWatching() {
-    await clearWatch(watchId)
+    if (watchId === null) {
+      return
+    }
+    try {
+      await clearWatch(watchId)
+    } catch (err) {
+      onMessage(err)
+    }
     watchId = null
     pos = null
   }
