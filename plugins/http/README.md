@@ -117,11 +117,10 @@ tauri-plugin-http = { version = "2", features = ["spki-pinning"] }
 
 ```rust
 let pinning = tauri_plugin_http::SpkiPinning::new()
-    .pin(
-        "api.example.com",
-        "sha256/BASE64_ENCODED_SHA256_OF_SUBJECT_PUBLIC_KEY_INFO",
-    )?
-    .pin("api.example.com", "sha256/BACKUP_PIN_FOR_KEY_ROTATION")?;
+    // the server's current key
+    .pin("api.example.com", "sha256/GKu5vwG0evylkDs8zu/4Wf+m8cr/IYgVQ0Xl9UDBbS4=")?
+    // a backup key, so the server can rotate without breaking the app
+    .pin("api.example.com", "sha256/zKBL17i7q9TlJGD8gsqLZm2MeD6d3adsVR2bw7rC0qc=")?;
 
 tauri::Builder::default()
     .plugin(
@@ -130,6 +129,24 @@ tauri::Builder::default()
             .build(),
     );
 ```
+
+A pin is the base64 SHA-256 digest of the certificate's DER-encoded
+SubjectPublicKeyInfo. For a live server:
+
+```sh
+openssl s_client -connect api.example.com:443 -servername api.example.com </dev/null 2>/dev/null \
+  | openssl x509 -pubkey -noout \
+  | openssl pkey -pubin -outform der \
+  | openssl dgst -sha256 -binary \
+  | openssl base64
+```
+
+Pinning failures reject the JavaScript `fetch` promise with a plain object
+(not an `Error`) such as
+`{ code: "SPKI_PIN_MISMATCH", message: "...", host: "api.example.com" }`.
+The codes are `SPKI_PIN_MISMATCH`, `SPKI_HOST_NOT_PINNED`,
+`SPKI_HTTP_NOT_ALLOWED`, `SPKI_DANGEROUS_SETTINGS` and
+`SPKI_INITIALIZATION_FAILED`.
 
 Normal WebPKI chain and hostname validation runs before the leaf SPKI digest is
 checked. By default every HTTPS host, including redirect targets, requires
