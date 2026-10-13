@@ -32,6 +32,12 @@ const ERROR_CODE_INITIALIZATION: &str = "SPKI_INITIALIZATION_FAILED";
 /// Certificate chains are validated against Mozilla's root store
 /// (`webpki-roots`) unless [`root_certificates`](Self::root_certificates)
 /// replaces it.
+///
+/// The TLS connection to an `https://` proxy, whether configured per request
+/// or picked up from the environment by the `system-proxy` feature, is
+/// verified with these settings too: pin the proxy host as well or use
+/// [`allow_unpinned_hosts`](Self::allow_unpinned_hosts). Requests tunneled
+/// through an `http://` proxy are still verified against the target's pins.
 #[derive(Debug, Clone)]
 pub struct SpkiPinning {
     pins: Arc<HashMap<String, HashSet<[u8; 32]>>>,

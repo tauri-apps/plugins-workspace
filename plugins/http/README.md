@@ -143,6 +143,12 @@ not the operating system's. To pin a server with a private or self-signed CA,
 or to trust the system roots, pass your own store with
 `root_certificates(tauri_plugin_http::rustls::RootCertStore)`.
 
+The TLS connection to an `https://` proxy, including one picked up from the
+environment by the default `system-proxy` feature, is verified with the same
+settings, so pin the proxy host too or use `allow_unpinned_hosts()`. Requests
+tunneled through an `http://` proxy are still verified against the target's
+pins.
+
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
