@@ -17,13 +17,13 @@ use aho_corasick::AhoCorasick;
 use serde::{Deserialize, Serialize};
 
 use tauri::{
-    plugin::{Builder, TauriPlugin},
     Manager, Runtime,
+    plugin::{Builder, TauriPlugin},
 };
 use tauri_plugin_fs::FsExt;
 
 use std::{
-    fs::{create_dir_all, File},
+    fs::{File, create_dir_all},
     io::Write,
     path::Path,
 };
@@ -163,6 +163,14 @@ fn save_scopes(scope: &tauri::fs::Scope, app_dir: &Path, scope_state_path: &Path
         });
 }
 
+/// Initializes the plugin.
+///
+/// On setup, this restores the filesystem scope, and the `asset://` protocol scope when the
+/// `protocol-asset` feature is enabled, from the state persisted during a previous run, then
+/// listens for further scope changes to persist them again. Scopes are stored under the app's
+/// data directory; nothing is restored or persisted if that directory cannot be resolved. The
+/// `fs` plugin must be registered before this plugin, otherwise the filesystem scope is not
+/// restored or persisted (a warning is printed in debug builds).
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("persisted-scope")
         .setup(|app, _api| {
@@ -190,8 +198,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 // We will still save some semi-broken values because the scope events are quite spammy and we don't want to reduce runtime performance any further.
                 let ac = AhoCorasick::new(PATTERNS).unwrap(/* This should be impossible to fail since we're using a small static input */);
 
-                if let Some(fs_scope) = &fs_scope {
-                    if fs_scope_state_path.exists() {
+                if let Some(fs_scope) = &fs_scope
+                    && fs_scope_state_path.exists() {
                         let scope: Scope = std::fs::read(&fs_scope_state_path)
                             .map_err(Error::from)
                             .and_then(|scope| bincode::deserialize(&scope).map_err(Into::into))
@@ -210,7 +218,6 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         // This is needed to fix broken .peristed-scope files in case the app doesn't update the scope itself.
                         save_scopes(fs_scope, &app_dir, &fs_scope_state_path);
                     }
-                }
 
                 #[cfg(feature = "protocol-asset")]
                 if asset_scope_state_path.exists() {

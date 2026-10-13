@@ -7,55 +7,64 @@ name: check formatting
 on:
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 jobs:
-  rustfmt:
+  # A single job whose checks only run when files they cover changed: the checks themselves take
+  # seconds, so a runner each would mostly be spent waiting for and setting up runners.
+  fmt:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: read
+      pull-requests: read # to list the changed files
     steps:
       - uses: actions/checkout@v7
 
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            rust:
+              - .github/workflows/fmt.yml
+              - '**/*.rs'
+            prettier:
+              - .github/workflows/fmt.yml
+              - .prettierrc
+              - .prettierignore
+              - pnpm-lock.yaml
+              - '**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx,json,json5,jsonc,md,mdx,yml,yaml,css,scss,less,html,vue,svelte}'
+            toml:
+              - .github/workflows/fmt.yml
+              - '**/*.toml'
+
       - name: install Rust stable and rustfmt
+        if: steps.filter.outputs.rust == 'true'
         uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
 
-      - name: run cargo fmt
+      - name: rustfmt
+        if: steps.filter.outputs.rust == 'true'
         run: cargo fmt --all -- --check
 
-  prettier:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - name: Cache pnpm modules
-        uses: actions/cache@v6
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 'lts/*'
-      - uses: pnpm/action-setup@v6
-        with:
-          run_install: true
-      - run: pnpm format:check
-
-  taplo:
-    name: taplo (.toml files)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-
       - name: install taplo-cli
+        if: ${{ !cancelled() && steps.filter.outputs.toml == 'true' }}
         uses: taiki-e/install-action@v2
         with:
           tool: taplo-cli
 
-      - run: taplo fmt --check --diff
+      - name: taplo (.toml files)
+        if: ${{ !cancelled() && steps.filter.outputs.toml == 'true' }}
+        run: taplo fmt --check --diff
+
+      - uses: ./.github/actions/setup-pnpm
+        if: ${{ !cancelled() && steps.filter.outputs.prettier == 'true' }}
+
+      - name: prettier
+        if: ${{ !cancelled() && steps.filter.outputs.prettier == 'true' }}
+        run: pnpm format:check

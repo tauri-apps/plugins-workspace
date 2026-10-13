@@ -50,7 +50,9 @@ impl AssociatedDomain {
             }
             if self.scheme.iter().any(|s| s == "http") && !self.scheme.iter().any(|s| s == "https")
             {
-                eprintln!("Warning: AppLink uses only 'http' — allowed on Android but not secure for production.");
+                eprintln!(
+                    "Warning: AppLink uses only 'http' — allowed on Android but not secure for production."
+                );
             }
         }
 
@@ -68,12 +70,12 @@ where
     D: Deserializer<'de>,
 {
     let opt = Option::<String>::deserialize(deserializer)?;
-    if let Some(ref host) = opt {
-        if let Some((scheme, _)) = host.split_once("://") {
-            return Err(serde::de::Error::custom(format!(
-                "host `{host}` cannot start with a scheme, please remove the `{scheme}://` prefix"
-            )));
-        }
+    if let Some(ref host) = opt
+        && let Some((scheme, _)) = host.split_once("://")
+    {
+        return Err(serde::de::Error::custom(format!(
+            "host `{host}` cannot start with a scheme, please remove the `{scheme}://` prefix"
+        )));
     }
     Ok(opt)
 }

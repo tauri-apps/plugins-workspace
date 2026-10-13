@@ -12,7 +12,7 @@ Configurable logging for your Tauri app.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.77.2**_
+_This plugin requires a Rust version of at least **1.90**_
 
 There are three general methods of installation that we can recommend.
 
@@ -30,8 +30,6 @@ tauri-plugin-log = "2.0.0"
 # alternatively with Git:
 tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
-
-If you want the single instance mechanism to only trigger for semver compatible instances of your apps, for example if you expect users to have multiple installations of your app installed, you can add `features = ["semver"]` to the dependency declaration in `Cargo.toml`.
 
 Then you can install the JavaScript Guest bindings using your preferred JavaScript package manager:
 
