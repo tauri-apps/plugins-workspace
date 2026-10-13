@@ -147,7 +147,6 @@ impl<R: Runtime> Clipboard<R> {
     }
 
     /// This is the same as write_text but it will set hints using `arboard`'s `SetExt*` extensions so clipboard managers exclude the text from history.
-    #[cfg(desktop)]
     pub fn write_secret<'a, T: Into<Cow<'a, str>>>(&self, text: T) -> crate::Result<()> {
         match &self.clipboard {
             Ok(clipboard) => {
