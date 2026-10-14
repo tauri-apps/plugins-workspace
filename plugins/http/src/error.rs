@@ -7,7 +7,8 @@ use url::Url;
 
 /// Errors that can happen while using the HTTP plugin.
 ///
-/// The error is serialized to the frontend as its [`Display`](std::fmt::Display) string.
+/// The error is serialized to the frontend as its [`Display`](std::fmt::Display) string, except
+/// for [`Error::Extension`], which is serialized as the extension's JSON value.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// JSON serialization or deserialization error.
@@ -21,9 +22,11 @@ pub enum Error {
     /// request or reading the response body.
     #[error(transparent)]
     Network(#[from] reqwest::Error),
-    /// Error from the [`http`] crate, raised while building the response of a `data:` URL.
+    /// Error returned by a [`HttpTransportExtension`](crate::HttpTransportExtension) that rejected
+    /// the request or classified its transport failure.
     #[error(transparent)]
     Extension(#[from] crate::ExtensionError),
+    /// Error from the [`http`] crate, raised while building the response of a `data:` URL.
     #[error(transparent)]
     Http(#[from] http::Error),
     /// A header name given by the frontend is not a valid HTTP header name.
