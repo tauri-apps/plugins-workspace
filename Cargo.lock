@@ -211,7 +211,7 @@ checksum = "2a4385e2e34eb35d6b3efe798b9eb88096925d87726c0798709bf56d9ed84af3"
 
 [[package]]
 name = "api"
-version = "2.0.55"
+version = "2.0.56"
 dependencies = [
  "log",
  "serde",
@@ -6730,7 +6730,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-barcode-scanner"
-version = "2.5.2"
+version = "2.5.3"
 dependencies = [
  "log",
  "serde",
@@ -6742,7 +6742,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-biometric"
-version = "2.4.2"
+version = "2.5.0"
 dependencies = [
  "block2 0.6.2",
  "log",
@@ -6772,7 +6772,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-clipboard-manager"
-version = "2.4.2"
+version = "2.5.0"
 dependencies = [
  "arboard",
  "log",
@@ -6785,7 +6785,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "2.6.1"
+version = "2.6.2"
 dependencies = [
  "dunce",
  "plist",
@@ -6804,7 +6804,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.8.2"
+version = "2.8.3"
 dependencies = [
  "log",
  "raw-window-handle",
@@ -6820,7 +6820,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.7.0"
+version = "2.7.1"
 dependencies = [
  "anyhow",
  "dunce",
@@ -6844,7 +6844,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-geolocation"
-version = "2.4.2"
+version = "2.5.0"
 dependencies = [
  "log",
  "serde",
@@ -6883,7 +6883,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-http"
-version = "2.8.2"
+version = "2.8.3"
 dependencies = [
  "bytes",
  "cookie_store",
@@ -6952,7 +6952,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-notification"
-version = "2.6.0"
+version = "2.7.0"
 dependencies = [
  "log",
  "notify-rust",
@@ -6970,7 +6970,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-opener"
-version = "2.7.1"
+version = "2.7.2"
 dependencies = [
  "dunce",
  "glob",
@@ -7006,7 +7006,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-persisted-scope"
-version = "2.4.1"
+version = "2.4.2"
 dependencies = [
  "aho-corasick",
  "bincode",
@@ -7062,7 +7062,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.5.3"
+version = "2.5.4"
 dependencies = [
  "semver",
  "serde",
@@ -7078,7 +7078,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-sql"
-version = "2.5.0"
+version = "2.6.0"
 dependencies = [
  "futures-core",
  "indexmap 2.14.2",
@@ -7144,7 +7144,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-updater"
-version = "2.13.3"
+version = "2.14.0"
 dependencies = [
  "base64 0.22.1",
  "dirs 7.0.0",

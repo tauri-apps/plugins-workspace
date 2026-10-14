@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.7.2]
+
+- [`1ab93046`](https://github.com/tauri-apps/plugins-workspace/commit/1ab930465f43fc4574ce71ed2bda57b1f80a802b) ([#3565](https://github.com/tauri-apps/plugins-workspace/pull/3565) by [@cyclone-mind](https://github.com/tauri-apps/plugins-workspace/../../cyclone-mind)) Fixed `revealItemInDir` and the `reveal_item_in_dir` / `reveal_items_in_dir` Rust APIs panicking on Linux and the BSDs with `Cannot start a runtime from within a runtime` when zbus is built with its `tokio` feature and the call happens inside an async runtime. The blocking D-Bus calls now run on a dedicated thread.
+
 ## [2.7.1]
 
 - [`42ae8b45`](https://github.com/tauri-apps/plugins-workspace/commit/42ae8b4501f3628cddeab3973eb38a7593304cc8) ([#3684](https://github.com/tauri-apps/plugins-workspace/pull/3684)) On iOS, mark the plugin's `init_plugin_*` entry point `public` so release builds made with Xcode 27 keep it global and link.

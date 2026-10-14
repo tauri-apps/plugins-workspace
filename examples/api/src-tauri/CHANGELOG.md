@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.0.56]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner@2.5.3`
+- Upgraded to `biometric@2.5.0`
+- Upgraded to `clipboard-manager@2.5.0`
+- Upgraded to `fs@2.7.1`
+- Upgraded to `notification@2.7.0`
+- Upgraded to `opener@2.7.2`
+- Upgraded to `geolocation@2.5.0`
+- Upgraded to `http@2.8.3`
+- Upgraded to `torch@2.0.0`
+- Upgraded to `updater@2.14.0`
+- Upgraded to `dialog@2.8.3`
+
 ## [2.0.55]
 
 ### Dependencies

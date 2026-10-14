@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.0.52]
+
+### Dependencies
+
+- Upgraded to `barcode-scanner-js@2.5.3`
+- Upgraded to `biometric-js@2.5.0`
+- Upgraded to `clipboard-manager-js@2.5.0`
+- Upgraded to `fs-js@2.7.1`
+- Upgraded to `notification-js@2.7.0`
+- Upgraded to `opener-js@2.7.2`
+- Upgraded to `http-js@2.8.3`
+- Upgraded to `torch-js@2.0.0`
+- Upgraded to `updater-js@2.14.0`
+- Upgraded to `dialog-js@2.8.3`
+
 ## [2.0.51]
 
 ### Dependencies

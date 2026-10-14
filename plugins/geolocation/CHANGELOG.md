@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.0]
+
+- [`36d8e409`](https://github.com/tauri-apps/plugins-workspace/commit/36d8e4098e0cbcb9005405249c0d55e26f8ed89c) ([#3377](https://github.com/tauri-apps/plugins-workspace/pull/3377) by [@cfpwastaken](https://github.com/tauri-apps/plugins-workspace/../../cfpwastaken)) On Android, `getCurrentPosition` now honors the `timeout` option and rejects when no position is found in time. A `timeout` of `0` means no timeout.
+- [`36d8e409`](https://github.com/tauri-apps/plugins-workspace/commit/36d8e4098e0cbcb9005405249c0d55e26f8ed89c) ([#3377](https://github.com/tauri-apps/plugins-workspace/pull/3377) by [@cfpwastaken](https://github.com/tauri-apps/plugins-workspace/../../cfpwastaken)) Fixed `watchPosition` on Android stopping updates for every other active watch, and `clearWatch` leaving location updates running until the last watch was cleared.
+- [`36d8e409`](https://github.com/tauri-apps/plugins-workspace/commit/36d8e4098e0cbcb9005405249c0d55e26f8ed89c) ([#3377](https://github.com/tauri-apps/plugins-workspace/pull/3377) by [@cfpwastaken](https://github.com/tauri-apps/plugins-workspace/../../cfpwastaken)) Add support for the geolocation plugin on non-GMS Android devices (API 24+), using the best available location provider.
+- [`36d8e409`](https://github.com/tauri-apps/plugins-workspace/commit/36d8e4098e0cbcb9005405249c0d55e26f8ed89c) ([#3377](https://github.com/tauri-apps/plugins-workspace/pull/3377) by [@cfpwastaken](https://github.com/tauri-apps/plugins-workspace/../../cfpwastaken)) Fix `watchPosition` never resolving on Android.
+
 ## [2.4.2]
 
 - [`42ae8b45`](https://github.com/tauri-apps/plugins-workspace/commit/42ae8b4501f3628cddeab3973eb38a7593304cc8) ([#3684](https://github.com/tauri-apps/plugins-workspace/pull/3684)) On iOS, mark the plugin's `init_plugin_*` entry point `public` so release builds made with Xcode 27 keep it global and link.

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.0]
+
+- [`57297f3f`](https://github.com/tauri-apps/plugins-workspace/commit/57297f3fb1af894c7e51d881154ffc6d10e6bd3a) ([#3376](https://github.com/tauri-apps/plugins-workspace/pull/3376) by [@umtdg](https://github.com/tauri-apps/plugins-workspace/../../umtdg)) Added `writeSecret` (`Clipboard::write_secret` in Rust) to write sensitive text, such as passwords, to the clipboard. Clipboard managers are asked to keep it out of their history on Windows, macOS and Linux. On Android the clip is flagged as sensitive, and on iOS it is not synced to other devices.
+
 ## [2.4.2]
 
 - [`42ae8b45`](https://github.com/tauri-apps/plugins-workspace/commit/42ae8b4501f3628cddeab3973eb38a7593304cc8) ([#3684](https://github.com/tauri-apps/plugins-workspace/pull/3684)) On iOS, mark the plugin's `init_plugin_*` entry point `public` so release builds made with Xcode 27 keep it global and link.

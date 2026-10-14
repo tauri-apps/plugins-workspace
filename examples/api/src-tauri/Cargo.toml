@@ -1,7 +1,7 @@
 [package]
 name = "api"
 publish = false
-version = "2.0.55"
+version = "2.0.56"
 description = "An example Tauri Application showcasing the api"
 edition = "2024"
 rust-version = { workspace = true }
@@ -21,19 +21,19 @@ tiny_http = "0.12"
 time = "0.3"
 log = { workspace = true }
 tauri-plugin-log = { path = "../../../plugins/log", version = "2.10.1" }
-tauri-plugin-fs = { path = "../../../plugins/fs", version = "2.7.0", features = [
+tauri-plugin-fs = { path = "../../../plugins/fs", version = "2.7.1", features = [
   "watch",
 ] }
-tauri-plugin-clipboard-manager = { path = "../../../plugins/clipboard-manager", version = "2.4.2" }
-tauri-plugin-dialog = { path = "../../../plugins/dialog", version = "2.8.2" }
+tauri-plugin-clipboard-manager = { path = "../../../plugins/clipboard-manager", version = "2.5.0" }
+tauri-plugin-dialog = { path = "../../../plugins/dialog", version = "2.8.3" }
 tauri-plugin-http = { path = "../../../plugins/http", features = [
   "multipart",
   "cookies",
-], version = "2.8.2" }
-tauri-plugin-notification = { path = "../../../plugins/notification", version = "2.6.0" }
+], version = "2.8.3" }
+tauri-plugin-notification = { path = "../../../plugins/notification", version = "2.7.0" }
 tauri-plugin-os = { path = "../../../plugins/os", version = "2.4.0" }
 tauri-plugin-process = { path = "../../../plugins/process", version = "2.4.0" }
-tauri-plugin-opener = { path = "../../../plugins/opener", version = "2.7.1" }
+tauri-plugin-opener = { path = "../../../plugins/opener", version = "2.7.2" }
 tauri-plugin-shell = { path = "../../../plugins/shell", version = "2.5.0" }
 tauri-plugin-store = { path = "../../../plugins/store", version = "2.5.0" }
 tauri-plugin-upload = { path = "../../../plugins/upload", version = "2.3.0" }
@@ -42,7 +42,7 @@ tauri-plugin-sql = { path = "../../../plugins/sql", version = "2.4.1", features 
   "sqlite",
 ] }
 tauri-plugin-websocket = { path = "../../../plugins/websocket", version = "2.4.3" }
-tauri-plugin-biometric = { path = "../../../plugins/biometric/", version = "2.4.1" }
+tauri-plugin-biometric = { path = "../../../plugins/biometric/", version = "2.5.0" }
 
 # WebDriver automation bridge, used by the plugins e2e suite (packages/api-e2e).
 # Desktop-only and behind the off-by-default `automation` feature so it never ships in a
@@ -71,13 +71,13 @@ tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut", vers
 tauri-plugin-positioner = { path = "../../../plugins/positioner", version = "2.3.4", features = [
   "tray-icon",
 ] }
-tauri-plugin-updater = { path = "../../../plugins/updater", version = "2.13.3" }
+tauri-plugin-updater = { path = "../../../plugins/updater", version = "2.14.0" }
 tauri-plugin-window-state = { path = "../../../plugins/window-state", version = "2.2.0" }
 
 [target."cfg(any(target_os = \"android\", target_os = \"ios\"))".dependencies]
-tauri-plugin-barcode-scanner = { path = "../../../plugins/barcode-scanner/", version = "2.5.2" }
+tauri-plugin-barcode-scanner = { path = "../../../plugins/barcode-scanner/", version = "2.5.3" }
 tauri-plugin-nfc = { path = "../../../plugins/nfc", version = "2.4.2" }
-tauri-plugin-geolocation = { path = "../../../plugins/geolocation/", version = "2.4.2" }
+tauri-plugin-geolocation = { path = "../../../plugins/geolocation/", version = "2.5.0" }
 tauri-plugin-haptics = { path = "../../../plugins/haptics/", version = "2.4.2" }
 tauri-plugin-torch = { path = "../../../plugins/torch/", version = "2.0.0" }
 
