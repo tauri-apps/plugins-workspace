@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.0.0-alpha.3]
+
+- [``](https://github.com/tauri-apps/plugins-workspace/commit/undefined) Ported changes from v2.
+- [``](https://github.com/tauri-apps/plugins-workspace/commit/undefined) Update to tauri v3.0.0-alpha.4 and `@tauri-apps/api` v3.0.0-alpha.2.
+
 ## [3.0.0-alpha.2]
 
 - [`5c077a38`](https://github.com/tauri-apps/plugins-workspace/commit/5c077a3812e8661004845ba59d91ae4005155ec2) ([#3605](https://github.com/tauri-apps/plugins-workspace/pull/3605) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** Removed the `read_text_file` and `write_text_file` commands and their `allow-read-text-file`, `deny-read-text-file`, `allow-write-text-file` and `deny-write-text-file` permissions. `readTextFile` and `writeTextFile` now use the `read_file` and `write_file` commands, so grant `fs:allow-read-file` and `fs:allow-write-file` instead.

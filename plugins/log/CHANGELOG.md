@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.0.0-alpha.3]
+
+- [``](https://github.com/tauri-apps/plugins-workspace/commit/undefined) Ported changes from v2.
+- [``](https://github.com/tauri-apps/plugins-workspace/commit/undefined) Update to tauri v3.0.0-alpha.4 and `@tauri-apps/api` v3.0.0-alpha.2.
+
 ## [3.0.0-alpha.2]
 
 - [`1a43e470`](https://github.com/tauri-apps/plugins-workspace/commit/1a43e4701d536ccb33f109ccaecb29899d20cc72) ([#3611](https://github.com/tauri-apps/plugins-workspace/pull/3611) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) **Breaking:** `Builder::max_file_size` now takes a `u64` instead of a `u128`.

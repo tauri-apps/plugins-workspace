@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-biometric"
-version = "3.0.0-alpha.2"
+version = "3.0.0-alpha.3"
 description = "Prompt the user for biometric authentication on Android, iOS, and macOS."
 edition = { workspace = true }
 rust-version = { workspace = true }

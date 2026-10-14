@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.0-alpha.0]
+
+- [``](https://github.com/tauri-apps/plugins-workspace/commit/undefined) Update to tauri 3.0 alpha.
+
 ## [2.0.0]
 
 ### feat

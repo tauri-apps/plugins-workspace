@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.0.0-alpha.4]
+
+- [``](https://github.com/tauri-apps/plugins-workspace/commit/undefined) Ported changes from v2.
+
+### Dependencies
+
+- Upgraded to `fs-js@3.0.0-alpha.3`
+
 ## [3.0.0-alpha.3]
 
 - [``](https://github.com/tauri-apps/plugins-workspace/commit/undefined) Update to tauri v3.0.0-alpha.4 and `@tauri-apps/api` v3.0.0-alpha.2.

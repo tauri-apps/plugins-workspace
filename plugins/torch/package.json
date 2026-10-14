@@ -1,6 +1,6 @@
 {
   "name": "@tauri-apps/plugin-torch",
-  "version": "2.0.0",
+  "version": "3.0.0-alpha.0",
   "description": "Control the device flashlight (torch) on Android and iOS",
   "license": "MIT OR Apache-2.0",
   "authors": [
