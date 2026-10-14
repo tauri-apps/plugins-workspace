@@ -37,6 +37,7 @@ let fixtureServer: FixtureServer | undefined
 
 export function mobileConfig(platform: MobilePlatform): WebdriverIO.Config {
   const ios = platform === 'ios' ? iosTarget() : undefined
+  const simulator = ios ? iosSimulator() : undefined
 
   // Path passed to the driver as `appium:app`.
   const application =
@@ -70,7 +71,7 @@ export function mobileConfig(platform: MobilePlatform): WebdriverIO.Config {
     capabilities: [
       platform === 'android'
         ? androidCapabilities(application)
-        : iosCapabilities(application)
+        : iosCapabilities(application, simulator!)
     ],
     services: [
       [
@@ -105,7 +106,11 @@ export function mobileConfig(platform: MobilePlatform): WebdriverIO.Config {
     specFileRetries: Number(process.env.E2E_SPEC_RETRIES ?? 0),
     // Tells the specs (which run in worker processes) what the app runs on;
     // `process.platform` there is the host. See `platform` in test/helpers.
-    runnerEnv: { E2E_PLATFORM: platform },
+    // `E2E_IOS_UDID` is the simulator the geolocation specs drive with simctl.
+    runnerEnv: {
+      E2E_PLATFORM: platform,
+      ...(simulator ? { E2E_IOS_UDID: simulator } : {})
+    },
 
     onPrepare: async () => {
       // The example (and the specs' type-checking) resolve the plugins' JS
@@ -484,7 +489,10 @@ function androidTarget(): string {
 
 // --- iOS ---------------------------------------------------------------------
 
-function iosCapabilities(app: string): WebdriverIO.Capabilities {
+function iosCapabilities(
+  app: string,
+  simulator: string
+): WebdriverIO.Capabilities {
   return {
     platformName: 'iOS',
     'appium:automationName': 'XCUITest',
@@ -499,7 +507,7 @@ function iosCapabilities(app: string): WebdriverIO.Capabilities {
     'appium:additionalWebviewBundleIds': [
       `process-${path.basename(app, '.app')}`
     ],
-    'appium:udid': iosSimulator(),
+    'appium:udid': simulator,
     // No Simulator.app window. Besides not needing one, the driver otherwise
     // shuts a simulator that is booted without a visible UI down to relaunch it
     // with one, on every session — and that shutdown regularly outlasts the

@@ -9,6 +9,7 @@ const COMMANDS: &[&str] = &[
     "read_image",
     "write_html",
     "clear",
+    "write_secret",
 ];
 
 fn main() {

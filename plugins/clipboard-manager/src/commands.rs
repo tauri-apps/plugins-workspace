@@ -78,3 +78,12 @@ pub(crate) async fn clear<R: Runtime>(
 ) -> Result<()> {
     clipboard.clear()
 }
+
+#[command]
+pub(crate) async fn write_secret<R: Runtime>(
+    _app: AppHandle<R>,
+    clipboard: State<'_, Clipboard<R>>,
+    text: &str,
+) -> Result<()> {
+    clipboard.write_secret(text)
+}
