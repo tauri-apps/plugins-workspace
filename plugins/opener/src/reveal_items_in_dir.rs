@@ -214,6 +214,17 @@ mod imp {
     use std::path::PathBuf;
 
     pub fn reveal_items_in_dir(paths: &[PathBuf]) -> crate::Result<()> {
+        // `zbus::blocking` starts its own tokio runtime when zbus is built with the `tokio` feature,
+        // which panics with "Cannot start a runtime from within a runtime" if the caller is already
+        // inside one (e.g. an async command), so always run it on a dedicated thread.
+        std::thread::scope(|s| {
+            s.spawn(|| reveal_items_in_dir_blocking(paths))
+                .join()
+                .unwrap_or_else(|e| std::panic::resume_unwind(e))
+        })
+    }
+
+    fn reveal_items_in_dir_blocking(paths: &[PathBuf]) -> crate::Result<()> {
         let connection = zbus::blocking::Connection::session()?;
 
         reveal_with_filemanager1(paths, &connection).or_else(|e| {

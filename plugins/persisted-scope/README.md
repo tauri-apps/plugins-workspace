@@ -27,6 +27,8 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 ```toml
 [dependencies]
 tauri-plugin-persisted-scope = "2.0.0"
+# alternatively with the protocol-asset feature enabled:
+# tauri-plugin-persisted-scope = { version = "2.0.0", features = ["protocol-asset"] }
 # alternatively with Git:
 tauri-plugin-persisted-scope = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
@@ -47,6 +49,10 @@ fn main() {
 ```
 
 Afterwards the plugin will automatically save and restore filesystem and asset scopes.
+
+## Features
+
+- `protocol-asset`: Enables saving and restoring custom asset protocol scopes (`tauri/protocol-asset`).
 
 ## Contributing
 

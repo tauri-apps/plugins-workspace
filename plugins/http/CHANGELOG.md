@@ -26,6 +26,29 @@
 
 - Upgraded to `fs-js@3.0.0-alpha.0`
 
+## [2.8.3]
+
+- [`0e176756`](https://github.com/tauri-apps/plugins-workspace/commit/0e17675653142ceed8cf942129a6801003a39b2d) ([#3586](https://github.com/tauri-apps/plugins-workspace/pull/3586) by [@cpruijsen](https://github.com/tauri-apps/plugins-workspace/../../cpruijsen)) Fix `fetch` throwing a `TypeError` when a response header value contains non-ASCII bytes (e.g. a UTF-8 encoded `Content-Disposition` filename). Header values are now treated as byte strings like in a browser: response header values are decoded as ISO-8859-1 so the raw bytes are preserved as a valid `ByteString` for `new Headers()`, and request header values are sent as their raw bytes (one byte per character) instead of being UTF-8 encoded. A request header value with a character such as `é` is now sent as the single byte `0xE9`, as browsers do.
+
+### Dependencies
+
+- Upgraded to `fs@2.7.1`
+
+## [2.8.2]
+
+### Dependencies
+
+- Upgraded to `fs-js@2.7.0`
+
+## [2.8.1]
+
+- [`b443d6be`](https://github.com/tauri-apps/plugins-workspace/commit/b443d6be52a17329b980c55e8bbd03fb6cbb5cd7) ([#3669](https://github.com/tauri-apps/plugins-workspace/pull/3669) by [@followdarko](https://github.com/tauri-apps/plugins-workspace/../../followdarko)) `fetch_send` now releases the request's resources once the send settles. Before, a request that got a response or failed to send left its `FetchRequest` and abort sender in the webview's resource table until the webview was destroyed, so a long-lived app grew with every request.
+- [`3113a54c`](https://github.com/tauri-apps/plugins-workspace/commit/3113a54cc275b1af532c3fb20154beba7d67d623) ([#3670](https://github.com/tauri-apps/plugins-workspace/pull/3670) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Updated inner dependency `urlpattern` from `v0.3` to `v0.6` to fix advisories about unmaintained `unic-` crates.
+
+## [2.8.0]
+
+- [`43538190`](https://github.com/tauri-apps/plugins-workspace/commit/43538190b6110e2005c899b2f2a4c85c7fde74db) ([#3656](https://github.com/tauri-apps/plugins-workspace/pull/3656) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Re-release `@tauri-apps/plugin-http@2.7.0` as `2.8.0`.
+
 ## [2.7.0]
 
 - [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
@@ -386,3 +409,4 @@
 ## \[2.0.0-alpha.0]
 
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+e!

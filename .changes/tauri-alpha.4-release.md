@@ -1,0 +1,52 @@
+---
+"autostart": patch
+"autostart-js": patch
+"barcode-scanner": patch
+"barcode-scanner-js": patch
+"biometric": patch
+"biometric-js": patch
+"cli": patch
+"cli-js": patch
+"clipboard-manager": patch
+"clipboard-manager-js": patch
+"deep-link": patch
+"deep-link-js": patch
+"fs": patch
+"fs-js": patch
+"geolocation": patch
+"geolocation-js": patch
+"global-shortcut": patch
+"global-shortcut-js": patch
+"haptics": patch
+"haptics-js": patch
+"log": patch
+"log-js": patch
+"nfc": patch
+"nfc-js": patch
+"notification": patch
+"notification-js": patch
+"opener": patch
+"opener-js": patch
+"os": patch
+"os-js": patch
+"positioner": patch
+"positioner-js": patch
+"process": patch
+"process-js": patch
+"shell": patch
+"shell-js": patch
+"sql": patch
+"sql-js": patch
+"store": patch
+"store-js": patch
+"stronghold": patch
+"stronghold-js": patch
+"updater": patch
+"updater-js": patch
+"websocket": patch
+"websocket-js": patch
+"window-state": patch
+"window-state-js": patch
+---
+
+Update to tauri v3.0.0-alpha.4 and `@tauri-apps/api` v3.0.0-alpha.2.

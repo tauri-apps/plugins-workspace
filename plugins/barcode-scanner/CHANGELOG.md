@@ -12,6 +12,19 @@
 
 - [`363438b5`](https://github.com/tauri-apps/plugins-workspace/commit/363438b50a09162379d57c7c7bfc132520c1e5d4) Update to tauri 3.0 alpha.
 
+## [2.5.3]
+
+- [`d80b1be2`](https://github.com/tauri-apps/plugins-workspace/commit/d80b1be257f94e994a4382848d7a5b140ff2078e) ([#3551](https://github.com/tauri-apps/plugins-workspace/pull/3551) by [@bizkda](https://github.com/tauri-apps/plugins-workspace/../../bizkda)) On Android, expose the camera bound by an active scan so the torch plugin can turn the flash on and off during a scan.
+- [`b3e52ce0`](https://github.com/tauri-apps/plugins-workspace/commit/b3e52ce036ba4a1369aa47a64a747e0efbb957b1) ([#3571](https://github.com/tauri-apps/plugins-workspace/pull/3571) by [@ghostshreyash](https://github.com/tauri-apps/plugins-workspace/../../ghostshreyash)) Fix `cancel()` on Android leaving the pending `scan()` promise unsettled: `destroy()` cleared the saved invoke before it was rejected, so the `"cancelled"` rejection never reached the caller. The pending scan is now rejected before the camera is torn down, matching iOS.
+
+## [2.5.2]
+
+- [`42ae8b45`](https://github.com/tauri-apps/plugins-workspace/commit/42ae8b4501f3628cddeab3973eb38a7593304cc8) ([#3684](https://github.com/tauri-apps/plugins-workspace/pull/3684)) On iOS, mark the plugin's `init_plugin_*` entry point `public` so release builds made with Xcode 27 keep it global and link.
+
+## [2.5.1]
+
+- [`569ee82c`](https://github.com/tauri-apps/plugins-workspace/commit/569ee82cf61a358b4c73ba52f2e99f3317ec05d0) Fix the docs.rs build for Android: the build script now detects docs.rs through the `DOCS_RS` environment variable, since `cfg(docsrs)` is never set for build scripts.
+
 ## [2.5.0]
 
 - [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.

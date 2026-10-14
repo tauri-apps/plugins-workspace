@@ -84,7 +84,8 @@
         "upload",
         "geolocation",
         "haptics",
-        "window-state"
+        "window-state",
+        "torch"
       ]
     },
     "api-example-js": {
@@ -108,7 +109,8 @@
         "process-js",
         "shell-js",
         "store-js",
-        "updater-js"
+        "updater-js",
+        "torch-js"
       ],
       "postversion": "pnpm install --no-frozen-lockfile"
     },
@@ -327,6 +329,14 @@
     },
     "updater-js": {
       "path": "./plugins/updater",
+      "manager": "javascript"
+    },
+    "torch": {
+      "path": "./plugins/torch",
+      "manager": "rust"
+    },
+    "torch-js": {
+      "path": "./plugins/torch",
       "manager": "javascript"
     },
     "upload": {

@@ -12,6 +12,28 @@
 
 - [`363438b5`](https://github.com/tauri-apps/plugins-workspace/commit/363438b50a09162379d57c7c7bfc132520c1e5d4) Update to tauri 3.0 alpha.
 
+## [2.7.0]
+
+- [`4356356d`](https://github.com/tauri-apps/plugins-workspace/commit/4356356dab3b87faffcc2f0fc62aec23aede78cc) ([#3588](https://github.com/tauri-apps/plugins-workspace/pull/3588) by [@The-Best-Codes](https://github.com/tauri-apps/plugins-workspace/../../The-Best-Codes)) Fix notifications closing right after they show on GNOME: on Linux and the BSDs, every notification is now sent on the D-Bus connection the plugin keeps open.
+
+### feat
+
+- [`4356356d`](https://github.com/tauri-apps/plugins-workspace/commit/4356356dab3b87faffcc2f0fc62aec23aede78cc) ([#3588](https://github.com/tauri-apps/plugins-workspace/pull/3588) by [@The-Best-Codes](https://github.com/tauri-apps/plugins-workspace/../../The-Best-Codes)) Add `NotificationBuilder::on_close` on Linux and the BSDs, a Rust callback that runs once the notification server reports the notification closed.
+
+## [2.6.0]
+
+- [`42ae8b45`](https://github.com/tauri-apps/plugins-workspace/commit/42ae8b4501f3628cddeab3973eb38a7593304cc8) ([#3684](https://github.com/tauri-apps/plugins-workspace/pull/3684)) On iOS, mark the plugin's `init_plugin_*` entry point `public` so release builds made with Xcode 27 keep it global and link.
+
+### feat
+
+- [`46381516`](https://github.com/tauri-apps/plugins-workspace/commit/46381516b7bd7b6915ded698d93e92760b4221d7) ([#3671](https://github.com/tauri-apps/plugins-workspace/pull/3671)) Report actions on desktop: a click on a notification (`tap`) or on one of the actions of its action type reaches `onAction` and the new Rust `Notification::on_action`, which also works on mobile. `registerActionTypes`, `removeActive` (Linux and the BSDs) and the listener commands no longer fail with "command not found" on desktop.
+    
+    The `onAction` callback is now typed with the new `ActionPerformed` interface, which is what every platform sends, instead of `Options`. Callbacks annotated with `Options` must be updated.
+
+## [2.5.1]
+
+- [`569ee82c`](https://github.com/tauri-apps/plugins-workspace/commit/569ee82cf61a358b4c73ba52f2e99f3317ec05d0) Fix the docs.rs build for Android: the build script now detects docs.rs through the `DOCS_RS` environment variable, since `cfg(docsrs)` is never set for build scripts.
+
 ## [2.5.0]
 
 - [`c8c373b4`](https://github.com/tauri-apps/plugins-workspace/commit/c8c373b48bbf06b57c481dad4cf0a68638c68478) Fixed broken mobile APIs:

@@ -148,7 +148,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). Needs the `update-desktop-database` command available on the system. May not work on older distros.
+        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). Requires `update-desktop-database`. May not work on older distros.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             Err(crate::Error::UnsupportedPlatform)
@@ -313,31 +313,21 @@ mod imp {
 
                 let mime_type = format!("x-scheme-handler/{}", _protocol.as_ref());
 
-                if let Ok(mut desktop_file) = ini::Ini::load_from_file(&target_file) {
+                if let Ok(mut desktop_file) = load_desktop_ini(&target_file) {
                     if let Some(section) = desktop_file.section_mut(Some("Desktop Entry")) {
-                        let old_mimes = section.remove("MimeType").unwrap_or_default();
-                        let mut change = false;
-
-                        // if the mime type is not present, append it to the list
-                        if !old_mimes.split(';').any(|mime| mime == mime_type) {
-                            section.append("MimeType", format!("{mime_type};{old_mimes}"));
-                            change = true;
-                        } else {
-                            section.insert("MimeType".to_string(), old_mimes);
-                        }
+                        // if the mime type is not present, add it to the list
+                        let mut change = add_list_entry(section, "MimeType", &mime_type);
 
                         // if the exec command doesnt match, update to the new one
-                        let old_exec = section.remove("Exec").unwrap_or_default();
-                        if old_exec != qualified_exec {
-                            section.append("Exec", qualified_exec);
+                        if section.get("Exec") != Some(qualified_exec.as_str()) {
+                            section.insert("Exec", qualified_exec);
                             change = true;
-                        } else {
-                            section.insert("Exec".to_string(), old_exec.to_string());
                         }
 
                         // if any property has changed, rewrite the .desktop file
                         if change {
-                            desktop_file.write_to_file(&target_file)?;
+                            desktop_file
+                                .write_to_file_policy(&target_file, ini::EscapePolicy::Nothing)?;
                         }
                     }
                 } else {
@@ -358,15 +348,14 @@ mod imp {
                     )?;
                 }
 
-                Command::new("update-desktop-database")
-                    .arg(target)
-                    .status()
-                    .map_err(|error| crate::Error::Execute("update-desktop-database", error))?;
-
-                Command::new("xdg-mime")
-                    .args(["default", &file_name, mime_type.as_str()])
-                    .status()
-                    .map_err(|error| crate::Error::Execute("xdg-mime", error))?;
+                run_command(
+                    "update-desktop-database",
+                    Command::new("update-desktop-database").arg(target),
+                )?;
+                run_command(
+                    "xdg-mime",
+                    Command::new("xdg-mime").args(["default", &file_name, mime_type.as_str()]),
+                )?;
 
                 Ok(())
             }
@@ -383,7 +372,7 @@ mod imp {
         ///
         /// - **Windows**: Requires admin rights if the protocol is registered on local machine
         ///   (this can happen when registered from the NSIS installer when the install mode is set to both or per machine)
-        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). Refreshes the desktop database with the `update-desktop-database` command; without it, [`is_registered`](`Self::is_registered`) may keep returning `true`. May not work on older distros.
+        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). Requires `update-desktop-database`. May not work on older distros.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
@@ -408,54 +397,52 @@ mod imp {
                         .unwrap()
                         .to_string_lossy()
                 );
-                let mime_type = format!("x-scheme-handler/{}", _protocol.as_ref());
-
-                // stop being the default handler
+                let scheme = format!("x-scheme-handler/{}", _protocol.as_ref());
+                // Drop the defaults first so a failed cache refresh below cannot leave them behind.
                 let mimeapps_path = self.app.path().config_dir()?.join("mimeapps.list");
-                if mimeapps_path.exists() {
-                    let mut mimeapps = ini::Ini::load_from_file(&mimeapps_path)?;
-                    if let Some(section) = mimeapps.section_mut(Some("Default Applications"))
-                        && section.get(&mime_type).unwrap_or_default() == file_name
-                    {
-                        section.remove(&mime_type);
-                    }
-                    mimeapps.write_to_file(&mimeapps_path)?;
-                }
-
-                // Stop declaring the scheme in the handler's `.desktop` file too: the desktop
-                // database indexes it, and with no default set `xdg-mime` falls back to that
-                // index, so the app would otherwise still be the handler.
-                let applications = self.app.path().data_dir()?.join("applications");
-                let desktop_file_path = applications.join(&file_name);
-                // Only the `MimeType` key is touched: the file may carry other changes.
-                if let Ok(mut desktop_file) = ini::Ini::load_from_file(&desktop_file_path) {
-                    if let Some(section) = desktop_file.section_mut(Some("Desktop Entry")) {
-                        let mime_types = section
-                            .get("MimeType")
-                            .unwrap_or_default()
-                            .split(';')
-                            .filter(|mime| !mime.is_empty() && *mime != mime_type)
-                            .map(ToString::to_string)
-                            .collect::<Vec<_>>();
-                        if mime_types.is_empty() {
-                            section.remove("MimeType");
-                        } else {
-                            section.insert("MimeType", mime_types.join(";"));
+                match std::fs::read_to_string(&mimeapps_path) {
+                    Ok(mimeapps) => {
+                        if let Some(mimeapps) =
+                            remove_mimeapps_association(&mimeapps, &scheme, &file_name)
+                        {
+                            std::fs::write(&mimeapps_path, mimeapps)?;
                         }
                     }
-                    desktop_file.write_to_file(&desktop_file_path)?;
+                    Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                    Err(error) => return Err(error.into()),
+                }
 
-                    // Without the refreshed index `xdg-mime` may keep reporting the app as the
-                    // handler, but the scheme is unregistered as far as the app can tell, so a
-                    // missing command is not an error.
-                    if let Err(e) = Command::new("update-desktop-database")
-                        .arg(&applications)
-                        .status()
-                    {
-                        tracing::warn!(
-                            "Failed to run OS command `update-desktop-database`, the desktop database may still list the app as the `{mime_type}` handler: {e}"
-                        );
+                let target = self.app.path().data_dir()?.join("applications");
+                let desktop_path = target.join(&file_name);
+                let mut desktop_changed = false;
+                match load_desktop_ini(&desktop_path) {
+                    Ok(mut desktop) => {
+                        if let Some(section) = desktop.section_mut(Some("Desktop Entry"))
+                            && remove_list_entry(section, "MimeType", &scheme)
+                        {
+                            desktop
+                                .write_to_file_policy(&desktop_path, ini::EscapePolicy::Nothing)?;
+                            desktop_changed = true;
+                        }
                     }
+                    Err(ini::Error::Io(error)) if error.kind() == std::io::ErrorKind::NotFound => {}
+                    Err(error) => return Err(error.into()),
+                }
+
+                // Also clear stale cache entries left by a failed update or a removed desktop file.
+                let cached =
+                    std::fs::read_to_string(target.join("mimeinfo.cache")).is_ok_and(|cache| {
+                        cache.lines().any(|line| {
+                            line.split_once('=').is_some_and(|(key, value)| {
+                                key == scheme && value.split(';').any(|entry| entry == file_name)
+                            })
+                        })
+                    });
+                if desktop_changed || cached {
+                    run_command(
+                        "update-desktop-database",
+                        Command::new("update-desktop-database").arg(&target),
+                    )?;
                 }
 
                 Ok(())
@@ -509,12 +496,143 @@ mod imp {
                     .output()
                     .map_err(|error| crate::Error::Execute("xdg-mime", error))?;
 
-                Ok(String::from_utf8_lossy(&output.stdout).contains(&file_name))
+                // xdg-utils exits with 4 ("action failed") when no default handler exists.
+                if output.status.code() == Some(4) {
+                    return Ok(false);
+                }
+                check_command_status("xdg-mime", output.status)?;
+                // Backends may pad the name or print more lines, so only the first is compared.
+                let stdout = String::from_utf8_lossy(&output.stdout);
+                Ok(stdout.lines().next().map(str::trim) == Some(file_name.as_str()))
             }
 
             #[cfg(not(any(windows, target_os = "linux")))]
             Err(crate::Error::UnsupportedPlatform)
         }
+    }
+
+    /// Runs the command, failing if it cannot be spawned or exits unsuccessfully.
+    #[cfg(target_os = "linux")]
+    fn run_command(name: &'static str, command: &mut Command) -> crate::Result<()> {
+        let status = command
+            .status()
+            .map_err(|error| crate::Error::Execute(name, error))?;
+        check_command_status(name, status)
+    }
+
+    #[cfg(target_os = "linux")]
+    fn check_command_status(
+        command: &'static str,
+        status: std::process::ExitStatus,
+    ) -> crate::Result<()> {
+        if status.success() {
+            Ok(())
+        } else {
+            Err(crate::Error::Execute(
+                command,
+                std::io::Error::other(format!("exited with {status}")),
+            ))
+        }
+    }
+
+    /// Loads a desktop entry file keeping its values in desktop-file syntax, so quotes and
+    /// escapes (e.g. in `Exec`) survive a rewrite with [`ini::EscapePolicy::Nothing`].
+    #[cfg(target_os = "linux")]
+    fn load_desktop_ini(path: &std::path::Path) -> Result<ini::Ini, ini::Error> {
+        ini::Ini::load_from_file_opt(
+            path,
+            ini::ParseOption {
+                enabled_quote: false,
+                enabled_escape: false,
+                ..Default::default()
+            },
+        )
+    }
+
+    /// Adds `item` to the front of the `;`-separated list in `key`. Returns whether it changed.
+    #[cfg(target_os = "linux")]
+    fn add_list_entry(section: &mut ini::Properties, key: &str, item: &str) -> bool {
+        let value = section.get(key).unwrap_or_default();
+        if value.split(';').any(|entry| entry == item) {
+            return false;
+        }
+        let entries = std::iter::once(item)
+            .chain(value.split(';').filter(|entry| !entry.is_empty()))
+            .collect::<Vec<_>>()
+            .join(";");
+        section.insert(key, format!("{entries};"));
+        true
+    }
+
+    /// Removes `item` from the `;`-separated list in `key`, dropping the key once it is empty.
+    /// Returns whether it changed.
+    #[cfg(target_os = "linux")]
+    fn remove_list_entry(section: &mut ini::Properties, key: &str, item: &str) -> bool {
+        let Some(remaining) = section
+            .get(key)
+            .and_then(|value| remove_from_list(value, item))
+        else {
+            return false;
+        };
+        if remaining.is_empty() {
+            section.remove(key);
+        } else {
+            section.insert(key, remaining);
+        }
+        true
+    }
+
+    /// Returns the `;`-separated `list` without `item`, or `None` if it does not contain it.
+    #[cfg(target_os = "linux")]
+    fn remove_from_list(list: &str, item: &str) -> Option<String> {
+        if !list.split(';').any(|entry| entry == item) {
+            return None;
+        }
+        let remaining = list
+            .split(';')
+            .filter(|entry| !entry.is_empty() && *entry != item)
+            .collect::<Vec<_>>()
+            .join(";");
+        Some(if remaining.is_empty() {
+            remaining
+        } else {
+            format!("{remaining};")
+        })
+    }
+
+    /// Removes `desktop_file` from the `mime_type` associations of a `mimeapps.list`.
+    /// Edits it line by line so the user's comments and formatting survive.
+    /// Returns `None` if nothing changed.
+    #[cfg(target_os = "linux")]
+    fn remove_mimeapps_association(
+        mimeapps: &str,
+        mime_type: &str,
+        desktop_file: &str,
+    ) -> Option<String> {
+        let mut group = "";
+        let mut changed = false;
+        let mut out = String::with_capacity(mimeapps.len());
+        for line in mimeapps.split_inclusive('\n') {
+            let trimmed = line.trim();
+            if let Some(name) = trimmed.strip_prefix('[').and_then(|l| l.strip_suffix(']')) {
+                group = name;
+            } else if matches!(group, "Default Applications" | "Added Associations")
+                && let Some((key, value)) = trimmed.split_once('=')
+                && key.trim_end() == mime_type
+                && let Some(remaining) = remove_from_list(value.trim_start(), desktop_file)
+            {
+                changed = true;
+                if !remaining.is_empty() {
+                    out.push_str(&format!("{key}={remaining}"));
+                    if line.ends_with('\n') {
+                        out.push('\n');
+                    }
+                }
+                continue;
+            }
+            out.push_str(line);
+        }
+        changed.then_some(out)
     }
 }
 

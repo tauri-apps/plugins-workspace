@@ -17,7 +17,7 @@ tauri-runtime-cef = { workspace = true, optional = true }
 tokio = { version = "1", features = ["net"] }
 futures-util = "0.3"
 tauri-plugin-websocket = { path = "../../../" }
-tokio-tungstenite = "0.29"
+tokio-tungstenite = "0.30"
 
 [build-dependencies]
 tauri-build = { workspace = true }

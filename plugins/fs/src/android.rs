@@ -63,10 +63,11 @@ impl<R: Runtime> Fs<R> {
         uri: impl Into<String>,
         mode: impl Into<String>,
     ) -> crate::Result<std::fs::File> {
+        let uri = uri.into();
         let result = self.0.run_mobile_plugin::<GetFileDescriptorResponse>(
             "getFileDescriptor",
             GetFileDescriptorPayload {
-                uri: uri.into(),
+                uri: uri.clone(),
                 mode: mode.into(),
             },
         )?;
@@ -76,7 +77,11 @@ impl<R: Runtime> Fs<R> {
                 std::fs::File::from_raw_fd(fd)
             })
         } else {
-            unimplemented!()
+            // the content provider did not return a file descriptor, e.g. for virtual files
+            Err(crate::Error::Io(std::io::Error::new(
+                std::io::ErrorKind::Unsupported,
+                format!("no file descriptor available for {uri}"),
+            )))
         }
     }
 }

@@ -12,6 +12,21 @@
 
 - [`363438b5`](https://github.com/tauri-apps/plugins-workspace/commit/363438b50a09162379d57c7c7bfc132520c1e5d4) Update to tauri 3.0 alpha.
 
+## [2.5.0]
+
+- [`36d8e409`](https://github.com/tauri-apps/plugins-workspace/commit/36d8e4098e0cbcb9005405249c0d55e26f8ed89c) ([#3377](https://github.com/tauri-apps/plugins-workspace/pull/3377) by [@cfpwastaken](https://github.com/tauri-apps/plugins-workspace/../../cfpwastaken)) On Android, `getCurrentPosition` now honors the `timeout` option and rejects when no position is found in time. A `timeout` of `0` means no timeout.
+- [`36d8e409`](https://github.com/tauri-apps/plugins-workspace/commit/36d8e4098e0cbcb9005405249c0d55e26f8ed89c) ([#3377](https://github.com/tauri-apps/plugins-workspace/pull/3377) by [@cfpwastaken](https://github.com/tauri-apps/plugins-workspace/../../cfpwastaken)) Fixed `watchPosition` on Android stopping updates for every other active watch, and `clearWatch` leaving location updates running until the last watch was cleared.
+- [`36d8e409`](https://github.com/tauri-apps/plugins-workspace/commit/36d8e4098e0cbcb9005405249c0d55e26f8ed89c) ([#3377](https://github.com/tauri-apps/plugins-workspace/pull/3377) by [@cfpwastaken](https://github.com/tauri-apps/plugins-workspace/../../cfpwastaken)) Add support for the geolocation plugin on non-GMS Android devices (API 24+), using the best available location provider.
+- [`36d8e409`](https://github.com/tauri-apps/plugins-workspace/commit/36d8e4098e0cbcb9005405249c0d55e26f8ed89c) ([#3377](https://github.com/tauri-apps/plugins-workspace/pull/3377) by [@cfpwastaken](https://github.com/tauri-apps/plugins-workspace/../../cfpwastaken)) Fix `watchPosition` never resolving on Android.
+
+## [2.4.2]
+
+- [`42ae8b45`](https://github.com/tauri-apps/plugins-workspace/commit/42ae8b4501f3628cddeab3973eb38a7593304cc8) ([#3684](https://github.com/tauri-apps/plugins-workspace/pull/3684)) On iOS, mark the plugin's `init_plugin_*` entry point `public` so release builds made with Xcode 27 keep it global and link.
+
+## [2.4.1]
+
+- [`569ee82c`](https://github.com/tauri-apps/plugins-workspace/commit/569ee82cf61a358b4c73ba52f2e99f3317ec05d0) Fix the docs.rs build for Android: the build script now detects docs.rs through the `DOCS_RS` environment variable, since `cfg(docsrs)` is never set for build scripts.
+
 ## [2.4.0]
 
 - [`d869c162`](https://github.com/tauri-apps/plugins-workspace/commit/d869c162a7d1e95629a3acbf0084bbeac3e10f77) Fixed a build failure when the `specta` feature is enabled: the `Error` type used the `#[serde(skip)]` helper attribute, which recent `specta` versions no longer register. It now uses `#[specta(skip)]`.
