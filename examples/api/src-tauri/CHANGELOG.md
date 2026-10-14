@@ -12,7 +12,7 @@
 - Upgraded to `opener@2.7.2`
 - Upgraded to `geolocation@2.5.0`
 - Upgraded to `http@2.8.3`
-- Upgraded to `torch@2.1.0`
+- Upgraded to `torch@2.0.0`
 - Upgraded to `updater@2.14.0`
 - Upgraded to `dialog@2.8.3`
 
