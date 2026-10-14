@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.8.3]
+
+- [`0e176756`](https://github.com/tauri-apps/plugins-workspace/commit/0e17675653142ceed8cf942129a6801003a39b2d) ([#3586](https://github.com/tauri-apps/plugins-workspace/pull/3586) by [@cpruijsen](https://github.com/tauri-apps/plugins-workspace/../../cpruijsen)) Fix `fetch` throwing a `TypeError` when a response header value contains non-ASCII bytes (e.g. a UTF-8 encoded `Content-Disposition` filename). Header values are now treated as byte strings like in a browser: response header values are decoded as ISO-8859-1 so the raw bytes are preserved as a valid `ByteString` for `new Headers()`, and request header values are sent as their raw bytes (one byte per character) instead of being UTF-8 encoded. A request header value with a character such as `é` is now sent as the single byte `0xE9`, as browsers do.
+
+### Dependencies
+
+- Upgraded to `fs@2.7.1`
+
 ## [2.8.2]
 
 ### Dependencies
@@ -375,3 +383,4 @@
 ## \[2.0.0-alpha.0]
 
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+e!

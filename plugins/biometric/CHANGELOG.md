@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.5.0]
+
+### feat
+
+- [`0374bec1`](https://github.com/tauri-apps/plugins-workspace/commit/0374bec1e2e50cc159d71471f1683bd30dc9fcbe) ([#2454](https://github.com/tauri-apps/plugins-workspace/pull/2454) by [@charlesschaefer](https://github.com/tauri-apps/plugins-workspace/../../charlesschaefer)) Add `biometricCipher` to encrypt and decrypt data on Android with a key protected by strong biometric authentication.
+- [`2ebe54ab`](https://github.com/tauri-apps/plugins-workspace/commit/2ebe54abce3494f0f021383b0a32f9b3c3b80fa2) ([#3264](https://github.com/tauri-apps/plugins-workspace/pull/3264) by [@takahashim](https://github.com/tauri-apps/plugins-workspace/../../takahashim)) Add macOS Touch ID support via LocalAuthentication framework.
+
+### bug
+
+- [`dff0dd4b`](https://github.com/tauri-apps/plugins-workspace/commit/dff0dd4b230dbb0d01fe8cc8d6d5e9947f17d3c7) ([#2648](https://github.com/tauri-apps/plugins-workspace/pull/2648) by [@pjf-dev](https://github.com/tauri-apps/plugins-workspace/../../pjf-dev)) Fix biometric plugin reporting an inconsistent and incorrect error on Android when no device passcode was set and `allowDeviceCredential` is enabled. Android now rejects with the `passcodeNotSet` error code like iOS does; it previously used the undocumented `noDeviceCredential` code, so code matching that string must switch to `passcodeNotSet`.
+
 ## [2.4.2]
 
 - [`42ae8b45`](https://github.com/tauri-apps/plugins-workspace/commit/42ae8b4501f3628cddeab3973eb38a7593304cc8) ([#3684](https://github.com/tauri-apps/plugins-workspace/pull/3684)) On iOS, mark the plugin's `init_plugin_*` entry point `public` so release builds made with Xcode 27 keep it global and link.

@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.7.0]
+
+- [`4356356d`](https://github.com/tauri-apps/plugins-workspace/commit/4356356dab3b87faffcc2f0fc62aec23aede78cc) ([#3588](https://github.com/tauri-apps/plugins-workspace/pull/3588) by [@The-Best-Codes](https://github.com/tauri-apps/plugins-workspace/../../The-Best-Codes)) Fix notifications closing right after they show on GNOME: on Linux and the BSDs, every notification is now sent on the D-Bus connection the plugin keeps open.
+
+### feat
+
+- [`4356356d`](https://github.com/tauri-apps/plugins-workspace/commit/4356356dab3b87faffcc2f0fc62aec23aede78cc) ([#3588](https://github.com/tauri-apps/plugins-workspace/pull/3588) by [@The-Best-Codes](https://github.com/tauri-apps/plugins-workspace/../../The-Best-Codes)) Add `NotificationBuilder::on_close` on Linux and the BSDs, a Rust callback that runs once the notification server reports the notification closed.
+
 ## [2.6.0]
 
 - [`42ae8b45`](https://github.com/tauri-apps/plugins-workspace/commit/42ae8b4501f3628cddeab3973eb38a7593304cc8) ([#3684](https://github.com/tauri-apps/plugins-workspace/pull/3684)) On iOS, mark the plugin's `init_plugin_*` entry point `public` so release builds made with Xcode 27 keep it global and link.

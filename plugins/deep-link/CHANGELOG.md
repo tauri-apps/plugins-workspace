@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.2]
+
+- [`2d541bc0`](https://github.com/tauri-apps/plugins-workspace/commit/2d541bc0d1fa571e7f06b8a39a4e9ecc4932f9e7) ([#3585](https://github.com/tauri-apps/plugins-workspace/pull/3585) by [@vincentkoc](https://github.com/tauri-apps/plugins-workspace/../../vincentkoc)) Return an I/O error when an XDG registration, unregistration, or query command exits unsuccessfully on Linux. Match the queried desktop filename exactly, and remove the app's MIME association when unregistering so it is not selected again by fallback. Preserve other schemes, applications, defaults, and desktop command quoting.
+
 ## [2.6.1]
 
 - [`569ee82c`](https://github.com/tauri-apps/plugins-workspace/commit/569ee82cf61a358b4c73ba52f2e99f3317ec05d0) Fix the docs.rs build for Android: the build script now detects docs.rs through the `DOCS_RS` environment variable, since `cfg(docsrs)` is never set for build scripts.
