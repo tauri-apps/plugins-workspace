@@ -213,9 +213,12 @@ checksum = "2a4385e2e34eb35d6b3efe798b9eb88096925d87726c0798709bf56d9ed84af3"
 name = "api"
 version = "2.0.55"
 dependencies = [
+ "base64 0.22.1",
  "log",
+ "rcgen",
  "serde",
  "serde_json",
+ "sha2",
  "tauri",
  "tauri-build",
  "tauri-plugin-automation",
@@ -248,6 +251,7 @@ dependencies = [
  "tauri-plugin-window-state",
  "time",
  "tiny_http",
+ "webpki-roots 1.0.6",
 ]
 
 [[package]]
