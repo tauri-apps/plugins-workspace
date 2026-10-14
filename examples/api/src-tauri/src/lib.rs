@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 mod cmd;
+mod spki;
 #[cfg(desktop)]
 mod tray;
 
@@ -48,7 +49,11 @@ pub fn run() {
         .plugin(tauri_plugin_biometric::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_http::init())
+        .plugin(
+            tauri_plugin_http::Builder::new()
+                .extension(spki::pinning())
+                .build(),
+        )
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_process::init())

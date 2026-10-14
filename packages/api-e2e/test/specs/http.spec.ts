@@ -181,4 +181,49 @@ describePlugin('http', () => {
     )
     expect(message).toMatch(/error sending request/)
   })
+
+  describe('SPKI pinning', () => {
+    // The example pins `localhost` to the key of the server on port 3005. The
+    // server on 3006 has a certificate from the same trusted test CA but a
+    // different key, so only the pin check can reject it.
+    const pinnedServer = 'https://localhost:3005'
+    const otherKeyServer = 'https://localhost:3006'
+
+    // Resolves to the response body, or to the structured error the pinning
+    // extension rejects with (an object, which `tauriError` would stringify).
+    const outcome = (url: string) =>
+      tauri(async (api, url) => {
+        try {
+          const response = await api.http.fetch(url)
+          return { status: response.status, body: await response.text() }
+        } catch (error) {
+          return { error: error as unknown }
+        }
+      }, url)
+
+    it('accepts a server presenting the pinned key', async () => {
+      expect(await outcome(pinnedServer)).toEqual({
+        status: 200,
+        body: 'pinned'
+      })
+    })
+
+    it('rejects a pinned host presenting another key', async () => {
+      expect(await outcome(otherKeyServer)).toEqual({
+        error: {
+          code: 'SPKI_PIN_MISMATCH',
+          message:
+            'the server certificate public key does not match a configured SPKI pin',
+          host: 'localhost'
+        }
+      })
+    })
+
+    it('checks redirect targets against the pins', async () => {
+      const result = await outcome(`${pinnedServer}/redirect`)
+      expect(result).toMatchObject({
+        error: { code: 'SPKI_PIN_MISMATCH', host: 'localhost' }
+      })
+    })
+  })
 })

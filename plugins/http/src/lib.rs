@@ -29,7 +29,7 @@
 //! - **brotli**: Provides response body brotli decompression.
 //! - **zstd**: Provides response body zstd decompression.
 //! - **deflate**: Provides response body deflate decompression.
-//! - **json**: Provides serialization and deserialization for JSON bodies.
+//! - **json**: Provides serialization and deserialization of JSON bodies.
 //! - **multipart**: Provides functionality for multipart forms.
 //! - **stream**: Adds support for futures::Stream.
 //! - **socks**: Provides SOCKS5 proxy support.
@@ -43,6 +43,7 @@
 //! - **tracing**: Adds request, response, and cookie-store diagnostics through `tracing`.
 //! - **unsafe-headers**: Allows webview requests to send any headers.
 //! - **dangerous-settings**: Allows dangerous client settings such as accepting invalid certificates or hostnames.
+//! - **spki-pinning**: Adds the native [`SpkiPinning`] transport extension for exact-host leaf SPKI pinning with Rustls.
 //!
 //! ## Configuration
 //!
@@ -60,101 +61,163 @@
 //! ```
 
 pub use reqwest;
+
+use std::sync::Arc;
+
 use tauri::{
     Manager, Runtime,
-    plugin::{Builder, TauriPlugin},
+    plugin::{Builder as PluginBuilder, TauriPlugin},
 };
 
 pub use config::Config;
 pub use error::{Error, Result};
+pub use extension::{ExtensionError, HttpTransportExtension, RequestContext};
 
 mod commands;
 mod config;
 mod error;
+mod extension;
 #[cfg(feature = "cookies")]
 mod reqwest_cookie_store;
 mod scope;
+#[cfg(feature = "spki-pinning")]
+mod spki_pinning;
+
+#[cfg(feature = "spki-pinning")]
+pub use rustls;
+#[cfg(feature = "spki-pinning")]
+pub use spki_pinning::{SpkiPinError, SpkiPinning};
 
 #[cfg(feature = "cookies")]
 const COOKIES_FILENAME: &str = ".cookies";
 
-pub(crate) struct Http {
+pub(crate) struct Http<R: Runtime> {
     pub(crate) config: Config,
+    extensions: extension::ExtensionList<R>,
     #[cfg(feature = "cookies")]
-    cookies_jar: std::sync::Arc<crate::reqwest_cookie_store::CookieStoreMutex>,
+    cookies_jar: Arc<crate::reqwest_cookie_store::CookieStoreMutex>,
 }
 
-/// Initializes the plugin.
+/// Builds the HTTP plugin with optional native transport extensions.
+pub struct Builder<R: Runtime> {
+    extensions: Vec<Arc<dyn HttpTransportExtension<R>>>,
+}
+
+impl<R: Runtime> Default for Builder<R> {
+    fn default() -> Self {
+        Self {
+            extensions: Vec::new(),
+        }
+    }
+}
+
+impl<R: Runtime> Builder<R> {
+    /// Creates an HTTP plugin builder without transport extensions.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Registers a native transport extension.
+    ///
+    /// Extensions run in registration order. Only trusted native code should
+    /// be registered because extensions can replace the request transport.
+    pub fn extension(mut self, extension: impl HttpTransportExtension<R>) -> Self {
+        self.extensions.push(Arc::new(extension));
+        self
+    }
+
+    /// Registers a shared native transport extension.
+    pub fn extension_arc(mut self, extension: Arc<dyn HttpTransportExtension<R>>) -> Self {
+        self.extensions.push(extension);
+        self
+    }
+
+    /// Builds the HTTP plugin.
+    ///
+    /// The plugin reads its [`Config`] from the `plugins > http` object of the `tauri.conf.json` file;
+    /// when that object is missing, [`Config::default`] is used.
+    ///
+    /// With the `cookies` Cargo feature (enabled by default), a cookie jar is loaded from a `.cookies`
+    /// file in the application cache directory on setup and written back to it when the application
+    /// exits. A jar that cannot be read is replaced by an empty one.
+    pub fn build(self) -> TauriPlugin<R, Option<Config>> {
+        let extensions = Arc::new(self.extensions);
+
+        PluginBuilder::<R, Option<Config>>::new("http")
+            .setup(|app, api| {
+                #[cfg(feature = "cookies")]
+                let cookies_jar = {
+                    use crate::reqwest_cookie_store::*;
+                    use std::fs::File;
+                    use std::io::BufReader;
+
+                    let cache_dir = app.path().app_cache_dir()?;
+                    std::fs::create_dir_all(&cache_dir)?;
+
+                    let path = cache_dir.join(COOKIES_FILENAME);
+                    let file = File::options()
+                        .create(true)
+                        .append(true)
+                        .read(true)
+                        .open(&path)?;
+
+                    let reader = BufReader::new(file);
+                    CookieStoreMutex::load(path.clone(), reader).unwrap_or_else(|_e| {
+                        #[cfg(feature = "tracing")]
+                        tracing::warn!(
+                            "failed to load cookie store: {_e}, falling back to empty store"
+                        );
+                        CookieStoreMutex::new(path, Default::default())
+                    })
+                };
+
+                for extension in extensions.iter() {
+                    extension.setup(app)?;
+                }
+
+                let state = Http {
+                    config: api.config().clone().unwrap_or_default(),
+                    extensions,
+                    #[cfg(feature = "cookies")]
+                    cookies_jar: Arc::new(cookies_jar),
+                };
+
+                app.manage(state);
+
+                Ok(())
+            })
+            .on_event(|_app, _event| {
+                #[cfg(feature = "cookies")]
+                if let tauri::RunEvent::Exit = _event {
+                    let state = _app.state::<Http<R>>();
+
+                    match state.cookies_jar.request_save() {
+                        Ok(rx) => {
+                            let _ = rx.recv();
+                        }
+                        Err(_e) => {
+                            #[cfg(feature = "tracing")]
+                            tracing::error!("failed to save cookie jar: {_e}");
+                        }
+                    }
+                }
+            })
+            .invoke_handler(tauri::generate_handler![
+                commands::fetch,
+                commands::fetch_cancel,
+                commands::fetch_send,
+                commands::fetch_read_body,
+                commands::fetch_cancel_body,
+            ])
+            .build()
+    }
+}
+
+/// Initializes the plugin with the default transport behavior.
 ///
-/// The plugin reads its [`Config`] from the `plugins > http` object of the `tauri.conf.json` file;
-/// when that object is missing, [`Config::default`] is used.
-///
-/// With the `cookies` Cargo feature (enabled by default), a cookie jar is loaded from a `.cookies`
-/// file in the application cache directory on setup and written back to it when the application
-/// exits. A jar that cannot be read is replaced by an empty one.
+/// See [`Builder::build`] for the configuration and cookie behavior.
 ///
 /// Register it on the Tauri builder with `.plugin(tauri_plugin_http::init())`.
 pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
-    Builder::<R, Option<Config>>::new("http")
-        .setup(|app, api| {
-            #[cfg(feature = "cookies")]
-            let cookies_jar = {
-                use crate::reqwest_cookie_store::*;
-                use std::fs::File;
-                use std::io::BufReader;
-
-                let cache_dir = app.path().app_cache_dir()?;
-                std::fs::create_dir_all(&cache_dir)?;
-
-                let path = cache_dir.join(COOKIES_FILENAME);
-                let file = File::options()
-                    .create(true)
-                    .append(true)
-                    .read(true)
-                    .open(&path)?;
-
-                let reader = BufReader::new(file);
-                CookieStoreMutex::load(path.clone(), reader).unwrap_or_else(|_e| {
-                    #[cfg(feature = "tracing")]
-                    tracing::warn!(
-                        "failed to load cookie store: {_e}, falling back to empty store"
-                    );
-                    CookieStoreMutex::new(path, Default::default())
-                })
-            };
-
-            let state = Http {
-                config: api.config().clone().unwrap_or_default(),
-                #[cfg(feature = "cookies")]
-                cookies_jar: std::sync::Arc::new(cookies_jar),
-            };
-
-            app.manage(state);
-
-            Ok(())
-        })
-        .on_event(|app, event| {
-            #[cfg(feature = "cookies")]
-            if let tauri::RunEvent::Exit = event {
-                let state = app.state::<Http>();
-
-                match state.cookies_jar.request_save() {
-                    Ok(rx) => {
-                        let _ = rx.recv();
-                    }
-                    Err(_e) => {
-                        #[cfg(feature = "tracing")]
-                        tracing::error!("failed to save cookie jar: {_e}");
-                    }
-                }
-            }
-        })
-        .invoke_handler(tauri::generate_handler![
-            commands::fetch,
-            commands::fetch_cancel,
-            commands::fetch_send,
-            commands::fetch_read_body,
-            commands::fetch_cancel_body,
-        ])
-        .build()
+    Builder::new().build()
 }

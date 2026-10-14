@@ -14,6 +14,12 @@
         },
         {
           "url": "http://127.0.0.1:3004"
+        },
+        {
+          "url": "https://localhost:3005"
+        },
+        {
+          "url": "https://localhost:3006"
         }
       ]
     },

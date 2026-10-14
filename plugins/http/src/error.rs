@@ -7,7 +7,8 @@ use url::Url;
 
 /// Errors that can happen while using the HTTP plugin.
 ///
-/// The error is serialized to the frontend as its [`Display`](std::fmt::Display) string.
+/// The error is serialized to the frontend as its [`Display`](std::fmt::Display) string, except
+/// for [`Error::Extension`], which is serialized as the extension's JSON value.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// JSON serialization or deserialization error.
@@ -21,6 +22,10 @@ pub enum Error {
     /// request or reading the response body.
     #[error(transparent)]
     Network(#[from] reqwest::Error),
+    /// Error returned by a [`HttpTransportExtension`](crate::HttpTransportExtension) that rejected
+    /// the request or classified its transport failure.
+    #[error(transparent)]
+    Extension(#[from] crate::ExtensionError),
     /// Error from the [`http`] crate, raised while building the response of a `data:` URL.
     #[error(transparent)]
     Http(#[from] http::Error),
@@ -78,9 +83,42 @@ impl Serialize for Error {
     where
         S: Serializer,
     {
-        serializer.serialize_str(self.to_string().as_ref())
+        match self {
+            Self::Extension(error) => error.value().serialize(serializer),
+            _ => serializer.serialize_str(self.to_string().as_ref()),
+        }
     }
 }
 
 /// Alias for a [`Result`](std::result::Result) with the error type [`Error`].
 pub type Result<T> = std::result::Result<T, Error>;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn extension_errors_keep_their_json_shape() {
+        let error = Error::Extension(crate::ExtensionError::from_value(serde_json::json!({
+            "code": "POLICY_REJECTED",
+            "host": "example.test"
+        })));
+
+        assert_eq!(
+            serde_json::to_value(error).unwrap(),
+            serde_json::json!({
+                "code": "POLICY_REJECTED",
+                "host": "example.test"
+            })
+        );
+    }
+
+    #[test]
+    fn existing_errors_remain_strings() {
+        let error = Error::RequestCanceled;
+        assert_eq!(
+            serde_json::to_value(error).unwrap(),
+            serde_json::Value::String("Request canceled".into())
+        );
+    }
+}

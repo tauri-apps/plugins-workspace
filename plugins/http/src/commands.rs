@@ -16,7 +16,7 @@ use tauri::{
 use tokio::sync::oneshot::{Receiver, Sender, channel};
 
 use crate::{
-    Error, Http, Result,
+    Error, Http, RequestContext, Result,
     scope::{Entry, Scope},
 };
 
@@ -231,7 +231,7 @@ fn map_request_error(error: reqwest::Error) -> Error {
 #[command]
 pub async fn fetch<R: Runtime>(
     webview: Webview<R>,
-    state: State<'_, Http>,
+    state: State<'_, Http<R>>,
     client_config: ClientConfig,
     command_scope: CommandScope<Entry>,
     global_scope: GlobalScope<Entry>,
@@ -291,6 +291,33 @@ pub async fn fetch<R: Runtime>(
                 return Err(Error::UrlNotAllowed(url));
             }
 
+            let extensions = state.extensions.clone();
+            let connect_timeout = connect_timeout.map(Duration::from_millis);
+            let (danger_accept_invalid_certs, danger_accept_invalid_hostnames) = danger
+                .as_ref()
+                .map(|settings| {
+                    (
+                        settings.accept_invalid_certs,
+                        settings.accept_invalid_hostnames,
+                    )
+                })
+                .unwrap_or_default();
+            let request_context = RequestContext::new(
+                method.clone(),
+                url.clone(),
+                headers.clone(),
+                data.is_some(),
+                connect_timeout,
+                max_redirections,
+                proxy.is_some(),
+                danger_accept_invalid_certs,
+                danger_accept_invalid_hostnames,
+            );
+
+            for extension in extensions.iter() {
+                extension.validate(&request_context)?;
+            }
+
             let mut builder = reqwest::ClientBuilder::new();
 
             if let Some(danger_config) = danger {
@@ -314,7 +341,7 @@ pub async fn fetch<R: Runtime>(
             }
 
             if let Some(timeout) = connect_timeout {
-                builder = builder.connect_timeout(Duration::from_millis(timeout));
+                builder = builder.connect_timeout(timeout);
             }
 
             let scope = state.config.scope_redirects.then_some(scope);
@@ -327,6 +354,10 @@ pub async fn fetch<R: Runtime>(
             #[cfg(feature = "cookies")]
             {
                 builder = builder.cookie_provider(state.cookies_jar.clone());
+            }
+
+            for extension in extensions.iter() {
+                builder = extension.configure(builder, &request_context)?;
             }
 
             let mut request = builder.build()?.request(method.clone(), url);
@@ -377,7 +408,17 @@ pub async fn fetch<R: Runtime>(
             #[cfg(feature = "tracing")]
             tracing::trace!("{:?}", request);
 
-            let fut = async move { request.send().await.map_err(map_request_error) };
+            let fut = async move {
+                request.send().await.map_err(|error| {
+                    extensions
+                        .iter()
+                        .find_map(|extension| {
+                            extension.map_transport_error(&error, &request_context)
+                        })
+                        .map(Error::from)
+                        .unwrap_or_else(|| map_request_error(error))
+                })
+            };
 
             let mut resources_table = webview.resources_table();
             let rid = resources_table.add_request(Box::pin(fut));

@@ -143,7 +143,10 @@ const ERROR_REQUEST_CANCELLED = 'Request cancelled'
  * @param init The standard `fetch` request options, extended with the Rust client options from
  * {@linkcode ClientOptions}: `maxRedirections`, `connectTimeout`, `proxy` and `danger`. The
  * `signal` option can be used to abort the request.
- * @returns A promise resolving to the `Response` of the request.
+ * @returns A promise resolving to the `Response` of the request. It rejects with an error message
+ * string when the request fails, or with the structured value of a native transport extension
+ * registered in Rust (for instance `{ code, message, host }` from SPKI pinning) when the extension
+ * rejects the request.
  *
  * @since 2.0.0
  */
