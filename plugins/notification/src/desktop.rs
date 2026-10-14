@@ -139,19 +139,27 @@ impl<R: Runtime> crate::NotificationBuilder<R> {
         if let Some(sound) = self.data.sound.clone() {
             notification = notification.sound(sound);
         }
-        if shared.has_listeners() {
-            if let Some(action_type) = self
+        let report = shared.has_listeners();
+        if report
+            && let Some(action_type) = self
                 .data
                 .action_type_id
                 .as_ref()
                 .and_then(|id| lock(&shared.action_types).get(id).cloned())
-            {
-                for action in action_type.actions() {
-                    notification = notification.action(action.id(), action.title());
-                }
+        {
+            for action in action_type.actions() {
+                notification = notification.action(action.id(), action.title());
             }
-            let id = self.data.id;
-            let data = serde_json::to_value(&self.data).unwrap_or(Value::Null);
+        }
+        let id = self.data.id;
+        let data = serde_json::to_value(&self.data).unwrap_or(Value::Null);
+        // Linux and the BSDs send every notification on the connection the plugin keeps open,
+        // since servers like GNOME's close a notification once the connection that sent it goes
+        // away.
+        #[cfg(all(unix, not(target_os = "macos")))]
+        notification.show_tracked(shared, id, data, report, self.on_close)?;
+        #[cfg(any(windows, target_os = "macos"))]
+        if report {
             notification.show_tracked(shared, id, data)?;
         } else {
             notification.show()?;
@@ -346,6 +354,8 @@ mod imp {
         /// The tracked notifications the server still shows, by server id: their identifier and
         /// the payload their actions carry.
         pub(super) shown: Mutex<HashMap<u32, (i32, Value)>>,
+        /// The `on_close` callbacks of the tracked notifications, by server id.
+        pub(super) on_close: Mutex<HashMap<u32, crate::OnClose>>,
     }
 
     /// The payload of an `actionPerformed` event, as the mobile plugins send it.
@@ -421,6 +431,7 @@ mod imp {
         ///   .run(tauri::generate_context!("test/tauri.conf.json"))
         ///   .expect("error while running tauri application");
         /// ```
+        #[cfg(any(windows, target_os = "macos", feature = "windows7-compat"))]
         pub fn show(self) -> crate::Result<()> {
             let notification = self.build()?;
             tauri::async_runtime::spawn(async move {
@@ -430,21 +441,29 @@ mod imp {
             Ok(())
         }
 
-        /// Shows the notification and reports what the user does with it: a click on the
-        /// notification (`tap`) or on an action goes to `shared`'s listeners as an
-        /// `actionPerformed` event carrying `data`. Closing it reports nothing.
+        /// Shows the notification on the connection `shared` keeps open. When `report` is set,
+        /// what the user does with it is reported: a click on the notification (`tap`) or on an
+        /// action goes to `shared`'s listeners as an `actionPerformed` event carrying `data`.
+        /// `on_close` runs once the server reports the notification closed.
         #[cfg(all(unix, not(target_os = "macos")))]
         pub(crate) fn show_tracked(
             self,
             shared: Arc<Shared>,
             id: i32,
             data: Value,
+            report: bool,
+            on_close: Option<crate::OnClose>,
         ) -> crate::Result<()> {
             let mut notification = self.build()?;
-            // The Desktop Notifications Specification reports a click on the notification itself
-            // as the action `default`, and only for a notification that offers that action.
-            notification.action("default", "");
-            tauri::async_runtime::spawn_blocking(move || track(notification, &shared, id, data));
+            if report {
+                // The Desktop Notifications Specification reports a click on the notification
+                // itself as the action `default`, and only for a notification that offers that
+                // action.
+                notification.action("default", "");
+            }
+            tauri::async_runtime::spawn_blocking(move || {
+                track(notification, &shared, id, report.then_some(data), on_close)
+            });
             Ok(())
         }
 
@@ -527,9 +546,15 @@ mod imp {
     );
 
     /// Linux and the BSDs: shows the notification and records it, so the listener thread knows
-    /// which payload its signals carry.
+    /// which payload its signals carry, when there is one, and what to run once it closes.
     #[cfg(all(unix, not(target_os = "macos")))]
-    fn track(notification: notify_rust::Notification, shared: &Arc<Shared>, id: i32, data: Value) {
+    fn track(
+        notification: notify_rust::Notification,
+        shared: &Arc<Shared>,
+        id: i32,
+        data: Option<Value>,
+        on_close: Option<crate::OnClose>,
+    ) {
         let tracker = &shared.tracker;
         let Some(connection) = tracker
             .connection
@@ -542,7 +567,12 @@ mod imp {
         // recorded waits for it instead of being missed.
         let mut shown = lock(&tracker.shown);
         if let Ok(server_id) = notify(connection, &notification) {
-            shown.insert(server_id, (id, data));
+            if let Some(data) = data {
+                shown.insert(server_id, (id, data));
+            }
+            if let Some(on_close) = on_close {
+                lock(&tracker.on_close).insert(server_id, on_close);
+            }
         }
     }
 
@@ -632,6 +662,13 @@ mod imp {
             Some("NotificationClosed") => {
                 if let Ok((server_id, _reason)) = body.deserialize::<(u32, u32)>() {
                     lock(&shared.tracker.shown).remove(&server_id);
+                    // Taken out first, so the callback runs without the lock held.
+                    let on_close = lock(&shared.tracker.on_close).remove(&server_id);
+                    if let Some(on_close) = on_close {
+                        // A panicking callback must not end the thread that reports the signals
+                        // of the other notifications.
+                        let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(on_close.0));
+                    }
                 }
                 return;
             }
@@ -800,6 +837,29 @@ mod tests {
 
         assert_eq!(*seen.lock().unwrap(), ["tap", "snooze"]);
         assert!(lock(&shared.tracker.shown).is_empty());
+    }
+
+    #[cfg(all(unix, not(target_os = "macos")))]
+    #[test]
+    fn on_close_runs_once_without_the_lock_held() {
+        let shared = Arc::new(Shared::default());
+        let closed = Arc::new(Mutex::new(0));
+        let (inner, count) = (Arc::clone(&shared), Arc::clone(&closed));
+        lock(&shared.tracker.on_close).insert(
+            41,
+            crate::OnClose(Box::new(move || {
+                // deadlocks if the callback runs with the lock held
+                assert!(lock(&inner.tracker.on_close).is_empty());
+                *count.lock().unwrap() += 1;
+            })),
+        );
+        lock(&shared.tracker.on_close).insert(42, crate::OnClose(Box::new(|| panic!("boom"))));
+
+        imp::on_signal(&shared, &signal("NotificationClosed", &(42u32, 2u32)));
+        imp::on_signal(&shared, &signal("NotificationClosed", &(41u32, 2u32)));
+        imp::on_signal(&shared, &signal("NotificationClosed", &(41u32, 2u32)));
+
+        assert_eq!(*closed.lock().unwrap(), 1);
     }
 
     #[test]

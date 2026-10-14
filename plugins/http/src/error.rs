@@ -67,7 +67,9 @@ pub enum Error {
     /// webview resource table.
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
-    /// A response header value is not valid UTF-8, so it cannot be forwarded to the frontend.
+    // TODO(v3): remove this
+    /// A value is not valid UTF-8. No longer returned by this plugin: response header values are
+    /// forwarded to the frontend as byte strings.
     #[error(transparent)]
     Utf8(#[from] std::string::FromUtf8Error),
     /// The frontend requested dangerous client settings, but the `dangerous-settings` Cargo

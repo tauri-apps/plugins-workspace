@@ -34,6 +34,18 @@ describePlugin('clipboard-manager', () => {
     ).toBe('second')
   })
 
+  it('writeSecret writes text the app can read back', async () => {
+    // the history/sync exclusion hints aren't observable from the app itself
+    const text = 'secret from e2e — ✓'
+    expect(
+      await tauri(async (api, text) => {
+        await api.clipboardManager.writeText('not the secret')
+        await api.clipboardManager.writeSecret(text)
+        return api.clipboardManager.readText()
+      }, text)
+    ).toBe(text)
+  })
+
   itDesktop('writeHtml exposes the alt text as plain text', async () => {
     expect(
       await tauri(async (api) => {

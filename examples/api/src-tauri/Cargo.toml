@@ -79,6 +79,7 @@ tauri-plugin-barcode-scanner = { path = "../../../plugins/barcode-scanner/", ver
 tauri-plugin-nfc = { path = "../../../plugins/nfc", version = "2.4.2" }
 tauri-plugin-geolocation = { path = "../../../plugins/geolocation/", version = "2.4.2" }
 tauri-plugin-haptics = { path = "../../../plugins/haptics/", version = "2.4.2" }
+tauri-plugin-torch = { path = "../../../plugins/torch/", version = "2.0.0" }
 
 [features]
 # Enables the WebDriver automation bridge; set by the e2e suite's build (packages/api-e2e).

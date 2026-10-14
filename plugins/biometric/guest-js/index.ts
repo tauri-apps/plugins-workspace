@@ -58,6 +58,10 @@ export interface AuthOptions {
   allowDeviceCredential?: boolean
   /** Label for the cancel button. Available on Android, iOS and macOS. */
   cancelTitle?: string
+  /** The plain data that must be encrypted after successful biometric authentication. Used by {@linkcode biometricCipher}. **Android only.** */
+  dataToEncrypt?: string
+  /** The encrypted data that must be decrypted after successful biometric authentication. Used by {@linkcode biometricCipher}. **Android only.** */
+  dataToDecrypt?: string
 
   // iOS and macOS options
   /** Text displayed on the fallback button if biometric authentication fails. **iOS and macOS only.** */
@@ -111,6 +115,44 @@ export async function authenticate(
   options?: AuthOptions
 ): Promise<void> {
   await invoke('plugin:biometric|authenticate', {
+    reason,
+    ...options
+  })
+}
+
+/**
+ * Encrypts/Decrypts some payload using biometric authentication. It will Prompt the user to authenticate
+ * using the system interface (touchID, faceID or Android Iris).
+ * Rejects if the authentication fails.
+ *
+ * Warning: consider that if the data is encrypted and the user changes the biometric settings, the key needed
+ * to decrypt the data will be lost. So, it's recommended to use this only to data that the user can get back
+ * by other means (i.e. storing their password in a secure way so they can login passwordless with biometric authentication).
+ *
+ * ```javascript
+ * import { biometricCipher } from "@tauri-apps/plugin-biometric";
+ *
+ * // how to encrypt some data
+ * const options = {
+ *   dataToEncrypt: "...", // if not empty, will encrypt this data
+ * };
+ * const encryptedData = await biometricCipher('Open your wallet', options);
+ *
+ * // how to decrypt the encrypted data
+ * const options = {
+ *   dataToDecrypt: encryptedData // if not empty, will decrypt the data (that was previously encrypted by this method)
+ * };
+ * const decryptedData = await biometricCipher('Open your wallet', options);
+ * ```
+ * @param reason
+ * @param options
+ * @returns
+ */
+export async function biometricCipher(
+  reason: string,
+  options?: AuthOptions
+): Promise<{ data: string }> {
+  return await invoke<{ data: string }>('plugin:biometric|biometric_cipher', {
     reason,
     ...options
   })

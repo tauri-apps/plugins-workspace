@@ -23,14 +23,15 @@ type Surface<T> = { [P in keyof T]: (keyof T[P])[] }
 
 /** Plugins the example registers on every platform. */
 const commonSurface: Surface<CommonPluginApi> = {
-  biometric: ['BiometryType', 'checkStatus', 'authenticate'],
+  biometric: ['BiometryType', 'checkStatus', 'authenticate', 'biometricCipher'],
   clipboardManager: [
     'writeText',
     'readText',
     'writeHtml',
     'clear',
     'readImage',
-    'writeImage'
+    'writeImage',
+    'writeSecret'
   ],
   deepLink: [
     'getCurrent',

@@ -11,6 +11,9 @@
         "https://tauri.app",
         {
           "url": "http://localhost:3003"
+        },
+        {
+          "url": "http://127.0.0.1:3004"
         }
       ]
     },
@@ -87,6 +90,7 @@
     "clipboard-manager:allow-write-image",
     "clipboard-manager:allow-write-html",
     "clipboard-manager:allow-clear",
+    "clipboard-manager:allow-write-secret",
     "fs:default",
     "fs:read-meta",
     "fs:allow-open",

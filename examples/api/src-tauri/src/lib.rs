@@ -99,6 +99,7 @@ pub fn run() {
                 app.handle().plugin(tauri_plugin_nfc::init())?;
                 app.handle().plugin(tauri_plugin_geolocation::init())?;
                 app.handle().plugin(tauri_plugin_haptics::init())?;
+                app.handle().plugin(tauri_plugin_torch::init())?;
             }
 
             let mut webview_window_builder =

@@ -12,6 +12,10 @@ pub struct AuthOptions {
     pub allow_device_credential: bool,
     /// Label for the Cancel button. This feature is available on Android, iOS and macOS.
     pub cancel_title: Option<String>,
+    /// The plain data that must be encrypted after successful biometric authentication. **Android only.**
+    pub data_to_encrypt: Option<String>,
+    /// The encrypted data that must be decrypted after successful biometric authentication. **Android only.**
+    pub data_to_decrypt: Option<String>,
     /// Specifies the text displayed on the fallback button if biometric authentication fails. This feature is available on iOS and macOS only.
     pub fallback_title: Option<String>,
     /// Title indicating the purpose of biometric verification. This feature is available Android only.
@@ -49,4 +53,11 @@ pub struct Status {
     /// A platform-specific error code describing why biometric authentication is unavailable.
     /// Only set when [`Self::is_available`] is `false`.
     pub error_code: Option<String>,
+}
+
+/// The result of [`Biometric::biometric_cipher`](crate::Biometric::biometric_cipher).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CipherResult {
+    /// The encrypted or decrypted data.
+    pub data: String,
 }

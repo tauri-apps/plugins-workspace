@@ -24,6 +24,12 @@ export const UPDATER_FIXTURE_OLDER_VERSION = '1.0.0'
 export const DOWNLOAD_FIXTURE_BODY =
   'hello from the plugins e2e fixture server\n'.repeat(64)
 
+/**
+ * Filename `GET /raw-header` puts in its `content-disposition`, sent as raw
+ * UTF-8 bytes on the wire as many servers do.
+ */
+export const RAW_HEADER_FILENAME = '中文-EN.pdf'
+
 /** WebSocket endpoint of the fixture server (the `ws://` twin of {@link FIXTURE_SERVER_URL}). */
 export const WEBSOCKET_FIXTURE_URL = `ws://127.0.0.1:${FIXTURE_SERVER_PORT}/ws`
 /** Text message that makes the `/ws` endpoint close the connection with {@link WEBSOCKET_CLOSE_CODE}. */
@@ -45,7 +51,10 @@ export interface FixtureServer {
  *   {@link UPDATER_TARGET_NO_UPDATE}.
  * - `GET /download` — {@link DOWNLOAD_FIXTURE_BODY} with a `Content-Length`.
  * - `* /echo` — a JSON description of the request (`method`, `url`, `headers`
- *   and the utf-8 `body`).
+ *   and the utf-8 `body`). Node decodes header values as ISO-8859-1, one char
+ *   per byte, so `headers` shows the exact bytes the client sent.
+ * - `GET /raw-header` — an empty response whose `content-disposition` names
+ *   {@link RAW_HEADER_FILENAME} in raw UTF-8 bytes.
  * - `ws /ws` — a WebSocket echo endpoint: text and binary messages are sent
  *   back as-is, and {@link WEBSOCKET_CLOSE_REQUEST} makes the server close the
  *   connection with {@link WEBSOCKET_CLOSE_CODE}. On `/ws/headers` the server
@@ -88,6 +97,20 @@ export function startFixtureServer(): Promise<FixtureServer> {
             'content-length': Buffer.byteLength(DOWNLOAD_FIXTURE_BODY)
           })
           .end(DOWNLOAD_FIXTURE_BODY)
+        return
+      }
+
+      if (route === 'raw-header' && req.method === 'GET') {
+        // Node writes header strings as ISO-8859-1, so this sends the UTF-8 bytes as-is.
+        const disposition = Buffer.from(
+          `attachment; filename="${RAW_HEADER_FILENAME}"`
+        ).toString('latin1')
+        res
+          .writeHead(200, {
+            'content-disposition': disposition,
+            'content-length': 0
+          })
+          .end()
         return
       }
 

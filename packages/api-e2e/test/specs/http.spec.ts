@@ -4,6 +4,7 @@
 
 import { expect } from '@wdio/globals'
 import { tauri, tauriError, describePlugin } from '../helpers/index.js'
+import { FIXTURE_SERVER_URL, RAW_HEADER_FILENAME } from '../helpers/server.js'
 
 // The example spawns an echo server on this port: it replies with the request
 // body and the request headers, and sets a `session-token` cookie on requests
@@ -91,6 +92,40 @@ describePlugin('http', () => {
     expect(body.text).toContain('baz')
     expect(body.text).toContain('name="bar"')
     expect(body.text).toContain('qux')
+  })
+
+  it('fetch exposes non-ASCII response header bytes as a ByteString', async () => {
+    // https://github.com/tauri-apps/plugins-workspace/issues/2898
+    const result = await tauri(async (api, url) => {
+      const response = await api.http.fetch(`${url}/raw-header`)
+      await response.text()
+      const value = response.headers.get('content-disposition') ?? ''
+      // A ByteString holds one byte per char, like a browser exposes it.
+      const bytes = Uint8Array.from(value, (c) => c.charCodeAt(0))
+      return new TextDecoder().decode(bytes)
+    }, FIXTURE_SERVER_URL)
+    expect(result).toBe(`attachment; filename="${RAW_HEADER_FILENAME}"`)
+  })
+
+  it('fetch sends ByteString request header values as raw bytes', async () => {
+    // Each char is one byte (0x80-0xFF) on the wire, as in a browser. The
+    // tail is the UTF-8 encoding of `中`, as when a response header is sent back.
+    const value = 'x\u00e4\u00ff\u00e4\u00b8\u00ad'
+    const echoed = await tauri(
+      async (api, url, value) => {
+        const response = await api.http.fetch(`${url}/echo`, {
+          headers: { 'x-e2e-raw': value }
+        })
+        const body = (await response.json()) as {
+          headers: Record<string, string>
+        }
+        return body.headers['x-e2e-raw']
+      },
+      FIXTURE_SERVER_URL,
+      value
+    )
+    // the fixture server decodes header values as ISO-8859-1
+    expect(echoed).toBe(value)
   })
 
   it('the cookie jar stores and replays cookies across requests', async () => {

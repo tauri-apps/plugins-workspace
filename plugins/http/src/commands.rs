@@ -214,7 +214,7 @@ pub async fn fetch<R: Runtime>(
             continue;
         }
 
-        headers.append(name, HeaderValue::from_str(&v)?);
+        headers.append(name, byte_string_to_header_value(&v)?);
     }
 
     match scheme {
@@ -377,6 +377,26 @@ pub fn fetch_cancel<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> crate::
     Ok(())
 }
 
+// Header values are byte strings. Decode as ISO-8859-1 so the raw bytes survive
+// as a valid ByteString for `new Headers()` on the JS side.
+fn header_value_to_byte_string(value: &HeaderValue) -> String {
+    value.as_bytes().iter().map(|&b| b as char).collect()
+}
+
+// The inverse of `header_value_to_byte_string`: a ByteString from `Headers` on the
+// JS side carries one byte per char, so send those bytes as-is like a browser does.
+// Values with chars above U+00FF can't come from `Headers`; keep encoding those as UTF-8.
+fn byte_string_to_header_value(value: &str) -> crate::Result<HeaderValue> {
+    let bytes = value
+        .chars()
+        .map(|c| u8::try_from(c).ok())
+        .collect::<Option<Vec<u8>>>();
+    Ok(match bytes {
+        Some(bytes) => HeaderValue::from_bytes(&bytes)?,
+        None => HeaderValue::from_str(value)?,
+    })
+}
+
 #[command]
 pub async fn fetch_send<R: Runtime>(
     webview: Webview<R>,
@@ -416,10 +436,7 @@ pub async fn fetch_send<R: Runtime>(
     let url = res.url().to_string();
     let mut headers = Vec::new();
     for (key, val) in res.headers().iter() {
-        headers.push((
-            key.as_str().into(),
-            String::from_utf8(val.as_bytes().to_vec())?,
-        ));
+        headers.push((key.as_str().into(), header_value_to_byte_string(val)));
     }
 
     let mut resources_table = webview.resources_table();
@@ -504,5 +521,58 @@ fn is_unsafe_header(header: &HeaderName) -> bool {
     ) || {
         let lower = header.as_str().to_lowercase();
         lower.starts_with("proxy-") || lower.starts_with("sec-")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn assert_byte_string(value: &HeaderValue) {
+        let decoded = header_value_to_byte_string(value);
+        assert!(
+            decoded.chars().all(|c| u32::from(c) <= 255),
+            "header value must be a JS ByteString (every code point <= 255)"
+        );
+        assert_eq!(
+            decoded.chars().map(|c| c as u8).collect::<Vec<_>>(),
+            value.as_bytes(),
+            "ISO-8859-1 decode must preserve the wire bytes"
+        );
+        let json = serde_json::to_string(&decoded).unwrap();
+        let roundtrip: String = serde_json::from_str(&json).unwrap();
+        assert_eq!(roundtrip, decoded);
+    }
+
+    #[test]
+    fn utf8_content_disposition_filename_is_byte_string() {
+        // Issue #2898: `filename="中文-EN.pdf"` sent as raw UTF-8 on the wire.
+        let value =
+            HeaderValue::from_bytes(b"attachment; filename=\"\xe4\xb8\xad\xe6\x96\x87-EN.pdf\"")
+                .unwrap();
+        assert_byte_string(&value);
+    }
+
+    #[test]
+    fn non_utf8_header_bytes_are_preserved() {
+        let value = HeaderValue::from_bytes(b"x\xff").unwrap();
+        assert_byte_string(&value);
+    }
+
+    #[test]
+    fn request_byte_string_is_sent_as_raw_bytes() {
+        let wire = b"attachment; filename=\"\xe4\xb8\xad\xe6\x96\x87-EN.pdf\"";
+        let byte_string = header_value_to_byte_string(&HeaderValue::from_bytes(wire).unwrap());
+        let value = byte_string_to_header_value(&byte_string).unwrap();
+        assert_eq!(value.as_bytes(), wire);
+
+        let value = byte_string_to_header_value("x\u{ff}").unwrap();
+        assert_eq!(value.as_bytes(), b"x\xff");
+    }
+
+    #[test]
+    fn request_non_byte_string_falls_back_to_utf8() {
+        let value = byte_string_to_header_value("中文").unwrap();
+        assert_eq!(value.as_bytes(), "中文".as_bytes());
     }
 }
