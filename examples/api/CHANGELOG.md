@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.0.44-alpha.4]
+
+### Dependencies
+
+- Upgraded to `http-js@3.0.0-alpha.3`
+- Upgraded to `barcode-scanner-js@3.0.0-alpha.3`
+- Upgraded to `biometric-js@3.0.0-alpha.3`
+- Upgraded to `clipboard-manager-js@3.0.0-alpha.3`
+- Upgraded to `dialog-js@3.0.0-alpha.4`
+- Upgraded to `fs-js@3.0.0-alpha.3`
+- Upgraded to `global-shortcut-js@3.0.0-alpha.3`
+- Upgraded to `log-js@3.0.0-alpha.3`
+- Upgraded to `nfc-js@3.0.0-alpha.3`
+- Upgraded to `notification-js@3.0.0-alpha.3`
+- Upgraded to `opener-js@3.0.0-alpha.3`
+- Upgraded to `shell-js@3.0.0-alpha.3`
+- Upgraded to `updater-js@3.0.0-alpha.3`
+- Upgraded to `cli-js@3.0.0-alpha.3`
+- Upgraded to `os-js@3.0.0-alpha.3`
+- Upgraded to `process-js@3.0.0-alpha.3`
+- Upgraded to `store-js@3.0.0-alpha.3`
+- Upgraded to `torch-js@3.0.0-alpha.0`
+
 ## [2.0.44-alpha.3]
 
 ### Dependencies
