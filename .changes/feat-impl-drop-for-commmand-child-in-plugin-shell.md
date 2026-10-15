@@ -3,4 +3,4 @@
 "shell-js": minor:feat
 ---
 
-Impl Drop for ChildCommand, and gving boolean to determine kill on drop.
+Add Command::kill_on_drop.

@@ -128,7 +128,6 @@ impl Drop for CommandChild {
         if self.kill_on_drop {
             #[cfg(not(debug_assertions))]
             let _ = self.inner.kill();
-            #[cfg(debug_assertions)]
             if let Err(e) = self.inner.kill() {
                 log::error!("Failed to kill child process {}: {}", self.inner.id(), e);
             }
