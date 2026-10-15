@@ -91,15 +91,13 @@ impl CommandChild {
 impl Drop for CommandChild {
     /// Kill the child process when the CommandChild is dropped.
     fn drop(&mut self) {
-        // Only kill the process if kill_on_drop is true.
-        if !self.kill_on_drop {
-            return;
-        }
-        #[cfg(not(debug_assertions))]
-        let _ = self.inner.kill();
-        #[cfg(debug_assertions)]
-        if let Err(e) = self.inner.kill() {
-            log::error!("Failed to kill child process {}: {}", self.inner.id(), e);
+        if self.kill_on_drop {
+            #[cfg(not(debug_assertions))]
+            let _ = self.inner.kill();
+            #[cfg(debug_assertions)]
+            if let Err(e) = self.inner.kill() {
+                log::error!("Failed to kill child process {}: {}", self.inner.id(), e);
+            }
         }
     }
 }
@@ -252,7 +250,7 @@ impl Command {
     }
 
     /// Configures whether the child process should be killed when the CommandChild is dropped.
-    pub fn set_kill_on_drop(mut self, kill_on_drop: bool) -> Self {
+    pub fn kill_on_drop(mut self, kill_on_drop: bool) -> Self {
         self.kill_on_drop = kill_on_drop;
         self
     }
