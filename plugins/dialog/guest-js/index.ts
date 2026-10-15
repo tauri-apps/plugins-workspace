@@ -2,6 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+/**
+ * Native system dialogs for opening and saving files, along with message, ask and confirm dialogs.
+ *
+ * @module
+ */
+
 import { invoke } from '@tauri-apps/api/core'
 
 /**
@@ -10,7 +16,7 @@ import { invoke } from '@tauri-apps/api/core'
  * @since 2.0.0
  */
 interface DialogFilter {
-  /** Filter name. */
+  /** The name of the filter, shown to the user in the dialog's filter selector. */
   name: string
   /**
    * Extensions to filter, without a `.` prefix.
@@ -76,6 +82,31 @@ interface OpenDialogOptions {
    * On desktop, this option is ignored.
    */
   pickerMode?: PickerMode
+  /**
+   * The file access mode of the dialog.
+   * If not provided, `copy` is used, which matches the behavior of the {@linkcode open} method before the introduction of this option.
+   *
+   * **Usage**
+   * If a file is opened with {@linkcode fileAccessMode: 'copy'}, it will be copied to the app's sandbox.
+   * This means the file can be read, edited, deleted, copied, or any other operation without any issues, since the file
+   * now belongs to the app.
+   * This also means that the caller has responsibility of deleting the file if this file is not meant to be retained
+   * in the app sandbox.
+   *
+   * If a file is opened with {@linkcode fileAccessMode: 'scoped'}, the file will remain in its original location
+   * and security-scoped access will be automatically managed by the system.
+   *
+   * **Note**
+   * This is specifically meant for document pickers on iOS or MacOS, in conjunction with [security scoped resources](https://developer.apple.com/documentation/foundation/nsurl/startaccessingsecurityscopedresource()).
+   *
+   * Why only document pickers, and not image or video pickers?
+   * The image and video pickers on iOS behave differently from the document pickers, and return [NSItemProvider](https://developer.apple.com/documentation/foundation/nsitemprovider) objects instead of file URLs.
+   * These are meant to be ephemeral (only available within the callback of the picker), and are not accessible outside of the callback.
+   * So for image and video pickers, the only way to access the file is to copy it to the app's sandbox, and this is the URL that is returned from this API.
+   * This means there is no provision for using `scoped` mode with image or video pickers.
+   * If an image or video picker is used, `copy` is always used.
+   */
+  fileAccessMode?: FileAccessMode
 }
 
 /**
@@ -112,6 +143,16 @@ interface SaveDialogOptions {
 export type PickerMode = 'document' | 'media' | 'image' | 'video'
 
 /**
+ * The file access mode of the dialog.
+ *
+ * - `copy`: copy/move the picked file to the app sandbox; no scoped access required.
+ * - `scoped`: keep file in place; security-scoped access is automatically managed.
+ *
+ * **Note:** This option is only supported on iOS 14 and above. This parameter is ignored on iOS 13 and below.
+ */
+export type FileAccessMode = 'copy' | 'scoped'
+
+/**
  * Default buttons for a message dialog.
  *
  * @since 2.4.0
@@ -136,11 +177,11 @@ type BanExcept<Allowed extends ButtonKey> = Partial<
  * @since 2.4.0
  */
 export type MessageDialogButtonsYesNoCancel = {
-  /** The Yes button. */
+  /** The label of the Yes button. */
   yes: string
-  /** The No button. */
+  /** The label of the No button. */
   no: string
-  /** The Cancel button. */
+  /** The label of the Cancel button. */
   cancel: string
 } & BanExcept<'yes' | 'no' | 'cancel'>
 
@@ -150,9 +191,9 @@ export type MessageDialogButtonsYesNoCancel = {
  * @since 2.4.0
  */
 export type MessageDialogButtonsOkCancel = {
-  /** The Ok button. */
+  /** The label of the Ok button. */
   ok: string
-  /** The Cancel button. */
+  /** The label of the Cancel button. */
   cancel: string
 } & BanExcept<'ok' | 'cancel'>
 
@@ -162,7 +203,7 @@ export type MessageDialogButtonsOkCancel = {
  * @since 2.4.0
  */
 export type MessageDialogButtonsOk = {
-  /** The Ok button. */
+  /** The label of the Ok button. */
   ok: string
 } & BanExcept<'ok'>
 
@@ -186,6 +227,8 @@ export type MessageDialogButtons =
   | MessageDialogCustomButtons
 
 /**
+ * Options for the message dialog.
+ *
  * @since 2.0.0
  */
 interface MessageDialogOptions {
@@ -247,6 +290,11 @@ function buttonsToRust(buttons: MessageDialogButtons | undefined) {
   return undefined
 }
 
+/**
+ * Options for the {@linkcode ask} and {@linkcode confirm} dialogs.
+ *
+ * @since 2.0.0
+ */
 interface ConfirmDialogOptions {
   /** The title of the dialog. Defaults to the app name. */
   title?: string
@@ -258,6 +306,12 @@ interface ConfirmDialogOptions {
   cancelLabel?: string
 }
 
+/**
+ * The return type of {@linkcode open}, derived from its options: a single path, an array of
+ * paths when {@linkcode OpenDialogOptions.multiple} is `true`, or `null` when the user cancels.
+ *
+ * @since 2.0.0
+ */
 type OpenDialogReturn<T extends OpenDialogOptions> = T['directory'] extends true
   ? T['multiple'] extends true
     ? string[] | null
@@ -314,6 +368,8 @@ type OpenDialogReturn<T extends OpenDialogOptions> = T['directory'] extends true
  * }
  * ```
  *
+ * @param options The dialog's options.
+ *
  * @returns A promise resolving to the selected path(s)
  *
  * @since 2.0.0
@@ -348,6 +404,8 @@ async function open<T extends OpenDialogOptions>(
  * });
  * ```
  *
+ * @param options The dialog's options.
+ *
  * @returns A promise resolving to the selected path.
  *
  * @since 2.0.0
@@ -369,6 +427,18 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
  * @since 2.4.0
  */
 export type MessageDialogResult = 'Yes' | 'No' | 'Ok' | 'Cancel' | (string & {})
+
+async function messageCommand(
+  message: string,
+  options?: Omit<MessageDialogOptions, 'okLabel'>
+) {
+  return await invoke<MessageDialogResult>('plugin:dialog|message', {
+    message,
+    title: options?.title,
+    kind: options?.kind,
+    buttons: buttonsToRust(options?.buttons)
+  })
+}
 
 /**
  * Shows a message dialog with an `Ok` button.
@@ -392,18 +462,17 @@ async function message(
   options?: string | MessageDialogOptions
 ): Promise<MessageDialogResult> {
   const opts = typeof options === 'string' ? { title: options } : options
-
-  return invoke<MessageDialogResult>('plugin:dialog|message', {
-    message: message.toString(),
-    title: opts?.title?.toString(),
-    kind: opts?.kind,
-    okButtonLabel: opts?.okLabel?.toString(),
-    buttons: buttonsToRust(opts?.buttons)
-  })
+  if (opts && !opts.buttons && opts.okLabel) {
+    opts.buttons = { ok: opts.okLabel }
+  }
+  return messageCommand(message, opts)
 }
 
 /**
  * Shows a question dialog with `Yes` and `No` buttons.
+ *
+ * Convenient wrapper for `await message('msg', { buttons: 'YesNo' }) === 'Yes'`
+ *
  * @example
  * ```typescript
  * import { ask } from '@tauri-apps/plugin-dialog';
@@ -423,17 +492,24 @@ async function ask(
   options?: string | ConfirmDialogOptions
 ): Promise<boolean> {
   const opts = typeof options === 'string' ? { title: options } : options
-  return await invoke('plugin:dialog|ask', {
-    message: message.toString(),
-    title: opts?.title?.toString(),
-    kind: opts?.kind,
-    yesButtonLabel: opts?.okLabel?.toString(),
-    noButtonLabel: opts?.cancelLabel?.toString()
-  })
+  const customButtons = opts?.okLabel || opts?.cancelLabel
+  const okLabel = opts?.okLabel ?? 'Yes'
+  return (
+    (await messageCommand(message, {
+      title: opts?.title,
+      kind: opts?.kind,
+      buttons: customButtons
+        ? { ok: okLabel, cancel: opts.cancelLabel ?? 'No' }
+        : 'YesNo'
+    })) === okLabel
+  )
 }
 
 /**
  * Shows a question dialog with `Ok` and `Cancel` buttons.
+ *
+ * Convenient wrapper for `await message('msg', { buttons: 'OkCancel' }) === 'Ok'`
+ *
  * @example
  * ```typescript
  * import { confirm } from '@tauri-apps/plugin-dialog';
@@ -453,13 +529,17 @@ async function confirm(
   options?: string | ConfirmDialogOptions
 ): Promise<boolean> {
   const opts = typeof options === 'string' ? { title: options } : options
-  return await invoke('plugin:dialog|confirm', {
-    message: message.toString(),
-    title: opts?.title?.toString(),
-    kind: opts?.kind,
-    okButtonLabel: opts?.okLabel?.toString(),
-    cancelButtonLabel: opts?.cancelLabel?.toString()
-  })
+  const customButtons = opts?.okLabel || opts?.cancelLabel
+  const okLabel = opts?.okLabel ?? 'Ok'
+  return (
+    (await messageCommand(message, {
+      title: opts?.title,
+      kind: opts?.kind,
+      buttons: customButtons
+        ? { ok: okLabel, cancel: opts.cancelLabel ?? 'Cancel' }
+        : 'OkCancel'
+    })) === okLabel
+  )
 }
 
 export type {

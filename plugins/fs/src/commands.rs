@@ -6,23 +6,24 @@
 use serde::{Deserialize, Serialize, Serializer};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use tauri::{
+    Manager, Resource, ResourceId, Runtime, Webview,
     ipc::{CommandScope, GlobalScope},
     path::BaseDirectory,
     utils::config::FsScope,
-    Manager, Resource, ResourceId, Runtime, Webview,
 };
 
 use std::{
     borrow::Cow,
     fs::File,
     io::{BufRead, BufReader, Read, Write},
+    ops::{Deref, DerefMut},
     path::{Path, PathBuf},
     str::FromStr,
     sync::Mutex,
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use crate::{scope::Entry, Error, SafeFilePath};
+use crate::{Error, SafeFilePath, scope::Entry};
 
 #[derive(Debug, thiserror::Error)]
 pub enum CommandError {
@@ -70,6 +71,195 @@ impl Serialize for CommandError {
 
 pub type CommandResult<T> = std::result::Result<T, CommandError>;
 
+/// Represents either a plain PathBuf or a PathHandle that manages security-scoped resources.
+pub enum PathKind<R: Runtime> {
+    /// A plain path that doesn't manage security-scoped resources.
+    #[cfg(mobile)] // only used on mobile
+    Path(PathBuf),
+    /// A path handle that manages security-scoped resources and will clean them up on drop.
+    Handle(PathHandle<R>),
+}
+
+impl<R: Runtime> PathKind<R> {
+    /// Get a reference to the underlying path.
+    pub fn as_path(&self) -> &Path {
+        match self {
+            #[cfg(mobile)]
+            PathKind::Path(p) => p.as_ref(),
+            PathKind::Handle(h) => h.as_ref(),
+        }
+    }
+
+    /// Get a reference to the underlying PathBuf.
+    pub fn as_path_buf(&self) -> &PathBuf {
+        match self {
+            #[cfg(mobile)]
+            PathKind::Path(p) => p,
+            PathKind::Handle(h) => h,
+        }
+    }
+}
+
+impl<R: Runtime> AsRef<Path> for PathKind<R> {
+    fn as_ref(&self) -> &Path {
+        self.as_path()
+    }
+}
+
+impl<R: Runtime> AsRef<PathBuf> for PathKind<R> {
+    fn as_ref(&self) -> &PathBuf {
+        self.as_path_buf()
+    }
+}
+
+/// A file handle that automatically stops accessing security-scoped resources on iOS when dropped.
+pub struct FileHandle<R: Runtime> {
+    file: File,
+    path: PathKind<R>,
+    #[cfg(target_os = "ios")]
+    path_: SafeFilePath,
+    #[cfg(target_os = "ios")]
+    app_handle: tauri::AppHandle<R>,
+}
+
+impl<R: Runtime> FileHandle<R> {
+    /// Get the resolved path.
+    pub fn path(&self) -> &Path {
+        self.path.as_path()
+    }
+}
+
+impl<R: Runtime> Deref for FileHandle<R> {
+    type Target = File;
+
+    fn deref(&self) -> &Self::Target {
+        &self.file
+    }
+}
+
+impl<R: Runtime> DerefMut for FileHandle<R> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.file
+    }
+}
+
+#[cfg(target_os = "ios")]
+impl<R: Runtime> Drop for FileHandle<R> {
+    fn drop(&mut self) {
+        // Only clean up if we have a plain PathBuf, not a PathHandle
+        // PathHandle will handle its own cleanup when it's dropped
+        if let PathKind::Path(_) = &self.path {
+            use crate::{FilePath, FsExt};
+            // Convert SafeFilePath to FilePath
+            let file_path: FilePath = match &self.path_ {
+                SafeFilePath::Url(url) => FilePath::Url(url.clone()),
+                SafeFilePath::Path(safe_path) => FilePath::Path(safe_path.as_ref().to_owned()),
+            };
+
+            // Only clean up if we're tracking this resource
+            // If start_accessing_security_scoped_resource was used, it won't be in our tracking
+            // and we shouldn't interfere
+            if let FilePath::Url(url) = file_path
+                && url.scheme() == "file"
+            {
+                let security_scoped_resources =
+                    self.app_handle.state::<crate::SecurityScopedResources>();
+
+                // Only clean up if it's not tracked manually
+                if !security_scoped_resources.is_tracked_manually(url.as_str()) {
+                    log::debug!(
+                        "Stopping accessing security-scoped resource for URL: {url} on drop"
+                    );
+                    let _ = self
+                        .app_handle
+                        .fs()
+                        .stop_accessing_security_scoped_resource(FilePath::Url(url.clone()));
+                    security_scoped_resources.remove(url.as_str());
+                } else {
+                    log::debug!(
+                        "Not cleaning up security-scoped resource for URL: {url} on drop (manually tracked via start_accessing_security_scoped_resource)"
+                    );
+                }
+            }
+        }
+    }
+}
+
+/// A path handle that automatically stops accessing security-scoped resources on iOS when dropped.
+pub struct PathHandle<R: Runtime> {
+    path: PathBuf,
+    #[allow(dead_code)] // Used in Drop implementation
+    path_: SafeFilePath,
+    #[allow(dead_code)] // Used in Drop implementation
+    app_handle: tauri::AppHandle<R>,
+}
+
+impl<R: Runtime> PathHandle<R> {
+    fn new(path: PathBuf, path_: SafeFilePath, app_handle: tauri::AppHandle<R>) -> Self {
+        Self {
+            path,
+            path_,
+            app_handle,
+        }
+    }
+}
+
+impl<R: Runtime> Deref for PathHandle<R> {
+    type Target = PathBuf;
+
+    fn deref(&self) -> &Self::Target {
+        &self.path
+    }
+}
+
+impl<R: Runtime> AsRef<Path> for PathHandle<R> {
+    fn as_ref(&self) -> &Path {
+        self.path.as_ref()
+    }
+}
+
+impl<R: Runtime> AsRef<PathBuf> for PathHandle<R> {
+    fn as_ref(&self) -> &PathBuf {
+        &self.path
+    }
+}
+
+#[cfg(target_os = "ios")]
+impl<R: Runtime> Drop for PathHandle<R> {
+    fn drop(&mut self) {
+        use crate::{FilePath, FsExt};
+        // Convert SafeFilePath to FilePath
+        let file_path: FilePath = match &self.path_ {
+            SafeFilePath::Url(url) => FilePath::Url(url.clone()),
+            SafeFilePath::Path(safe_path) => FilePath::Path(safe_path.as_ref().to_owned()),
+        };
+
+        // Only clean up if we're tracking this resource (i.e., resolve_path started it)
+        // If start_accessing_security_scoped_resource was used, it won't be in our tracking
+        // and we shouldn't interfere
+        if let FilePath::Url(url) = file_path
+            && url.scheme() == "file"
+        {
+            let security_scoped_resources =
+                self.app_handle.state::<crate::SecurityScopedResources>();
+
+            // Only clean up if it's not tracked manually
+            if !security_scoped_resources.is_tracked_manually(url.as_str()) {
+                log::debug!("Stopping accessing security-scoped resource for URL: {url} on drop");
+                let _ = self
+                    .app_handle
+                    .fs()
+                    .stop_accessing_security_scoped_resource(FilePath::Url(url.clone()));
+                security_scoped_resources.remove(url.as_str());
+            } else {
+                log::debug!(
+                    "Not cleaning up security-scoped resource for URL: {url} on drop (manually tracked via start_accessing_security_scoped_resource)"
+                );
+            }
+        }
+    }
+}
+
 #[derive(Debug, Default, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BaseOptions {
@@ -84,7 +274,9 @@ pub fn create<R: Runtime>(
     path: SafeFilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<ResourceId> {
-    let resolved_path = resolve_path(
+    #[cfg(target_os = "ios")]
+    let path_ = path.clone();
+    let resolved_path_handle = resolve_path(
         "create",
         &webview,
         &global_scope,
@@ -92,13 +284,25 @@ pub fn create<R: Runtime>(
         path,
         options.and_then(|o| o.base_dir),
     )?;
-    let file = File::create(&resolved_path).map_err(|e| {
+    let file = File::create(&*resolved_path_handle).map_err(|e| {
         format!(
             "failed to create file at path: {} with error: {e}",
-            resolved_path.display()
+            resolved_path_handle.display()
         )
     })?;
-    let rid = webview.resources_table().add(StdFileResource::new(file));
+    #[cfg(target_os = "ios")]
+    let app_handle = webview.app_handle().clone();
+    let file_handle = FileHandle {
+        file,
+        path: PathKind::Handle(resolved_path_handle),
+        #[cfg(target_os = "ios")]
+        path_,
+        #[cfg(target_os = "ios")]
+        app_handle,
+    };
+    let rid = webview
+        .resources_table()
+        .add(StdFileResource::new(file_handle));
     Ok(rid)
 }
 
@@ -119,7 +323,7 @@ pub fn open<R: Runtime>(
     path: SafeFilePath,
     options: Option<OpenOptions>,
 ) -> CommandResult<ResourceId> {
-    let (file, _path) = resolve_file(
+    let file_handle = resolve_file(
         "open",
         &webview,
         &global_scope,
@@ -147,7 +351,9 @@ pub fn open<R: Runtime>(
         },
     )?;
 
-    let rid = webview.resources_table().add(StdFileResource::new(file));
+    let rid = webview
+        .resources_table()
+        .add(StdFileResource::new(file_handle));
 
     Ok(rid)
 }
@@ -307,10 +513,21 @@ pub async fn read<R: Runtime>(
     rid: ResourceId,
     len: usize,
 ) -> CommandResult<tauri::ipc::Response> {
-    let mut data = vec![0; len];
-    let file = webview.resources_table().get::<StdFileResource>(rid)?;
-    let nread = StdFileResource::with_lock(&file, |mut file| file.read(&mut data))
-        .map_err(|e| format!("faied to read bytes from file with error: {e}"))?;
+    let file: std::sync::Arc<StdFileResource<R>> = webview.resources_table().get(rid)?;
+    let (nread, mut data) = StdFileResource::with_lock(&file, |file| {
+        // `len` comes from the webview: do not blindly allocate it
+        let len = capped_read_len(file, len);
+        let mut data = Vec::new();
+        // room for the bytes read and the trailing `nread` below
+        data.try_reserve_exact(len.saturating_add(8))
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::OutOfMemory, e))?;
+        data.resize(len, 0);
+        let nread = file.read(&mut data)?;
+        // only send the bytes that were read
+        data.truncate(nread);
+        std::io::Result::Ok((nread, data))
+    })
+    .map_err(|e| format!("failed to read bytes from file with error: {e}"))?;
 
     // This is an optimization to include the number of read bytes (as bigendian bytes)
     // at the end of returned vector so we can use `tauri::ipc::Response`
@@ -337,6 +554,34 @@ pub async fn read<R: Runtime>(
     Ok(tauri::ipc::Response::new(data))
 }
 
+/// Size of the buffer allocated by the `read` command when the size of the file is unknown.
+const MAX_READ_LEN_UNKNOWN_SIZE: usize = 64 * 1024 * 1024;
+/// Minimum size of the buffer allocated by the `read` command for regular files,
+/// so a file that grows while it is read is not reported as ended.
+const MIN_READ_LEN: usize = 64 * 1024;
+
+/// Caps the length requested by the `read` command to what can be read from `file`:
+/// the rest of the file for regular files, [`MAX_READ_LEN_UNKNOWN_SIZE`] otherwise.
+fn capped_read_len(file: &mut File, len: usize) -> usize {
+    use std::io::Seek;
+
+    let remaining = file
+        .metadata()
+        .ok()
+        .filter(|metadata| metadata.is_file())
+        .and_then(|metadata| {
+            let position = file.stream_position().ok()?;
+            Some(metadata.len().saturating_sub(position))
+        });
+    let max = match remaining {
+        Some(remaining) => usize::try_from(remaining)
+            .unwrap_or(usize::MAX)
+            .max(MIN_READ_LEN),
+        None => MAX_READ_LEN_UNKNOWN_SIZE,
+    };
+    len.min(max)
+}
+
 async fn read_file_inner<R: Runtime>(
     permission: &str,
     webview: Webview<R>,
@@ -345,7 +590,7 @@ async fn read_file_inner<R: Runtime>(
     path: SafeFilePath,
     options: Option<BaseOptions>,
 ) -> CommandResult<tauri::ipc::Response> {
-    let (mut file, path) = resolve_file(
+    let mut file_handle = resolve_file(
         permission,
         &webview,
         &global_scope,
@@ -364,10 +609,10 @@ async fn read_file_inner<R: Runtime>(
 
     let mut contents = Vec::new();
 
-    file.read_to_end(&mut contents).map_err(|e| {
+    file_handle.read_to_end(&mut contents).map_err(|e| {
         format!(
             "failed to read file as text at path: {} with error: {e}",
-            path.display()
+            file_handle.path().display()
         )
     })?;
 
@@ -391,6 +636,14 @@ pub async fn read_file<R: Runtime>(
         options,
     )
     .await
+}
+
+#[derive(Debug, Default, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReadTextFileOptions {
+    #[serde(flatten)]
+    base: BaseOptions,
+    encoding: Option<String>,
 }
 
 // TODO, remove in v3, rely on `read_file` command instead
@@ -419,7 +672,7 @@ pub fn read_text_file_lines<R: Runtime>(
     global_scope: GlobalScope<Entry>,
     command_scope: CommandScope<Entry>,
     path: SafeFilePath,
-    options: Option<BaseOptions>,
+    options: Option<ReadTextFileOptions>,
 ) -> CommandResult<ResourceId> {
     let resolved_path = resolve_path(
         "read-text-file-lines",
@@ -427,7 +680,7 @@ pub fn read_text_file_lines<R: Runtime>(
         &global_scope,
         &command_scope,
         path,
-        options.as_ref().and_then(|o| o.base_dir),
+        options.as_ref().and_then(|o| o.base.base_dir),
     )?;
 
     let file = File::open(&resolved_path).map_err(|e| {
@@ -437,10 +690,41 @@ pub fn read_text_file_lines<R: Runtime>(
         )
     })?;
 
+    let encoding = options.as_ref().and_then(|o| o.encoding.as_deref());
+    let (lf_bytes, cr_bytes) = lf_cr_bytes_for_encoding_label(encoding);
     let lines = BufReader::new(file);
-    let rid = webview.resources_table().add(StdLinesResource::new(lines));
+    let rid = webview
+        .resources_table()
+        .add(StdLinesResource::new(lines, lf_bytes, cr_bytes));
 
     Ok(rid)
+}
+
+/// Returns the byte sequences for LF (`\n`) and CR (`\r`) in the encoding label.
+///
+/// The provided encoding label must be a normalized, lowercase string,
+/// such as one obtained via `(new TextDecoder(encoding)).encoding`.
+///
+/// <https://developer.mozilla.org/ja/docs/Web/API/Encoding_API/Encodings>
+fn lf_cr_bytes_for_encoding_label(label: Option<&str>) -> (Vec<u8>, Vec<u8>) {
+    // Defaults to utf-8
+    // https://developer.mozilla.org/ja/docs/Web/API/TextDecoder/TextDecoder#label
+    let label = label.unwrap_or("utf-8");
+
+    // Currently, according to the Web Standard,
+    // the ASCII-incompatible encodings are UTF-16LE/BE and ISO-2022-JP.
+    // However, ISO-2022-JP can still detect line breaks in the same way as ASCII.
+    //
+    // https://encoding.spec.whatwg.org/#security-background
+    if label == "utf-16le" {
+        return (vec![0x0A, 0x00], vec![0x0D, 0x00]);
+    }
+    if label == "utf-16be" {
+        return (vec![0x00, 0x0A], vec![0x00, 0x0D]);
+    }
+
+    // ASCII-compatible
+    (vec![b'\n'], vec![b'\r'])
 }
 
 #[tauri::command]
@@ -452,7 +736,7 @@ pub async fn read_text_file_lines_next<R: Runtime>(
     let lines = resource_table.get::<StdLinesResource>(rid)?;
 
     let ret = StdLinesResource::with_lock(&lines, |lines| -> CommandResult<Vec<u8>> {
-        // This is an optimization to include wether we finished iteration or not (1 or 0)
+        // This is an optimization to include whether we finished iteration or not (1 or 0)
         // at the end of returned vector so we can use `tauri::ipc::Response`
         // and avoid serialization overhead of separate values.
         match lines.next() {
@@ -460,7 +744,12 @@ pub async fn read_text_file_lines_next<R: Runtime>(
                 bytes.push(false as u8);
                 Ok(bytes)
             }
-            Some(Err(_)) => Ok(vec![false as u8]),
+            Some(Err(e)) => {
+                // the error may be persistent (e.g. reading a directory), do not report
+                // an empty line and let the caller loop forever
+                resource_table.close(rid)?;
+                Err(format!("failed to read line with error: {e}").into())
+            }
             None => {
                 resource_table.close(rid)?;
                 Ok(vec![true as u8])
@@ -599,16 +888,17 @@ pub async fn seek<R: Runtime>(
     whence: SeekMode,
 ) -> CommandResult<u64> {
     use std::io::{Seek, SeekFrom};
-    let file = webview.resources_table().get::<StdFileResource>(rid)?;
-    StdFileResource::with_lock(&file, |mut file| {
-        file.seek(match whence {
-            SeekMode::Start => SeekFrom::Start(offset as u64),
-            SeekMode::Current => SeekFrom::Current(offset),
-            SeekMode::End => SeekFrom::End(offset),
-        })
-    })
-    .map_err(|e| format!("failed to seek file with error: {e}"))
-    .map_err(Into::into)
+    let position = match whence {
+        SeekMode::Start => SeekFrom::Start(u64::try_from(offset).map_err(|_| {
+            format!("invalid seek offset {offset}: it must not be negative with SeekMode.Start")
+        })?),
+        SeekMode::Current => SeekFrom::Current(offset),
+        SeekMode::End => SeekFrom::End(offset),
+    };
+    let file: std::sync::Arc<StdFileResource<R>> = webview.resources_table().get(rid)?;
+    StdFileResource::with_lock(&file, |file| file.seek(position))
+        .map_err(|e| format!("failed to seek file with error: {e}"))
+        .map_err(Into::into)
 }
 
 #[cfg(target_os = "android")]
@@ -623,7 +913,7 @@ fn get_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Meta
 ) -> CommandResult<std::fs::Metadata> {
     match path {
         SafeFilePath::Url(url) => {
-            let (file, path) = resolve_file(
+            let file_handle = resolve_file(
                 permission,
                 webview,
                 global_scope,
@@ -637,10 +927,10 @@ fn get_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Meta
                     },
                 },
             )?;
-            file.metadata().map_err(|e| {
+            file_handle.metadata().map_err(|e| {
                 format!(
                     "failed to get metadata of path: {} with error: {e}",
-                    path.display()
+                    file_handle.path().display()
                 )
                 .into()
             })
@@ -747,7 +1037,7 @@ pub fn lstat<R: Runtime>(
 
 #[tauri::command]
 pub fn fstat<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> CommandResult<FileInfo> {
-    let file = webview.resources_table().get::<StdFileResource>(rid)?;
+    let file: std::sync::Arc<StdFileResource<R>> = webview.resources_table().get(rid)?;
     let metadata = StdFileResource::with_lock(&file, |file| file.metadata())
         .map_err(|e| format!("failed to get metadata of file with error: {e}"))?;
     Ok(get_stat(metadata))
@@ -795,7 +1085,7 @@ pub async fn ftruncate<R: Runtime>(
     rid: ResourceId,
     len: Option<u64>,
 ) -> CommandResult<()> {
-    let file = webview.resources_table().get::<StdFileResource>(rid)?;
+    let file: std::sync::Arc<StdFileResource<R>> = webview.resources_table().get(rid)?;
     StdFileResource::with_lock(&file, |file| file.set_len(len.unwrap_or(0)))
         .map_err(|e| format!("failed to truncate file with error: {e}"))
         .map_err(Into::into)
@@ -807,8 +1097,8 @@ pub async fn write<R: Runtime>(
     rid: ResourceId,
     data: Vec<u8>,
 ) -> CommandResult<usize> {
-    let file = webview.resources_table().get::<StdFileResource>(rid)?;
-    StdFileResource::with_lock(&file, |mut file| file.write(&data))
+    let file: std::sync::Arc<StdFileResource<R>> = webview.resources_table().get(rid)?;
+    StdFileResource::with_lock(&file, |file| file.write(&data))
         .map_err(|e| format!("failed to write bytes to file with error: {e}"))
         .map_err(Into::into)
 }
@@ -850,13 +1140,14 @@ async fn write_file_inner<R: Runtime>(
         })
         .and_then(|p| SafeFilePath::from_str(&p).map_err(CommandError::from))?;
 
-    let options: Option<WriteFileOptions> = request
+    let options = request
         .headers()
         .get("options")
-        .and_then(|p| p.to_str().ok())
-        .and_then(|opts| serde_json::from_str(opts).ok());
+        .map(|options| parse_write_file_options(options.as_bytes()))
+        .transpose()?
+        .flatten();
 
-    let (mut file, path) = resolve_file(
+    let mut file_handle = resolve_file(
         permission,
         &webview,
         &global_scope,
@@ -897,20 +1188,39 @@ async fn write_file_inner<R: Runtime>(
         tauri::ipc::InvokeBody::Raw(data) => Cow::Borrowed(data),
         tauri::ipc::InvokeBody::Json(serde_json::Value::Array(data)) => Cow::Owned(
             data.iter()
-                .flat_map(|v| v.as_number().and_then(|v| v.as_u64().map(|v| v as u8)))
-                .collect(),
+                .map(|v| {
+                    v.as_u64()
+                        .and_then(|v| u8::try_from(v).ok())
+                        .ok_or_else(|| anyhow::anyhow!("invalid byte in the data to write: {v}"))
+                })
+                .collect::<Result<Vec<u8>, _>>()?,
         ),
         _ => return Err(anyhow::anyhow!("unexpected invoke body").into()),
     };
 
-    file.write_all(&data)
+    file_handle
+        .write_all(&data)
         .map_err(|e| {
             format!(
                 "failed to write bytes to file at path: {} with error: {e}",
-                path.display()
+                file_handle.path().display()
             )
         })
         .map_err(Into::into)
+}
+
+/// Parses the `options` header of the `write_file` command.
+///
+/// Fails instead of silently falling back to the defaults, which would e.g. ignore `baseDir`.
+fn parse_write_file_options(header: &[u8]) -> CommandResult<Option<WriteFileOptions>> {
+    let header = String::from_utf8_lossy(header);
+    match header.trim() {
+        // `JSON.stringify(undefined)` is sent as `undefined` by `fetch`
+        "" | "undefined" | "null" => Ok(None),
+        options => serde_json::from_str(options)
+            .map(Some)
+            .map_err(|e| anyhow::anyhow!("invalid write file options {options}: {e}").into()),
+    }
 }
 
 #[tauri::command]
@@ -993,6 +1303,135 @@ pub async fn size<R: Runtime>(
     }
 }
 
+#[tauri::command]
+pub fn start_accessing_security_scoped_resource<R: Runtime>(
+    webview: Webview<R>,
+    path: SafeFilePath,
+) -> CommandResult<()> {
+    #[cfg(target_os = "ios")]
+    {
+        use crate::FilePath;
+        // Convert SafeFilePath to FilePath, handling absolute paths as `file://` URLs
+        let file_path: FilePath = match &path {
+            SafeFilePath::Url(url) => FilePath::Url(url.clone()),
+            SafeFilePath::Path(safe_path) => match url::Url::from_file_path(safe_path.as_ref()) {
+                Ok(url) => FilePath::Url(url),
+                Err(()) => FilePath::Path(safe_path.as_ref().to_owned()),
+            },
+        };
+
+        // Only handle file URLs
+        if let FilePath::Url(url) = &file_path
+            && url.scheme() == "file"
+        {
+            use objc2_foundation::{NSString, NSURL};
+
+            let url_nsstring = NSString::from_str(url.as_str());
+            let ns_url = NSURL::URLWithString(&url_nsstring);
+            if let Some(ns_url) = ns_url {
+                // Check if already active
+                let security_scoped_resources = webview.state::<crate::SecurityScopedResources>();
+                if security_scoped_resources.is_tracked_manually(url.as_str()) {
+                    log::debug!(
+                        "Security-scoped resource already active for URL: {}",
+                        url.as_str()
+                    );
+                    return Ok(());
+                }
+
+                // Start accessing the security-scoped resource
+                unsafe {
+                    let success = ns_url.startAccessingSecurityScopedResource();
+                    if success {
+                        log::debug!(
+                            "Started accessing security-scoped resource for URL: {}",
+                            url.as_str()
+                        );
+                        security_scoped_resources.track_manually(url.as_str().to_string());
+                    } else {
+                        log::warn!(
+                            "Failed to start accessing security-scoped resource for URL: {}",
+                            url.as_str()
+                        );
+                        return Err(CommandError::from(format!(
+                            "Failed to start accessing security-scoped resource for URL: {}",
+                            url.as_str()
+                        )));
+                    }
+                }
+            } else {
+                return Err(CommandError::from(format!(
+                    "Failed to create NSURL from URL: {}",
+                    url.as_str()
+                )));
+            }
+        }
+        Ok(())
+    }
+    #[cfg(not(target_os = "ios"))]
+    {
+        // No-op on non-iOS platforms
+        let _ = webview;
+        let _ = path;
+        Ok(())
+    }
+}
+
+#[tauri::command]
+pub fn stop_accessing_security_scoped_resource<R: Runtime>(
+    webview: Webview<R>,
+    path: SafeFilePath,
+) -> CommandResult<()> {
+    #[cfg(target_os = "ios")]
+    {
+        use crate::{FilePath, FsExt};
+        // Convert SafeFilePath to FilePath, handling absolute paths as `file://` URLs
+        let file_path: FilePath = match &path {
+            SafeFilePath::Url(url) => FilePath::Url(url.clone()),
+            SafeFilePath::Path(safe_path) => match url::Url::from_file_path(safe_path.as_ref()) {
+                Ok(url) => FilePath::Url(url),
+                Err(()) => FilePath::Path(safe_path.as_ref().to_owned()),
+            },
+        };
+
+        // Only handle file URLs
+        if let FilePath::Url(url) = file_path
+            && url.scheme() == "file"
+        {
+            let security_scoped_resources = webview.state::<crate::SecurityScopedResources>();
+
+            // Check if it's tracked
+            if !security_scoped_resources.is_tracked_manually(url.as_str()) {
+                log::debug!(
+                    "Security-scoped resource not tracked as active for URL: {}",
+                    url.as_str()
+                );
+                return Ok(());
+            }
+
+            // Stop accessing the security-scoped resource
+            webview
+                .fs()
+                .stop_accessing_security_scoped_resource(FilePath::Url(url.clone()))?;
+
+            // Remove from tracking
+            security_scoped_resources.remove(url.as_str());
+            log::debug!(
+                "Stopped accessing security-scoped resource for URL: {}",
+                url.as_str()
+            );
+        }
+        Ok(())
+    }
+    #[cfg(not(target_os = "ios"))]
+    {
+        // No-op on non-iOS platforms
+        let _ = webview;
+        let _ = path;
+        Ok(())
+    }
+}
+
 fn get_dir_size(path: &PathBuf) -> CommandResult<u64> {
     let mut size = 0;
 
@@ -1010,7 +1449,7 @@ fn get_dir_size(path: &PathBuf) -> CommandResult<u64> {
     Ok(size)
 }
 
-#[cfg(not(target_os = "android"))]
+#[cfg(desktop)]
 pub fn resolve_file<R: Runtime>(
     permission: &str,
     webview: &Webview<R>,
@@ -1018,7 +1457,7 @@ pub fn resolve_file<R: Runtime>(
     command_scope: &CommandScope<Entry>,
     path: SafeFilePath,
     open_options: OpenOptions,
-) -> CommandResult<(File, PathBuf)> {
+) -> CommandResult<FileHandle<R>> {
     resolve_file_in_fs(
         permission,
         webview,
@@ -1036,8 +1475,10 @@ fn resolve_file_in_fs<R: Runtime>(
     command_scope: &CommandScope<Entry>,
     path: SafeFilePath,
     open_options: OpenOptions,
-) -> CommandResult<(File, PathBuf)> {
-    let path = resolve_path(
+) -> CommandResult<FileHandle<R>> {
+    #[cfg(target_os = "ios")]
+    let path_ = path.clone();
+    let resolved_path_handle = resolve_path(
         permission,
         webview,
         global_scope,
@@ -1047,17 +1488,27 @@ fn resolve_file_in_fs<R: Runtime>(
     )?;
 
     let file = std::fs::OpenOptions::from(open_options.options)
-        .open(&path)
+        .open(&*resolved_path_handle)
         .map_err(|e| {
             format!(
                 "failed to open file at path: {} with error: {e}",
-                path.display()
+                resolved_path_handle.display()
             )
         })?;
-    Ok((file, path))
+
+    #[cfg(target_os = "ios")]
+    let app_handle = webview.app_handle().clone();
+    Ok(FileHandle {
+        file,
+        path: PathKind::Handle(resolved_path_handle),
+        #[cfg(target_os = "ios")]
+        path_,
+        #[cfg(target_os = "ios")]
+        app_handle,
+    })
 }
 
-#[cfg(target_os = "android")]
+#[cfg(mobile)]
 pub fn resolve_file<R: Runtime>(
     permission: &str,
     webview: &Webview<R>,
@@ -1065,16 +1516,27 @@ pub fn resolve_file<R: Runtime>(
     command_scope: &CommandScope<Entry>,
     path: SafeFilePath,
     open_options: OpenOptions,
-) -> CommandResult<(File, PathBuf)> {
+) -> CommandResult<FileHandle<R>> {
     use crate::FsExt;
 
+    #[cfg(target_os = "ios")]
+    let path_ = path.clone();
     match path {
         SafeFilePath::Url(url) => {
-            let path = url.as_str().into();
+            let resolved_path = url.as_str().into();
             let file = webview
                 .fs()
-                .open(SafeFilePath::Url(url), open_options.options)?;
-            Ok((file, path))
+                .open(SafeFilePath::Url(url.clone()), open_options.options)?;
+            #[cfg(target_os = "ios")]
+            let app_handle = webview.app_handle().clone();
+            Ok(FileHandle {
+                file,
+                path: PathKind::Path(resolved_path),
+                #[cfg(target_os = "ios")]
+                path_,
+                #[cfg(target_os = "ios")]
+                app_handle,
+            })
         }
         SafeFilePath::Path(path) => resolve_file_in_fs(
             permission,
@@ -1094,9 +1556,57 @@ pub fn resolve_path<R: Runtime>(
     command_scope: &CommandScope<Entry>,
     path: SafeFilePath,
     base_dir: Option<BaseDirectory>,
-) -> CommandResult<PathBuf> {
+) -> CommandResult<PathHandle<R>> {
+    let path_ = path.clone();
+    // On iOS, start accessing security-scoped resource if the path is a file URL
+    // Only if it hasn't been started already via start_accessing_security_scoped_resource
+    #[cfg(target_os = "ios")]
+    if let SafeFilePath::Url(url) = &path
+        && url.scheme() == "file"
+    {
+        use objc2_foundation::{NSString, NSURL};
+
+        let security_scoped_resources = webview.state::<crate::SecurityScopedResources>();
+
+        // Check if already active (started via start_accessing_security_scoped_resource)
+        if !security_scoped_resources.is_tracked_manually(url.as_str()) {
+            let url_nsstring = NSString::from_str(url.as_str());
+            let ns_url = NSURL::URLWithString(&url_nsstring);
+            if let Some(ns_url) = ns_url {
+                // Start accessing the security-scoped resource
+                // This is required for files outside the app's sandbox (e.g., from file picker)
+                unsafe {
+                    let success = ns_url.startAccessingSecurityScopedResource();
+                    if success {
+                        log::debug!(
+                            "Started accessing security-scoped resource for URL: {} (via resolve_path)",
+                            url.as_str()
+                        );
+                        // Track it so we know to clean it up
+                        security_scoped_resources.track_manually(url.as_str().to_string());
+                    } else {
+                        log::warn!(
+                            "Failed to start accessing security-scoped resource for URL: {}",
+                            url.as_str()
+                        );
+                    }
+                }
+            } else {
+                log::debug!(
+                    "Failed to create NSURL from URL: {}, ignoring security-scoped resource access request",
+                    url.as_str()
+                );
+            }
+        } else {
+            log::debug!(
+                "Security-scoped resource already active for URL: {} (started via start_accessing_security_scoped_resource), skipping",
+                url.as_str()
+            );
+        }
+    }
+
     let path = path.into_path()?;
-    let path = if let Some(base_dir) = base_dir {
+    let resolved_path = if let Some(base_dir) = base_dir {
         webview.path().resolve(&path, base_dir)?
     } else {
         path
@@ -1125,100 +1635,165 @@ pub fn resolve_path<R: Runtime>(
 
     let require_literal_leading_dot = fs_scope.require_literal_leading_dot.unwrap_or(cfg!(unix));
 
-    if is_forbidden(&fs_scope.scope, &path, require_literal_leading_dot)
-        || is_forbidden(&scope, &path, require_literal_leading_dot)
-    {
-        return Err(CommandError::Plugin(Error::PathForbidden(path)));
+    // The path the OS actually operates on, with every symlink resolved,
+    // including the ones in the ancestors of a path that does not exist yet.
+    // If it cannot be determined (e.g. a symlink loop), fail closed.
+    let Ok(real_path) = resolve_real_path(&resolved_path) else {
+        return Err(CommandError::Plugin(Error::PathForbidden(resolved_path)));
+    };
+
+    // Deny patterns apply to both the path as given (so a pattern naming a symlink denies it)
+    // and to the path it resolves to.
+    let is_forbidden = |scope: &tauri::fs::Scope| {
+        matches_forbidden_pattern(scope, &resolved_path, require_literal_leading_dot)
+            || matches_forbidden_pattern(scope, &real_path, require_literal_leading_dot)
+    };
+    if is_forbidden(&fs_scope.scope) || is_forbidden(&scope) {
+        return Err(CommandError::Plugin(Error::PathForbidden(resolved_path)));
     }
 
-    if fs_scope.scope.is_allowed(&path) || scope.is_allowed(&path) {
-        Ok(path)
+    if fs_scope.scope.is_allowed(&real_path) || scope.is_allowed(&real_path) {
+        let app_handle = webview.app_handle().clone();
+        Ok(PathHandle::new(resolved_path, path_, app_handle))
     } else {
         #[cfg(not(debug_assertions))]
-        return Err(CommandError::Plugin(Error::PathForbidden(path)));
+        return Err(CommandError::Plugin(Error::PathForbidden(resolved_path)));
 
         #[cfg(debug_assertions)]
         Err(
             anyhow::anyhow!(
                 "forbidden path: {}, maybe it is not allowed on the scope for `allow-{permission}` permission in your capability file",
-                path.display()
+                resolved_path.display()
             )
         )
         .map_err(Into::into)
     }
 }
 
-fn is_forbidden<P: AsRef<Path>>(
+/// Maximum number of symlinks followed by [`resolve_real_path`], like `MAXSYMLINKS` / `ELOOP`.
+const MAX_SYMLINK_FOLLOWS: usize = 40;
+
+/// Resolves `path` to the path the OS operates on: the canonical path if it exists, otherwise
+/// the canonical path of its nearest existing ancestor joined with the remaining components.
+///
+/// Dangling symlinks are followed, with relative targets resolved against the link's parent
+/// directory, so that creating a file through a symlinked directory or a dangling symlink is
+/// checked against the location that is actually written.
+fn resolve_real_path(path: &Path) -> std::io::Result<PathBuf> {
+    resolve_real_path_inner(path, 0)
+}
+
+fn resolve_real_path_inner(path: &Path, symlinks_followed: usize) -> std::io::Result<PathBuf> {
+    use std::path::Component;
+
+    if let Ok(canonical) = std::fs::canonicalize(path) {
+        return Ok(canonical);
+    }
+
+    // a dangling symlink: resolve its target instead
+    if std::fs::symlink_metadata(path).is_ok_and(|m| m.file_type().is_symlink()) {
+        if symlinks_followed >= MAX_SYMLINK_FOLLOWS {
+            return Err(std::io::Error::other("too many levels of symbolic links"));
+        }
+        let target = std::fs::read_link(path)?;
+        let target = match path.parent() {
+            Some(parent) if target.is_relative() => parent.join(target),
+            _ => target,
+        };
+        return resolve_real_path_inner(&target, symlinks_followed + 1);
+    }
+
+    let mut components = path.components();
+    let last = components.next_back();
+    let parent = components.as_path();
+    if parent.as_os_str().is_empty() {
+        return Ok(path.to_path_buf());
+    }
+    match last {
+        Some(Component::Normal(name)) => {
+            Ok(resolve_real_path_inner(parent, symlinks_followed)?.join(name))
+        }
+        Some(Component::ParentDir) => {
+            let mut resolved = resolve_real_path_inner(parent, symlinks_followed)?;
+            resolved.pop();
+            Ok(resolved)
+        }
+        Some(Component::CurDir) => resolve_real_path_inner(parent, symlinks_followed),
+        // root or prefix, nothing left to resolve
+        _ => Ok(path.to_path_buf()),
+    }
+}
+
+/// Whether `path` matches one of the forbidden patterns of `scope`, as is (no path resolution).
+fn matches_forbidden_pattern(
     scope: &tauri::fs::Scope,
-    path: P,
+    path: &Path,
     require_literal_leading_dot: bool,
 ) -> bool {
-    let path = path.as_ref();
-    let path = if path.is_symlink() {
-        match std::fs::read_link(path) {
-            Ok(p) => p,
-            Err(_) => return false,
-        }
-    } else {
-        path.to_path_buf()
-    };
-    let path = if !path.exists() {
-        crate::Result::Ok(path)
-    } else {
-        std::fs::canonicalize(path).map_err(Into::into)
-    };
+    let path: PathBuf = path.components().collect();
+    scope.forbidden_patterns().iter().any(|p| {
+        p.matches_path_with(
+            &path,
+            glob::MatchOptions {
+                // this is needed so `/dir/*` doesn't match files within subdirectories such as `/dir/subdir/file.txt`
+                // see: <https://github.com/tauri-apps/tauri/security/advisories/GHSA-6mv3-wm7j-h4w5>
+                require_literal_separator: true,
+                require_literal_leading_dot,
+                ..Default::default()
+            },
+        )
+    })
+}
 
-    if let Ok(path) = path {
-        let path: PathBuf = path.components().collect();
-        scope.forbidden_patterns().iter().any(|p| {
-            p.matches_path_with(
-                &path,
-                glob::MatchOptions {
-                    // this is needed so `/dir/*` doesn't match files within subdirectories such as `/dir/subdir/file.txt`
-                    // see: <https://github.com/tauri-apps/tauri/security/advisories/GHSA-6mv3-wm7j-h4w5>
-                    require_literal_separator: true,
-                    require_literal_leading_dot,
-                    ..Default::default()
-                },
-            )
-        })
-    } else {
-        false
+struct StdFileResource<R: Runtime>(Mutex<FileHandle<R>>);
+
+impl<R: Runtime> StdFileResource<R> {
+    fn new(file_handle: FileHandle<R>) -> Self {
+        Self(Mutex::new(file_handle))
+    }
+
+    fn with_lock<Ret, F: FnMut(&mut File) -> Ret>(&self, mut f: F) -> Ret {
+        let mut file_handle = self.0.lock().unwrap();
+        f(&mut file_handle)
     }
 }
 
-struct StdFileResource(Mutex<File>);
-
-impl StdFileResource {
-    fn new(file: File) -> Self {
-        Self(Mutex::new(file))
-    }
-
-    fn with_lock<R, F: FnMut(&File) -> R>(&self, mut f: F) -> R {
-        let file = self.0.lock().unwrap();
-        f(&file)
-    }
-}
-
-impl Resource for StdFileResource {}
+impl<R: Runtime> Resource for StdFileResource<R> {}
 
 /// Same as [std::io::Lines] but with bytes
-struct LinesBytes<T: BufRead>(T);
+struct LinesBytes<T: BufRead> {
+    bytes: T,
+    lf_bytes: Vec<u8>,
+    cr_bytes: Vec<u8>,
+}
+
+impl<T: BufRead> LinesBytes<T> {
+    fn new(bytes: T, lf_bytes: Vec<u8>, cr_bytes: Vec<u8>) -> Self {
+        LinesBytes {
+            bytes,
+            lf_bytes,
+            cr_bytes,
+        }
+    }
+}
 
 impl<B: BufRead> Iterator for LinesBytes<B> {
     type Item = std::io::Result<Vec<u8>>;
 
     fn next(&mut self) -> Option<std::io::Result<Vec<u8>>> {
         let mut buf = Vec::new();
-        match self.0.read_until(b'\n', &mut buf) {
+        // Search for '\n'
+        match read_until_bytes(&mut self.bytes, &self.lf_bytes, &mut buf) {
             Ok(0) => None,
             Ok(_n) => {
-                if buf.last() == Some(&b'\n') {
-                    buf.pop();
-                    if buf.last() == Some(&b'\r') {
-                        buf.pop();
+                // Remove '\n' or '\r\n'
+                if ends_with_aligned(&buf, &self.lf_bytes) {
+                    buf.truncate(buf.len() - self.lf_bytes.len());
+                    if ends_with_aligned(&buf, &self.cr_bytes) {
+                        buf.truncate(buf.len() - self.cr_bytes.len());
                     }
                 }
+
                 Some(Ok(buf))
             }
             Err(e) => Some(Err(e)),
@@ -1226,11 +1801,43 @@ impl<B: BufRead> Iterator for LinesBytes<B> {
     }
 }
 
+fn read_until_bytes(
+    r: &mut impl BufRead,
+    bytes: &[u8],
+    buf: &mut Vec<u8>,
+) -> std::io::Result<usize> {
+    let last_byte = *bytes
+        .last()
+        .ok_or_else(|| std::io::Error::other("invalid empty bytes"))?;
+
+    if bytes.len() == 1 {
+        return r.read_until(last_byte, buf);
+    }
+
+    let start = buf.len();
+    let mut total_n = 0;
+    loop {
+        let n = r.read_until(last_byte, buf)?;
+        total_n += n;
+
+        // for multi-byte code units (UTF-16), only a sequence aligned on a code unit boundary
+        // is a line feed: `0x0A 0x00` can also be the end of `U+xx0A` followed by `U+00xx`
+        if n == 0 || ends_with_aligned(&buf[start..], bytes) {
+            return Ok(total_n);
+        }
+    }
+}
+
+/// Whether `buf` ends with `bytes`, starting on a multiple of `bytes.len()`.
+fn ends_with_aligned(buf: &[u8], bytes: &[u8]) -> bool {
+    buf.ends_with(bytes) && buf.len().is_multiple_of(bytes.len())
+}
+
 struct StdLinesResource(Mutex<LinesBytes<BufReader<File>>>);
 
 impl StdLinesResource {
-    fn new(lines: BufReader<File>) -> Self {
-        Self(Mutex::new(LinesBytes(lines)))
+    fn new(lines: BufReader<File>, lf_bytes: Vec<u8>, cr_bytes: Vec<u8>) -> Self {
+        Self(Mutex::new(LinesBytes::new(lines, lf_bytes, cr_bytes)))
     }
 
     fn with_lock<R, F: FnMut(&mut LinesBytes<BufReader<File>>) -> R>(&self, mut f: F) -> R {
@@ -1338,6 +1945,119 @@ mod test {
 
     use super::LinesBytes;
 
+    #[cfg(unix)]
+    struct TempDir(std::path::PathBuf);
+
+    #[cfg(unix)]
+    impl TempDir {
+        fn new(name: &str) -> Self {
+            let dir = std::env::temp_dir().join(format!(
+                "tauri-plugin-fs-test-{name}-{}",
+                std::process::id()
+            ));
+            let _ = std::fs::remove_dir_all(&dir);
+            std::fs::create_dir_all(&dir).unwrap();
+            // canonicalize so assertions don't depend on e.g. /var -> /private/var on macOS
+            Self(std::fs::canonicalize(dir).unwrap())
+        }
+    }
+
+    #[cfg(unix)]
+    impl Drop for TempDir {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn resolve_real_path_follows_symlinks_of_missing_paths() {
+        use super::resolve_real_path;
+        use std::os::unix::fs::symlink;
+
+        let tmp = TempDir::new("real-path");
+        let allowed = tmp.0.join("allowed");
+        let outside = tmp.0.join("outside");
+        std::fs::create_dir_all(&allowed).unwrap();
+        std::fs::create_dir_all(&outside).unwrap();
+
+        // existing paths are canonicalized
+        assert_eq!(resolve_real_path(&allowed).unwrap(), allowed);
+
+        // a file that does not exist yet, below a symlinked directory
+        symlink(&outside, allowed.join("link")).unwrap();
+        assert_eq!(
+            resolve_real_path(&allowed.join("link/new/file.txt")).unwrap(),
+            outside.join("new/file.txt")
+        );
+
+        // a dangling symlink with a relative target, resolved against the link's directory
+        symlink("../outside/missing.txt", allowed.join("dangling")).unwrap();
+        assert_eq!(
+            resolve_real_path(&allowed.join("dangling")).unwrap(),
+            outside.join("missing.txt")
+        );
+
+        // an existing symlink with a relative target
+        std::fs::write(outside.join("existing.txt"), "").unwrap();
+        symlink("../outside/existing.txt", allowed.join("relative")).unwrap();
+        assert_eq!(
+            resolve_real_path(&allowed.join("relative")).unwrap(),
+            outside.join("existing.txt")
+        );
+
+        // a symlink loop fails
+        symlink("loop-b", allowed.join("loop-a")).unwrap();
+        symlink("loop-a", allowed.join("loop-b")).unwrap();
+        assert!(resolve_real_path(&allowed.join("loop-a/file.txt")).is_err());
+
+        // missing paths without symlinks are kept as is
+        assert_eq!(
+            resolve_real_path(&allowed.join("missing/file.txt")).unwrap(),
+            allowed.join("missing/file.txt")
+        );
+    }
+
+    #[test]
+    fn write_file_options_header() {
+        use super::parse_write_file_options;
+
+        assert!(parse_write_file_options(b"undefined").unwrap().is_none());
+        assert!(parse_write_file_options(b"null").unwrap().is_none());
+        assert!(parse_write_file_options(b"").unwrap().is_none());
+
+        let options = parse_write_file_options(br#"{"baseDir":14,"append":true}"#)
+            .unwrap()
+            .unwrap();
+        assert!(options.append);
+        assert!(options.create);
+        assert!(options.base.base_dir.is_some());
+
+        assert!(parse_write_file_options(b"{not json").is_err());
+        assert!(parse_write_file_options(br#"{"append":"yes"}"#).is_err());
+    }
+
+    #[test]
+    fn read_len_is_capped_to_the_file() {
+        use super::{MIN_READ_LEN, capped_read_len};
+        use std::io::{Seek, SeekFrom};
+
+        let path = std::env::temp_dir().join(format!(
+            "tauri-plugin-fs-test-read-len-{}",
+            std::process::id()
+        ));
+        std::fs::write(&path, vec![1u8; MIN_READ_LEN * 2]).unwrap();
+        let mut file = std::fs::File::open(&path).unwrap();
+
+        assert_eq!(capped_read_len(&mut file, 10), 10);
+        assert_eq!(capped_read_len(&mut file, usize::MAX), MIN_READ_LEN * 2);
+        file.seek(SeekFrom::End(0)).unwrap();
+        assert_eq!(capped_read_len(&mut file, usize::MAX), MIN_READ_LEN);
+
+        drop(file);
+        let _ = std::fs::remove_file(path);
+    }
+
     #[test]
     fn safe_file_path_parse() {
         use super::SafeFilePath;
@@ -1354,21 +2074,87 @@ mod test {
 
     #[test]
     fn test_lines_bytes() {
-        let base = String::from("line 1\nline2\nline 3\nline 4");
-        let bytes = base.as_bytes();
+        // UTF-8
+        {
+            let base = String::from("line 1\nline2\nline 3\r\nline 4");
+            let bytes = base.as_bytes();
 
-        let string1 = base.lines().collect::<String>();
-        let string2 = BufReader::new(bytes)
-            .lines()
-            .map_while(Result::ok)
-            .collect::<String>();
-        let string3 = LinesBytes(BufReader::new(bytes))
-            .flatten()
-            .flat_map(String::from_utf8)
-            .collect::<String>();
+            let string1 = base.lines().collect::<String>();
+            let string2 = BufReader::new(bytes)
+                .lines()
+                .map_while(Result::ok)
+                .collect::<String>();
+            let string3 = LinesBytes::new(BufReader::new(bytes), vec![b'\n'], vec![b'\r'])
+                .flatten()
+                .flat_map(String::from_utf8)
+                .collect::<String>();
 
-        assert_eq!(string1, string2);
-        assert_eq!(string1, string3);
-        assert_eq!(string2, string3);
+            assert_eq!(string1, string2);
+            assert_eq!(string1, string3);
+            assert_eq!(string2, string3);
+        }
+
+        // UTF-16 LE
+        {
+            fn utf16(text: &str) -> Vec<u8> {
+                text.encode_utf16().flat_map(|u| u.to_le_bytes()).collect()
+            }
+
+            let base = String::from("line 1\nline2\nline 3\r\nline 4\n");
+            let bytes = utf16(&base);
+
+            let mut lines = LinesBytes::new(BufReader::new(&bytes[..]), utf16("\n"), utf16("\r"));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 1")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line2")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 3")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 4")));
+            assert!(lines.next().is_none());
+        }
+
+        // UTF-16 BE
+        {
+            fn utf16(text: &str) -> Vec<u8> {
+                text.encode_utf16().flat_map(|u| u.to_be_bytes()).collect()
+            }
+
+            // ਗ (U+0A17) encodes to 0x0A 0x17,
+            // which contains 0x0A but is not a line feed (U+000A = 0x00 0x0A).
+            let base = String::from("line 1\nline2ਗ\nline 3\r\nline 4");
+            let bytes = utf16(&base);
+
+            let mut lines = LinesBytes::new(BufReader::new(&bytes[..]), utf16("\n"), utf16("\r"));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 1")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line2ਗ")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 3")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16("line 4")));
+            assert!(lines.next().is_none());
+        }
+
+        // UTF-16 with a line feed byte sequence at an odd offset
+        {
+            fn utf16le(text: &str) -> Vec<u8> {
+                text.encode_utf16().flat_map(|u| u.to_le_bytes()).collect()
+            }
+            fn utf16be(text: &str) -> Vec<u8> {
+                text.encode_utf16().flat_map(|u| u.to_be_bytes()).collect()
+            }
+
+            // "ਗĀ" is `17 0a 00 01` in UTF-16LE
+            let bytes = utf16le("ਗĀ\nnext\r\nlast\n");
+            let mut lines =
+                LinesBytes::new(BufReader::new(&bytes[..]), utf16le("\n"), utf16le("\r"));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16le("ਗĀ")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16le("next")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16le("last")));
+            assert!(lines.next().is_none());
+
+            // "Āਗ" is `01 00 0a 17` in UTF-16BE
+            let bytes = utf16be("Āਗ\nnext");
+            let mut lines =
+                LinesBytes::new(BufReader::new(&bytes[..]), utf16be("\n"), utf16be("\r"));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16be("Āਗ")));
+            assert_eq!(lines.next().map(Result::unwrap), Some(utf16be("next")));
+            assert!(lines.next().is_none());
+        }
     }
 }

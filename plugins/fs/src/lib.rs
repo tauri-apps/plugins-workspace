@@ -3,6 +3,13 @@
 // SPDX-License-Identifier: MIT
 
 //! Access the file system.
+//!
+//! ## Cargo features
+//!
+//! - **watch**: Enables the `watch` command backed by [`notify`](http://crates.io/crates/notify).
+
+// TODO(v3): consider redesign the API to implement automatic stopAccessingSecurityScopedResource on iOS
+// this likely requires returning a handle to a resource so we can impl Drop for it
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
@@ -10,33 +17,39 @@
 )]
 
 use std::io::Read;
+#[cfg(target_os = "ios")]
+use std::sync::Mutex;
 
 use serde::Deserialize;
 use tauri::{
+    AppHandle, DragDropEvent, Manager, RunEvent, Runtime, WindowEvent,
     ipc::ScopeObject,
     plugin::{Builder as PluginBuilder, TauriPlugin},
     utils::{acl::Value, config::FsScope},
-    AppHandle, DragDropEvent, Manager, RunEvent, Runtime, WindowEvent,
 };
 
+#[cfg(target_os = "android")]
+mod android;
 mod commands;
 mod config;
-#[cfg(not(target_os = "android"))]
+#[cfg(desktop)]
 mod desktop;
 mod error;
 mod file_path;
-#[cfg(target_os = "android")]
-mod mobile;
+#[cfg(target_os = "ios")]
+mod ios;
 #[cfg(target_os = "android")]
 mod models;
 mod scope;
 #[cfg(feature = "watch")]
 mod watcher;
 
-#[cfg(not(target_os = "android"))]
-pub use desktop::Fs;
 #[cfg(target_os = "android")]
-pub use mobile::Fs;
+pub use android::Fs;
+#[cfg(desktop)]
+pub use desktop::Fs;
+#[cfg(target_os = "ios")]
+pub use ios::Fs;
 
 pub use error::Error;
 
@@ -45,6 +58,13 @@ pub use file_path::SafeFilePath;
 
 type Result<T> = std::result::Result<T, Error>;
 
+/// Options and flags which can be used to configure how a file is opened.
+///
+/// This builder exposes the ability to configure how a [`std::fs::File`] is opened and
+/// what operations are permitted on the open file. Build it with [`OpenOptions::new`],
+/// chain calls to the setter methods and pass it to [`Fs::open`].
+///
+/// The `read` option defaults to `true`, every other option defaults to `false`.
 #[derive(Debug, Default, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OpenOptions {
@@ -63,7 +83,9 @@ pub struct OpenOptions {
     #[serde(default)]
     #[allow(unused)]
     mode: Option<u32>,
-    #[serde(default)]
+    // Never deserialized: the webview must not be able to pass arbitrary `open(2)` flags
+    // (e.g. `O_TRUNC`), it can only be set from Rust with `OpenOptionsExt::custom_flags`.
+    #[serde(skip)]
     #[allow(unused)]
     custom_flags: Option<i32>,
 }
@@ -105,11 +127,17 @@ impl OpenOptions {
     ///
     /// # Examples
     ///
-    /// ```no_run
-    /// use tauri_plugin_fs::OpenOptions;
+    /// ```rust,no_run
+    /// use std::path::Path;
+    /// use tauri_plugin_fs::{FsExt, OpenOptions};
     ///
-    /// let mut options = OpenOptions::new();
-    /// let file = options.read(true).open("foo.txt");
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let mut options = OpenOptions::new();
+    ///     options.read(true);
+    ///     let file = app.fs().open(Path::new("foo.txt"), options)?;
+    ///     Ok(())
+    ///   });
     /// ```
     #[must_use]
     pub fn new() -> Self {
@@ -123,10 +151,17 @@ impl OpenOptions {
     ///
     /// # Examples
     ///
-    /// ```no_run
-    /// use tauri_plugin_fs::OpenOptions;
+    /// ```rust,no_run
+    /// use std::path::Path;
+    /// use tauri_plugin_fs::{FsExt, OpenOptions};
     ///
-    /// let file = OpenOptions::new().read(true).open("foo.txt");
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let mut options = OpenOptions::new();
+    ///     options.read(true);
+    ///     let file = app.fs().open(Path::new("foo.txt"), options)?;
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn read(&mut self, read: bool) -> &mut Self {
         self.read = read;
@@ -143,10 +178,17 @@ impl OpenOptions {
     ///
     /// # Examples
     ///
-    /// ```no_run
-    /// use tauri_plugin_fs::OpenOptions;
+    /// ```rust,no_run
+    /// use std::path::Path;
+    /// use tauri_plugin_fs::{FsExt, OpenOptions};
     ///
-    /// let file = OpenOptions::new().write(true).open("foo.txt");
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let mut options = OpenOptions::new();
+    ///     options.write(true);
+    ///     let file = app.fs().open(Path::new("foo.txt"), options)?;
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn write(&mut self, write: bool) -> &mut Self {
         self.write = write;
@@ -186,19 +228,28 @@ impl OpenOptions {
     /// This function doesn't create the file if it doesn't exist. Use the
     /// [`OpenOptions::create`] method to do so.
     ///
-    /// [`write()`]: Write::write "io::Write::write"
-    /// [`flush()`]: Write::flush "io::Write::flush"
-    /// [stream_position]: Seek::stream_position "io::Seek::stream_position"
-    /// [seek]: Seek::seek "io::Seek::seek"
-    /// [Current]: SeekFrom::Current "io::SeekFrom::Current"
-    /// [End]: SeekFrom::End "io::SeekFrom::End"
+    /// [`write()`]: std::io::Write::write "io::Write::write"
+    /// [`flush()`]: std::io::Write::flush "io::Write::flush"
+    /// [Seek]: std::io::Seek "io::Seek"
+    /// [stream_position]: std::io::Seek::stream_position "io::Seek::stream_position"
+    /// [seek]: std::io::Seek::seek "io::Seek::seek"
+    /// [SeekFrom]: std::io::SeekFrom "io::SeekFrom"
+    /// [Current]: std::io::SeekFrom::Current "io::SeekFrom::Current"
+    /// [End]: std::io::SeekFrom::End "io::SeekFrom::End"
     ///
     /// # Examples
     ///
-    /// ```no_run
-    /// use tauri_plugin_fs::OpenOptions;
+    /// ```rust,no_run
+    /// use std::path::Path;
+    /// use tauri_plugin_fs::{FsExt, OpenOptions};
     ///
-    /// let file = OpenOptions::new().append(true).open("foo.txt");
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let mut options = OpenOptions::new();
+    ///     options.append(true);
+    ///     let file = app.fs().open(Path::new("foo.txt"), options)?;
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn append(&mut self, append: bool) -> &mut Self {
         self.append = append;
@@ -214,10 +265,17 @@ impl OpenOptions {
     ///
     /// # Examples
     ///
-    /// ```no_run
-    /// use tauri_plugin_fs::OpenOptions;
+    /// ```rust,no_run
+    /// use std::path::Path;
+    /// use tauri_plugin_fs::{FsExt, OpenOptions};
     ///
-    /// let file = OpenOptions::new().write(true).truncate(true).open("foo.txt");
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let mut options = OpenOptions::new();
+    ///     options.write(true).truncate(true);
+    ///     let file = app.fs().open(Path::new("foo.txt"), options)?;
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn truncate(&mut self, truncate: bool) -> &mut Self {
         self.truncate = truncate;
@@ -232,10 +290,17 @@ impl OpenOptions {
     ///
     /// # Examples
     ///
-    /// ```no_run
-    /// use tauri_plugin_fs::OpenOptions;
+    /// ```rust,no_run
+    /// use std::path::Path;
+    /// use tauri_plugin_fs::{FsExt, OpenOptions};
     ///
-    /// let file = OpenOptions::new().write(true).create(true).open("foo.txt");
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let mut options = OpenOptions::new();
+    ///     options.write(true).create(true);
+    ///     let file = app.fs().open(Path::new("foo.txt"), options)?;
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn create(&mut self, create: bool) -> &mut Self {
         self.create = create;
@@ -247,7 +312,7 @@ impl OpenOptions {
     /// No file is allowed to exist at the target location, also no (dangling) symlink. In this
     /// way, if the call succeeds, the file returned is guaranteed to be new.
     /// If a file exists at the target location, creating a new file will fail with [`AlreadyExists`]
-    /// or another error based on the situation. See [`OpenOptions::open`] for a
+    /// or another error based on the situation. See [`std::fs::OpenOptions::open`] for a
     /// non-exhaustive list of likely errors.
     ///
     /// This option is useful because it is atomic. Otherwise between checking
@@ -262,16 +327,21 @@ impl OpenOptions {
     ///
     /// [`.create()`]: OpenOptions::create
     /// [`.truncate()`]: OpenOptions::truncate
-    /// [`AlreadyExists`]: io::ErrorKind::AlreadyExists
+    /// [`AlreadyExists`]: std::io::ErrorKind::AlreadyExists
     ///
     /// # Examples
     ///
-    /// ```no_run
-    /// use tauri_plugin_fs::OpenOptions;
+    /// ```rust,no_run
+    /// use std::path::Path;
+    /// use tauri_plugin_fs::{FsExt, OpenOptions};
     ///
-    /// let file = OpenOptions::new().write(true)
-    ///                              .create_new(true)
-    ///                              .open("foo.txt");
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let mut options = OpenOptions::new();
+    ///     options.write(true).create_new(true);
+    ///     let file = app.fs().open(Path::new("foo.txt"), options)?;
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn create_new(&mut self, create_new: bool) -> &mut Self {
         self.create_new = create_new;
@@ -293,28 +363,35 @@ impl std::os::unix::fs::OpenOptionsExt for OpenOptions {
 }
 
 impl OpenOptions {
-    #[cfg(target_os = "android")]
-    fn android_mode(&self) -> String {
-        let mut mode = String::new();
-
-        if self.read {
-            mode.push('r');
+    /// The mode passed to `ContentResolver.openAssetFileDescriptor` / `ParcelFileDescriptor.parseMode`,
+    /// which only accept `r`, `w`, `wt`, `wa`, `rw` and `rwt`.
+    ///
+    /// `create` and `create_new` have no equivalent: whether a missing file is created
+    /// depends on the content provider.
+    #[cfg(any(target_os = "android", test))]
+    fn android_mode(&self) -> &'static str {
+        match (self.read, self.write || self.append) {
+            (_, false) => "r",
+            // there is no read + append mode, and `read` defaults to `true` from JavaScript:
+            // honor the explicit append
+            (_, true) if self.append => "wa",
+            (true, true) if self.truncate => "rwt",
+            (true, true) => "rw",
+            (false, true) if self.truncate => "wt",
+            (false, true) => "w",
         }
-        if self.write {
-            mode.push('w');
-        }
-        if self.truncate {
-            mode.push('t');
-        }
-        if self.append {
-            mode.push('a');
-        }
-
-        mode
     }
 }
 
 impl<R: Runtime> Fs<R> {
+    /// Reads the entire contents of a file into a string.
+    ///
+    /// The file is opened in read-only mode with [`Fs::open`].
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `path` cannot be opened for reading or if its
+    /// contents are not valid UTF-8.
     pub fn read_to_string<P: Into<FilePath>>(&self, path: P) -> std::io::Result<String> {
         let mut s = String::new();
         self.open(
@@ -328,6 +405,13 @@ impl<R: Runtime> Fs<R> {
         Ok(s)
     }
 
+    /// Reads the entire contents of a file into a bytes vector.
+    ///
+    /// The file is opened in read-only mode with [`Fs::open`].
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `path` cannot be opened for reading.
     pub fn read<P: Into<FilePath>>(&self, path: P) -> std::io::Result<Vec<u8>> {
         let mut buf = Vec::new();
         self.open(
@@ -367,10 +451,90 @@ impl ScopeObject for scope::Entry {
 pub(crate) struct Scope {
     pub(crate) scope: tauri::fs::Scope,
     pub(crate) require_literal_leading_dot: Option<bool>,
+    pub(crate) scope_dropped_paths: bool,
 }
 
+/// Tracks which paths have active security-scoped resource access on iOS.
+#[cfg(target_os = "ios")]
+pub(crate) struct SecurityScopedResources {
+    /// Set of file URLs that are currently accessing security-scoped resources.
+    /// The key is the URL string representation.
+    pub(crate) active_urls: Mutex<std::collections::HashSet<String>>,
+}
+
+#[cfg(target_os = "ios")]
+impl SecurityScopedResources {
+    pub(crate) fn new() -> Self {
+        Self {
+            active_urls: Mutex::new(std::collections::HashSet::new()),
+        }
+    }
+
+    pub(crate) fn is_tracked_manually(&self, url: &str) -> bool {
+        self.active_urls.lock().unwrap().contains(url)
+    }
+
+    pub(crate) fn track_manually(&self, url: String) {
+        self.active_urls.lock().unwrap().insert(url);
+    }
+
+    pub(crate) fn remove(&self, url: &str) {
+        self.active_urls.lock().unwrap().remove(url);
+    }
+}
+
+#[cfg(not(target_os = "ios"))]
+pub(crate) struct SecurityScopedResources;
+
+#[cfg(not(target_os = "ios"))]
+impl SecurityScopedResources {
+    pub(crate) fn new() -> Self {
+        Self
+    }
+
+    #[allow(dead_code)] // Used on iOS, but not on other platforms
+    pub(crate) fn is_tracked_manually(&self, _url: &str) -> bool {
+        false
+    }
+
+    #[allow(dead_code)] // Used on iOS, but not on other platforms
+    pub(crate) fn track_manually(&self, _url: String) {}
+
+    #[allow(dead_code)] // Used on iOS, but not on other platforms
+    pub(crate) fn remove(&self, _url: &str) {}
+}
+
+/// Extension trait implemented by every [`Manager`] (the app handle, windows, webviews, ...)
+/// to access the file system plugin APIs.
+///
+/// # Examples
+///
+/// ```rust,no_run
+/// use std::path::Path;
+/// use tauri::Runtime;
+/// use tauri_plugin_fs::FsExt;
+///
+/// fn setup<R: Runtime>(app: &tauri::App<R>) -> Result<(), Box<dyn std::error::Error>> {
+///     // allow the app to access a directory that is not part of the static scope
+///     app.fs_scope().allow_directory(Path::new("/path/to/directory"), true)?;
+///
+///     let contents = app.fs().read_to_string(Path::new("/path/to/directory/file.txt"))?;
+///     println!("{contents}");
+///
+///     Ok(())
+/// }
+/// ```
 pub trait FsExt<R: Runtime> {
+    /// Returns the file system scope, which can be used to dynamically
+    /// allow or deny paths at runtime.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the plugin is not registered in the app.
+    /// Use [`FsExt::try_fs_scope`] if the plugin might not be registered.
     fn fs_scope(&self) -> tauri::fs::Scope;
+
+    /// Returns the file system scope, or `None` if the plugin is not registered in the app.
     fn try_fs_scope(&self) -> Option<tauri::fs::Scope>;
 
     /// Cross platform file system APIs that also support manipulating Android files.
@@ -391,6 +555,7 @@ impl<R: Runtime, T: Manager<R>> FsExt<R> for T {
     }
 }
 
+/// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
     PluginBuilder::<R, Option<config::Config>>::new("fs")
         .invoke_handler(tauri::generate_handler![
@@ -417,27 +582,48 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
             commands::write_text_file,
             commands::exists,
             commands::size,
+            commands::start_accessing_security_scoped_resource,
+            commands::stop_accessing_security_scoped_resource,
             #[cfg(feature = "watch")]
             watcher::watch,
         ])
         .setup(|app, api| {
+            let require_literal_leading_dot = api
+                .config()
+                .as_ref()
+                .and_then(|c| c.require_literal_leading_dot);
             let scope = Scope {
-                require_literal_leading_dot: api
+                require_literal_leading_dot,
+                scope_dropped_paths: api
                     .config()
                     .as_ref()
-                    .and_then(|c| c.require_literal_leading_dot),
-                scope: tauri::fs::Scope::new(app, &FsScope::default())?,
+                    .and_then(|c| c.scope_dropped_paths)
+                    .unwrap_or(true),
+                scope: tauri::fs::Scope::new(
+                    app,
+                    &FsScope::Scope {
+                        allow: Vec::new(),
+                        deny: Vec::new(),
+                        require_literal_leading_dot,
+                    },
+                )?,
             };
 
             #[cfg(target_os = "android")]
             {
-                let fs = mobile::init(app, api)?;
+                let fs = android::init(app, api)?;
                 app.manage(fs);
             }
-            #[cfg(not(target_os = "android"))]
+            #[cfg(target_os = "ios")]
+            {
+                let fs = ios::init(app, api)?;
+                app.manage(fs);
+            }
+            #[cfg(desktop)]
             app.manage(Fs(app.clone()));
 
             app.manage(scope);
+            app.manage(SecurityScopedResources::new());
             Ok(())
         })
         .on_event(|app, event| {
@@ -447,7 +633,13 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
                 ..
             } = event
             {
-                let scope = app.fs_scope();
+                let Some(scope) = app.try_state::<Scope>() else {
+                    return;
+                };
+                if !scope.scope_dropped_paths {
+                    return;
+                }
+                let scope = &scope.scope;
                 for path in paths {
                     if path.is_file() {
                         let _ = scope.allow_file(path);
@@ -458,4 +650,47 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
             }
         })
         .build()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::OpenOptions;
+
+    #[test]
+    fn android_modes_are_valid() {
+        let mode = |json: &str| {
+            serde_json::from_str::<OpenOptions>(json)
+                .unwrap()
+                .android_mode()
+        };
+
+        // `read` defaults to true when deserialized
+        assert_eq!(mode(r#"{}"#), "r");
+        assert_eq!(mode(r#"{ "read": false }"#), "r");
+        assert_eq!(mode(r#"{ "write": true }"#), "rw");
+        assert_eq!(mode(r#"{ "write": true, "truncate": true }"#), "rwt");
+        assert_eq!(mode(r#"{ "append": true }"#), "wa");
+        assert_eq!(mode(r#"{ "read": false, "write": true }"#), "w");
+        assert_eq!(
+            mode(r#"{ "read": false, "write": true, "truncate": true }"#),
+            "wt"
+        );
+        assert_eq!(mode(r#"{ "read": false, "append": true }"#), "wa");
+        assert_eq!(
+            mode(r#"{ "read": false, "write": true, "truncate": true, "append": true }"#),
+            "wa"
+        );
+        assert_eq!(
+            mode(r#"{ "read": false, "write": true, "create": true }"#),
+            "w"
+        );
+    }
+
+    #[test]
+    fn open_options_ignore_custom_flags_from_ipc() {
+        let options: OpenOptions =
+            serde_json::from_str(r#"{ "read": true, "customFlags": 512 }"#).unwrap();
+        assert!(options.read);
+        assert_eq!(options.custom_flags, None);
+    }
 }

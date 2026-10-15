@@ -1,122 +1,138 @@
-<script>
-  import { open, save, confirm, message } from "@tauri-apps/plugin-dialog";
-  import { readFile } from "@tauri-apps/plugin-fs";
+<script lang="ts">
+  import {
+    open,
+    save,
+    confirm,
+    message,
+    type PickerMode,
+    type FileAccessMode
+  } from '@tauri-apps/plugin-dialog'
+  import { readFile } from '@tauri-apps/plugin-fs'
+  import type { ViewProps } from '../App.svelte'
 
-  export let onMessage;
-  export let insecureRenderHtml;
-  let defaultPath = null;
-  let filter = null;
-  let multiple = false;
-  let directory = false;
-  let pickerMode = "";
+  let { onMessage }: ViewProps = $props()
 
-  function arrayBufferToBase64(buffer, callback) {
+  let defaultPath: string | undefined = $state()
+  let filter = $state('')
+  let multiple = $state(false)
+  let directory = $state(false)
+  let pickerMode: PickerMode = $state('document')
+  let fileAccessMode: FileAccessMode = $state('scoped')
+
+  function arrayBufferToBase64(
+    buffer: ArrayBuffer,
+    callback: (base64: string) => void
+  ) {
     var blob = new Blob([buffer], {
-      type: "application/octet-binary",
-    });
-    var reader = new FileReader();
+      type: 'application/octet-binary'
+    })
+    var reader = new FileReader()
     reader.onload = function (evt) {
-      var dataurl = evt.target.result;
-      callback(dataurl.substr(dataurl.indexOf(",") + 1));
-    };
-    reader.readAsDataURL(blob);
+      var dataurl = evt.target!.result as string
+      callback(dataurl.split(',')[1])
+    }
+    reader.readAsDataURL(blob)
   }
 
   async function prompt() {
-    confirm("Do you want to do something?")
-      .then((res) => onMessage(res ? "Yes" : "No"))
-      .catch(onMessage);
+    confirm('Do you want to do something?')
+      .then((res) => onMessage(res ? 'Yes' : 'No'))
+      .catch(onMessage)
   }
 
   async function promptCustom() {
-    confirm("Is Tauri awesome?", {
-      okLabel: "Absolutely",
-      cancelLabel: "Totally",
+    confirm('Is Tauri awesome?', {
+      okLabel: 'Absolutely',
+      cancelLabel: 'Totally'
     })
       .then((res) =>
         onMessage(
-          res ? "Tauri is absolutely awesome" : "Tauri is totally awesome"
+          res ? 'Tauri is absolutely awesome' : 'Tauri is totally awesome'
         )
       )
-      .catch(onMessage);
+      .catch(onMessage)
   }
 
   async function msg() {
-    await message("Tauri is awesome!");
+    await message('Tauri is awesome!').then((res) => onMessage(res))
   }
 
-  async function msgCustom(result) {
-    const buttons = { yes: "awesome", no: "amazing", cancel: "stunning" };
+  async function msgCustom() {
+    const buttons = { yes: 'awesome', no: 'amazing', cancel: 'stunning' }
     await message(`Tauri is: `, { buttons })
       .then((res) => onMessage(`Tauri is ${res}`))
-      .catch(onMessage);
+      .catch(onMessage)
   }
 
-  function openDialog() {
-    open({
-      title: "My wonderful open dialog",
-      defaultPath,
-      filters: filter
-        ? [
-            {
-              name: "Tauri Example",
-              extensions: filter.split(",").map((f) => f.trim()),
-            },
-          ]
-        : [],
-      multiple,
-      directory,
-      pickerMode: pickerMode === "" ? undefined : pickerMode,
-    })
-      .then(function (res) {
-        if (Array.isArray(res)) {
-          onMessage(res);
-        } else {
-          var pathToRead = res;
-          var isFile = pathToRead.match(/\S+\.\S+$/g);
-          readFile(pathToRead)
-            .then(function (response) {
-              if (isFile) {
-                if (
-                  pathToRead.includes(".png") ||
-                  pathToRead.includes(".jpg") ||
-                  pathToRead.includes(".jpeg")
-                ) {
-                  arrayBufferToBase64(
-                    new Uint8Array(response),
-                    function (base64) {
-                      var src = "data:image/png;base64," + base64;
-                      insecureRenderHtml('<img src="' + src + '"></img>');
-                    }
-                  );
-                } else {
-                  onMessage(res);
-                }
-              } else {
-                onMessage(res);
+  async function openDialog() {
+    try {
+      const result = await open({
+        title: 'My wonderful open dialog',
+        defaultPath,
+        filters: filter
+          ? [
+              {
+                name: 'Tauri Example',
+                extensions: filter.split(',').map((f) => f.trim())
               }
-            })
-            .catch(onMessage);
-        }
+            ]
+          : [],
+        multiple,
+        directory,
+        pickerMode,
+        fileAccessMode
       })
-      .catch(onMessage);
+
+      if (Array.isArray(result)) {
+        onMessage(result)
+      } else if (result === null) {
+        onMessage('user cancelled the selection')
+      } else {
+        const pathToRead = result
+        const isFile = pathToRead.match(/\S+\.\S+$/g)
+
+        await readFile(pathToRead).then(function (res) {
+          if (isFile) {
+            if (
+              pathToRead.includes('.png')
+              || pathToRead.includes('.jpg')
+              || pathToRead.includes('.jpeg')
+            ) {
+              arrayBufferToBase64(res.buffer, function (base64) {
+                const src = 'data:image/png;base64,' + base64
+                onMessage('<img src="' + src + '"></img>')
+              })
+            } else {
+              // Convert byte array to UTF-8 string
+              const decoder = new TextDecoder('utf-8')
+              const text = decoder.decode(res)
+              onMessage(text)
+            }
+          } else {
+            onMessage(res)
+          }
+        })
+      }
+    } catch (exception) {
+      onMessage(exception)
+    }
   }
 
   function saveDialog() {
     save({
-      title: "My wonderful save dialog",
+      title: 'My wonderful save dialog',
       defaultPath,
       filters: filter
         ? [
             {
-              name: "Tauri Example",
-              extensions: filter.split(",").map((f) => f.trim()),
-            },
+              name: 'Tauri Example',
+              extensions: filter.split(',').map((f) => f.trim())
+            }
           ]
-        : [],
-      })
+        : []
+    })
       .then(onMessage)
-      .catch(onMessage);
+      .catch(onMessage)
   }
 </script>
 
@@ -154,18 +170,26 @@
     <option value="document">Document</option>
   </select>
 </div>
+<div>
+  <label for="dialog-file-access-mode">File Access Mode:</label>
+  <select id="dialog-file-access-mode" bind:value={fileAccessMode}>
+    <option value="copy">Copy</option>
+    <option value="scoped">Scoped</option>
+  </select>
+</div>
 <br />
 
 <div class="flex flex-wrap flex-col md:flex-row gap-2 children:flex-shrink-0">
-  <button class="btn" id="open-dialog" on:click={openDialog}>Open dialog</button>
-  <button class="btn" id="save-dialog" on:click={saveDialog}
+  <button class="btn" id="open-dialog" onclick={openDialog}>Open dialog</button>
+  <button class="btn" id="save-dialog" onclick={saveDialog}
     >Open save dialog</button
   >
-  <button class="btn" id="prompt-dialog" on:click={prompt}>Prompt</button>
-  <button class="btn" id="custom-prompt-dialog" on:click={promptCustom}
+  <button class="btn" id="prompt-dialog" onclick={prompt}>Prompt</button>
+  <button class="btn" id="custom-prompt-dialog" onclick={promptCustom}
     >Prompt (custom)</button
   >
-  <button class="btn" id="message-dialog" on:click={msg}>Message</button>
-  <button class="btn" id="message-dialog" on:click={msgCustom}>Message (custom)</button>
-
+  <button class="btn" id="message-dialog" onclick={msg}>Message</button>
+  <button class="btn" id="message-dialog" onclick={msgCustom}
+    >Message (custom)</button
+  >
 </div>

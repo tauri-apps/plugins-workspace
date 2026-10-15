@@ -3,6 +3,11 @@
 // SPDX-License-Identifier: MIT
 
 //! Native system dialogs for opening and saving files along with message dialogs.
+//!
+//! ## Cargo features
+//!
+//! - **gtk3** *(enabled by default)*: Uses GTK for dialogs on Linux & BSDs; has no effect on Windows and macOS
+//! - **xdg-portal**:  Uses XDG Desktop Portal instead of GTK on Linux & BSDs
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
@@ -11,8 +16,8 @@
 
 use serde::{Deserialize, Serialize};
 use tauri::{
-    plugin::{Builder, TauriPlugin},
     Manager, Runtime,
+    plugin::{Builder, TauriPlugin},
 };
 
 use std::{
@@ -44,18 +49,37 @@ pub use desktop::Dialog;
 #[cfg(mobile)]
 pub use mobile::Dialog;
 
+/// The preferred mode of the file picker on mobile platforms (iOS and Android), which have
+/// distinct file and media pickers. On desktop, this option is ignored.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum PickerMode {
+    /// Show the generic document picker.
     Document,
+    /// Show the media picker, allowing both images and videos to be selected.
     Media,
+    /// Show the media picker restricted to images.
     Image,
+    /// Show the media picker restricted to videos.
     Video,
 }
 
+/// The file access mode of the dialog, used to control how a picked file is exposed to the app on iOS.
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "lowercase")]
+pub enum FileAccessMode {
+    /// Copy the picked file into the app's sandbox so it can be freely read, edited or deleted.
+    Copy,
+    /// Keep the file at its original location and let the system manage security-scoped access to it.
+    Scoped,
+}
+
 pub(crate) const OK: &str = "Ok";
+#[cfg(mobile)]
 pub(crate) const CANCEL: &str = "Cancel";
+#[cfg(mobile)]
 pub(crate) const YES: &str = "Yes";
+#[cfg(mobile)]
 pub(crate) const NO: &str = "No";
 
 macro_rules! blocking_fn {
@@ -71,6 +95,7 @@ macro_rules! blocking_fn {
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the dialog APIs.
 pub trait DialogExt<R: Runtime> {
+    /// Returns the [`Dialog`] instance associated with this app/window.
     fn dialog(&self) -> &Dialog<R>;
 }
 
@@ -88,7 +113,7 @@ impl<R: Runtime> Dialog<R> {
     ///
     /// - Message dialog:
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     ///
     /// tauri::Builder::default()
@@ -105,14 +130,14 @@ impl<R: Runtime> Dialog<R> {
     ///
     /// - Ask dialog:
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
     ///
     /// tauri::Builder::default()
     ///   .setup(|app| {
     ///     app.dialog()
     ///       .message("Are you sure?")
-    ///       .buttons(MessageDialogButtons::OkCancelCustom("Yes", "No"))
+    ///       .buttons(MessageDialogButtons::OkCancelCustom("Yes".to_string(), "No".to_string()))
     ///       .show(|yes| {
     ///         println!("user said {}", if yes { "yes" } else { "no" });
     ///       });
@@ -122,7 +147,7 @@ impl<R: Runtime> Dialog<R> {
     ///
     /// - Message dialog with OK button:
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
     ///
     /// tauri::Builder::default()
@@ -144,7 +169,7 @@ impl<R: Runtime> Dialog<R> {
     /// To block the current thread until the user acted on the dialog, you can use `blocking_show`,
     /// but note that it cannot be executed on the main thread as it will freeze your application.
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
     ///
     /// tauri::Builder::default()
@@ -153,7 +178,7 @@ impl<R: Runtime> Dialog<R> {
     ///     std::thread::spawn(move || {
     ///       let yes = handle.dialog()
     ///         .message("Are you sure?")
-    ///         .buttons(MessageDialogButtons::OkCancelCustom("Yes", "No"))
+    ///         .buttons(MessageDialogButtons::OkCancelCustom("Yes".to_string(), "No".to_string()))
     ///         .blocking_show();
     ///     });
     ///
@@ -190,8 +215,6 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::open,
             commands::save,
             commands::message,
-            commands::ask,
-            commands::confirm
         ])
         .setup(|app, api| {
             #[cfg(mobile)]
@@ -239,8 +262,8 @@ impl<R: Runtime> MessageDialogBuilder<R> {
             dialog,
             title: title.into(),
             message: message.into(),
-            kind: Default::default(),
-            buttons: Default::default(),
+            kind: MessageDialogKind::default(),
+            buttons: MessageDialogButtons::default(),
             #[cfg(desktop)]
             parent: None,
         }
@@ -379,6 +402,7 @@ pub struct FileDialogBuilder<R: Runtime> {
     pub(crate) title: Option<String>,
     pub(crate) can_create_directories: Option<bool>,
     pub(crate) picker_mode: Option<PickerMode>,
+    pub(crate) file_access_mode: Option<FileAccessMode>,
     #[cfg(desktop)]
     pub(crate) parent: Option<crate::desktop::WindowHandle>,
 }
@@ -391,6 +415,7 @@ pub(crate) struct FileDialogPayload<'a> {
     filters: &'a Vec<Filter>,
     multiple: bool,
     picker_mode: &'a Option<PickerMode>,
+    file_access_mode: &'a Option<FileAccessMode>,
 }
 
 // raw window handle :(
@@ -407,6 +432,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
             title: None,
             can_create_directories: None,
             picker_mode: None,
+            file_access_mode: None,
             #[cfg(desktop)]
             parent: None,
         }
@@ -419,6 +445,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
             filters: &self.filters,
             multiple,
             picker_mode: &self.picker_mode,
+            file_access_mode: &self.file_access_mode,
         }
     }
 
@@ -488,6 +515,14 @@ impl<R: Runtime> FileDialogBuilder<R> {
         self
     }
 
+    /// Set the file access mode of the dialog.
+    /// This is only used on iOS.
+    /// On desktop and Android, this option is ignored.
+    pub fn set_file_access_mode(mut self, mode: FileAccessMode) -> Self {
+        self.file_access_mode.replace(mode);
+        self
+    }
+
     /// Shows the dialog to select a single file.
     ///
     /// This is not a blocking operation,
@@ -497,7 +532,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
     ///   .setup(|app| {
@@ -524,7 +559,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     /// The file paths cannot be read directly on Android as they are behind a content URI.
     /// The recommended way to read the files is using the [`fs`](https://v2.tauri.app/plugin/file-system/) plugin:
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// use tauri_plugin_fs::FsExt;
     /// tauri::Builder::default()
@@ -545,7 +580,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
     ///   .setup(|app| {
@@ -569,7 +604,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
     ///   .setup(|app| {
@@ -594,7 +629,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
     ///   .setup(|app| {
@@ -619,7 +654,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// tauri::Builder::default()
     ///   .setup(|app| {
@@ -646,7 +681,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
     /// async fn my_command(app: tauri::AppHandle) {
@@ -668,7 +703,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
     /// async fn my_command(app: tauri::AppHandle) {
@@ -690,7 +725,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
     /// async fn my_command(app: tauri::AppHandle) {
@@ -713,7 +748,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
     /// async fn my_command(app: tauri::AppHandle) {
@@ -736,7 +771,7 @@ impl<R: Runtime> FileDialogBuilder<R> {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no_run
     /// use tauri_plugin_dialog::DialogExt;
     /// #[tauri::command]
     /// async fn my_command(app: tauri::AppHandle) {
