@@ -79,7 +79,17 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
 
             if unsafe { GetLastError() } == ERROR_ALREADY_EXISTS {
                 unsafe {
-                    let hwnd = FindWindowW(class_name.as_ptr(), window_name.as_ptr());
+                    // When instances launch concurrently (e.g. quick double-click), the first
+                    // instance publishes the mutex before its event target window is created.
+                    // Poll with a bounded retry before giving up on message delivery.
+                    let mut hwnd = std::ptr::null_mut();
+                    for _ in 0..40 {
+                        hwnd = FindWindowW(class_name.as_ptr(), window_name.as_ptr());
+                        if !hwnd.is_null() {
+                            break;
+                        }
+                        std::thread::sleep(std::time::Duration::from_millis(25));
+                    }
 
                     if !hwnd.is_null() {
                         // Windows lets us bring a window to the front, but not the first
@@ -125,10 +135,14 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
                                 GetLastError()
                             );
                         }
-
-                        app.cleanup_before_exit();
-                        std::process::exit(0);
+                    } else {
+                        tracing::warn!(
+                            "single_instance detected an existing instance mutex, but the target window was not found within 1000ms"
+                        );
                     }
+
+                    app.cleanup_before_exit();
+                    std::process::exit(0);
                 }
             } else {
                 app.manage(MutexHandle(hmutex as _));
