@@ -536,9 +536,12 @@ mod imp {
     fn load_desktop_ini(path: &std::path::Path) -> Result<ini::Ini, ini::Error> {
         ini::Ini::load_from_file_opt(
             path,
+            // rust-ini 0.21.3 added new struct fields
+            #[allow(clippy::needless_update)]
             ini::ParseOption {
                 enabled_quote: false,
                 enabled_escape: false,
+                ..Default::default()
             },
         )
     }
