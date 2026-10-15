@@ -8,7 +8,7 @@ Interface with SQL databases through [sqlx](https://github.com/launchbadge/sqlx)
 | Windows  | ✓         |
 | macOS    | ✓         |
 | Android  | ✓         |
-| iOS      | x         |
+| iOS      | ✓         |
 
 ## Install
 
