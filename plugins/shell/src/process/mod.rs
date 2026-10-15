@@ -133,10 +133,10 @@ impl CommandChild {
 impl Drop for CommandChild {
     /// Kills the child process (or its process group / job object) if `kill_on_drop` is enabled.
     fn drop(&mut self) {
-        if self.kill_on_drop {
-            if let Err(e) = self.send_kill() {
-                log::error!("Failed to kill child process {}: {}", self.inner.id(), e);
-            }
+        if self.kill_on_drop
+            && let Err(e) = self.send_kill()
+        {
+            log::error!("Failed to kill child process {}: {}", self.inner.id(), e);
         }
     }
 }
