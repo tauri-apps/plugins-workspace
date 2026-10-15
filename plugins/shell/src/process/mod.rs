@@ -87,7 +87,16 @@ impl CommandChild {
 
     /// Sends a kill signal to the child and waits for it to exit.
     /// With `process_group` enabled this kills the whole process group (POSIX) or job object (Windows).
-    pub fn kill(self) -> crate::Result<()> {
+    pub fn kill(mut self) -> crate::Result<()> {
+        self.send_kill()?;
+        // Already killed, so `Drop` must not do it again.
+        self.kill_on_drop = false;
+        self.inner.wait()?;
+        Ok(())
+    }
+
+    /// Sends the kill signal without waiting for the child to exit.
+    fn send_kill(&self) -> crate::Result<()> {
         // No early return when the child already exited: the rest of its
         // process group or job object may still be running.
         #[cfg(unix)]
@@ -112,7 +121,6 @@ impl CommandChild {
             None => self.inner.kill()?,
         }
 
-        self.inner.wait()?;
         Ok(())
     }
 
@@ -123,12 +131,10 @@ impl CommandChild {
 }
 
 impl Drop for CommandChild {
-    /// Kill the child process when the CommandChild is dropped.
+    /// Kills the child process (or its process group / job object) if `kill_on_drop` is enabled.
     fn drop(&mut self) {
         if self.kill_on_drop {
-            #[cfg(not(debug_assertions))]
-            let _ = self.inner.kill();
-            if let Err(e) = self.inner.kill() {
+            if let Err(e) = self.send_kill() {
                 log::error!("Failed to kill child process {}: {}", self.inner.id(), e);
             }
         }
@@ -304,7 +310,16 @@ impl Command {
         self
     }
 
-    /// Configures whether the child process should be killed when the CommandChild is dropped.
+    /// Configures whether the child process is killed when its [`CommandChild`] is dropped.
+    /// Defaults to `false`, so a dropped [`CommandChild`] leaves the process running.
+    ///
+    /// The kill works like [`CommandChild::kill`] but does not wait for the process to exit.
+    /// Without [`Command::set_process_group`] only the child itself is killed, and any
+    /// processes it spawned keep running; enable it to kill the whole process group (POSIX)
+    /// or job object (Windows).
+    ///
+    /// This has no effect on processes spawned from the JavaScript API; the plugin kills those when the app exits.
+    #[must_use]
     pub fn kill_on_drop(mut self, kill_on_drop: bool) -> Self {
         self.kill_on_drop = kill_on_drop;
         self
@@ -794,6 +809,63 @@ mod tests {
         });
 
         // Verify the process group is gone
+        let ret = unsafe { libc::killpg(pid as i32, 0) };
+        assert_ne!(ret, 0, "process group should no longer exist");
+    }
+
+    #[cfg(not(windows))]
+    fn wait_terminated(mut rx: Receiver<CommandEvent>) -> TerminatedPayload {
+        tauri::async_runtime::block_on(async move {
+            while let Some(event) = rx.recv().await {
+                if let CommandEvent::Terminated(payload) = event {
+                    return payload;
+                }
+            }
+            panic!("channel closed without a Terminated event");
+        })
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn test_cmd_kill_on_drop() {
+        let (rx, child) = Command::new("sleep")
+            .args(["60"])
+            .kill_on_drop(true)
+            .spawn()
+            .unwrap();
+        drop(child);
+
+        let payload = wait_terminated(rx);
+        assert_eq!(payload.signal, Some(libc::SIGKILL));
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn test_cmd_no_kill_on_drop_by_default() {
+        let (_rx, child) = Command::new("sleep").args(["60"]).spawn().unwrap();
+        let pid = child.pid();
+        drop(child);
+
+        std::thread::sleep(std::time::Duration::from_millis(200));
+        let ret = unsafe { libc::kill(pid as i32, 0) };
+        assert_eq!(ret, 0, "process should still be running");
+        unsafe { libc::kill(pid as i32, libc::SIGKILL) };
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn test_cmd_kill_on_drop_process_group() {
+        // The shell's own child (sleep) must die too, not just the shell.
+        let (rx, child) = Command::new("sh")
+            .args(["-c", "sleep 60; true"])
+            .set_process_group(true)
+            .kill_on_drop(true)
+            .spawn()
+            .unwrap();
+        let pid = child.pid();
+        drop(child);
+
+        wait_terminated(rx);
         let ret = unsafe { libc::killpg(pid as i32, 0) };
         assert_ne!(ret, 0, "process group should no longer exist");
     }
