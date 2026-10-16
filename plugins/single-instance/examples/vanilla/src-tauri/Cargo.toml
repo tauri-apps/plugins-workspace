@@ -5,7 +5,7 @@ description = "A Tauri App"
 authors = ["You"]
 repository = ""
 edition = "2024"
-rust-version = "1.90"
+rust-version = "1.96"
 
 [dependencies]
 serde = { workspace = true }
