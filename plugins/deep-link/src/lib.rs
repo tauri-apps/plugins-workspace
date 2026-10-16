@@ -148,7 +148,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). Requires `update-desktop-database`. May not work on older distros.
+        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). May not work on older distros.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             Err(crate::Error::UnsupportedPlatform)
@@ -264,7 +264,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **Linux**: Needs the `xdg-mime` and `update-desktop-database` commands available on the system.
+        /// - **Linux**: Needs the `xdg-mime` command available on the system. `update-desktop-database` is used to refresh the MIME cache when available.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn register<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
@@ -348,7 +348,7 @@ mod imp {
                     )?;
                 }
 
-                run_command(Command::new("update-desktop-database").arg(target))?;
+                update_desktop_database(&target)?;
                 run_command(Command::new("xdg-mime").args([
                     "default",
                     &file_name,
@@ -370,7 +370,7 @@ mod imp {
         ///
         /// - **Windows**: Requires admin rights if the protocol is registered on local machine
         ///   (this can happen when registered from the NSIS installer when the install mode is set to both or per machine)
-        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). Requires `update-desktop-database`. May not work on older distros.
+        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). May not work on older distros.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
@@ -437,7 +437,7 @@ mod imp {
                         })
                     });
                 if desktop_changed || cached {
-                    run_command(Command::new("update-desktop-database").arg(&target))?;
+                    update_desktop_database(&target)?;
                 }
 
                 Ok(())
@@ -514,6 +514,25 @@ mod imp {
             .status()
             .and_then(|status| check_command_status(&name, status))
             .inspect_err(crate::error::inspect_command_error(&name))
+    }
+
+    /// Refreshes the desktop entry MIME cache. `update-desktop-database` is not installed on
+    /// every distro and the cache is only an optimization, so a missing binary is not an error.
+    #[cfg(target_os = "linux")]
+    fn update_desktop_database(target: &std::path::Path) -> std::io::Result<()> {
+        const NAME: &str = "update-desktop-database";
+        match Command::new(NAME).arg(target).status() {
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                tracing::warn!(
+                    "`{NAME}` not found, skipping MIME database update. \
+                     Install `desktop-file-utils` to silence this warning."
+                );
+                Ok(())
+            }
+            result => result
+                .and_then(|status| check_command_status(NAME, status))
+                .inspect_err(crate::error::inspect_command_error(NAME)),
+        }
     }
 
     #[cfg(target_os = "linux")]
