@@ -20,7 +20,7 @@ use tauri::{AppHandle, Manager, Runtime, plugin::TauriPlugin};
 #[cfg(target_os = "windows")]
 #[path = "platform_impl/windows.rs"]
 mod platform_impl;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
 #[path = "platform_impl/linux.rs"]
 mod platform_impl;
 #[cfg(target_os = "macos")]
@@ -128,7 +128,7 @@ impl<R: Runtime> Builder<R> {
     pub fn build(self) -> TauriPlugin<R> {
         platform_impl::init(
             self.callback,
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "freebsd"))]
             self.dbus_id,
         )
     }

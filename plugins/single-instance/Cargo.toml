@@ -41,7 +41,7 @@ features = [
   "Win32_Graphics_Gdi",
 ]
 
-[target."cfg(target_os = \"linux\")".dependencies]
+[target."cfg(any(target_os = \"linux\", target_os = \"freebsd\"))".dependencies]
 zbus = { workspace = true }
 
 [features]
