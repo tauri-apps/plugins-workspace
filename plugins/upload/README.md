@@ -13,7 +13,7 @@ Download files from a remote HTTP server to disk.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.77.2**_
+_This plugin requires a Rust version of at least **1.90**_
 
 There are three general methods of installation that we can recommend.
 
@@ -66,7 +66,8 @@ import { upload, HttpMethod } from '@tauri-apps/plugin-upload'
 upload(
   'https://example.com/file-upload',
   './path/to/my/file.txt',
-  (progress, total) => console.log(`Uploaded ${progress} of ${total} bytes`), // a callback that will be called with the upload progress
+  ({ progressTotal, total }) =>
+    console.log(`Uploaded ${progressTotal} of ${total} bytes`), // a callback that will be called with the upload progress
   { 'Content-Type': 'text/plain' } // optional headers to send with the request
 )
 
@@ -74,7 +75,8 @@ upload(
 upload(
   'https://example.com/file-upload',
   './path/to/my/file.txt',
-  (progress, total) => console.log(`Uploaded ${progress} of ${total} bytes`),
+  ({ progressTotal, total }) =>
+    console.log(`Uploaded ${progressTotal} of ${total} bytes`),
   { 'Content-Type': 'text/plain' },
   HttpMethod.Put // Use HttpMethod enum - supports POST, PUT, PATCH
 )
@@ -86,7 +88,8 @@ import { download } from '@tauri-apps/plugin-upload'
 download(
   'https://example.com/file-download-link',
   './path/to/save/my/file.txt',
-  (progress, total) => console.log(`Downloaded ${progress} of ${total} bytes`), // a callback that will be called with the download progress
+  ({ progressTotal, total }) =>
+    console.log(`Downloaded ${progressTotal} of ${total} bytes`), // a callback that will be called with the download progress
   { 'Content-Type': 'text/plain' } // optional headers to send with the request
 )
 ```

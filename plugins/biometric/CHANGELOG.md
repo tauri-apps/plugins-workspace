@@ -1,5 +1,35 @@
 # Changelog
 
+## [2.5.0]
+
+### feat
+
+- [`0374bec1`](https://github.com/tauri-apps/plugins-workspace/commit/0374bec1e2e50cc159d71471f1683bd30dc9fcbe) ([#2454](https://github.com/tauri-apps/plugins-workspace/pull/2454) by [@charlesschaefer](https://github.com/tauri-apps/plugins-workspace/../../charlesschaefer)) Add `biometricCipher` to encrypt and decrypt data on Android with a key protected by strong biometric authentication.
+- [`2ebe54ab`](https://github.com/tauri-apps/plugins-workspace/commit/2ebe54abce3494f0f021383b0a32f9b3c3b80fa2) ([#3264](https://github.com/tauri-apps/plugins-workspace/pull/3264) by [@takahashim](https://github.com/tauri-apps/plugins-workspace/../../takahashim)) Add macOS Touch ID support via LocalAuthentication framework.
+
+### bug
+
+- [`dff0dd4b`](https://github.com/tauri-apps/plugins-workspace/commit/dff0dd4b230dbb0d01fe8cc8d6d5e9947f17d3c7) ([#2648](https://github.com/tauri-apps/plugins-workspace/pull/2648) by [@pjf-dev](https://github.com/tauri-apps/plugins-workspace/../../pjf-dev)) Fix biometric plugin reporting an inconsistent and incorrect error on Android when no device passcode was set and `allowDeviceCredential` is enabled. Android now rejects with the `passcodeNotSet` error code like iOS does; it previously used the undocumented `noDeviceCredential` code, so code matching that string must switch to `passcodeNotSet`.
+
+## [2.4.2]
+
+- [`42ae8b45`](https://github.com/tauri-apps/plugins-workspace/commit/42ae8b4501f3628cddeab3973eb38a7593304cc8) ([#3684](https://github.com/tauri-apps/plugins-workspace/pull/3684)) On iOS, mark the plugin's `init_plugin_*` entry point `public` so release builds made with Xcode 27 keep it global and link.
+- [`9a74a78c`](https://github.com/tauri-apps/plugins-workspace/commit/9a74a78c711607e8eac40ff5e1a4c6038613a053) ([#3674](https://github.com/tauri-apps/plugins-workspace/pull/3674)) Fix compilation on iOS when the `wry` feature of `tauri` is not enabled by another crate.
+
+## [2.4.1]
+
+- [`569ee82c`](https://github.com/tauri-apps/plugins-workspace/commit/569ee82cf61a358b4c73ba52f2e99f3317ec05d0) Fix the docs.rs build for Android: the build script now detects docs.rs through the `DOCS_RS` environment variable, since `cfg(docsrs)` is never set for build scripts.
+
+## [2.4.0]
+
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+## [2.3.3]
+
+- [`db9c5998`](https://github.com/tauri-apps/plugins-workspace/commit/db9c5998feff9384f9cbbefcbe0d45937c00a1fc) ([#3531](https://github.com/tauri-apps/plugins-workspace/pull/3531) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix missing `consumer-rules.pro` on Gradle v9.
+
 ## \[2.3.2]
 
 - [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
@@ -105,6 +135,10 @@
   itial release.
   29]\(https://github.com/tauri-apps/plugins-workspace/pull/829)) Initial release.
   commit/8df28a987519ecfa03dcb8635443025f8d010362)([#829](https://github.com/tauri-apps/plugins-workspace/pull/829)) Initial release.
+  .
+  commit/8df28a987519ecfa03dcb8635443025f8d010362)([#829](https://github.com/tauri-apps/plugins-workspace/pull/829)) Initial release.
+  ithub.com/tauri-apps/plugins-workspace/pull/829)) Initial release.
+43025f8d010362)([#829](https://github.com/tauri-apps/plugins-workspace/pull/829)) Initial release.
   .
   commit/8df28a987519ecfa03dcb8635443025f8d010362)([#829](https://github.com/tauri-apps/plugins-workspace/pull/829)) Initial release.
   ithub.com/tauri-apps/plugins-workspace/pull/829)) Initial release.

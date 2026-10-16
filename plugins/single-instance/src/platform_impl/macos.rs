@@ -3,18 +3,19 @@
 // SPDX-License-Identifier: MIT
 
 use std::{
-    io::{BufWriter, Error, ErrorKind, Read, Write},
-    os::unix::net::{UnixListener, UnixStream},
+    io::{BufWriter, Error, ErrorKind, Write},
+    os::unix::net::UnixStream,
     path::PathBuf,
 };
 
+use crate::SingleInstanceCallback;
 #[cfg(feature = "semver")]
 use crate::semver_compat::semver_compat_string;
-use crate::SingleInstanceCallback;
 use tauri::{
-    plugin::{self, TauriPlugin},
     AppHandle, Config, Manager, RunEvent, Runtime,
+    plugin::{self, TauriPlugin},
 };
+use tokio::io::AsyncReadExt;
 
 pub fn init<R: Runtime>(cb: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
@@ -31,7 +32,7 @@ pub fn init<R: Runtime>(cb: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
                         ErrorKind::NotFound | ErrorKind::ConnectionRefused => {
                             // This process claims itself as singleton as likely none exists
                             socket_cleanup(&socket);
-                            listen_for_other_instances(&socket, app.clone(), cb);
+                            listen_for_other_instances(socket, app.clone(), cb);
                         }
                         _ => {
                             tracing::debug!(
@@ -79,12 +80,14 @@ fn notify_singleton(socket: &PathBuf) -> Result<(), Error> {
     let mut bf = BufWriter::new(&stream);
     let cwd = std::env::current_dir()
         .unwrap_or_default()
-        .to_str()
-        .unwrap_or_default()
-        .to_string();
+        .to_string_lossy()
+        .into_owned();
     bf.write_all(cwd.as_bytes())?;
     bf.write_all(b"\0\0")?;
-    let args_joined = std::env::args().collect::<Vec<String>>().join("\0");
+    let args_joined = std::env::args_os()
+        .map(|arg| arg.to_string_lossy().into_owned())
+        .collect::<Vec<String>>()
+        .join("\0");
     bf.write_all(args_joined.as_bytes())?;
     bf.flush()?;
     drop(bf);
@@ -92,42 +95,40 @@ fn notify_singleton(socket: &PathBuf) -> Result<(), Error> {
 }
 
 fn listen_for_other_instances<A: Runtime>(
-    socket: &PathBuf,
+    socket: PathBuf,
     app: AppHandle<A>,
     mut cb: Box<SingleInstanceCallback<A>>,
 ) {
-    match UnixListener::bind(socket) {
-        Ok(listener) => {
-            tauri::async_runtime::spawn(async move {
-                for stream in listener.incoming() {
-                    match stream {
-                        Ok(mut stream) => {
-                            let mut s = String::new();
-                            match stream.read_to_string(&mut s) {
-                                Ok(_) => {
-                                    let (cwd, args) = s.split_once("\0\0").unwrap_or_default();
-                                    let args: Vec<String> =
-                                        args.split('\0').map(String::from).collect();
-                                    cb(app.app_handle(), args, cwd.to_string());
-                                }
-                                Err(e) => {
-                                    tracing::debug!("single_instance failed to be notified: {e}")
-                                }
+    tauri::async_runtime::spawn(async move {
+        match tokio::net::UnixListener::bind(socket) {
+            Ok(listener) => loop {
+                match listener.accept().await {
+                    Ok((mut stream, _addr)) => {
+                        let mut s = String::new();
+                        match stream.read_to_string(&mut s).await {
+                            Ok(_) => {
+                                let (cwd, args) = s.split_once("\0\0").unwrap_or_default();
+                                let args: Vec<String> =
+                                    args.split('\0').map(String::from).collect();
+                                cb(app.app_handle(), args, cwd.to_string());
+                            }
+                            Err(e) => {
+                                tracing::debug!("single_instance failed to be notified: {e}")
                             }
                         }
-                        Err(err) => {
-                            tracing::debug!("single_instance failed to be notified: {}", err);
-                            continue;
-                        }
+                    }
+                    Err(err) => {
+                        tracing::debug!("single_instance failed to be notified: {}", err);
+                        continue;
                     }
                 }
-            });
+            },
+            Err(err) => {
+                tracing::error!(
+                    "single_instance failed to listen to other processes - launching normally: {}",
+                    err
+                );
+            }
         }
-        Err(err) => {
-            tracing::error!(
-                "single_instance failed to listen to other processes - launching normally: {}",
-                err
-            );
-        }
-    }
+    });
 }

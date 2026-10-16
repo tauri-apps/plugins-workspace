@@ -1,0 +1,3 @@
+<resources>
+    <string name="tauri_biometric_no_device_credential">No device credential set</string>
+</resources>
