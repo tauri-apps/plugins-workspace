@@ -1,5 +1,42 @@
 # Changelog
 
+## [2.6.2]
+
+- [`2d541bc0`](https://github.com/tauri-apps/plugins-workspace/commit/2d541bc0d1fa571e7f06b8a39a4e9ecc4932f9e7) ([#3585](https://github.com/tauri-apps/plugins-workspace/pull/3585) by [@vincentkoc](https://github.com/tauri-apps/plugins-workspace/../../vincentkoc)) Return an I/O error when an XDG registration, unregistration, or query command exits unsuccessfully on Linux. Match the queried desktop filename exactly, and remove the app's MIME association when unregistering so it is not selected again by fallback. Preserve other schemes, applications, defaults, and desktop command quoting.
+
+## [2.6.1]
+
+- [`569ee82c`](https://github.com/tauri-apps/plugins-workspace/commit/569ee82cf61a358b4c73ba52f2e99f3317ec05d0) Fix the docs.rs build for Android: the build script now detects docs.rs through the `DOCS_RS` environment variable, since `cfg(docsrs)` is never set for build scripts.
+
+## [2.6.0]
+
+- [`ecd3273e`](https://github.com/tauri-apps/plugins-workspace/commit/ecd3273e8e4c6e9b123bf9861bf7b925cad1c679) ([#3480](https://github.com/tauri-apps/plugins-workspace/pull/3480) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated `windows-rs` dependencies:
+    
+    - deep-link: updated `windows-registry` to 0.6 and `windows-result` to 0.4. The public `Error::Windows` variant wraps `windows_result::Error`; applications using this type directly should update their `windows-result` dependency.
+    - opener: updated `windows` to 0.62. The public `Error::Win32Error` variant wraps `windows::core::Error`; applications using this type directly should update their `windows` dependency.
+    - single-instance: updated `windows-sys` to 0.61
+    - updater: updated `windows-sys` to 0.61
+
+## [2.5.0]
+
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+## [2.4.10]
+
+- [`db9c5998`](https://github.com/tauri-apps/plugins-workspace/commit/db9c5998feff9384f9cbbefcbe0d45937c00a1fc) ([#3531](https://github.com/tauri-apps/plugins-workspace/pull/3531) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix missing `consumer-rules.pro` on Gradle v9.
+- [`3fb27bf1`](https://github.com/tauri-apps/plugins-workspace/commit/3fb27bf13a88dd1e5aa2cc933408be02b0eafc91) ([#3504](https://github.com/tauri-apps/plugins-workspace/pull/3504) by [@vasfvitor](https://github.com/tauri-apps/plugins-workspace/../../vasfvitor)) adds proper Platform-specific sections to the docs for `register`, `unregister`, `isRegistered`, and `onOpenUrl`
+
+## \[2.4.9]
+
+- [`e6cdc9f5`](https://github.com/tauri-apps/plugins-workspace/commit/e6cdc9f52e2cd975b11b8e4c12879d597f1f76c3) ([#3396](https://github.com/tauri-apps/plugins-workspace/pull/3396) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix broken iOS custom URL schemes
+
+## \[2.4.8]
+
+- [`024ec0c2`](https://github.com/tauri-apps/plugins-workspace/commit/024ec0c29c20cf94579dab9b79d6be0da61a8daa) ([#3214](https://github.com/tauri-apps/plugins-workspace/pull/3214) by [@joshIsCoding](https://github.com/tauri-apps/plugins-workspace/../../joshIsCoding)) Account for differing Android VIEW intent in ChromeOS, fixing deep-link behaviour on Chromium platforms.
+- [`015e817c`](https://github.com/tauri-apps/plugins-workspace/commit/015e817cf2d7f66c1b9268606af8318dfe0bc4ee) ([#3186](https://github.com/tauri-apps/plugins-workspace/pull/3186) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Validate Android new intent is actually a deep link before triggering the onOpenUrl event.
+
 ## \[2.4.7]
 
 - [`8374e997`](https://github.com/tauri-apps/plugins-workspace/commit/8374e997b82c95516fc0c1f6d665d9fc3b52edf8) ([#3258](https://github.com/tauri-apps/plugins-workspace/pull/3258) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Fix runtime deep link registration failing on Linux when the app path has spaces.
@@ -182,6 +219,12 @@
   om/tauri-apps/plugins-workspace/commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
 
 - [`eccd6f9`](https://github.com/tauri-apps/plugins-workspace/commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
+  commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
+  ithub.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
+  ]\(https://github.com/tauri-apps/plugins-workspace/commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
+  commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
+  ithub.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
+55b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
   commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
   ithub.com/tauri-apps/plugins-workspace/pull/504)) Initial release.
   ]\(https://github.com/tauri-apps/plugins-workspace/commit/eccd6f977af7629255b6f5a5205666c9079a86ed)([#504](https://github.com/tauri-apps/plugins-workspace/pull/504)) Initial release.

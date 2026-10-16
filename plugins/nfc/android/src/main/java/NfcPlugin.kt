@@ -355,13 +355,13 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
                 invoke.reject("connected tag not found, please wait for it to be available and then call write()")
             }
         } ?: run {
-            args.kind?.let { kind -> {
+            args.kind?.let { kind ->
                 val filters = kind.filters()
                 val techLists = kind.techLists()
                 enableNFCInForeground(filters, techLists)
                 session = Session(NfcAction.Write(message), invoke, true, null, filters, techLists)
                 Logger.warn("NFC", "Write Mode Enabled")
-            }} ?: run {
+            } ?: run {
                 invoke.reject("Missing `kind` for write")
             }
 

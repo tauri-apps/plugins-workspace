@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+#![cfg(any(target_os = "linux", target_os = "macos", windows))]
 #![allow(dead_code, unused_imports)]
 
 use std::{
@@ -32,7 +33,7 @@ fn npm_command() -> Command {
 }
 
 mod v1 {
-    use super::{npm_command, BundleTarget, UPDATER_PRIVATE_KEY};
+    use super::{BundleTarget, UPDATER_PRIVATE_KEY, npm_command};
     use serde::Serialize;
     use std::{
         path::{Path, PathBuf},
