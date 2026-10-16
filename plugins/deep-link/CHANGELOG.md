@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.6.3]
+
+- [`c92bb67d`](https://github.com/tauri-apps/plugins-workspace/commit/c92bb67d7ac6536eec70f05176f4ae11a41314b7) ([#3382](https://github.com/tauri-apps/plugins-workspace/pull/3382) by [@Amjad50](https://github.com/tauri-apps/plugins-workspace/../../Amjad50)) The iOS associated domains entitlement is no longer overwritten on build: the plugin now only replaces its `applinks:` entries and keeps the other entries your app adds, such as `webcredentials:` for passkeys.
+- [`8dc878fe`](https://github.com/tauri-apps/plugins-workspace/commit/8dc878fe34cbbec60f2d4f56c4fcf85e5c9e09bf) ([#3383](https://github.com/tauri-apps/plugins-workspace/pull/3383) by [@mvanhorn](https://github.com/tauri-apps/plugins-workspace/../../mvanhorn)) On Linux, `register` and `unregister` no longer fail when `update-desktop-database` is not installed. A warning is logged and the MIME cache update is skipped.
+- [`46397767`](https://github.com/tauri-apps/plugins-workspace/commit/463977675da7bbb257dee59669b5e122c8d681db) ([#3711](https://github.com/tauri-apps/plugins-workspace/pull/3711) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed a compilation error with `rust-ini` v0.21.3.
+- [`c92bb67d`](https://github.com/tauri-apps/plugins-workspace/commit/c92bb67d7ac6536eec70f05176f4ae11a41314b7) ([#3382](https://github.com/tauri-apps/plugins-workspace/pull/3382) by [@Amjad50](https://github.com/tauri-apps/plugins-workspace/../../Amjad50)) Fixed the iOS `CFBundleURLTypes` generation: every configured custom URL scheme is now registered, including schemes listed next to `https`/`http` in the same `mobile` entry, and web link entries no longer produce an empty URL type.
+    
+    The generated iOS `CFBundleURLName` is now `$(PRODUCT_BUNDLE_IDENTIFIER).{scheme}`.
+
 ## [2.6.2]
 
 - [`2d541bc0`](https://github.com/tauri-apps/plugins-workspace/commit/2d541bc0d1fa571e7f06b8a39a4e9ecc4932f9e7) ([#3585](https://github.com/tauri-apps/plugins-workspace/pull/3585) by [@vincentkoc](https://github.com/tauri-apps/plugins-workspace/../../vincentkoc)) Return an I/O error when an XDG registration, unregistration, or query command exits unsuccessfully on Linux. Match the queried desktop filename exactly, and remove the app's MIME association when unregistering so it is not selected again by fallback. Preserve other schemes, applications, defaults, and desktop command quoting.
