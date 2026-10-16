@@ -94,16 +94,7 @@ To verify if your domain has been properly configured to expose the app associat
 curl -v https://app-site-association.cdn-apple.com/a/v1/<host>
 ```
 
-To also use the domain for [Password AutoFill or passkeys](https://developer.apple.com/documentation/xcode/supporting-associated-domains#Add-the-associated-domain-file-to-your-website), set `"webCredentials": true` on its `mobile` entry (see [Configuration](#configuration)). That adds a `webcredentials:<host>` entry to the associated domains entitlement, and the apple-app-site-association file must then also list the app:
-
-```
-{
-  "applinks": { ... },
-  "webcredentials": {
-    "apps": [ "$DEVELOPMENT_TEAM_ID.$APP_BUNDLE_ID" ]
-  }
-}
-```
+The plugin only manages the `applinks:` entries of the `com.apple.developer.associated-domains` entitlement. Other entries you add to your app's entitlements file, such as `webcredentials:<host>` for [Password AutoFill or passkeys](https://developer.apple.com/documentation/xcode/supporting-associated-domains), are kept.
 
 **The apple-app-site-association file must be served over HTTPS and the response must include the `Content-Type: application/json` header.**
 
@@ -121,7 +112,7 @@ Under `tauri.conf.json > plugins > deep-link`, configure the domains (mobile) an
     "deep-link": {
       "mobile": [
         { "host": "your.website.com", "pathPrefix": ["/open"] },
-        { "host": "another.site.br", "webCredentials": true }
+        { "host": "another.site.br" }
       ],
       "desktop": {
         "schemes": ["something", "my-tauri-app"]

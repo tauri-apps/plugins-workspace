@@ -11,8 +11,5 @@
         ]
       }
     ]
-  },
-  "webcredentials": {
-    "apps": ["DEVELOPMENT_TEAM_ID_HERE.com.tauri.deep-link-example"]
   }
 }

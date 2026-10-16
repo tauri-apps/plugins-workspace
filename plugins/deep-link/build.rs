@@ -112,12 +112,24 @@ fn main() {
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         {
             // we need to ensure that the entitlements are only
-            // generated for explicit app links (and opted in web credentials)
-            // and not other deep links because then they
+            // generated for explicit app links and not
+            // other deep links because then they
             // are just going to complain and not be built or signed
-            let associated_domains = config.ios_associated_domains();
-
             tauri_plugin::mobile::update_entitlements(|entitlements| {
+                let current = entitlements
+                    .get("com.apple.developer.associated-domains")
+                    .and_then(|domains| domains.as_array())
+                    .map(|domains| {
+                        domains
+                            .iter()
+                            .filter_map(|domain| domain.as_string())
+                            .map(ToString::to_string)
+                            .collect::<Vec<_>>()
+                    })
+                    .unwrap_or_default();
+
+                let associated_domains = config.ios_associated_domains(&current);
+
                 if associated_domains.is_empty() {
                     entitlements.remove("com.apple.developer.associated-domains");
                 } else {

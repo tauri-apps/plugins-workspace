@@ -23,11 +23,6 @@ pub struct AssociatedDomain {
     pub path_suffix: Vec<String>,
     #[serde(default, alias = "app-link", rename = "appLink")]
     pub app_link: Option<bool>,
-    /// Adds a `webcredentials:{host}` entry to the iOS associated domains entitlement,
-    /// which Password AutoFill and passkeys use to associate the app with the domain.
-    /// Not needed for deep links.
-    #[serde(default, alias = "web-credentials", rename = "webCredentials")]
-    pub web_credentials: bool,
 }
 
 impl AssociatedDomain {
@@ -67,11 +62,6 @@ impl AssociatedDomain {
                     "Warning: AppLink uses only 'http' — allowed on Android but not secure for production."
                 );
             }
-        }
-
-        // Rule 3: Web credentials are associated with a web domain.
-        if self.web_credentials && !self.is_web_link() {
-            return Err("webCredentials requires a web link (https/http + host)".into());
         }
 
         Ok(())
@@ -121,20 +111,23 @@ pub struct IosUrlType {
 }
 
 impl Config {
-    /// The `com.apple.developer.associated-domains` entitlement values for the configured
-    /// app links and web credentials domains.
+    /// The `com.apple.developer.associated-domains` entitlement values, given its current ones.
+    ///
+    /// The plugin only manages the `applinks:` entries: they are replaced by the configured app links,
+    /// and every other entry (e.g. `webcredentials:` for passkeys) the app added is kept.
     #[allow(dead_code)] // Used in build.rs
-    pub fn ios_associated_domains(&self) -> Vec<String> {
+    pub fn ios_associated_domains(&self, current: &[String]) -> Vec<String> {
         self.mobile
             .iter()
-            .filter_map(|d| d.host.as_ref().map(|host| (d, host)))
-            .flat_map(|(d, host)| {
-                [
-                    d.is_app_link().then(|| format!("applinks:{host}")),
-                    d.web_credentials.then(|| format!("webcredentials:{host}")),
-                ]
-            })
-            .flatten()
+            .filter(|d| d.is_app_link())
+            .filter_map(|d| d.host.as_ref())
+            .map(|host| format!("applinks:{host}"))
+            .chain(
+                current
+                    .iter()
+                    .filter(|entry| !entry.starts_with("applinks:"))
+                    .cloned(),
+            )
             .collect()
     }
 
@@ -241,36 +234,48 @@ mod tests {
         ]));
 
         assert_eq!(
-            config.ios_associated_domains(),
+            config.ios_associated_domains(&[]),
             vec!["applinks:example.com", "applinks:mixed.example.com"]
         );
     }
 
     #[test]
-    fn ios_associated_domains_include_opted_in_web_credentials() {
+    fn ios_associated_domains_replace_app_links_and_keep_other_entries() {
         let config = config(serde_json::json!([
-            { "host": "example.com", "webCredentials": true },
-            { "host": "passkeys.example.com", "appLink": false, "webCredentials": true },
-            { "host": "links.example.com" },
+            { "host": "example.com" },
+            { "host": "new.example.com" },
         ]));
 
+        let current = [
+            "applinks:example.com".to_string(),
+            "webcredentials:example.com".to_string(),
+            "applinks:removed.example.com".to_string(),
+            "activitycontinuation:example.com".to_string(),
+        ];
+
         assert_eq!(
-            config.ios_associated_domains(),
+            config.ios_associated_domains(&current),
             vec![
                 "applinks:example.com",
+                "applinks:new.example.com",
                 "webcredentials:example.com",
-                "webcredentials:passkeys.example.com",
-                "applinks:links.example.com",
+                "activitycontinuation:example.com",
             ]
         );
     }
 
     #[test]
-    fn web_credentials_require_a_web_link() {
-        let config = config(serde_json::json!([
-            { "scheme": ["myapp"], "webCredentials": true },
-        ]));
+    fn ios_associated_domains_keep_other_entries_without_app_links() {
+        let config = config(serde_json::json!([{ "scheme": ["myapp"] }]));
 
-        assert!(config.mobile[0].validate().is_err());
+        assert_eq!(
+            config.ios_associated_domains(&["webcredentials:example.com".to_string()]),
+            vec!["webcredentials:example.com"]
+        );
+        assert!(
+            config
+                .ios_associated_domains(&["applinks:example.com".to_string()])
+                .is_empty()
+        );
     }
 }

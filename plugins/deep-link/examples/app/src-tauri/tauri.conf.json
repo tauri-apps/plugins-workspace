@@ -34,8 +34,7 @@
           "pathPrefix": ["/intent"]
         },
         {
-          "host": "tauri.app",
-          "webCredentials": true
+          "host": "tauri.app"
         },
         {
           "scheme": ["taurideeplink"]
