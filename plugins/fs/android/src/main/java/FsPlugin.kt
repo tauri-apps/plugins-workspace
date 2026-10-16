@@ -62,10 +62,7 @@ class FsPlugin(private val activity: Activity): Plugin(activity) {
             val fd = ParcelFileDescriptor.open(cacheFile, ParcelFileDescriptor.parseMode(args.mode)).detachFd()
             res.put("fd", fd)
         } else {
-            val fd = activity.contentResolver.openAssetFileDescriptor(
-                Uri.parse(args.uri),
-                args.mode
-            )?.parcelFileDescriptor?.detachFd()
+            val fd = openFd(Uri.parse(args.uri), args.mode, activity).detachFd()
             res.put("fd", fd)
         }
 
