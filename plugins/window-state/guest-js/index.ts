@@ -28,8 +28,10 @@ export enum StateFlags {
   DECORATIONS = 1 << 4,
   /** Save and restore whether the window is fullscreen. */
   FULLSCREEN = 1 << 5,
+  /** Save and restore whether the window is minimized. */
+  MINIMIZED = 1 << 6,
   /** Save and restore every flag above. */
-  ALL = SIZE | POSITION | MAXIMIZED | VISIBLE | DECORATIONS | FULLSCREEN
+  ALL = SIZE | POSITION | MAXIMIZED | VISIBLE | DECORATIONS | FULLSCREEN | MINIMIZED
 }
 
 /**
