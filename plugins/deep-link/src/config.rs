@@ -23,6 +23,11 @@ pub struct AssociatedDomain {
     pub path_suffix: Vec<String>,
     #[serde(default, alias = "app-link", rename = "appLink")]
     pub app_link: Option<bool>,
+    /// Adds a `webcredentials:{host}` entry to the iOS associated domains entitlement,
+    /// which Password AutoFill and passkeys use to associate the app with the domain.
+    /// Not needed for deep links.
+    #[serde(default, alias = "web-credentials", rename = "webCredentials")]
+    pub web_credentials: bool,
 }
 
 impl AssociatedDomain {
@@ -35,6 +40,14 @@ impl AssociatedDomain {
     pub fn is_app_link(&self) -> bool {
         self.app_link
             .unwrap_or_else(|| self.is_web_link() && self.host.is_some())
+    }
+
+    /// The custom URL schemes of this domain, i.e. every scheme but http and https.
+    ///
+    /// A domain may list both (e.g. `["https", "myapp"]`), so this is not the same as `!is_web_link()`.
+    #[allow(dead_code)] // Used in build.rs
+    pub fn custom_schemes(&self) -> impl Iterator<Item = &String> {
+        self.scheme.iter().filter(|s| *s != "https" && *s != "http")
     }
 
     pub fn validate(&self) -> Result<(), String> {
@@ -54,6 +67,11 @@ impl AssociatedDomain {
                     "Warning: AppLink uses only 'http' — allowed on Android but not secure for production."
                 );
             }
+        }
+
+        // Rule 3: Web credentials are associated with a web domain.
+        if self.web_credentials && !self.is_web_link() {
+            return Err("webCredentials requires a web link (https/http + host)".into());
         }
 
         Ok(())
@@ -92,6 +110,51 @@ pub struct Config {
     pub desktop: DesktopProtocol,
 }
 
+/// An entry of the iOS `CFBundleURLTypes` Info.plist key.
+#[allow(dead_code)] // Used in build.rs
+#[derive(Debug, PartialEq, Eq)]
+pub struct IosUrlType {
+    /// `CFBundleURLName`
+    pub name: String,
+    /// `CFBundleURLSchemes`
+    pub schemes: Vec<String>,
+}
+
+impl Config {
+    /// The `com.apple.developer.associated-domains` entitlement values for the configured
+    /// app links and web credentials domains.
+    #[allow(dead_code)] // Used in build.rs
+    pub fn ios_associated_domains(&self) -> Vec<String> {
+        self.mobile
+            .iter()
+            .filter_map(|d| d.host.as_ref().map(|host| (d, host)))
+            .flat_map(|(d, host)| {
+                [
+                    d.is_app_link().then(|| format!("applinks:{host}")),
+                    d.web_credentials.then(|| format!("webcredentials:{host}")),
+                ]
+            })
+            .flatten()
+            .collect()
+    }
+
+    /// The `CFBundleURLTypes` entries for the configured custom URL schemes.
+    ///
+    /// http and https are handled through app links (associated domains) on iOS,
+    /// so they are never registered as URL schemes.
+    #[allow(dead_code)] // Used in build.rs
+    pub fn ios_url_types(&self) -> Vec<IosUrlType> {
+        self.mobile
+            .iter()
+            .filter_map(|domain| {
+                let schemes = domain.custom_schemes().cloned().collect::<Vec<_>>();
+                let name = format!("$(PRODUCT_BUNDLE_IDENTIFIER).{}", schemes.first()?);
+                Some(IosUrlType { name, schemes })
+            })
+            .collect()
+    }
+}
+
 #[derive(Deserialize, Clone)]
 #[serde(untagged)]
 #[allow(unused)] // Used in tauri-bundler
@@ -126,5 +189,88 @@ impl DesktopProtocol {
                 .flat_map(|protocol| protocol.schemes.clone())
                 .collect(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn config(mobile: serde_json::Value) -> Config {
+        serde_json::from_value(serde_json::json!({ "mobile": mobile })).unwrap()
+    }
+
+    #[test]
+    fn ios_url_types_only_register_custom_schemes() {
+        let config = config(serde_json::json!([
+            { "scheme": ["myapp"] },
+            { "scheme": ["https"], "host": "example.com" },
+            { "scheme": ["https"], "host": "web.example.com", "appLink": false },
+            { "host": "default-schemes.example.com" },
+            { "scheme": ["https", "mixed"], "host": "mixed.example.com" },
+            { "scheme": ["http", "mixed-web", "mixed-web2"], "host": "mixed-web.example.com", "appLink": false },
+            { "scheme": [] },
+        ]));
+
+        assert_eq!(
+            config.ios_url_types(),
+            vec![
+                IosUrlType {
+                    name: "$(PRODUCT_BUNDLE_IDENTIFIER).myapp".into(),
+                    schemes: vec!["myapp".into()],
+                },
+                IosUrlType {
+                    name: "$(PRODUCT_BUNDLE_IDENTIFIER).mixed".into(),
+                    schemes: vec!["mixed".into()],
+                },
+                IosUrlType {
+                    name: "$(PRODUCT_BUNDLE_IDENTIFIER).mixed-web".into(),
+                    schemes: vec!["mixed-web".into(), "mixed-web2".into()],
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn ios_associated_domains_only_include_app_links() {
+        let config = config(serde_json::json!([
+            { "scheme": ["myapp"] },
+            { "scheme": ["https"], "host": "example.com" },
+            { "scheme": ["https"], "host": "web.example.com", "appLink": false },
+            { "scheme": ["https", "mixed"], "host": "mixed.example.com" },
+        ]));
+
+        assert_eq!(
+            config.ios_associated_domains(),
+            vec!["applinks:example.com", "applinks:mixed.example.com"]
+        );
+    }
+
+    #[test]
+    fn ios_associated_domains_include_opted_in_web_credentials() {
+        let config = config(serde_json::json!([
+            { "host": "example.com", "webCredentials": true },
+            { "host": "passkeys.example.com", "appLink": false, "webCredentials": true },
+            { "host": "links.example.com" },
+        ]));
+
+        assert_eq!(
+            config.ios_associated_domains(),
+            vec![
+                "applinks:example.com",
+                "webcredentials:example.com",
+                "webcredentials:passkeys.example.com",
+                "applinks:links.example.com",
+            ]
+        );
+    }
+
+    #[test]
+    fn web_credentials_require_a_web_link() {
+        let config = config(serde_json::json!([
+            { "scheme": ["myapp"], "webCredentials": true },
+        ]));
+
+        assert!(config.mobile[0].validate().is_err());
     }
 }

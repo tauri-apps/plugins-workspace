@@ -2,9 +2,6 @@
 "deep-link": patch
 ---
 
-Fixed an iOS regression where deep link URL types were generated from app links instead of custom URL schemes, which could prevent custom schemes from being registered correctly.
+Fixed the iOS `CFBundleURLTypes` generation: every configured custom URL scheme is now registered, including schemes listed next to `https`/`http` in the same `mobile` entry, and web link entries no longer produce an empty URL type.
 
-Also updated the generated iOS `CFBundleURLName` to use `$(PRODUCT_BUNDLE_IDENTIFIER).{scheme}`.
-
-And added handling for `webcredentials:` in iOS entitlements
-
+The generated iOS `CFBundleURLName` is now `$(PRODUCT_BUNDLE_IDENTIFIER).{scheme}`.

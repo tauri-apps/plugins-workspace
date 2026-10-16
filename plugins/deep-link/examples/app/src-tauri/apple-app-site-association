@@ -1,8 +1,8 @@
 {
   "applinks": {
-      "details": [
+    "details": [
       {
-        "appIDs": [ "DEVELOPMENT_TEAM_ID_HERE.com.tauri.deep-link-example" ],
+        "appIDs": ["DEVELOPMENT_TEAM_ID_HERE.com.tauri.deep-link-example"],
         "components": [
           {
             "/": "/open/*",
@@ -11,5 +11,8 @@
         ]
       }
     ]
+  },
+  "webcredentials": {
+    "apps": ["DEVELOPMENT_TEAM_ID_HERE.com.tauri.deep-link-example"]
   }
 }
