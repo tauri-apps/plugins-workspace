@@ -337,14 +337,15 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
   }
 
   @objc private func cancel(_ invoke: Invoke) {
-    self.invoke?.reject("cancelled")
-
-    destroy()
-    invoke.resolve()
+    DispatchQueue.main.async { [self] in
+      self.invoke?.reject("cancelled")
+      self.destroy()
+      invoke.resolve()
+    }
   }
 }
 
 @_cdecl("init_plugin_barcode_scanner")
-func initPlugin() -> Plugin {
+public func initPlugin() -> Plugin {
   return BarcodeScannerPlugin()
 }

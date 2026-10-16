@@ -12,7 +12,7 @@ Access the HTTP client written in Rust.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.77.2**_
+_This plugin requires a Rust version of at least **1.90**_
 
 There are three general methods of installation that we can recommend.
 
@@ -62,7 +62,7 @@ Afterwards all the plugin's APIs are available through the JavaScript guest bind
 import { fetch } from '@tauri-apps/plugin-http'
 const response = await fetch('http://localhost:3003/users/2', {
   method: 'GET',
-  timeout: 30
+  connectTimeout: 30
 })
 ```
 

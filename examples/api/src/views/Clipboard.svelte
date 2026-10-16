@@ -5,7 +5,6 @@
   import { readFile } from '@tauri-apps/plugin-fs'
 
   export let onMessage
-  export let insecureRenderHtml
   let text = 'clipboard message'
 
   function writeText() {
@@ -36,12 +35,19 @@
     }
   }
 
+  function writeSecret() {
+    clipboard.writeSecret(text).then(() => {
+      onMessage("Wrote secret to the clipboard")
+    })
+    .catch(onMessage)
+  }
+
   async function read() {
     try {
       const image = await clipboard.readImage()
       arrayBufferToBase64(await image.rgba(), function (base64) {
         const src = 'data:image/png;base64,' + base64
-        insecureRenderHtml('<img src="' + src + '"></img>')
+        onMessage('<img src="' + src + '"></img>')
       })
       return
     } catch (_) {}
@@ -64,6 +70,7 @@
     bind:value={text}
   />
   <button class="btn" type="button" on:click={writeText}>Write</button>
+  <button class="btn" type="button" on:click={writeSecret}>Write Secret</button>
   <button class="btn" type="button" on:click={writeImage}>Pick Image</button>
   <button class="btn" type="button" on:click={read}>Read</button>
 </div>

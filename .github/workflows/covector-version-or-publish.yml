@@ -19,7 +19,51 @@ permissions:
   pull-requests: write
 
 jobs:
+  # covector publishes once no pending change files are left (the version update PR consumed them)
+  # and otherwise opens that PR, which does not need the tests below. In pre-release mode the
+  # change files stay in `.changes` and `pre.json` lists the ones already released.
+  check-publish:
+    runs-on: ubuntu-latest
+    outputs:
+      publish: ${{ steps.check.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: check
+        run: |
+          released=$(if [ -f .changes/pre.json ]; then jq -r '.changes[]' .changes/pre.json; fi)
+          # grep exits 1 when every change file was released; any other failure fails the step
+          pending=$(find .changes -maxdepth 1 -name '*.md' ! -iname 'readme.md' \
+            | { grep -vxF -e "$released" || [ $? -eq 1 ]; })
+          if [ -n "$pending" ]; then
+            printf 'pending change files:\n%s\n' "$pending"
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  integration-tests:
+    needs: check-publish
+    if: needs.check-publish.outputs.publish == 'true'
+    uses: ./.github/workflows/integration-tests.yml
+
+  test-api-e2e:
+    needs: check-publish
+    if: needs.check-publish.outputs.publish == 'true'
+    uses: ./.github/workflows/test-api-e2e.yml
+    secrets: inherit
+
+  test-api-e2e-mobile:
+    needs: check-publish
+    if: needs.check-publish.outputs.publish == 'true'
+    uses: ./.github/workflows/test-api-e2e-mobile.yml
+
   version-or-publish:
+    needs:
+      - integration-tests
+      - test-api-e2e
+      - test-api-e2e-mobile
+    # the tests are skipped when covector only versions
+    if: ${{ !cancelled() && !failure() }}
     runs-on: ubuntu-latest
     timeout-minutes: 65
     outputs:
@@ -28,18 +72,17 @@ jobs:
       successfulPublish: ${{ steps.covector.outputs.successfulPublish }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # required for use of git history
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 'lts/*'
           registry-url: 'https://registry.npmjs.org'
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
-          version: 10.x.x
           run_install: true
 
       - name: cargo login
@@ -74,7 +117,7 @@ jobs:
 
       - name: Create Pull Request With Versions Bumped
         id: cpr
-        uses: peter-evans/create-pull-request@dd2324fc52d5d43c699a5636bcf19fceaa70c284 # 7.0.7
+        uses: peter-evans/create-pull-request@v8.1.1
         if: steps.covector.outputs.commandRan == 'version'
         with:
           title: 'Publish New Versions (${{ github.ref_name }})'

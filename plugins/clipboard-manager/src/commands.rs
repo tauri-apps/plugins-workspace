@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use tauri::{command, image::JsImage, AppHandle, Manager, ResourceId, Runtime, State, Webview};
+use tauri::{AppHandle, Manager, ResourceId, Runtime, State, Webview, command, image::JsImage};
 
 use crate::{Clipboard, Result};
 
@@ -77,4 +77,13 @@ pub(crate) async fn clear<R: Runtime>(
     clipboard: State<'_, Clipboard<R>>,
 ) -> Result<()> {
     clipboard.clear()
+}
+
+#[command]
+pub(crate) async fn write_secret<R: Runtime>(
+    _app: AppHandle<R>,
+    clipboard: State<'_, Clipboard<R>>,
+    text: &str,
+) -> Result<()> {
+    clipboard.write_secret(text)
 }
