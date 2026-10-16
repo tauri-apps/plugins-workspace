@@ -1,14 +1,14 @@
 ![biometric](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/biometric/banner.png)
 
-Prompt the user for biometric authentication on Android and iOS.
+Prompt the user for biometric authentication on Android, iOS and macOS. On Android, it also allows encrypting and decrypting data with keys protected by biometric authentication.
 
-| Platform | Supported |
-| -------- | --------- |
-| Linux    | x         |
-| Windows  | x         |
-| macOS    | x         |
-| Android  | ✓         |
-| iOS      | ✓         |
+| Platform | Supported                     |
+| -------- | ----------------------------- |
+| Linux    | x                             |
+| Windows  | x                             |
+| macOS    | ✓                             |
+| Android  | ✓                             |
+| iOS      | ✓ (no biometric cryptography) |
 
 ## Install
 
@@ -61,8 +61,45 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { authenticate } from '@tauri-apps/plugin-biometric'
-await authenticate('Open your wallet')
+import {
+  checkStatus,
+  authenticate,
+  biometricCipher
+} from '@tauri-apps/plugin-biometric'
+
+const status = await checkStatus()
+if (status.isAvailable) {
+  await authenticate('Open your wallet')
+}
+
+// ... or using biometric-protected cryptography:
+if (status.isAvailable) {
+  const encryptOptions = {
+    dataToEncrypt: getData()
+  }
+  const encrypted = await biometricCipher(
+    'Login without typing password',
+    encryptOptions
+  )
+
+  const decryptOptions = {
+    dataToDecrypt: encrypted.data
+  }
+  const originalData = await biometricCipher(
+    'Login without typing password',
+    decryptOptions
+  )
+}
+```
+
+## Permissions
+
+The default permission set (`biometric:default`) only allows `status` and `authenticate`. To use `biometricCipher`, add the `biometric:allow-biometric-cipher` permission to your capability:
+
+```json
+{
+  "permissions": ["biometric:default", "biometric:allow-biometric-cipher"]
+}
 ```
 
 ## Contributing

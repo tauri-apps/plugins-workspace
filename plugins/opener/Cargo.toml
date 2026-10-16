@@ -1,8 +1,9 @@
 [package]
 name = "tauri-plugin-opener"
-version = "2.5.4"
+version = "2.7.2"
 description = "Open files and URLs using their default application."
 edition = { workspace = true }
+rust-version = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
@@ -11,6 +12,8 @@ links = "tauri-plugin-opener"
 # Platforms supported by the plugin
 # Support levels are "full", "partial", "none", "unknown"
 # Details of the support level are left to plugin maintainer
+exclude = ["/guest-js", "/package.json", "/rollup.config.js", "/tsconfig.json"]
+
 [package.metadata.platforms.support]
 windows = { level = "full", notes = "" }
 linux = { level = "full", notes = "" }
@@ -24,6 +27,9 @@ tauri-plugin = { workspace = true, features = ["build"] }
 schemars = { workspace = true }
 serde = { workspace = true }
 
+[dev-dependencies]
+tauri = { workspace = true, features = ["wry"] }
+
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
@@ -34,7 +40,7 @@ glob = { workspace = true }
 dunce = { workspace = true }
 
 [target."cfg(windows)".dependencies.windows]
-version = "0.61"
+version = "0.62"
 features = [
   "Win32_Foundation",
   "Win32_UI_Shell_Common",

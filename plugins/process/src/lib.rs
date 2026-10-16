@@ -10,12 +10,13 @@
 )]
 
 use tauri::{
-    plugin::{Builder, TauriPlugin},
     Runtime,
+    plugin::{Builder, TauriPlugin},
 };
 
 mod commands;
 
+/// Initializes the plugin, exposing commands to exit or restart the current process.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("process")
         .invoke_handler(tauri::generate_handler![commands::exit, commands::restart])

@@ -4,7 +4,7 @@
 
 use arboard::ImageData;
 use serde::de::DeserializeOwned;
-use tauri::{image::Image, plugin::PluginApi, AppHandle, Runtime};
+use tauri::{AppHandle, Runtime, image::Image, plugin::PluginApi};
 
 use std::{borrow::Cow, sync::Mutex};
 
@@ -28,96 +28,90 @@ pub struct Clipboard<R: Runtime> {
 }
 
 impl<R: Runtime> Clipboard<R> {
-    pub fn write_text<'a, T: Into<Cow<'a, str>>>(&self, text: T) -> crate::Result<()> {
+    fn with_clipboard<T>(
+        &self,
+        f: impl FnOnce(&mut arboard::Clipboard) -> Result<T, arboard::Error>,
+    ) -> crate::Result<T> {
         match &self.clipboard {
-            Ok(clipboard) => clipboard
-                .lock()
-                .unwrap()
-                .as_mut()
-                .unwrap()
-                .set_text(text)
-                .map_err(Into::into),
+            Ok(clipboard) => f(clipboard.lock().unwrap().as_mut().unwrap()).map_err(Into::into),
             Err(e) => Err(crate::Error::Clipboard(e.to_string())),
         }
     }
 
+    /// Writes plain text to the system clipboard.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::Error::Clipboard`] if the clipboard could not be initialized or the
+    /// underlying [`arboard`] operation fails.
+    pub fn write_text<'a, T: Into<Cow<'a, str>>>(&self, text: T) -> crate::Result<()> {
+        self.with_clipboard(|c| c.set_text(text))
+    }
+
+    /// Writes an image to the system clipboard as RGBA data.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::Error::Clipboard`] if the clipboard could not be initialized or the
+    /// underlying [`arboard`] operation fails.
     pub fn write_image(&self, image: &Image<'_>) -> crate::Result<()> {
-        match &self.clipboard {
-            Ok(clipboard) => clipboard
-                .lock()
-                .unwrap()
-                .as_mut()
-                .unwrap()
-                .set_image(ImageData {
-                    bytes: Cow::Borrowed(image.rgba()),
-                    width: image.width() as usize,
-                    height: image.height() as usize,
-                })
-                .map_err(Into::into),
-            Err(e) => Err(crate::Error::Clipboard(e.to_string())),
-        }
+        self.with_clipboard(|c| {
+            c.set_image(ImageData {
+                bytes: Cow::Borrowed(image.rgba()),
+                width: image.width() as usize,
+                height: image.height() as usize,
+            })
+        })
     }
 
     /// Warning: This method should not be used on the main thread! Otherwise the underlying libraries may deadlock on Linux, freezing the whole app, when trying to copy data copied from this app, for example if the user copies text from the WebView.
     pub fn read_text(&self) -> crate::Result<String> {
-        match &self.clipboard {
-            Ok(clipboard) => {
-                let text = clipboard.lock().unwrap().as_mut().unwrap().get_text()?;
-                Ok(text)
-            }
-            Err(e) => Err(crate::Error::Clipboard(e.to_string())),
-        }
+        self.with_clipboard(|c| c.get_text())
     }
 
+    /// Writes HTML to the system clipboard, with an optional plain text fallback for targets
+    /// that cannot render it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::Error::Clipboard`] if the clipboard could not be initialized or the
+    /// underlying [`arboard`] operation fails.
     pub fn write_html<'a, T: Into<Cow<'a, str>>>(
         &self,
         html: T,
         alt_text: Option<T>,
     ) -> crate::Result<()> {
-        match &self.clipboard {
-            Ok(clipboard) => clipboard
-                .lock()
-                .unwrap()
-                .as_mut()
-                .unwrap()
-                .set_html(html, alt_text)
-                .map_err(Into::into),
-            Err(e) => Err(crate::Error::Clipboard(e.to_string())),
-        }
+        self.with_clipboard(|c| c.set_html(html, alt_text))
     }
 
+    /// Clears the system clipboard.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::Error::Clipboard`] if the clipboard could not be initialized or the
+    /// underlying [`arboard`] operation fails.
     pub fn clear(&self) -> crate::Result<()> {
-        match &self.clipboard {
-            Ok(clipboard) => clipboard
-                .lock()
-                .unwrap()
-                .as_mut()
-                .unwrap()
-                .clear()
-                .map_err(Into::into),
-            Err(e) => Err(crate::Error::Clipboard(e.to_string())),
-        }
+        self.with_clipboard(|c| c.clear())
     }
 
     /// Warning: This method should not be used on the main thread! Otherwise the underlying libraries may deadlock on Linux, freezing the whole app, when trying to copy data copied from this app, for example if the user copies text from the WebView.
     pub fn read_image(&self) -> crate::Result<Image<'_>> {
-        match &self.clipboard {
-            Ok(clipboard) => {
-                let image = clipboard.lock().unwrap().as_mut().unwrap().get_image()?;
-                let image = Image::new_owned(
-                    image.bytes.to_vec(),
-                    image.width as u32,
-                    image.height as u32,
-                );
-                Ok(image)
-            }
-            Err(e) => Err(crate::Error::Clipboard(e.to_string())),
-        }
+        let image = self.with_clipboard(|c| c.get_image())?;
+        Ok(Image::new_owned(
+            image.bytes.to_vec(),
+            image.width as u32,
+            image.height as u32,
+        ))
     }
 
     pub(crate) fn cleanup(&self) {
         if let Ok(clipboard) = &self.clipboard {
             clipboard.lock().unwrap().take();
         }
+    }
+
+    /// This is the same as write_text but it will set hints using `arboard`'s `SetExt*` extensions so clipboard managers exclude the text from history.
+    pub fn write_secret<'a, T: Into<Cow<'a, str>>>(&self, text: T) -> crate::Result<()> {
+        self.with_clipboard(|c| crate::secret::exclude_secret(c.set()).text(text))
     }
 }

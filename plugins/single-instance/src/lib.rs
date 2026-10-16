@@ -61,7 +61,8 @@ pub fn init<R: Runtime, F: FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sy
 /// returns), so you normally don't need to call this yourself and the app keeps being the single
 /// instance while your own exit cleanup runs. Call it manually to release the lock earlier, or
 /// before terminating the process through means that skip [`AppHandle::cleanup_before_exit`], such
-/// as [`std::process::exit`].
+/// as [`std::process::exit`], so a future instance of the app isn't mistaken for a still-running
+/// one.
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
     if let Some(lock) = manager.try_state::<InstanceLockId>() {
         let _ = manager.resources_table().close(lock.0);
