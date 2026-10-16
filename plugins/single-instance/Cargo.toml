@@ -41,6 +41,10 @@ features = [
   "Win32_Graphics_Gdi",
 ]
 
+[target."cfg(target_os = \"windows\")".dev-dependencies.windows-sys]
+version = "0.61"
+features = ["Win32_UI_WindowsAndMessaging"]
+
 [target."cfg(target_os = \"linux\")".dependencies]
 zbus = { workspace = true }
 
