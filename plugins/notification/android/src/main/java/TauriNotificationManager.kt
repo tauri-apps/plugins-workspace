@@ -201,16 +201,9 @@ class TauriNotificationManager(
     mBuilder.setOnlyAlertOnce(true)
 
     // Chronometer support
-    if (notification.`when` != null) {
-      mBuilder.setWhen(notification.`when`!!)
-      mBuilder.setShowWhen(true)
-    }
+    notification.`when`?.let { mBuilder.setWhen(it) }
     if (notification.usesChronometer) {
       mBuilder.setUsesChronometer(true)
-      if (notification.`when` == null) {
-        mBuilder.setWhen(System.currentTimeMillis())
-        mBuilder.setShowWhen(true)
-      }
     }
     if (notification.chronometerCountDown) {
       mBuilder.setChronometerCountDown(true)
@@ -337,6 +330,7 @@ class TauriNotificationManager(
     )
     notificationIntent.putExtra(NOTIFICATION_INTENT_KEY, request.id)
     notificationIntent.putExtra(TimedNotificationPublisher.NOTIFICATION_KEY, notification)
+    notificationIntent.putExtra(TimedNotificationPublisher.CUSTOM_WHEN_KEY, request.`when` != null)
     var flags = PendingIntent.FLAG_CANCEL_CURRENT
     if (SDK_INT >= Build.VERSION_CODES.S) {
       flags = flags or PendingIntent.FLAG_MUTABLE
@@ -498,7 +492,10 @@ class TimedNotificationPublisher : BroadcastReceiver() {
     } else {
       getParcelableExtraLegacy(intent, NOTIFICATION_KEY)
     }
-    notification?.`when` = System.currentTimeMillis()
+    // keep the user provided `when` (e.g. a chronometer target), otherwise show the time it fired
+    if (!intent.getBooleanExtra(CUSTOM_WHEN_KEY, false)) {
+      notification?.`when` = System.currentTimeMillis()
+    }
     val id = intent.getIntExtra(NOTIFICATION_INTENT_KEY, Int.MIN_VALUE)
     if (id == Int.MIN_VALUE) {
       Logger.error(Logger.tags("Notification"), "No valid id supplied", null)
@@ -552,6 +549,7 @@ class TimedNotificationPublisher : BroadcastReceiver() {
   companion object {
     var NOTIFICATION_KEY = "NotificationPublisher.notification"
     var CRON_KEY = "NotificationPublisher.cron"
+    var CUSTOM_WHEN_KEY = "NotificationPublisher.customWhen"
   }
 }
 

@@ -268,7 +268,7 @@ impl<R: Runtime> NotificationBuilder<R> {
     /// Only relevant if `uses_chronometer` is true.
     /// If `when` is set to a time in the future, the chronometer will count down to zero then stop.
     ///
-    /// **Android only (API 24+).**
+    /// **Android only.**
     pub fn chronometer_count_down(mut self) -> Self {
         self.data.chronometer_count_down = true;
         self

@@ -253,7 +253,7 @@ pub struct NotificationData {
     pub(crate) uses_chronometer: bool,
     /// Sets the Chronometer to count down instead of counting up.
     /// Only relevant if `uses_chronometer` is true.
-    /// Android only (API 24+).
+    /// Android only.
     #[serde(default)]
     pub(crate) chronometer_count_down: bool,
 }

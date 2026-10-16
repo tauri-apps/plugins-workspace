@@ -158,8 +158,6 @@ interface Options {
    * If `when` is set to a time in the future, the chronometer will count down to zero then stop.
    *
    * **Android only.**
-   *
-   * @since API 24 (Android 7.0+)
    */
   chronometerCountDown?: boolean
 }
