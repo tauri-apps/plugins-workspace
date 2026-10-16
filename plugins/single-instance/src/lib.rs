@@ -3,6 +3,11 @@
 // SPDX-License-Identifier: MIT
 
 //! Ensure a single instance of your tauri app is running.
+//!
+//! ## Cargo features
+//!
+//! - **semver**: Allows the app with SemVer incompatible versions to run alongside each other.
+//! - **deep-link**: Trigger [`tauri-plugin-deep-link`](https://crates.io/crates/tauri-plugin-deep-link) event before invoking the single-instance callback.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
@@ -10,7 +15,7 @@
 )]
 #![cfg(not(any(target_os = "android", target_os = "ios")))]
 
-use tauri::{plugin::TauriPlugin, AppHandle, Manager, Runtime};
+use tauri::{AppHandle, Manager, Resource, ResourceId, Runtime, plugin::TauriPlugin};
 
 #[cfg(target_os = "windows")]
 #[path = "platform_impl/windows.rs"]
@@ -28,19 +33,56 @@ mod semver_compat;
 pub(crate) type SingleInstanceCallback<R> =
     dyn FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sync + 'static;
 
+/// Initializes the plugin, calling `f` whenever a second instance of the app is started.
+///
+/// This is a shortcut for [`Builder::new`] with [`Builder::callback`] set to `f`, then
+/// [`Builder::build`]. Use [`Builder`] directly if you need to set a custom [`Builder::dbus_id`].
+///
+/// `f` is called with the app handle, the second instance's command line arguments
+/// (as collected by [`std::env::args_os`], so the first element is the executable path) and its
+/// current working directory. Arguments and the working directory that are not valid Unicode
+/// have their invalid parts replaced by U+FFFD. If the `deep-link` feature is enabled, the arguments are first
+/// forwarded to [`tauri-plugin-deep-link`](https://crates.io/crates/tauri-plugin-deep-link)
+/// before `f` runs.
+///
+/// The second instance never reaches [`tauri::Builder::run`]: it hands its arguments and working
+/// directory off to the first instance and exits immediately.
 pub fn init<R: Runtime, F: FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sync + 'static>(
     f: F,
 ) -> TauriPlugin<R> {
     Builder::new().callback(f).build()
 }
 
+/// Releases the resources this plugin uses to detect other instances (the named mutex on
+/// Windows, the D-Bus name on Linux or the Unix socket on macOS).
+///
+/// The plugin releases them automatically in [`AppHandle::cleanup_before_exit`], which Tauri runs
+/// right before the process exits or restarts (after your [`tauri::RunEvent::Exit`] handler
+/// returns), so you normally don't need to call this yourself and the app keeps being the single
+/// instance while your own exit cleanup runs. Call it manually to release the lock earlier, or
+/// before terminating the process through means that skip [`AppHandle::cleanup_before_exit`], such
+/// as [`std::process::exit`].
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
-    platform_impl::destroy(manager)
+    if let Some(lock) = manager.try_state::<InstanceLockId>() {
+        let _ = manager.resources_table().close(lock.0);
+    }
 }
 
+struct InstanceLockId(ResourceId);
+
+/// Stores the platform lock in the app's resource table, which Tauri clears in
+/// [`AppHandle::cleanup_before_exit`], so the lock's [`Drop`] implementation releases it only once
+/// the app is really exiting.
+pub(crate) fn manage_instance_lock<R: Runtime, M: Manager<R>>(manager: &M, lock: impl Resource) {
+    let rid = manager.resources_table().add(lock);
+    manager.manage(InstanceLockId(rid));
+}
+
+/// Builds the single-instance plugin.
+///
+/// Created with [`Builder::new`] and consumed by [`Builder::build`].
 pub struct Builder<R: Runtime> {
     callback: Box<SingleInstanceCallback<R>>,
-    destroy_on_exit: bool,
     dbus_id: Option<String>,
 }
 
@@ -53,13 +95,16 @@ impl<R: Runtime> Default for Builder<R> {
                     deep_link.handle_cli_arguments(_args.iter());
                 }
             }),
-            destroy_on_exit: true,
             dbus_id: None,
         }
     }
 }
 
 impl<R: Runtime> Builder<R> {
+    /// Creates a new builder with a no-op callback (or, when the `deep-link` feature is enabled,
+    /// a callback that only forwards the arguments to the deep-link plugin) and no custom D-Bus
+    /// ID. Use [`Builder::callback`] and [`Builder::dbus_id`] to configure it, then
+    /// [`Builder::build`] to create the plugin.
     pub fn new() -> Self {
         Default::default()
     }
@@ -80,18 +125,6 @@ impl<R: Runtime> Builder<R> {
         self
     }
 
-    /// Set whether the plugin should destroy the single instance lock on app exit.
-    /// Set to `false` if you want precise control over when the plugin is destroyed
-    /// and intend to call [`destroy`] manually. This is useful if you want to continue
-    /// to ensure only a single instance of your app is running while performing some
-    /// long-running cleanup tasks on app exit.
-    ///
-    /// Defaults to `true`.
-    pub fn destroy_on_exit(mut self, val: bool) -> Self {
-        self.destroy_on_exit = val;
-        self
-    }
-
     /// Set a custom D-Bus ID, used on Linux. The plugin will append a `.SingleInstance` subname.
     /// For example `com.mycompany.myapp` will result in the plugin registering its D-Bus service on `com.mycompany.myapp.SingleInstance`.
     /// Usually you want the same base ID across all components in your app.
@@ -102,10 +135,13 @@ impl<R: Runtime> Builder<R> {
         self
     }
 
+    /// Builds the single-instance [`TauriPlugin`].
+    ///
+    /// Register it first among your app's plugins, since the plugins run in the order they were
+    /// added and a second instance must be detected before the rest of your setup runs.
     pub fn build(self) -> TauriPlugin<R> {
         platform_impl::init(
             self.callback,
-            self.destroy_on_exit,
             #[cfg(target_os = "linux")]
             self.dbus_id,
         )

@@ -10,58 +10,54 @@ use std::{
 
 #[cfg(feature = "semver")]
 use crate::semver_compat::semver_compat_string;
-use crate::SingleInstanceCallback;
+use crate::{SingleInstanceCallback, manage_instance_lock};
 use tauri::{
+    AppHandle, Config, Manager, Resource, Runtime,
     plugin::{self, TauriPlugin},
-    AppHandle, Config, Manager, RunEvent, Runtime,
 };
 use tokio::io::AsyncReadExt;
 
-pub fn init<R: Runtime>(
-    cb: Box<SingleInstanceCallback<R>>,
-    destroy_on_exit: bool,
-) -> TauriPlugin<R> {
-    let mut builder = plugin::Builder::new("single-instance").setup(|app, _api| {
-        let socket = socket_path(app.config(), app.package_info());
+/// Owns the Unix socket file, removed when the app exits (see [`crate::destroy`]).
+struct InstanceLock(PathBuf);
 
-        // Notify the singleton which may or may not exist.
-        match notify_singleton(&socket) {
-            Ok(_) => {
-                std::process::exit(0);
-            }
-            Err(e) => {
-                match e.kind() {
-                    ErrorKind::NotFound | ErrorKind::ConnectionRefused => {
-                        // This process claims itself as singleton as likely none exists
-                        socket_cleanup(&socket);
-                        listen_for_other_instances(socket, app.clone(), cb);
-                    }
-                    _ => {
-                        tracing::debug!(
-                            "single_instance failed to notify - launching normally: {}",
-                            e
-                        );
+impl Resource for InstanceLock {}
+
+impl Drop for InstanceLock {
+    fn drop(&mut self) {
+        socket_cleanup(&self.0);
+    }
+}
+
+pub fn init<R: Runtime>(cb: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
+    plugin::Builder::new("single-instance")
+        .setup(|app, _api| {
+            let socket = socket_path(app.config(), app.package_info());
+
+            // Notify the singleton which may or may not exist.
+            match notify_singleton(&socket) {
+                Ok(_) => {
+                    std::process::exit(0);
+                }
+                Err(e) => {
+                    match e.kind() {
+                        ErrorKind::NotFound | ErrorKind::ConnectionRefused => {
+                            // This process claims itself as singleton as likely none exists
+                            socket_cleanup(&socket);
+                            manage_instance_lock(app, InstanceLock(socket.clone()));
+                            listen_for_other_instances(socket, app.clone(), cb);
+                        }
+                        _ => {
+                            tracing::debug!(
+                                "single_instance failed to notify - launching normally: {}",
+                                e
+                            );
+                        }
                     }
                 }
             }
-        }
-        Ok(())
-    });
-
-    if destroy_on_exit {
-        builder = builder.on_event(|app, event| {
-            if let RunEvent::Exit = event {
-                destroy(app);
-            }
+            Ok(())
         })
-    }
-
-    builder.build()
-}
-
-pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
-    let socket = socket_path(manager.config(), manager.package_info());
-    socket_cleanup(&socket);
+        .build()
 }
 
 fn socket_path(config: &Config, _package_info: &tauri::PackageInfo) -> PathBuf {
@@ -86,12 +82,14 @@ fn notify_singleton(socket: &PathBuf) -> Result<(), Error> {
     let mut bf = BufWriter::new(&stream);
     let cwd = std::env::current_dir()
         .unwrap_or_default()
-        .to_str()
-        .unwrap_or_default()
-        .to_string();
+        .to_string_lossy()
+        .into_owned();
     bf.write_all(cwd.as_bytes())?;
     bf.write_all(b"\0\0")?;
-    let args_joined = std::env::args().collect::<Vec<String>>().join("\0");
+    let args_joined = std::env::args_os()
+        .map(|arg| arg.to_string_lossy().into_owned())
+        .collect::<Vec<String>>()
+        .join("\0");
     bf.write_all(args_joined.as_bytes())?;
     bf.flush()?;
     drop(bf);
