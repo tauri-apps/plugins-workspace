@@ -10,6 +10,8 @@
 //! On Linux the lock is a D-Bus name, so these tests need a session bus and are ignored by
 //! default. Run them with `dbus-run-session -- cargo test --test instance_lock -- --ignored`.
 
+#![cfg(not(any(target_os = "android", target_os = "ios")))]
+
 use std::{
     env,
     process::{Child, Command, Output, Stdio},
