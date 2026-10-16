@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.6.0]
+
+### feat
+
+- [`738c323c`](https://github.com/tauri-apps/plugins-workspace/commit/738c323cfc41fc1bb248991de9620383de788d4d) ([#3149](https://github.com/tauri-apps/plugins-workspace/pull/3149) by [@Tunglies](https://github.com/tauri-apps/plugins-workspace/../../Tunglies)) Add `Command::kill_on_drop` to kill the spawned process (or its process group / job object when `Command::set_process_group` is enabled) when its `CommandChild` is dropped.
+
 ## [2.5.0]
 
 - [`42ae8b45`](https://github.com/tauri-apps/plugins-workspace/commit/42ae8b4501f3628cddeab3973eb38a7593304cc8) ([#3684](https://github.com/tauri-apps/plugins-workspace/pull/3684)) On iOS, mark the plugin's `init_plugin_*` entry point `public` so release builds made with Xcode 27 keep it global and link.

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.14.1]
+
+- [`ba98bfad`](https://github.com/tauri-apps/plugins-workspace/commit/ba98bfadc4c868c9a7e1a226c83af528e1f11b89) ([#3698](https://github.com/tauri-apps/plugins-workspace/pull/3698) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update `zip` to v9. On Windows, the `Error::Extract` variant now wraps `zip` 9's `ZipError`.
+
 ## [2.14.0]
 
 - [`b6f39cc5`](https://github.com/tauri-apps/plugins-workspace/commit/b6f39cc51c4be15fbc5f8623bcc775e23d0160af) ([#3688](https://github.com/tauri-apps/plugins-workspace/pull/3688) by [@followdarko](https://github.com/tauri-apps/plugins-workspace/../../followdarko)) On Linux, installing an AppImage update no longer fails with `Invalid cross-device link (os error 18)` when the temp or cache directory is a separate mount of the AppImage's file system, such as a bind-mounted or private `/tmp`. The backup now moves on to the next location, ending with the AppImage's own directory.
