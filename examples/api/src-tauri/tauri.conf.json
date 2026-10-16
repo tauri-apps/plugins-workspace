@@ -37,6 +37,30 @@
     }
   },
   "plugins": {
+    "http": {
+      "userAgent": "tauri-api-example/1.0",
+      "requestHeaders": [
+        {
+          "url": "http://localhost:3003/identity/*",
+          "headers": {
+            "Origin": "https://desktop.example.com",
+            "X-Identity": "config"
+          }
+        },
+        {
+          "url": "http://localhost:3003/identity/override/*",
+          "headers": {
+            "User-Agent": "override/1.0",
+            "X-Identity": "override"
+          },
+          "mode": "override"
+        },
+        {
+          "url": "http://localhost:3003/identity/no-origin/*",
+          "headers": { "Origin": null }
+        }
+      ]
+    },
     "cli": {
       "description": "Tauri API example",
       "args": [

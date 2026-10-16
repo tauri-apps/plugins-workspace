@@ -171,6 +171,169 @@ describePlugin('http', () => {
     expect(message).toMatch(/url not allowed on the configured scope/)
   })
 
+  // The example configures `userAgent` and `requestHeaders` rules for
+  // `/identity/*` paths in its tauri.conf.json, and an `on_request` hook that
+  // handles `/identity/hook/*`. The echo server mirrors the headers it received.
+  describe('request identity', () => {
+    async function echoedHeaders(
+      url: string,
+      headers: Record<string, string> = {}
+    ): Promise<Record<string, string | null>> {
+      return await tauri(
+        async (api, url, headers) => {
+          const response = await api.http.fetch(url, { headers })
+          await response.text()
+          const names = [
+            'user-agent',
+            'origin',
+            'x-identity',
+            'x-hook-webview-label',
+            'x-hook-webview-origin'
+          ]
+          return Object.fromEntries(
+            names.map((name) => [name, response.headers.get(name)])
+          )
+        },
+        url,
+        headers
+      )
+    }
+
+    it('sends the configured user agent and the webview origin by default', async () => {
+      const headers = await echoedHeaders(`${echoServer}/plain`)
+      expect(headers['user-agent']).toBe('tauri-api-example/1.0')
+      expect(headers.origin).toMatch(
+        /^(tauri:\/\/localhost|http:\/\/tauri\.localhost)$/
+      )
+      expect(headers['x-identity']).toBeNull()
+    })
+
+    it('keeps the user agent set by the frontend', async () => {
+      const headers = await echoedHeaders(`${echoServer}/plain`, {
+        'user-agent': 'web/1.0'
+      })
+      expect(headers['user-agent']).toBe('web/1.0')
+    })
+
+    it('applies matching rules without replacing frontend headers', async () => {
+      let headers = await echoedHeaders(`${echoServer}/identity/rule`)
+      expect(headers.origin).toBe('https://desktop.example.com')
+      expect(headers['x-identity']).toBe('config')
+
+      headers = await echoedHeaders(`${echoServer}/identity/rule`, {
+        'x-identity': 'web'
+      })
+      expect(headers['x-identity']).toBe('web')
+    })
+
+    it('override rules replace frontend headers, later rules win', async () => {
+      const headers = await echoedHeaders(`${echoServer}/identity/override/x`, {
+        'user-agent': 'web/1.0',
+        'x-identity': 'web'
+      })
+      expect(headers['user-agent']).toBe('override/1.0')
+      expect(headers['x-identity']).toBe('override')
+      // set by the first rule, which also matches
+      expect(headers.origin).toBe('https://desktop.example.com')
+    })
+
+    it('rules can remove the origin', async () => {
+      const headers = await echoedHeaders(`${echoServer}/identity/no-origin/x`)
+      expect(headers.origin).toBeNull()
+      expect(headers['x-identity']).toBe('config')
+    })
+
+    it('rules and the hook apply again to each redirect target', async () => {
+      // the rule for `/identity/*` matches the redirect, not its target
+      let headers = await echoedHeaders(
+        `${echoServer}/identity/rule/redirect/plain`
+      )
+      expect(headers['x-identity']).toBeNull()
+      expect(headers.origin).toMatch(
+        /^(tauri:\/\/localhost|http:\/\/tauri\.localhost)$/
+      )
+
+      // a target the rule matches gets its headers
+      headers = await echoedHeaders(
+        `${echoServer}/plain/redirect/identity/rule`
+      )
+      expect(headers['x-identity']).toBe('config')
+      expect(headers.origin).toBe('https://desktop.example.com')
+
+      headers = await echoedHeaders(
+        `${echoServer}/identity/hook/redirect/plain`
+      )
+      expect(headers['x-hook-webview-label']).toBeNull()
+      expect(headers['x-identity']).toBeNull()
+    })
+
+    it('the on_request hook runs after the rules', async () => {
+      const headers = await echoedHeaders(`${echoServer}/identity/hook/x`)
+      expect(headers.origin).toBe('https://hook.example.com')
+      expect(headers['x-identity']).toBe('config')
+      expect(headers['x-hook-webview-label']).toBe('main')
+      expect(headers['x-hook-webview-origin']).toMatch(
+        /^(tauri:\/\/localhost|http:\/\/tauri\.localhost)$/
+      )
+    })
+
+    it('the on_request hook does not run for URLs outside the scope', async () => {
+      const allowed = `${echoServer}/identity/hook/allowed`
+      const denied = 'http://localhost:3999/identity/hook/denied'
+      await echoedHeaders(allowed)
+      const message = await tauriError(
+        (api, url) => api.http.fetch(url),
+        denied
+      )
+      expect(message).toMatch(/url not allowed on the configured scope/)
+
+      const urls = await tauri((api) =>
+        api.core.invoke<string[]>('http_hook_urls')
+      )
+      expect(urls).toContain(allowed)
+      expect(urls).not.toContain(denied)
+    })
+  })
+
+  describe('cookie jar shared with Rust', () => {
+    it('a native client sends the cookies set on webview requests', async () => {
+      const cookie = await tauri(async (api, url) => {
+        // gets the cookie set, or replays the one an earlier request stored
+        await (await api.http.fetch(`${url}/cookies`)).text()
+        return await api.core.invoke<string | null>('http_native_cookie')
+      }, echoServer)
+      expect(cookie).toContain('session-token=test-value')
+    })
+
+    it('clearing the jar from Rust affects webview requests', async () => {
+      const result = await tauri(async (api, url) => {
+        await api.core.invoke('http_clear_cookies')
+        // nothing is sent, so the echo server sets the cookie again
+        const cleared = await api.http.fetch(`${url}/cookies`)
+        await cleared.text()
+
+        await api.core.invoke('http_clear_cookies')
+        // the cookie the echo server sets on this native request lands in the
+        // shared jar, so the next webview request sends it
+        const nativeAfterClear = await api.core.invoke<string | null>(
+          'http_native_cookie'
+        )
+        const replayed = await api.http.fetch(`${url}/cookies`)
+        await replayed.text()
+        return {
+          sentAfterClear: cleared.headers.get('cookie'),
+          setAgain: cleared.headers.get('set-cookie'),
+          nativeAfterClear,
+          replayed: replayed.headers.get('cookie')
+        }
+      }, echoServer)
+      expect(result.sentAfterClear).toBeNull()
+      expect(result.setAgain).toMatch(/^session-token=test-value/)
+      expect(result.nativeAfterClear).toBeNull()
+      expect(result.replayed).toContain('session-token=test-value')
+    })
+  })
+
   it('network failures reject', async () => {
     // Every in-scope origin is reachable, so route the request through a proxy
     // nothing listens on to force a connection error.

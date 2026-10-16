@@ -53,24 +53,40 @@
 //! {
 //!   "plugins": {
 //!     "http": {
-//!       "scopeRedirects": true
+//!       "scopeRedirects": true,
+//!       "userAgent": "my-app/1.0",
+//!       "requestHeaders": [
+//!         {
+//!           "url": "https://api.example.com/*",
+//!           "headers": { "Origin": "https://desktop.example.com" }
+//!         }
+//!       ]
 //!     }
 //!   }
 //! }
 //! ```
+//!
+//! The same options, and an [`on_request`](Builder::on_request) hook for policies the configuration
+//! cannot express, can be set in Rust with the plugin [`Builder`].
 
 pub use reqwest;
+use reqwest::header::HeaderMap;
 use tauri::{
     Manager, Runtime,
-    plugin::{Builder, TauriPlugin},
+    plugin::{Builder as PluginBuilder, TauriPlugin},
 };
 
 pub use config::Config;
 pub use error::{Error, Result};
+pub use request_headers::{HeaderRuleMode, RequestContext, RequestHeaderRule};
+#[cfg(feature = "cookies")]
+pub use reqwest_cookie_store::CookieJar;
 
 mod commands;
 mod config;
 mod error;
+mod redirect;
+mod request_headers;
 #[cfg(feature = "cookies")]
 mod reqwest_cookie_store;
 mod scope;
@@ -78,13 +94,43 @@ mod scope;
 #[cfg(feature = "cookies")]
 const COOKIES_FILENAME: &str = ".cookies";
 
-pub(crate) struct Http {
+/// Access to the plugin's state, see [`HttpExt`].
+pub struct Http {
     pub(crate) config: Config,
+    pub(crate) request_headers: std::sync::Arc<request_headers::RequestHeaders>,
     #[cfg(feature = "cookies")]
-    cookies_jar: std::sync::Arc<crate::reqwest_cookie_store::CookieStoreMutex>,
+    cookies_jar: std::sync::Arc<CookieJar>,
 }
 
-/// Initializes the plugin.
+impl Http {
+    /// The cookie jar used by every request sent from the webview.
+    ///
+    /// Give it to your own [`reqwest`] clients to share the webview's session with them; see
+    /// [`CookieJar`].
+    #[cfg(feature = "cookies")]
+    pub fn cookie_jar(&self) -> std::sync::Arc<CookieJar> {
+        self.cookies_jar.clone()
+    }
+}
+
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the HTTP
+/// plugin.
+pub trait HttpExt<R: Runtime> {
+    /// The plugin's state.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the plugin is not registered.
+    fn http(&self) -> &Http;
+}
+
+impl<R: Runtime, T: Manager<R>> HttpExt<R> for T {
+    fn http(&self) -> &Http {
+        self.state::<Http>().inner()
+    }
+}
+
+/// Initializes the plugin with the default options, the same as `Builder::new().build()`.
 ///
 /// The plugin reads its [`Config`] from the `plugins > http` object of the `tauri.conf.json` file;
 /// when that object is missing, [`Config::default`] is used.
@@ -95,66 +141,246 @@ pub(crate) struct Http {
 ///
 /// Register it on the Tauri builder with `.plugin(tauri_plugin_http::init())`.
 pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
-    Builder::<R, Option<Config>>::new("http")
-        .setup(|app, api| {
-            #[cfg(feature = "cookies")]
-            let cookies_jar = {
-                use crate::reqwest_cookie_store::*;
-                use std::fs::File;
-                use std::io::BufReader;
+    Builder::new().build()
+}
 
-                let cache_dir = app.path().app_cache_dir()?;
-                std::fs::create_dir_all(&cache_dir)?;
+/// The plugin builder.
+///
+/// Options set here take precedence over the same options in the [`Config`].
+///
+/// ```rust,no_run
+/// use tauri_plugin_http::reqwest::header::{HeaderValue, ORIGIN};
+///
+/// # fn f<R: tauri::Runtime>(builder: tauri::Builder<R>) -> tauri::Builder<R> {
+/// builder
+///     .plugin(
+///         tauri_plugin_http::Builder::new()
+///             .user_agent("my-app/1.0")
+///             .on_request(|ctx, headers| {
+///                 if ctx.url().host_str() == Some("api.example.com") && !ctx.frontend_set(&ORIGIN) {
+///                     headers.insert(ORIGIN, HeaderValue::from_static("https://desktop.example.com"));
+///                 }
+///             })
+///             .build(),
+///     )
+/// # }
+/// ```
+#[derive(Default)]
+pub struct Builder {
+    user_agent: Option<String>,
+    request_headers: Option<Vec<RequestHeaderRule>>,
+    on_request: Option<request_headers::OnRequest>,
+}
 
-                let path = cache_dir.join(COOKIES_FILENAME);
-                let file = File::options()
-                    .create(true)
-                    .append(true)
-                    .read(true)
-                    .open(&path)?;
+impl Builder {
+    /// Creates a builder with the default options.
+    pub fn new() -> Self {
+        Self::default()
+    }
 
-                let reader = BufReader::new(file);
-                CookieStoreMutex::load(path.clone(), reader).unwrap_or_else(|_e| {
-                    #[cfg(feature = "tracing")]
-                    tracing::warn!(
-                        "failed to load cookie store: {_e}, falling back to empty store"
-                    );
-                    CookieStoreMutex::new(path, Default::default())
-                })
-            };
+    /// Sets the `User-Agent` sent when the frontend does not set one, replacing
+    /// [`Config::user_agent`].
+    pub fn user_agent(mut self, user_agent: impl Into<String>) -> Self {
+        self.user_agent.replace(user_agent.into());
+        self
+    }
 
-            let state = Http {
-                config: api.config().clone().unwrap_or_default(),
+    /// Sets the rules adding or removing headers on webview requests, replacing
+    /// [`Config::request_headers`].
+    pub fn request_headers(mut self, rules: impl IntoIterator<Item = RequestHeaderRule>) -> Self {
+        self.request_headers.replace(rules.into_iter().collect());
+        self
+    }
+
+    /// Sets a hook that can change the headers of every request sent from the webview.
+    ///
+    /// The hook runs once the request is allowed by the scope, after the plugin's default
+    /// `User-Agent` and `Origin` and the [request header rules](Self::request_headers) were applied,
+    /// so it sees and can change all of them. It runs again for every redirect the plugin follows,
+    /// with the redirect target as [`RequestContext::url`] and the headers the frontend sent, so
+    /// what it adds for one URL is not sent to another.
+    ///
+    /// The hook can set any header for any destination, including the ones the frontend is not
+    /// allowed to send, such as `Origin`. Misrepresenting the client to third-party services may
+    /// breach their terms of service.
+    pub fn on_request<F>(mut self, on_request: F) -> Self
+    where
+        F: Fn(&RequestContext<'_>, &mut HeaderMap) + Send + Sync + 'static,
+    {
+        self.on_request.replace(Box::new(on_request));
+        self
+    }
+
+    /// Validates the options, taking the ones that are not set on the builder from the `config`.
+    fn into_request_headers(
+        self,
+        config: &Config,
+    ) -> std::result::Result<request_headers::RequestHeaders, request_headers::InvalidRequestHeaders>
+    {
+        request_headers::RequestHeaders::new(
+            self.user_agent.as_deref().or(config.user_agent.as_deref()),
+            self.request_headers
+                .as_deref()
+                .unwrap_or(&config.request_headers),
+            self.on_request,
+        )
+    }
+
+    /// Builds the plugin.
+    ///
+    /// The setup fails if the user agent or a request header rule is invalid.
+    pub fn build<R: Runtime>(self) -> TauriPlugin<R, Option<Config>> {
+        PluginBuilder::<R, Option<Config>>::new("http")
+            .setup(move |app, api| {
+                let config = api.config().clone().unwrap_or_default();
+
+                let request_headers = std::sync::Arc::new(self.into_request_headers(&config)?);
+
                 #[cfg(feature = "cookies")]
-                cookies_jar: std::sync::Arc::new(cookies_jar),
-            };
+                let cookies_jar = {
+                    use std::fs::File;
+                    use std::io::BufReader;
 
-            app.manage(state);
+                    let cache_dir = app.path().app_cache_dir()?;
+                    std::fs::create_dir_all(&cache_dir)?;
 
-            Ok(())
-        })
-        .on_event(|app, event| {
-            #[cfg(feature = "cookies")]
-            if let tauri::RunEvent::Exit = event {
-                let state = app.state::<Http>();
+                    let path = cache_dir.join(COOKIES_FILENAME);
+                    let file = File::options()
+                        .create(true)
+                        .append(true)
+                        .read(true)
+                        .open(&path)?;
 
-                match state.cookies_jar.request_save() {
-                    Ok(rx) => {
-                        let _ = rx.recv();
-                    }
-                    Err(_e) => {
+                    let reader = BufReader::new(file);
+                    CookieJar::load(path.clone(), reader).unwrap_or_else(|_e| {
                         #[cfg(feature = "tracing")]
-                        tracing::error!("failed to save cookie jar: {_e}");
-                    }
+                        tracing::warn!(
+                            "failed to load cookie store: {_e}, falling back to empty store"
+                        );
+                        CookieJar::new(path, Default::default())
+                    })
+                };
+
+                let state = Http {
+                    config,
+                    request_headers,
+                    #[cfg(feature = "cookies")]
+                    cookies_jar: std::sync::Arc::new(cookies_jar),
+                };
+
+                app.manage(state);
+
+                Ok(())
+            })
+            .on_event(|_app, _event| {
+                #[cfg(feature = "cookies")]
+                if let tauri::RunEvent::Exit = _event
+                    && let Err(_e) = _app.http().cookies_jar.save()
+                {
+                    #[cfg(feature = "tracing")]
+                    tracing::error!("failed to save cookie jar: {_e}");
                 }
-            }
-        })
-        .invoke_handler(tauri::generate_handler![
-            commands::fetch,
-            commands::fetch_cancel,
-            commands::fetch_send,
-            commands::fetch_read_body,
-            commands::fetch_cancel_body,
-        ])
-        .build()
+            })
+            .invoke_handler(tauri::generate_handler![
+                commands::fetch,
+                commands::fetch_cancel,
+                commands::fetch_send,
+                commands::fetch_read_body,
+                commands::fetch_cancel_body,
+            ])
+            .build()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::request_headers::tests::{apply, header};
+
+    fn config(json: &str) -> Config {
+        serde_json::from_str(json).unwrap()
+    }
+
+    #[test]
+    fn builder_options_take_precedence_over_the_config() {
+        let config = config(
+            r#"{
+                "userAgent": "config/1.0",
+                "requestHeaders": [
+                    { "url": "https://api.example.com", "headers": { "X-Source": "config" } }
+                ]
+            }"#,
+        );
+
+        // nothing set on the builder: the config applies
+        let request_headers = Builder::new().into_request_headers(&config).unwrap();
+        let headers = apply(&request_headers, "https://api.example.com", &[]);
+        assert_eq!(header(&headers, "user-agent"), Some("config/1.0"));
+        assert_eq!(header(&headers, "x-source"), Some("config"));
+
+        // the builder's rules replace the config's list instead of extending it
+        let request_headers = Builder::new()
+            .user_agent("builder/1.0")
+            .request_headers([
+                RequestHeaderRule::new("https://other.example.com").header("X-Source", "builder")
+            ])
+            .into_request_headers(&config)
+            .unwrap();
+        let headers = apply(&request_headers, "https://api.example.com", &[]);
+        assert_eq!(header(&headers, "user-agent"), Some("builder/1.0"));
+        assert_eq!(header(&headers, "x-source"), None);
+        let headers = apply(&request_headers, "https://other.example.com", &[]);
+        assert_eq!(header(&headers, "x-source"), Some("builder"));
+
+        // an empty list on the builder disables the config's rules
+        let request_headers = Builder::new()
+            .request_headers([])
+            .into_request_headers(&config)
+            .unwrap();
+        let headers = apply(&request_headers, "https://api.example.com", &[]);
+        assert_eq!(header(&headers, "user-agent"), Some("config/1.0"));
+        assert_eq!(header(&headers, "x-source"), None);
+    }
+
+    #[test]
+    fn invalid_builder_options_are_rejected() {
+        let config = Config::default();
+        assert!(
+            Builder::new()
+                .user_agent("line\nbreak")
+                .into_request_headers(&config)
+                .is_err()
+        );
+        assert!(
+            Builder::new()
+                .request_headers([RequestHeaderRule::new("https://*").header("Cookie", "a=b")])
+                .into_request_headers(&config)
+                .is_err()
+        );
+
+        // an invalid config is not used when the builder replaces it
+        let config: Config = serde_json::from_str(
+            r#"{ "requestHeaders": [{ "url": "https://*", "headers": { "Host": "x" } }] }"#,
+        )
+        .unwrap();
+        assert!(Builder::new().into_request_headers(&config).is_err());
+        assert!(
+            Builder::new()
+                .request_headers([])
+                .into_request_headers(&config)
+                .is_ok()
+        );
+    }
+
+    #[test]
+    fn hook_is_kept() {
+        let request_headers = Builder::new()
+            .on_request(|_, headers| {
+                headers.insert("x-hook", reqwest::header::HeaderValue::from_static("1"));
+            })
+            .into_request_headers(&Config::default())
+            .unwrap();
+        let headers = apply(&request_headers, "https://api.example.com", &[]);
+        assert_eq!(header(&headers, "x-hook"), Some("1"));
+    }
 }

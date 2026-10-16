@@ -9,6 +9,7 @@ use url::Url;
 ///
 /// The error is serialized to the frontend as its [`Display`](std::fmt::Display) string.
 #[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
 pub enum Error {
     /// JSON serialization or deserialization error.
     #[error(transparent)]
@@ -37,6 +38,10 @@ pub enum Error {
     /// redirect target that is not allowed by the scope.
     #[error("url not allowed on the configured scope: {0}")]
     UrlNotAllowed(Url),
+    /// The response redirected more times than the request's `maxRedirections` allows (10 by
+    /// default). Holds the redirect target that was not followed.
+    #[error("too many redirects, the redirect to {0} was not followed")]
+    TooManyRedirects(Url),
     /// Failed to parse a URL.
     #[error(transparent)]
     UrlParseError(#[from] url::ParseError),
