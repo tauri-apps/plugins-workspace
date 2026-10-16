@@ -303,7 +303,7 @@ mod imp {
                     .unwrap_or_else(|| bin.into_os_string())
                     .to_string_lossy()
                     .to_string();
-                let qualified_exec = format!("\"{}\" %u", exec);
+                let qualified_exec = format!("{} %u", desktop_exec_program(&exec));
 
                 let target = self.app.path().data_dir()?.join("applications");
 
@@ -530,6 +530,32 @@ mod imp {
         }
     }
 
+    /// Formats `program` for a desktop entry's `Exec` key, in desktop-file syntax.
+    ///
+    /// The spec requires quoting a path with reserved characters (e.g. a space), but only
+    /// quotes it then: xdg-open's generic backend (no desktop environment detected) ignores
+    /// quotes in xdg-utils <= 1.2.1 and cannot launch a quoted path.
+    #[cfg(target_os = "linux")]
+    fn desktop_exec_program(program: &str) -> String {
+        let program = program.replace('%', "%%");
+        if !program
+            .chars()
+            .any(|c| c.is_whitespace() || "\"'\\><~|&;$*?#()`".contains(c))
+        {
+            return program;
+        }
+        let mut quoted = String::from("\"");
+        for c in program.chars() {
+            if matches!(c, '"' | '`' | '$' | '\\') {
+                // The quoting backslash, itself escaped for the desktop-file string value.
+                quoted.push_str("\\\\");
+            }
+            quoted.push(c);
+        }
+        quoted.push('"');
+        quoted
+    }
+
     /// Loads a desktop entry file keeping its values in desktop-file syntax, so quotes and
     /// escapes (e.g. in `Exec`) survive a rewrite with [`ini::EscapePolicy::Nothing`].
     #[cfg(target_os = "linux")]
@@ -630,6 +656,25 @@ mod imp {
             out.push_str(line);
         }
         changed.then_some(out)
+    }
+
+    #[cfg(all(test, target_os = "linux"))]
+    mod tests {
+        use super::desktop_exec_program;
+
+        #[test]
+        fn desktop_exec_program_quotes_only_when_needed() {
+            assert_eq!(desktop_exec_program("/usr/bin/app"), "/usr/bin/app");
+            assert_eq!(
+                desktop_exec_program("/home/me/My Apps/app"),
+                "\"/home/me/My Apps/app\""
+            );
+            assert_eq!(desktop_exec_program("/opt/100%/app"), "/opt/100%%/app");
+            assert_eq!(
+                desktop_exec_program("/opt/a$b\"c/app"),
+                "\"/opt/a\\\\$b\\\\\"c/app\""
+            );
+        }
     }
 }
 
