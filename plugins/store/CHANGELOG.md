@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.5.0]
+
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+## [2.4.5]
+
+- [`c050e073`](https://github.com/tauri-apps/plugins-workspace/commit/c050e073b68205bae7389fb86958cb9331e1a3be) ([#3572](https://github.com/tauri-apps/plugins-workspace/pull/3572) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix `apply_pending_auto_save` can deadlock the store
+
+## \[2.4.4]
+
+- [`2ed6d6c1`](https://github.com/tauri-apps/plugins-workspace/commit/2ed6d6c1de4f5051b87cb6a2c5ac45320c444989) ([#3499](https://github.com/tauri-apps/plugins-workspace/pull/3499) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix `StoreOptions` requires `defaults` field
+
 ## \[2.4.3]
 
 - [`964e13f1`](https://github.com/tauri-apps/plugins-workspace/commit/964e13f124ad1feeb93c10168b265dc4936f738c) ([#3395](https://github.com/tauri-apps/plugins-workspace/pull/3395) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix a deadlock when calling `Store::set` while exiting (on `RunEvent::Exit`)

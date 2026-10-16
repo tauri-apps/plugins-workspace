@@ -7,8 +7,8 @@ use crate::semver_compat::semver_compat_string;
 
 use crate::SingleInstanceCallback;
 use tauri::{
-    plugin::{self, TauriPlugin},
     AppHandle, Manager, RunEvent, Runtime,
+    plugin::{self, TauriPlugin},
 };
 use zbus::{blocking::Connection, interface, names::WellKnownName};
 
@@ -53,39 +53,58 @@ pub fn init<R: Runtime>(
                 app_handle: app.clone(),
             };
 
-            match zbus::blocking::connection::Builder::session()
-                .unwrap()
-                .name(dbus_name.as_str())
-                .unwrap()
+            let builder = match zbus::blocking::connection::Builder::session() {
+                Ok(builder) => builder,
+                Err(error) => {
+                    tracing::warn!(
+                        "single-instance: invalid D-Bus session address, launching normally: {error}"
+                    );
+                    return Ok(());
+                }
+            };
+
+            match builder
+                .name(dbus_name.as_str())?
                 .replace_existing_names(false)
                 .allow_name_replacements(false)
-                .serve_at(dbus_path.as_str(), single_instance_dbus)
-                .unwrap()
+                .serve_at(dbus_path.as_str(), single_instance_dbus)?
                 .build()
             {
                 Ok(connection) => {
                     app.manage(ConnectionHandle(connection));
                 }
                 Err(zbus::Error::NameTaken) => {
-                    if let Ok(connection) = Connection::session() {
-                        let _ = connection.call_method(
+                    let connection = Connection::session()?;
+                    connection
+                        .call_method(
                             Some(dbus_name.as_str()),
                             dbus_path.as_str(),
                             Some("org.SingleInstance.DBus"),
                             "ExecuteCallback",
                             &(
-                                std::env::args().collect::<Vec<String>>(),
+                                std::env::args_os()
+                                    .map(|arg| arg.to_string_lossy().into_owned())
+                                    .collect::<Vec<String>>(),
                                 std::env::current_dir()
                                     .unwrap_or_default()
-                                    .to_str()
-                                    .unwrap_or_default(),
+                                    .to_string_lossy()
+                                    .as_ref(),
                             ),
-                        );
-                    }
+                        )
+                        .map_err(|error| {
+                            format!("failed to forward arguments to the running instance: {error}")
+                        })?;
+                    // Exit successfully only after the primary accepted the arguments.
                     app.cleanup_before_exit();
                     std::process::exit(0);
                 }
-                _ => {}
+                Err(error) => {
+                    // Without a session bus there is no way to find other instances.
+                    tracing::warn!(
+                        "single-instance: D-Bus session bus unavailable, launching normally: {error}"
+                    );
+                    return Ok(());
+                }
             }
 
             app.manage(DBusName(dbus_name));
@@ -101,12 +120,11 @@ pub fn init<R: Runtime>(
 }
 
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
-    if let Some(connection) = manager.try_state::<ConnectionHandle>() {
-        if let Some(dbus_name) = manager
+    if let Some(connection) = manager.try_state::<ConnectionHandle>()
+        && let Some(dbus_name) = manager
             .try_state::<DBusName>()
             .and_then(|name| WellKnownName::try_from(name.0.clone()).ok())
-        {
-            let _ = connection.0.release_name(dbus_name);
-        }
+    {
+        let _ = connection.0.release_name(dbus_name);
     }
 }

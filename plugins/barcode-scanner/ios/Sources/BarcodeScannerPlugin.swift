@@ -346,6 +346,6 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
 }
 
 @_cdecl("init_plugin_barcode_scanner")
-func initPlugin() -> Plugin {
+public func initPlugin() -> Plugin {
   return BarcodeScannerPlugin()
 }

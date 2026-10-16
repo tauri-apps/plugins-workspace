@@ -3,6 +3,10 @@
 // SPDX-License-Identifier: MIT
 
 //! Store secrets and keys using the [IOTA Stronghold](https://github.com/iotaledger/stronghold.rs) encrypted database and secure runtime.
+//!
+//! ## Cargo features
+//!
+//! - **kdf** *(enabled by default)*: Exposes the key-derivation module and provides the default Argon2-based password-to-key derivation.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
@@ -19,18 +23,18 @@ use std::{
 
 use crypto::keys::bip39;
 use iota_stronghold::{
+    Client, Location,
     procedures::{
         BIP39Generate, BIP39Recover, Curve, Ed25519Sign, KeyType as StrongholdKeyType,
         MnemonicLanguage, PublicKey, Slip10Derive, Slip10DeriveInput, Slip10Generate,
         StrongholdProcedure,
     },
-    Client, Location,
 };
-use serde::{de::Visitor, Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, de::Visitor};
 use stronghold::{Error, Result, Stronghold};
 use tauri::{
-    plugin::{Builder as PluginBuilder, TauriPlugin},
     Manager, Runtime, State,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
 };
 use zeroize::{Zeroize, Zeroizing};
 
@@ -104,8 +108,13 @@ impl From<Slip10DeriveInputDto> for Slip10DeriveInput {
     }
 }
 
+/// The type of a key pair handled by the plugin procedures.
+///
+/// Deserialized from the strings `ed25519` and `x25519`, ignoring case.
 pub enum KeyType {
+    /// The Ed25519 signature scheme.
     Ed25519,
+    /// The X25519 key exchange scheme.
     X25519,
 }
 
@@ -261,11 +270,11 @@ async fn destroy(
     snapshot_path: PathBuf,
 ) -> Result<()> {
     let mut collection = collection.0.lock().unwrap();
-    if let Some(stronghold) = collection.remove(&snapshot_path) {
-        if let Err(e) = stronghold.save() {
-            collection.insert(snapshot_path, stronghold);
-            return Err(e);
-        }
+    if let Some(stronghold) = collection.remove(&snapshot_path)
+        && let Err(e) = stronghold.save()
+    {
+        collection.insert(snapshot_path, stronghold);
+        return Err(e);
     }
     Ok(())
 }
@@ -419,11 +428,34 @@ enum PasswordHashFunctionKind {
     Custom(Box<PasswordHashFn>),
 }
 
+/// Builder for the stronghold plugin.
+///
+/// It defines how the password sent by the frontend is hashed into the key that
+/// encrypts the snapshot file.
 pub struct Builder {
     password_hash_function: PasswordHashFunctionKind,
 }
 
 impl Builder {
+    /// Initializes [`Self`] with a custom password hash function.
+    ///
+    /// The function is called with the password sent by the frontend and must return the
+    /// key used to encrypt the snapshot, which must be 32 bytes long.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// fn init<R: tauri::Runtime>(builder: tauri::Builder<R>) -> tauri::Builder<R> {
+    ///     builder.plugin(
+    ///         tauri_plugin_stronghold::Builder::new(|_password| {
+    ///             // hash the password with a secure algorithm such as argon2 or blake2b
+    ///             // and return the resulting 32 bytes hash
+    ///             unimplemented!()
+    ///         })
+    ///         .build(),
+    ///     )
+    /// }
+    /// ```
     pub fn new<F: Fn(&str) -> Vec<u8> + Send + Sync + 'static>(password_hash_function: F) -> Self {
         Self {
             password_hash_function: PasswordHashFunctionKind::Custom(Box::new(
@@ -438,16 +470,19 @@ impl Builder {
     ///
     /// ```rust
     /// use tauri::Manager;
-    /// tauri::Builder::default()
-    ///     .setup(|app| {
+    ///
+    /// fn init<R: tauri::Runtime>(builder: tauri::Builder<R>) -> tauri::Builder<R> {
+    ///     builder.setup(|app| {
     ///         let salt_path = app
     ///             .path()
     ///             .app_local_data_dir()
     ///             .expect("could not resolve app local data path")
     ///             .join("salt.txt");
-    ///         app.handle().plugin(tauri_plugin_stronghold::Builder::with_argon2(&salt_path).build())?;
+    ///         app.handle()
+    ///             .plugin(tauri_plugin_stronghold::Builder::with_argon2(&salt_path).build())?;
     ///         Ok(())
-    ///     });
+    ///     })
+    /// }
     /// ```
     #[cfg(feature = "kdf")]
     pub fn with_argon2(salt_path: &std::path::Path) -> Self {
@@ -456,6 +491,8 @@ impl Builder {
         }
     }
 
+    /// Builds the plugin, registering the password hash function and the commands used
+    /// by the JavaScript guest bindings.
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         let password_hash_function = self.password_hash_function;
 

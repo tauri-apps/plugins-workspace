@@ -4,14 +4,19 @@
 
 use serde::{Deserialize, Serialize};
 
+/// Options for [`Biometric::authenticate`](crate::Biometric::authenticate).
 #[derive(Debug, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AuthOptions {
-    /// Enables authentication using the device's password. This feature is available on both Android and iOS.
+    /// Enables authentication using the device's password. This feature is available on Android, iOS and macOS.
     pub allow_device_credential: bool,
-    /// Label for the Cancel button. This feature is available on both Android and iOS.
+    /// Label for the Cancel button. This feature is available on Android, iOS and macOS.
     pub cancel_title: Option<String>,
-    /// Specifies the text displayed on the fallback button if biometric authentication fails. This feature is available iOS only.
+    /// The plain data that must be encrypted after successful biometric authentication. **Android only.**
+    pub data_to_encrypt: Option<String>,
+    /// The encrypted data that must be decrypted after successful biometric authentication. **Android only.**
+    pub data_to_decrypt: Option<String>,
+    /// Specifies the text displayed on the fallback button if biometric authentication fails. This feature is available on iOS and macOS only.
     pub fallback_title: Option<String>,
     /// Title indicating the purpose of biometric verification. This feature is available Android only.
     pub title: Option<String>,
@@ -21,19 +26,38 @@ pub struct AuthOptions {
     pub confirmation_required: Option<bool>,
 }
 
-#[derive(Debug, Clone, serde_repr::Deserialize_repr)]
+/// The kind of biometry hardware detected on the device.
+#[derive(Debug, Clone, serde_repr::Deserialize_repr, serde_repr::Serialize_repr)]
 #[repr(u8)]
 pub enum BiometryType {
+    /// No biometry hardware is available, or it is not enrolled with the operating system.
     None = 0,
+    /// Fingerprint authentication (Apple Touch ID or Android fingerprint).
     TouchID = 1,
+    /// Face authentication (Apple Face ID or Android face authentication).
     FaceID = 2,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+/// The result of [`Biometric::status`](crate::Biometric::status), describing whether biometric
+/// authentication can currently be used.
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Status {
+    /// Whether the device can currently authenticate using biometrics.
     pub is_available: bool,
+    /// The kind of biometry hardware detected on the device, even when [`Self::is_available`] is `false`.
     pub biometry_type: BiometryType,
+    /// A human-readable reason why biometric authentication is unavailable. Only set when
+    /// [`Self::is_available`] is `false`.
     pub error: Option<String>,
+    /// A platform-specific error code describing why biometric authentication is unavailable.
+    /// Only set when [`Self::is_available`] is `false`.
     pub error_code: Option<String>,
+}
+
+/// The result of [`Biometric::biometric_cipher`](crate::Biometric::biometric_cipher).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CipherResult {
+    /// The encrypted or decrypted data.
+    pub data: String,
 }

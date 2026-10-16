@@ -26,8 +26,11 @@ export default defineConfig(async () => {
       host: host || false,
       port: 5173,
       strictPort: true,
+      watch: {
+        ignored: ['**/src-tauri/**']
+      },
       fs: {
-        allow: ['.', '../../tooling/api/dist']
+        allow: ['.']
       }
     }
   }
