@@ -15,7 +15,7 @@
 )]
 #![cfg(not(any(target_os = "android", target_os = "ios")))]
 
-use tauri::{AppHandle, Manager, Runtime, plugin::TauriPlugin};
+use tauri::{AppHandle, Manager, Resource, ResourceId, Runtime, plugin::TauriPlugin};
 
 #[cfg(target_os = "windows")]
 #[path = "platform_impl/windows.rs"]
@@ -56,12 +56,27 @@ pub fn init<R: Runtime, F: FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sy
 /// Releases the resources this plugin uses to detect other instances (the named mutex on
 /// Windows, the D-Bus name on Linux or the Unix socket on macOS).
 ///
-/// The plugin calls this automatically on [`tauri::RunEvent::Exit`], so you normally don't need
-/// to call it yourself. Call it manually before terminating the process through means that skip
-/// that event, such as [`std::process::exit`], so a future instance of the app isn't mistaken
-/// for a still-running one.
+/// The plugin releases them automatically in [`AppHandle::cleanup_before_exit`], which Tauri runs
+/// right before the process exits or restarts (after your [`tauri::RunEvent::Exit`] handler
+/// returns), so you normally don't need to call this yourself and the app keeps being the single
+/// instance while your own exit cleanup runs. Call it manually to release the lock earlier, or
+/// before terminating the process through means that skip [`AppHandle::cleanup_before_exit`], such
+/// as [`std::process::exit`], so a future instance of the app isn't mistaken for a still-running
+/// one.
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
-    platform_impl::destroy(manager)
+    if let Some(lock) = manager.try_state::<InstanceLockId>() {
+        let _ = manager.resources_table().close(lock.0);
+    }
+}
+
+struct InstanceLockId(ResourceId);
+
+/// Stores the platform lock in the app's resource table, which Tauri clears in
+/// [`AppHandle::cleanup_before_exit`], so the lock's [`Drop`] implementation releases it only once
+/// the app is really exiting.
+pub(crate) fn manage_instance_lock<R: Runtime, M: Manager<R>>(manager: &M, lock: impl Resource) {
+    let rid = manager.resources_table().add(lock);
+    manager.manage(InstanceLockId(rid));
 }
 
 /// Builds the single-instance plugin.

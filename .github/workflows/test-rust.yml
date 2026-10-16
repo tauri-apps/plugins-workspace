@@ -176,10 +176,11 @@ jobs:
             # Only on the platforms we actually test on, since cargo skips doc tests when cross compiling.
             elif [ "$COMMAND" = test ] && ! $RUNNER test --doc --package "$package" --target "$TARGET" "${features[@]}"; then
               failed+=("$package (doc tests)")
-            # The D-Bus test is ignored by default because it needs its own session bus, and it
-            # is compiled out with `--all-features` (the `semver` feature changes the bus name).
+            # The D-Bus tests are ignored by default because they need their own session bus, and
+            # `dbus_errors` is compiled out with `--all-features` (the `semver` feature changes the
+            # bus name). `instance_lock` runs with the other tests on Windows and macOS.
             elif [ "$package" = tauri-plugin-single-instance ] && [ "$COMMAND" = test ] && [[ "$TARGET" == *-linux-* ]] \
-              && ! dbus-run-session -- $RUNNER test --package "$package" --target "$TARGET" --test dbus_errors -- --ignored; then
+              && ! dbus-run-session -- $RUNNER test --package "$package" --target "$TARGET" --test dbus_errors --test instance_lock -- --ignored; then
               failed+=("$package (D-Bus tests)")
             fi
             echo "::endgroup::"

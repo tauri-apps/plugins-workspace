@@ -8,14 +8,25 @@ use std::{
     path::PathBuf,
 };
 
-use crate::SingleInstanceCallback;
 #[cfg(feature = "semver")]
 use crate::semver_compat::semver_compat_string;
+use crate::{SingleInstanceCallback, manage_instance_lock};
 use tauri::{
-    AppHandle, Config, Manager, RunEvent, Runtime,
+    AppHandle, Config, Manager, Resource, Runtime,
     plugin::{self, TauriPlugin},
 };
 use tokio::io::AsyncReadExt;
+
+/// Owns the Unix socket file, removed when the app exits (see [`crate::destroy`]).
+struct InstanceLock(PathBuf);
+
+impl Resource for InstanceLock {}
+
+impl Drop for InstanceLock {
+    fn drop(&mut self) {
+        socket_cleanup(&self.0);
+    }
+}
 
 pub fn init<R: Runtime>(cb: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
     plugin::Builder::new("single-instance")
@@ -32,6 +43,7 @@ pub fn init<R: Runtime>(cb: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
                         ErrorKind::NotFound | ErrorKind::ConnectionRefused => {
                             // This process claims itself as singleton as likely none exists
                             socket_cleanup(&socket);
+                            manage_instance_lock(app, InstanceLock(socket.clone()));
                             listen_for_other_instances(socket, app.clone(), cb);
                         }
                         _ => {
@@ -45,17 +57,7 @@ pub fn init<R: Runtime>(cb: Box<SingleInstanceCallback<R>>) -> TauriPlugin<R> {
             }
             Ok(())
         })
-        .on_event(|app, event| {
-            if let RunEvent::Exit = event {
-                destroy(app);
-            }
-        })
         .build()
-}
-
-pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
-    let socket = socket_path(manager.config(), manager.package_info());
-    socket_cleanup(&socket);
 }
 
 fn socket_path(config: &Config, _package_info: &tauri::PackageInfo) -> PathBuf {
