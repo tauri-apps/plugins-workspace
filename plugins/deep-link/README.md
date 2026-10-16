@@ -94,6 +94,8 @@ To verify if your domain has been properly configured to expose the app associat
 curl -v https://app-site-association.cdn-apple.com/a/v1/<host>
 ```
 
+The plugin only manages the `applinks:` entries of the `com.apple.developer.associated-domains` entitlement. Other entries you add to your app's entitlements file, such as `webcredentials:<host>` for [Password AutoFill or passkeys](https://developer.apple.com/documentation/xcode/supporting-associated-domains), are kept.
+
 **The apple-app-site-association file must be served over HTTPS and the response must include the `Content-Type: application/json` header.**
 
 To quickly open an app link on the iOS simulator you can execute `xcrun simctl openurl booted <url>`.
