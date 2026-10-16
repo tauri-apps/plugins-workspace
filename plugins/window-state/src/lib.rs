@@ -77,9 +77,9 @@ bitflags! {
 }
 
 impl Default for StateFlags {
-    /// Default to [`all`](Self::all)
+    /// Default to [`all`](Self::all) except [`MINIMIZED`](Self::MINIMIZED)
     fn default() -> Self {
-        Self::all()
+        Self::all() - Self::MINIMIZED
     }
 }
 
@@ -198,6 +198,7 @@ impl<R: Runtime> WindowExt for Window<R> {
         let mut c = cache.0.lock().unwrap();
 
         let mut should_show = true;
+        let mut should_minimize = false;
 
         if let Some(state) = c
             .get(label)
@@ -237,15 +238,15 @@ impl<R: Runtime> WindowExt for Window<R> {
                 })?;
             }
 
-            // fullscreen > maximized > minimized
-            if flags.contains(StateFlags::FULLSCREEN) && state.fullscreen {
-                self.set_fullscreen(true)?;
-            } else if flags.contains(StateFlags::MAXIMIZED) && state.maximized {
+            if flags.contains(StateFlags::MAXIMIZED) && state.maximized {
                 self.maximize()?;
-            } else if flags.contains(StateFlags::MINIMIZED) && state.minimized {
-                self.minimize()?;
             }
 
+            if flags.contains(StateFlags::FULLSCREEN) {
+                self.set_fullscreen(state.fullscreen)?;
+            }
+
+            should_minimize = state.minimized;
             should_show = state.visible;
         } else {
             let mut metadata = WindowState::default();
@@ -262,6 +263,14 @@ impl<R: Runtime> WindowExt for Window<R> {
                 metadata.y = pos.y;
             }
 
+            if flags.contains(StateFlags::MAXIMIZED) {
+                metadata.maximized = self.is_maximized()?;
+            }
+
+            if flags.contains(StateFlags::MINIMIZED) {
+                metadata.minimized = self.is_minimized()?;
+            }
+
             if flags.contains(StateFlags::VISIBLE) {
                 metadata.visible = self.is_visible()?;
             }
@@ -274,26 +283,17 @@ impl<R: Runtime> WindowExt for Window<R> {
                 metadata.fullscreen = self.is_fullscreen()?;
             }
 
-            if flags.contains(StateFlags::MINIMIZED) {
-                metadata.minimized = self.is_minimized()?;
-            }
-
-            if flags.contains(StateFlags::MAXIMIZED) {
-                metadata.maximized = self.is_maximized()?;
-            }
-
             c.insert(label.into(), metadata);
         }
 
-        // this actually overrides
-        // {
-        //    "visible": false
-        // }
-        // in tauri.config.json
-        // if you want to control the visibility, don't pass StateFlags::VISIBLE in.
         if flags.contains(StateFlags::VISIBLE) && should_show {
             self.show()?;
             self.set_focus()?;
+        }
+
+        // minimize last so showing and focusing the window doesn't restore it
+        if flags.contains(StateFlags::MINIMIZED) && should_minimize {
+            self.minimize()?;
         }
 
         Ok(())
@@ -312,31 +312,24 @@ impl<R: Runtime> WindowExtInternal for WebviewWindow<R> {
 
 impl<R: Runtime> WindowExtInternal for Window<R> {
     fn update_state(&self, state: &mut WindowState, flags: StateFlags) -> tauri::Result<()> {
-        let concern_flags = StateFlags::MAXIMIZED
-            | StateFlags::MINIMIZED
-            | StateFlags::POSITION
-            | StateFlags::SIZE
-            | StateFlags::FULLSCREEN;
+        let is_maximized = flags
+            .intersects(StateFlags::MAXIMIZED | StateFlags::POSITION | StateFlags::SIZE)
+            && self.is_maximized()?;
+        let is_minimized = flags
+            .intersects(StateFlags::MINIMIZED | StateFlags::POSITION | StateFlags::SIZE)
+            && self.is_minimized()?;
+        let is_fullscreen = flags
+            .intersects(StateFlags::FULLSCREEN | StateFlags::POSITION | StateFlags::SIZE)
+            && self.is_fullscreen()?;
 
-        let is_concern = flags.intersects(concern_flags);
-
-        let is_maximized = is_concern && self.is_maximized()?;
-
-        let is_minimized = is_concern && self.is_minimized()?;
-
-        let is_fullscreen = is_concern && self.is_fullscreen()?;
-
-        // window can be maximized manually && programatically
         if flags.contains(StateFlags::MAXIMIZED) {
             state.maximized = is_maximized;
         }
 
-        // window can be minimized manually && programatically
         if flags.contains(StateFlags::MINIMIZED) {
             state.minimized = is_minimized;
         }
 
-        // window can be fullscreen manually && programatically
         if flags.contains(StateFlags::FULLSCREEN) {
             state.fullscreen = is_fullscreen;
         }
@@ -349,7 +342,7 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
             state.visible = self.is_visible()?;
         }
 
-        if flags.contains(StateFlags::SIZE) && !is_maximized && !is_minimized {
+        if flags.contains(StateFlags::SIZE) && !is_maximized && !is_minimized && !is_fullscreen {
             let size = self.inner_size()?;
             // It doesn't make sense to save a window with 0 height or width
             if size.width > 0 && size.height > 0 {
@@ -358,7 +351,8 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
             }
         }
 
-        if flags.contains(StateFlags::POSITION) && !is_maximized && !is_minimized {
+        if flags.contains(StateFlags::POSITION) && !is_maximized && !is_minimized && !is_fullscreen
+        {
             let position = self.outer_position()?;
             state.x = position.x;
             state.y = position.y;
@@ -515,7 +509,8 @@ impl Builder {
                                 .0
                                 .try_lock()
                                 .is_ok()
-                            && !window_clone.is_minimized().unwrap_or_default() =>
+                            && !window_clone.is_minimized().unwrap_or_default()
+                            && !window_clone.is_fullscreen().unwrap_or_default() =>
                     {
                         let mut c = cache.lock().unwrap();
                         if let Some(state) = c.get_mut(&label) {
@@ -544,27 +539,15 @@ impl Builder {
                             window_clone.is_maximized().unwrap_or_default()
                         };
 
-                        let is_minimized = window_clone.is_minimized().unwrap_or_default();
-                        let is_fullscreen = window_clone.is_fullscreen().unwrap_or_default();
-
-                        let mut cache_lock = cache.lock().unwrap();
-                        if let Some(state) = cache_lock.get_mut(&label) {
-                            // save height & width only when the window is not maximized && minimized && fullscreen
-                            // leaving their own function -> is_maximized() & is_minimized() & is_fullscreen() handle its functionality
-                            if !is_maximized && !is_minimized && !is_fullscreen {
+                        if !window_clone.is_minimized().unwrap_or_default()
+                            && !window_clone.is_fullscreen().unwrap_or_default()
+                            && !is_maximized
+                        {
+                            let mut c = cache.lock().unwrap();
+                            if let Some(state) = c.get_mut(&label) {
                                 state.width = size.width;
                                 state.height = size.height;
                             }
-
-                            // save minimized & maximized & fullscreen at any time
-                            // so we can restore them accurately
-
-                            // minimized -> window is invisible but app icon is visible in taskbar (not tray_icon)
-                            state.minimized = is_minimized;
-                            // maximized -> window is visible at the most possible scale of selected monitor, the app icon is visible as well in taskbar (not tray_icon)
-                            state.maximized = is_maximized;
-                            // fullscreen -> system taskbar & window decoration are invisible, leaving only webview is visible and it takes the whole screen of the selected monitor
-                            state.fullscreen = is_fullscreen;
                         }
                     }
                     _ => {}
