@@ -204,40 +204,34 @@ impl<R: Runtime> WindowExt for Window<R> {
             }
 
             if flags.contains(StateFlags::POSITION) {
-                let logical_pos = tauri::LogicalPosition::new(state.x, state.y);
-                let logical_size = tauri::LogicalSize::new(state.width, state.height);
-
+                let position = (state.x, state.y).into();
+                let size = (state.width, state.height).into();
+                // restore position to saved value if saved monitor exists
+                // otherwise, let the OS decide where to place the window
                 for m in self.available_monitors()? {
-                    let scale = m.scale_factor();
-                    let phys_pos = logical_pos.to_physical::<i32>(scale);
-                    let phys_size = logical_size.to_physical::<u32>(scale);
-
-                    if m.intersects(phys_pos, phys_size) {
-                        let x_pos = if state.maximized {
-                            state.prev_x
-                        } else {
-                            state.x
-                        };
-                        let y_pos = if state.maximized {
-                            state.prev_y
-                        } else {
-                            state.y
-                        };
-
-                        self.set_position(tauri::Position::Logical(tauri::LogicalPosition::new(
-                            x_pos as f64,
-                            y_pos as f64,
-                        )))?;
+                    if m.intersects(position, size) {
+                        self.set_position(PhysicalPosition {
+                            x: if state.maximized {
+                                state.prev_x
+                            } else {
+                                state.x
+                            },
+                            y: if state.maximized {
+                                state.prev_y
+                            } else {
+                                state.y
+                            },
+                        })?;
                         break;
                     }
                 }
             }
 
             if flags.contains(StateFlags::SIZE) {
-                self.set_size(tauri::Size::Logical(tauri::LogicalSize::new(
-                    state.width as f64,
-                    state.height as f64,
-                )))?;
+                self.set_size(PhysicalSize {
+                    width: state.width,
+                    height: state.height,
+                })?;
             }
 
             if flags.contains(StateFlags::MAXIMIZED) && state.maximized {
@@ -253,15 +247,13 @@ impl<R: Runtime> WindowExt for Window<R> {
             let mut metadata = WindowState::default();
 
             if flags.contains(StateFlags::SIZE) {
-                let scale = self.scale_factor().unwrap_or(1.0);
-                let size = restorable_size(self)?.to_logical::<u32>(scale);
+                let size = restorable_size(self)?;
                 metadata.width = size.width;
                 metadata.height = size.height;
             }
 
             if flags.contains(StateFlags::POSITION) {
-                let scale = self.scale_factor().unwrap_or(1.0);
-                let pos = self.outer_position()?.to_logical::<i32>(scale);
+                let pos = self.outer_position()?;
                 metadata.x = pos.x;
                 metadata.y = pos.y;
             }
@@ -350,18 +342,16 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
         }
 
         if flags.contains(StateFlags::SIZE) && !is_maximized && !is_minimized {
-            let scale = self.scale_factor().unwrap_or(1.0);
-            let logical_size = restorable_size(self)?.to_logical::<u32>(scale);
-
-            if logical_size.width > 0 && logical_size.height > 0 {
-                state.width = logical_size.width;
-                state.height = logical_size.height;
+            let size = restorable_size(self)?;
+            // It doesn't make sense to save a window with 0 height or width
+            if size.width > 0 && size.height > 0 {
+                state.width = size.width;
+                state.height = size.height;
             }
         }
 
         if flags.contains(StateFlags::POSITION) && !is_maximized && !is_minimized {
-            let scale = self.scale_factor().unwrap_or(1.0);
-            let position = self.outer_position()?.to_logical::<i32>(scale);
+            let position = self.outer_position()?;
             state.x = position.x;
             state.y = position.y;
         }
@@ -521,13 +511,11 @@ impl Builder {
                     {
                         let mut c = cache.lock().unwrap();
                         if let Some(state) = c.get_mut(&label) {
-                            let scale = window_clone.scale_factor().unwrap_or(1.0);
-                            let logical_pos = position.to_logical::<i32>(scale);
                             state.prev_x = state.x;
                             state.prev_y = state.y;
 
-                            state.x = logical_pos.x;
-                            state.y = logical_pos.y;
+                            state.x = position.x;
+                            state.y = position.y;
                         }
                     }
                     WindowEvent::Resized(size)
@@ -555,10 +543,8 @@ impl Builder {
                                 // macOS restores (see `restorable_size`)
                                 #[cfg(target_os = "macos")]
                                 let size = &restorable_size(&window_clone).unwrap_or(*size);
-                                let scale = window_clone.scale_factor().unwrap_or(1.0);
-                                let logical_size = size.to_logical::<u32>(scale);
-                                state.width = logical_size.width;
-                                state.height = logical_size.height;
+                                state.width = size.width;
+                                state.height = size.height;
                             }
                         }
                     }
