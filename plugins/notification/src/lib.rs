@@ -3,6 +3,10 @@
 // SPDX-License-Identifier: MIT
 
 //! Send message notifications (brief auto-expiring OS window element) to your user. Can also be used with the Notification Web API.
+//!
+//! ## Cargo features
+//!
+//! - **windows7-compat**: Deprecated and does nothing, since Tauri no longer supports Windows 7.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
@@ -10,13 +14,15 @@
 )]
 
 use serde::Serialize;
-#[cfg(mobile)]
-use tauri::plugin::PluginHandle;
+#[cfg(all(desktop, unix, not(target_os = "macos")))]
+use std::fmt;
 #[cfg(desktop)]
 use tauri::AppHandle;
+#[cfg(mobile)]
+use tauri::plugin::PluginHandle;
 use tauri::{
-    plugin::{Builder, TauriPlugin},
     Manager, Runtime,
+    plugin::{Builder, TauriPlugin},
 };
 
 pub use models::*;
@@ -46,6 +52,18 @@ pub struct NotificationBuilder<R: Runtime> {
     #[cfg(mobile)]
     handle: PluginHandle<R>,
     pub(crate) data: NotificationData,
+    #[cfg(all(desktop, unix, not(target_os = "macos")))]
+    on_close: Option<OnClose>,
+}
+
+#[cfg(all(desktop, unix, not(target_os = "macos")))]
+pub(crate) struct OnClose(Box<dyn FnOnce() + Send + 'static>);
+
+#[cfg(all(desktop, unix, not(target_os = "macos")))]
+impl fmt::Debug for OnClose {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("OnClose")
+    }
 }
 
 impl<R: Runtime> NotificationBuilder<R> {
@@ -54,6 +72,8 @@ impl<R: Runtime> NotificationBuilder<R> {
         Self {
             app,
             data: Default::default(),
+            #[cfg(all(desktop, unix, not(target_os = "macos")))]
+            on_close: None,
         }
     }
 
@@ -71,10 +91,13 @@ impl<R: Runtime> NotificationBuilder<R> {
         self
     }
 
-    /// Identifier of the {@link Channel} that deliveres this notification.
+    /// Sets the identifier of the notification channel that delivers this notification.
     ///
     /// If the channel does not exist, the notification won't fire.
-    /// Make sure the channel exists with {@link listChannels} and {@link createChannel}.
+    /// Make sure the channel exists with `Notification::list_channels` and
+    /// `Notification::create_channel`.
+    ///
+    /// Only used on Android.
     pub fn channel_id(mut self, id: impl Into<String>) -> Self {
         self.data.channel_id.replace(id.into());
         self
@@ -205,10 +228,71 @@ impl<R: Runtime> NotificationBuilder<R> {
         self.data.silent = true;
         self
     }
+
+    /// Sets a callback to run when the notification closes, whether the user dismissed it, it
+    /// expired or the app removed it.
+    ///
+    /// The callback runs on a background thread and should return quickly. It does not run when
+    /// the session bus cannot be reached, or when the app exits first.
+    ///
+    /// ## Platform-specific
+    ///
+    /// - **Linux and the BSDs**: only available there.
+    #[cfg(all(desktop, unix, not(target_os = "macos")))]
+    pub fn on_close<F: FnOnce() + Send + 'static>(mut self, handler: F) -> Self {
+        self.on_close = Some(OnClose(Box::new(handler)));
+        self
+    }
+
+    /// Set the time that the event occurred (milliseconds since epoch).
+    /// Notifications in the panel are sorted by this time.
+    /// When used with `uses_chronometer`, the notification shows elapsed time since this value.
+    ///
+    /// **Android only.**
+    pub fn when(mut self, when: i64) -> Self {
+        self.data.when = Some(when);
+        self
+    }
+
+    /// Show the `when` field as a stopwatch.
+    /// Instead of presenting `when` as a timestamp, the notification will show an automatically
+    /// updating display of the minutes and seconds since `when`.
+    ///
+    /// **Android only.**
+    pub fn uses_chronometer(mut self) -> Self {
+        self.data.uses_chronometer = true;
+        self
+    }
+
+    /// Sets the Chronometer to count down instead of counting up.
+    /// Only relevant if `uses_chronometer` is true.
+    /// If `when` is set to a time in the future, the chronometer will count down to zero then stop.
+    ///
+    /// **Android only.**
+    pub fn chronometer_count_down(mut self) -> Self {
+        self.data.chronometer_count_down = true;
+        self
+    }
 }
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the notification APIs.
 pub trait NotificationExt<R: Runtime> {
+    /// Returns the notification APIs managed by the plugin.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use tauri_plugin_notification::NotificationExt;
+    ///
+    /// fn notify<R: tauri::Runtime>(app: &tauri::AppHandle<R>) {
+    ///   app.notification()
+    ///     .builder()
+    ///     .title("Tauri")
+    ///     .body("Tauri is awesome!")
+    ///     .show()
+    ///     .unwrap();
+    /// }
+    /// ```
     fn notification(&self) -> &Notification<R>;
 }
 
@@ -220,12 +304,45 @@ impl<R: Runtime, T: Manager<R>> crate::NotificationExt<R> for T {
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("notification")
+    let builder = Builder::new("notification");
+    // On mobile the other commands are implemented by the Kotlin and Swift plugins.
+    #[cfg(mobile)]
+    let builder = builder.invoke_handler(tauri::generate_handler![
+        commands::notify,
+        commands::request_permission,
+        commands::is_permission_granted
+    ]);
+    #[cfg(desktop)]
+    let builder = builder
         .invoke_handler(tauri::generate_handler![
             commands::notify,
             commands::request_permission,
-            commands::is_permission_granted
+            commands::is_permission_granted,
+            commands::register_action_types,
+            commands::remove_active,
+            commands::register_listener,
+            commands::remove_listener
         ])
+        // the listeners of a page are gone once it navigates away or its window is destroyed
+        .on_page_load(|webview, payload| {
+            if payload.event() == tauri::webview::PageLoadEvent::Started
+                && let Some(notification) = webview.try_state::<Notification<R>>()
+            {
+                notification.remove_webview_listeners(webview.label());
+            }
+        })
+        .on_event(|app, event| {
+            if let tauri::RunEvent::WindowEvent {
+                label,
+                event: tauri::WindowEvent::Destroyed,
+                ..
+            } = event
+                && let Some(notification) = app.try_state::<Notification<R>>()
+            {
+                notification.remove_window_listeners(label);
+            }
+        });
+    builder
         .js_init_script(include_str!("init-iife.js").replace(
             "__TEMPLATE_windows__",
             if cfg!(windows) { "true" } else { "false" },

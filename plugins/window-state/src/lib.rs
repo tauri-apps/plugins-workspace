@@ -13,9 +13,9 @@
 use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use tauri::{
-    plugin::{Builder as PluginBuilder, TauriPlugin},
     AppHandle, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime, WebviewWindow,
     Window, WindowEvent,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
 };
 
 use std::{
@@ -35,26 +35,41 @@ type FilterCallbackFn = dyn Fn(&str) -> bool + Send + Sync;
 /// If using a custom filename, you should probably use [`AppHandleExt::filename`] instead.
 pub const DEFAULT_FILENAME: &str = ".window-state.json";
 
+/// The error type returned by this plugin's fallible functions.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    /// An I/O error occurred while reading or writing the window state file.
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    /// An error occurred while calling into Tauri, e.g. while resolving the app config directory
+    /// or manipulating a window.
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
+    /// An error occurred while serializing or deserializing the window state file.
     #[error(transparent)]
     SerdeJson(#[from] serde_json::Error),
 }
 
+/// Alias for a [`Result`](std::result::Result) with the error type [`Error`].
 pub type Result<T> = std::result::Result<T, Error>;
 
 bitflags! {
+    /// Flags controlling which parts of a window's state are saved and restored.
+    ///
+    /// Flags can be combined with the bitwise OR operator (`|`), e.g. `StateFlags::SIZE | StateFlags::POSITION`.
     #[derive(Clone, Copy, Debug)]
     pub struct StateFlags: u32 {
+        /// Save and restore the window size.
         const SIZE        = 1 << 0;
+        /// Save and restore the window position.
         const POSITION    = 1 << 1;
+        /// Save and restore whether the window is maximized.
         const MAXIMIZED   = 1 << 2;
+        /// Save and restore whether the window is visible.
         const VISIBLE     = 1 << 3;
+        /// Save and restore whether the window has decorations.
         const DECORATIONS = 1 << 4;
+        /// Save and restore whether the window is fullscreen.
         const FULLSCREEN  = 1 << 5;
     }
 }
@@ -110,6 +125,7 @@ struct WindowStateCache(Arc<Mutex<HashMap<String, WindowState>>>);
 /// Used to prevent deadlocks from resize and position event listeners setting the cached state on restoring states
 struct RestoringWindowState(Mutex<()>);
 
+/// Extension trait for [`AppHandle`] exposing window state APIs.
 pub trait AppHandleExt {
     /// Saves all open windows state to disk
     fn save_window_state(&self, flags: StateFlags) -> Result<()>;
@@ -151,6 +167,7 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
     }
 }
 
+/// Extension trait for [`Window`] and [`WebviewWindow`] exposing window state APIs.
 pub trait WindowExt {
     /// Restores this window state from disk
     fn restore_state(&self, flags: StateFlags) -> tauri::Result<()>;
@@ -189,17 +206,28 @@ impl<R: Runtime> WindowExt for Window<R> {
             if flags.contains(StateFlags::POSITION) {
                 let logical_pos = tauri::LogicalPosition::new(state.x, state.y);
                 let logical_size = tauri::LogicalSize::new(state.width, state.height);
-                
+
                 for m in self.available_monitors()? {
                     let scale = m.scale_factor();
                     let phys_pos = logical_pos.to_physical::<i32>(scale);
                     let phys_size = logical_size.to_physical::<u32>(scale);
-                    
+
                     if m.intersects(phys_pos, phys_size) {
-                        let x_pos = if state.maximized { state.prev_x } else { state.x };
-                        let y_pos = if state.maximized { state.prev_y } else { state.y };
-                        
-                        self.set_position(tauri::Position::Logical(tauri::LogicalPosition::new(x_pos as f64, y_pos as f64).into()))?;
+                        let x_pos = if state.maximized {
+                            state.prev_x
+                        } else {
+                            state.x
+                        };
+                        let y_pos = if state.maximized {
+                            state.prev_y
+                        } else {
+                            state.y
+                        };
+
+                        self.set_position(tauri::Position::Logical(tauri::LogicalPosition::new(
+                            x_pos as f64,
+                            y_pos as f64,
+                        )))?;
                         break;
                     }
                 }
@@ -209,7 +237,7 @@ impl<R: Runtime> WindowExt for Window<R> {
                 self.set_size(tauri::Size::Logical(tauri::LogicalSize::new(
                     state.width as f64,
                     state.height as f64,
-                ).into()))?;
+                )))?;
             }
 
             if flags.contains(StateFlags::MAXIMIZED) && state.maximized {
@@ -303,13 +331,13 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
         if flags.contains(StateFlags::SIZE) && !is_maximized && !is_minimized {
             let scale = self.scale_factor().unwrap_or(1.0);
             let mut logical_size = self.inner_size()?.to_logical::<u32>(scale);
-            
+
             #[cfg(target_os = "macos")]
             {
                 if let Ok(outer) = self.outer_size() {
                     let outer_logical = outer.to_logical::<u32>(scale);
                     let diff = outer_logical.height.saturating_sub(logical_size.height);
-                    if diff >= 20 && diff <= 40 {
+                    if (20..=40).contains(&diff) {
                         logical_size.height = outer_logical.height;
                         logical_size.width = outer_logical.width;
                     }
@@ -333,6 +361,7 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
     }
 }
 
+/// Builder for the window-state [plugin](TauriPlugin).
 #[derive(Default)]
 pub struct Builder {
     denylist: HashSet<String>,
@@ -344,6 +373,8 @@ pub struct Builder {
 }
 
 impl Builder {
+    /// Creates a new [`Builder`] with the default configuration:
+    /// all [`StateFlags`] enabled, no denylist, no filter, and the [`DEFAULT_FILENAME`].
     pub fn new() -> Self {
         Self::default()
     }
@@ -394,6 +425,12 @@ impl Builder {
         self
     }
 
+    /// Builds the [`TauriPlugin`].
+    ///
+    /// The plugin loads the previously saved window state on setup, restores each window's
+    /// state when it becomes ready (unless denylisted, filtered out, or opted out with
+    /// [`Builder::skip_initial_state`]), tracks move/resize events to keep the state up to date,
+    /// and saves the state of all windows to disk when the app exits.
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         let state_flags = self.state_flags;
         let filename = self.filename.unwrap_or_else(|| DEFAULT_FILENAME.into());
@@ -464,63 +501,65 @@ impl Builder {
                         }
                     }
 
-                    WindowEvent::Moved(position) if state_flags.contains(StateFlags::POSITION) => {
-                        if window_clone
-                            .state::<RestoringWindowState>()
-                            .0
-                            .try_lock()
-                            .is_ok()
-                            && !window_clone.is_minimized().unwrap_or_default()
+                    WindowEvent::Moved(position)
+                        if state_flags.contains(StateFlags::POSITION)
+                            && window_clone
+                                .state::<RestoringWindowState>()
+                                .0
+                                .try_lock()
+                                .is_ok()
+                            && !window_clone.is_minimized().unwrap_or_default() =>
+                    {
+                        let mut c = cache.lock().unwrap();
+                        if let Some(state) = c.get_mut(&label) {
+                            let scale = window_clone.scale_factor().unwrap_or(1.0);
+                            let logical_pos = position.to_logical::<i32>(scale);
+                            state.prev_x = state.x;
+                            state.prev_y = state.y;
+
+                            state.x = logical_pos.x;
+                            state.y = logical_pos.y;
+                        }
+                    }
+                    WindowEvent::Resized(size)
+                        if state_flags.contains(StateFlags::SIZE)
+                            && window_clone
+                                .state::<RestoringWindowState>()
+                                .0
+                                .try_lock()
+                                .is_ok() =>
+                    {
+                        // TODO: Remove once https://github.com/tauri-apps/tauri/issues/5812 is resolved.
+                        let is_maximized = if cfg!(target_os = "macos")
+                            && (!window_clone.is_decorated().unwrap_or_default()
+                                || !window_clone.is_resizable().unwrap_or_default())
                         {
+                            false
+                        } else {
+                            window_clone.is_maximized().unwrap_or_default()
+                        };
+
+                        if !window_clone.is_minimized().unwrap_or_default() && !is_maximized {
                             let mut c = cache.lock().unwrap();
                             if let Some(state) = c.get_mut(&label) {
                                 let scale = window_clone.scale_factor().unwrap_or(1.0);
-                                let logical_pos = position.to_logical::<i32>(scale);
-                                state.prev_x = state.x;
-                                state.prev_y = state.y;
+                                let mut logical_size = size.to_logical::<u32>(scale);
 
-                                state.x = logical_pos.x;
-                                state.y = logical_pos.y;
-                            }
-                        }
-                    }
-                    WindowEvent::Resized(size) if state_flags.contains(StateFlags::SIZE) => {
-                        if window_clone
-                            .state::<RestoringWindowState>()
-                            .0
-                            .try_lock()
-                            .is_ok()
-                        {
-                            // TODO: Remove once https://github.com/tauri-apps/tauri/issues/5812 is resolved.
-                            let is_maximized = if cfg!(target_os = "macos")
-                                && (!window_clone.is_decorated().unwrap_or_default()
-                                    || !window_clone.is_resizable().unwrap_or_default())
-                            {
-                                false
-                            } else {
-                                window_clone.is_maximized().unwrap_or_default()
-                            };
-
-                            if !window_clone.is_minimized().unwrap_or_default() && !is_maximized {
-                                let mut c = cache.lock().unwrap();
-                                if let Some(state) = c.get_mut(&label) {
-                                    let scale = window_clone.scale_factor().unwrap_or(1.0);
-                                    let mut logical_size = size.to_logical::<u32>(scale);
-                                    
-                                    #[cfg(target_os = "macos")]
-                                    {
-                                        if let Ok(outer) = window_clone.outer_size() {
-                                            let outer_logical = outer.to_logical::<u32>(scale);
-                                            let diff = outer_logical.height.saturating_sub(logical_size.height);
-                                            if diff >= 20 && diff <= 40 {
-                                                logical_size.height = outer_logical.height;
-                                                logical_size.width = outer_logical.width;
-                                            }
+                                #[cfg(target_os = "macos")]
+                                {
+                                    if let Ok(outer) = window_clone.outer_size() {
+                                        let outer_logical = outer.to_logical::<u32>(scale);
+                                        let diff = outer_logical
+                                            .height
+                                            .saturating_sub(logical_size.height);
+                                        if (20..=40).contains(&diff) {
+                                            logical_size.height = outer_logical.height;
+                                            logical_size.width = outer_logical.width;
                                         }
                                     }
-                                    state.width = logical_size.width;
-                                    state.height = logical_size.height;
                                 }
+                                state.width = logical_size.width;
+                                state.height = logical_size.height;
                             }
                         }
                     }

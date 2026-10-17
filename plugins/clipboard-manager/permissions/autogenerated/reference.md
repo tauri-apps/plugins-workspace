@@ -148,6 +148,32 @@ Denies the write_image command without any pre-configured scope.
 <tr>
 <td>
 
+`clipboard-manager:allow-write-secret`
+
+</td>
+<td>
+
+Enables the write_secret command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`clipboard-manager:deny-write-secret`
+
+</td>
+<td>
+
+Denies the write_secret command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `clipboard-manager:allow-write-text`
 
 </td>
