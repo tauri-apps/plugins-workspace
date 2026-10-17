@@ -254,7 +254,7 @@ impl<R: Runtime> WindowExt for Window<R> {
 
             if flags.contains(StateFlags::SIZE) {
                 let scale = self.scale_factor().unwrap_or(1.0);
-                let size = self.inner_size()?.to_logical::<u32>(scale);
+                let size = restorable_size(self)?.to_logical::<u32>(scale);
                 metadata.width = size.width;
                 metadata.height = size.height;
             }
@@ -294,6 +294,27 @@ impl<R: Runtime> WindowExt for Window<R> {
     }
 }
 
+/// The size to save for `window`, so that restoring it with `set_size` recreates the window.
+///
+/// `set_size` sets the inner size, which on macOS is the window's content rect: the frame minus
+/// the title bar. `inner_size` reports the webview's bounds instead, which include the title bar
+/// when it is drawn over the content (`TitleBarStyle::Overlay`), so saving it would grow the
+/// window by the title bar height on every restore. `inner_position` is the content rect's
+/// origin, so its offset from `outer_position` is the title bar height.
+fn restorable_size<R: Runtime>(window: &Window<R>) -> tauri::Result<PhysicalSize<u32>> {
+    #[cfg(target_os = "macos")]
+    {
+        let outer = window.outer_size()?;
+        let title_bar = window.inner_position()?.y - window.outer_position()?.y;
+        Ok(PhysicalSize::new(
+            outer.width,
+            outer.height.saturating_sub(title_bar.max(0) as u32),
+        ))
+    }
+    #[cfg(not(target_os = "macos"))]
+    window.inner_size()
+}
+
 trait WindowExtInternal {
     fn update_state(&self, state: &mut WindowState, flags: StateFlags) -> tauri::Result<()>;
 }
@@ -330,19 +351,7 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
 
         if flags.contains(StateFlags::SIZE) && !is_maximized && !is_minimized {
             let scale = self.scale_factor().unwrap_or(1.0);
-            let mut logical_size = self.inner_size()?.to_logical::<u32>(scale);
-
-            #[cfg(target_os = "macos")]
-            {
-                if let Ok(outer) = self.outer_size() {
-                    let outer_logical = outer.to_logical::<u32>(scale);
-                    let diff = outer_logical.height.saturating_sub(logical_size.height);
-                    if (20..=40).contains(&diff) {
-                        logical_size.height = outer_logical.height;
-                        logical_size.width = outer_logical.width;
-                    }
-                }
-            }
+            let logical_size = restorable_size(self)?.to_logical::<u32>(scale);
 
             if logical_size.width > 0 && logical_size.height > 0 {
                 state.width = logical_size.width;
@@ -542,22 +551,12 @@ impl Builder {
                         if !window_clone.is_minimized().unwrap_or_default() && !is_maximized {
                             let mut c = cache.lock().unwrap();
                             if let Some(state) = c.get_mut(&label) {
-                                let scale = window_clone.scale_factor().unwrap_or(1.0);
-                                let mut logical_size = size.to_logical::<u32>(scale);
-
+                                // the event carries the inner size, which is not what
+                                // macOS restores (see `restorable_size`)
                                 #[cfg(target_os = "macos")]
-                                {
-                                    if let Ok(outer) = window_clone.outer_size() {
-                                        let outer_logical = outer.to_logical::<u32>(scale);
-                                        let diff = outer_logical
-                                            .height
-                                            .saturating_sub(logical_size.height);
-                                        if (20..=40).contains(&diff) {
-                                            logical_size.height = outer_logical.height;
-                                            logical_size.width = outer_logical.width;
-                                        }
-                                    }
-                                }
+                                let size = &restorable_size(&window_clone).unwrap_or(*size);
+                                let scale = window_clone.scale_factor().unwrap_or(1.0);
+                                let logical_size = size.to_logical::<u32>(scale);
                                 state.width = logical_size.width;
                                 state.height = logical_size.height;
                             }
