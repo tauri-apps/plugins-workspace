@@ -204,24 +204,19 @@ impl<R: Runtime> WindowExt for Window<R> {
             }
 
             if flags.contains(StateFlags::POSITION) {
-                let position = (state.x, state.y).into();
+                // a maximized window's x and y are the monitor's corner, so it is
+                // placed where it was before it was maximized
+                let position = if state.maximized {
+                    PhysicalPosition::new(state.prev_x, state.prev_y)
+                } else {
+                    PhysicalPosition::new(state.x, state.y)
+                };
                 let size = (state.width, state.height).into();
                 // restore position to saved value if saved monitor exists
                 // otherwise, let the OS decide where to place the window
                 for m in self.available_monitors()? {
                     if m.intersects(position, size) {
-                        self.set_position(PhysicalPosition {
-                            x: if state.maximized {
-                                state.prev_x
-                            } else {
-                                state.x
-                            },
-                            y: if state.maximized {
-                                state.prev_y
-                            } else {
-                                state.y
-                            },
-                        })?;
+                        self.set_position(position)?;
                         break;
                     }
                 }
