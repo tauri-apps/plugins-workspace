@@ -117,7 +117,9 @@ fn main() {
         .build();
 
     let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
-    let mobile = target_os == "ios" || target_os == "android";
+    let mobile = target_os == "ios"
+        || target_os == "android"
+        || std::env::var("CARGO_CFG_TARGET_ENV").as_deref() == Ok("ohos");
     alias("desktop", !mobile);
     alias("mobile", mobile);
 }
