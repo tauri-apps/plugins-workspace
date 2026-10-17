@@ -204,24 +204,20 @@ impl<R: Runtime> WindowExt for Window<R> {
             }
 
             if flags.contains(StateFlags::POSITION) {
-                let position = (state.x, state.y).into();
+                // a maximized window's x and y are the monitor's corner, so it is
+                // placed where it was before it was maximized
+                let position = if state.maximized {
+                    PhysicalPosition::new(state.prev_x, state.prev_y)
+                } else {
+                    PhysicalPosition::new(state.x, state.y)
+                };
                 let size = (state.width, state.height).into();
                 // restore position to saved value if saved monitor exists
                 // otherwise, let the OS decide where to place the window
                 for m in self.available_monitors()? {
                     if m.intersects(position, size) {
-                        self.set_position(PhysicalPosition {
-                            x: if state.maximized {
-                                state.prev_x
-                            } else {
-                                state.x
-                            },
-                            y: if state.maximized {
-                                state.prev_y
-                            } else {
-                                state.y
-                            },
-                        })?;
+                        self.set_position(position)?;
+                        break;
                     }
                 }
             }
@@ -246,7 +242,7 @@ impl<R: Runtime> WindowExt for Window<R> {
             let mut metadata = WindowState::default();
 
             if flags.contains(StateFlags::SIZE) {
-                let size = self.inner_size()?;
+                let size = restorable_size(self)?;
                 metadata.width = size.width;
                 metadata.height = size.height;
             }
@@ -285,6 +281,27 @@ impl<R: Runtime> WindowExt for Window<R> {
     }
 }
 
+/// The size to save for `window`, so that restoring it with `set_size` recreates the window.
+///
+/// `set_size` sets the inner size, which on macOS is the window's content rect: the frame minus
+/// the title bar. `inner_size` reports the webview's bounds instead, which include the title bar
+/// when it is drawn over the content (`TitleBarStyle::Overlay`), so saving it would grow the
+/// window by the title bar height on every restore. `inner_position` is the content rect's
+/// origin, so its offset from `outer_position` is the title bar height.
+fn restorable_size<R: Runtime>(window: &Window<R>) -> tauri::Result<PhysicalSize<u32>> {
+    #[cfg(target_os = "macos")]
+    {
+        let outer = window.outer_size()?;
+        let title_bar = window.inner_position()?.y - window.outer_position()?.y;
+        Ok(PhysicalSize::new(
+            outer.width,
+            outer.height.saturating_sub(title_bar.max(0) as u32),
+        ))
+    }
+    #[cfg(not(target_os = "macos"))]
+    window.inner_size()
+}
+
 trait WindowExtInternal {
     fn update_state(&self, state: &mut WindowState, flags: StateFlags) -> tauri::Result<()>;
 }
@@ -320,7 +337,7 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
         }
 
         if flags.contains(StateFlags::SIZE) && !is_maximized && !is_minimized {
-            let size = self.inner_size()?;
+            let size = restorable_size(self)?;
             // It doesn't make sense to save a window with 0 height or width
             if size.width > 0 && size.height > 0 {
                 state.width = size.width;
@@ -517,6 +534,10 @@ impl Builder {
                         if !window_clone.is_minimized().unwrap_or_default() && !is_maximized {
                             let mut c = cache.lock().unwrap();
                             if let Some(state) = c.get_mut(&label) {
+                                // the event carries the inner size, which is not what
+                                // macOS restores (see `restorable_size`)
+                                #[cfg(target_os = "macos")]
+                                let size = &restorable_size(&window_clone).unwrap_or(*size);
                                 state.width = size.width;
                                 state.height = size.height;
                             }
