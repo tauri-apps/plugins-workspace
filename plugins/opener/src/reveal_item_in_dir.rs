@@ -15,7 +15,7 @@ pub fn reveal_item_in_dir<P: AsRef<Path>>(path: P) -> crate::Result<()> {
     #[cfg(any(
         windows,
         target_os = "macos",
-        target_os = "linux",
+        all(target_os = "linux", not(target_env = "ohos")),
         target_os = "dragonfly",
         target_os = "freebsd",
         target_os = "netbsd",
@@ -26,7 +26,7 @@ pub fn reveal_item_in_dir<P: AsRef<Path>>(path: P) -> crate::Result<()> {
     #[cfg(not(any(
         windows,
         target_os = "macos",
-        target_os = "linux",
+        all(target_os = "linux", not(target_env = "ohos")),
         target_os = "dragonfly",
         target_os = "freebsd",
         target_os = "netbsd",
@@ -55,7 +55,7 @@ where
     #[cfg(any(
         windows,
         target_os = "macos",
-        target_os = "linux",
+        all(target_os = "linux", not(target_env = "ohos")),
         target_os = "dragonfly",
         target_os = "freebsd",
         target_os = "netbsd",
@@ -66,7 +66,7 @@ where
     #[cfg(not(any(
         windows,
         target_os = "macos",
-        target_os = "linux",
+        all(target_os = "linux", not(target_env = "ohos")),
         target_os = "dragonfly",
         target_os = "freebsd",
         target_os = "netbsd",
@@ -201,7 +201,7 @@ mod imp {
 }
 
 #[cfg(any(
-    target_os = "linux",
+    all(target_os = "linux", not(target_env = "ohos")),
     target_os = "dragonfly",
     target_os = "freebsd",
     target_os = "netbsd",
