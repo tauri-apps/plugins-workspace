@@ -13,9 +13,9 @@
 use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use tauri::{
-    plugin::{Builder as PluginBuilder, TauriPlugin},
     AppHandle, Manager, Monitor, PhysicalPosition, PhysicalSize, RunEvent, Runtime, WebviewWindow,
     Window, WindowEvent,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
 };
 
 use std::{
@@ -35,26 +35,41 @@ type FilterCallbackFn = dyn Fn(&str) -> bool + Send + Sync;
 /// If using a custom filename, you should probably use [`AppHandleExt::filename`] instead.
 pub const DEFAULT_FILENAME: &str = ".window-state.json";
 
+/// The error type returned by this plugin's fallible functions.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    /// An I/O error occurred while reading or writing the window state file.
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    /// An error occurred while calling into Tauri, e.g. while resolving the app config directory
+    /// or manipulating a window.
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
+    /// An error occurred while serializing or deserializing the window state file.
     #[error(transparent)]
     SerdeJson(#[from] serde_json::Error),
 }
 
+/// Alias for a [`Result`](std::result::Result) with the error type [`Error`].
 pub type Result<T> = std::result::Result<T, Error>;
 
 bitflags! {
+    /// Flags controlling which parts of a window's state are saved and restored.
+    ///
+    /// Flags can be combined with the bitwise OR operator (`|`), e.g. `StateFlags::SIZE | StateFlags::POSITION`.
     #[derive(Clone, Copy, Debug)]
     pub struct StateFlags: u32 {
+        /// Save and restore the window size.
         const SIZE        = 1 << 0;
+        /// Save and restore the window position.
         const POSITION    = 1 << 1;
+        /// Save and restore whether the window is maximized.
         const MAXIMIZED   = 1 << 2;
+        /// Save and restore whether the window is visible.
         const VISIBLE     = 1 << 3;
+        /// Save and restore whether the window has decorations.
         const DECORATIONS = 1 << 4;
+        /// Save and restore whether the window is fullscreen.
         const FULLSCREEN  = 1 << 5;
     }
 }
@@ -110,6 +125,7 @@ struct WindowStateCache(Arc<Mutex<HashMap<String, WindowState>>>);
 /// Used to prevent deadlocks from resize and position event listeners setting the cached state on restoring states
 struct RestoringWindowState(Mutex<()>);
 
+/// Extension trait for [`AppHandle`] exposing window state APIs.
 pub trait AppHandleExt {
     /// Saves all open windows state to disk
     fn save_window_state(&self, flags: StateFlags) -> Result<()>;
@@ -151,6 +167,7 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
     }
 }
 
+/// Extension trait for [`Window`] and [`WebviewWindow`] exposing window state APIs.
 pub trait WindowExt {
     /// Restores this window state from disk
     fn restore_state(&self, flags: StateFlags) -> tauri::Result<()>;
@@ -187,24 +204,20 @@ impl<R: Runtime> WindowExt for Window<R> {
             }
 
             if flags.contains(StateFlags::POSITION) {
-                let position = (state.x, state.y).into();
+                // a maximized window's x and y are the monitor's corner, so it is
+                // placed where it was before it was maximized
+                let position = if state.maximized {
+                    PhysicalPosition::new(state.prev_x, state.prev_y)
+                } else {
+                    PhysicalPosition::new(state.x, state.y)
+                };
                 let size = (state.width, state.height).into();
                 // restore position to saved value if saved monitor exists
                 // otherwise, let the OS decide where to place the window
                 for m in self.available_monitors()? {
                     if m.intersects(position, size) {
-                        self.set_position(PhysicalPosition {
-                            x: if state.maximized {
-                                state.prev_x
-                            } else {
-                                state.x
-                            },
-                            y: if state.maximized {
-                                state.prev_y
-                            } else {
-                                state.y
-                            },
-                        })?;
+                        self.set_position(position)?;
+                        break;
                     }
                 }
             }
@@ -229,7 +242,7 @@ impl<R: Runtime> WindowExt for Window<R> {
             let mut metadata = WindowState::default();
 
             if flags.contains(StateFlags::SIZE) {
-                let size = self.inner_size()?;
+                let size = restorable_size(self)?;
                 metadata.width = size.width;
                 metadata.height = size.height;
             }
@@ -268,6 +281,27 @@ impl<R: Runtime> WindowExt for Window<R> {
     }
 }
 
+/// The size to save for `window`, so that restoring it with `set_size` recreates the window.
+///
+/// `set_size` sets the inner size, which on macOS is the window's content rect: the frame minus
+/// the title bar. `inner_size` reports the webview's bounds instead, which include the title bar
+/// when it is drawn over the content (`TitleBarStyle::Overlay`), so saving it would grow the
+/// window by the title bar height on every restore. `inner_position` is the content rect's
+/// origin, so its offset from `outer_position` is the title bar height.
+fn restorable_size<R: Runtime>(window: &Window<R>) -> tauri::Result<PhysicalSize<u32>> {
+    #[cfg(target_os = "macos")]
+    {
+        let outer = window.outer_size()?;
+        let title_bar = window.inner_position()?.y - window.outer_position()?.y;
+        Ok(PhysicalSize::new(
+            outer.width,
+            outer.height.saturating_sub(title_bar.max(0) as u32),
+        ))
+    }
+    #[cfg(not(target_os = "macos"))]
+    window.inner_size()
+}
+
 trait WindowExtInternal {
     fn update_state(&self, state: &mut WindowState, flags: StateFlags) -> tauri::Result<()>;
 }
@@ -303,7 +337,7 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
         }
 
         if flags.contains(StateFlags::SIZE) && !is_maximized && !is_minimized {
-            let size = self.inner_size()?;
+            let size = restorable_size(self)?;
             // It doesn't make sense to save a window with 0 height or width
             if size.width > 0 && size.height > 0 {
                 state.width = size.width;
@@ -321,6 +355,7 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
     }
 }
 
+/// Builder for the window-state [plugin](TauriPlugin).
 #[derive(Default)]
 pub struct Builder {
     denylist: HashSet<String>,
@@ -332,6 +367,8 @@ pub struct Builder {
 }
 
 impl Builder {
+    /// Creates a new [`Builder`] with the default configuration:
+    /// all [`StateFlags`] enabled, no denylist, no filter, and the [`DEFAULT_FILENAME`].
     pub fn new() -> Self {
         Self::default()
     }
@@ -382,6 +419,12 @@ impl Builder {
         self
     }
 
+    /// Builds the [`TauriPlugin`].
+    ///
+    /// The plugin loads the previously saved window state on setup, restores each window's
+    /// state when it becomes ready (unless denylisted, filtered out, or opted out with
+    /// [`Builder::skip_initial_state`]), tracks move/resize events to keep the state up to date,
+    /// and saves the state of all windows to disk when the app exits.
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         let state_flags = self.state_flags;
         let filename = self.filename.unwrap_or_else(|| DEFAULT_FILENAME.into());
@@ -491,6 +534,10 @@ impl Builder {
                         if !window_clone.is_minimized().unwrap_or_default() && !is_maximized {
                             let mut c = cache.lock().unwrap();
                             if let Some(state) = c.get_mut(&label) {
+                                // the event carries the inner size, which is not what
+                                // macOS restores (see `restorable_size`)
+                                #[cfg(target_os = "macos")]
+                                let size = &restorable_size(&window_clone).unwrap_or(*size);
                                 state.width = size.width;
                                 state.height = size.height;
                             }

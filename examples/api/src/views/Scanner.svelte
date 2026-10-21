@@ -6,6 +6,7 @@
     Format,
     cancel
   } from '@tauri-apps/plugin-barcode-scanner'
+  import { toggle as toggleTorch } from '@tauri-apps/plugin-torch'
 
   export let onMessage
 
@@ -33,6 +34,12 @@
     } else {
       onMessage('Permission denied')
     }
+  }
+
+  async function toggleScanTorch() {
+    toggleTorch()
+      .then((on) => onMessage(`torch ${on ? 'on' : 'off'}`))
+      .catch(onMessage)
   }
 
   async function cancelScan() {
@@ -66,6 +73,9 @@
         <div class="relative">
           <p>Aim your camera at a QR code</p>
           <button class="btn" type="button" on:click={cancelScan}>Cancel</button
+          >
+          <button class="btn" type="button" on:click={toggleScanTorch}
+            >Torch</button
           >
         </div>
         <div class="square surround-cover">

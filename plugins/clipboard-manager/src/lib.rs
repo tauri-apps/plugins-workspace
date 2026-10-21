@@ -10,8 +10,8 @@
 )]
 
 use tauri::{
+    Manager, Runtime,
     plugin::{Builder, TauriPlugin},
-    Manager, RunEvent, Runtime,
 };
 
 #[cfg(desktop)]
@@ -22,6 +22,9 @@ mod mobile;
 mod commands;
 mod error;
 
+#[cfg(desktop)]
+mod secret;
+
 pub use error::{Error, Result};
 
 #[cfg(desktop)]
@@ -31,6 +34,7 @@ pub use mobile::Clipboard;
 
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the clipboard APIs.
 pub trait ClipboardExt<R: Runtime> {
+    /// Returns a handle to the [`Clipboard`] APIs.
     fn clipboard(&self) -> &Clipboard<R>;
 }
 
@@ -49,7 +53,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::read_image,
             commands::write_image,
             commands::write_html,
-            commands::clear
+            commands::clear,
+            commands::write_secret,
         ])
         .setup(|app, api| {
             #[cfg(mobile)]
@@ -61,7 +66,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         })
         .on_event(|_app, _event| {
             #[cfg(desktop)]
-            if let RunEvent::Exit = _event {
+            if let tauri::RunEvent::Exit = _event {
                 _app.clipboard().cleanup();
             }
         })
