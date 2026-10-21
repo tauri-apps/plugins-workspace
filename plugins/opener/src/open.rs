@@ -7,6 +7,24 @@
 use std::{ffi::OsStr, path::Path};
 
 pub(crate) fn open<P: AsRef<OsStr>, S: AsRef<str>>(path: P, with: Option<S>) -> crate::Result<()> {
+    let path = path.as_ref();
+
+    // `open` resolves launchers through `PATH`, which AppImages prepend their
+    // own `usr/bin` to. The desktop's D-Bus services reach the host handler
+    // regardless of the bundled binaries, with `open` as the fallback.
+    #[cfg(any(
+        target_os = "linux",
+        target_os = "dragonfly",
+        target_os = "freebsd",
+        target_os = "netbsd",
+        target_os = "openbsd"
+    ))]
+    if with.is_none()
+        && let Some(Ok(())) = crate::freedesktop::try_open(path)
+    {
+        return Ok(());
+    }
+
     match with {
         Some(program) => ::open::with_detached(path, program.as_ref()),
         None => ::open::that_detached(path),
