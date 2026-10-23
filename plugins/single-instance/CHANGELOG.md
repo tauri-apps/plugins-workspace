@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.5.5]
+
+- [`aedd883c`](https://github.com/tauri-apps/plugins-workspace/commit/aedd883cf318947e3d8915db2ec7caa77e7a90d0) ([#3482](https://github.com/tauri-apps/plugins-workspace/pull/3482) by [@JGuest121](https://github.com/tauri-apps/plugins-workspace/../../JGuest121)) Release the single instance lock in `AppHandle::cleanup_before_exit`, right before the process exits or restarts, instead of on `RunEvent::Exit`. The app now remains the single instance while your own `RunEvent::Exit` handler runs. `destroy` can still release the lock earlier.
+- [`6c9746e5`](https://github.com/tauri-apps/plugins-workspace/commit/6c9746e5515491a25c9d8c168c73e43a9edec6bb) ([#3704](https://github.com/tauri-apps/plugins-workspace/pull/3704) by [@karan5028ji](https://github.com/tauri-apps/plugins-workspace/../../karan5028ji)) Fix race condition on Windows where a secondary instance fails to exit if `FindWindowW` misses the target event window during startup.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.6.3`
+
 ## [2.5.4]
 
 - [`f83c5d3b`](https://github.com/tauri-apps/plugins-workspace/commit/f83c5d3b0f88a24914c54ff906ec947fd3a659a3) ([#3584](https://github.com/tauri-apps/plugins-workspace/pull/3584) by [@vincentkoc](https://github.com/tauri-apps/plugins-workspace/../../vincentkoc)) On Linux, a secondary instance that cannot deliver its arguments to the primary instance now returns a plugin initialization error instead of exiting successfully, and an invalid `dbus_id` returns an error instead of panicking. When the session bus is unavailable the app keeps launching normally, without single-instance support, and logs a warning.
