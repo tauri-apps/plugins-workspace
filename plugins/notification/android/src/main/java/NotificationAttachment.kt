@@ -5,6 +5,13 @@
 package app.tauri.notification
 
 import app.tauri.plugin.JSObject
+import com.fasterxml.jackson.annotation.JsonRawValue
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.JsonMappingException
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -12,6 +19,8 @@ import org.json.JSONObject
 class NotificationAttachment {
   var id: String? = null
   var url: String? = null
+  @JsonRawValue
+  @JsonDeserialize(using = NotificationOptionsDeserializer::class)
   var options: JSONObject? = null
 
   companion object {
@@ -48,5 +57,15 @@ class NotificationAttachment {
       }
       return attachmentsList
     }
+  }
+}
+
+internal class NotificationOptionsDeserializer : JsonDeserializer<JSONObject>() {
+  override fun deserialize(parser: JsonParser, context: DeserializationContext): JSONObject {
+    val node: JsonNode = parser.codec.readTree(parser)
+    if (!node.isObject) {
+      throw JsonMappingException.from(parser, "Expected a JSON object")
+    }
+    return JSONObject(node.toString())
   }
 }
