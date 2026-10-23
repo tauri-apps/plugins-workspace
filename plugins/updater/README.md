@@ -76,6 +76,41 @@ if (update) {
 
 Note that for these APIs to work you have to properly configure the updater first and generate updater artifacts. Please refer to the [guide on our website](https://v2.tauri.app/plugin/updater/) for this.
 
+### Cache behavior
+
+This plugin implements standard HTTP caching when checking for updates. The cache is kept in-memory, so restarting the application also clears the cache.
+
+By default the plugin strikes a good balance between efficiency and update latency. But a few key configurations you should consider.
+
+**Note: on first release, cache will be opt-in. But the default will change to opt-out. Make sure to apply `cacheMode: 'checkNow'` where needed to ensure a good user experience.** You can test the future behavior using `plugins.updater.cache.disabledByDefault = false` in your `tauri.conf.json`.
+
+For each `check()` call you can provide a `cacheMode` option. This is especially useful if you're creating a "Check for updates now" button for your users.
+
+```javascript
+import { check } from '@tauri-apps/plugin-updater'
+
+// Uses the `checkNow` mode to revalidate the update status when the user is asking for a refresh.
+const update = await check({ cacheMode: 'checkNow' })
+```
+
+In `tauri.conf.json` you can set global cache preferences:
+
+```jsonc
+{
+  "plugins": {
+    "updater": {
+      "cache": {
+        // A maximum cache TTL can be set. Helpful if you don't control
+        // the server response headers and you need to reduce the cache duration.
+        "maxTtlMins": 180
+      }
+    }
+  }
+}
+```
+
+Refer to the documentation for all available modes and configuration.
+
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.

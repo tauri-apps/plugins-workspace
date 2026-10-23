@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { check, Update } from '@tauri-apps/plugin-updater'
+  import { check, Update, type CacheMode } from '@tauri-apps/plugin-updater'
   import { relaunch } from '@tauri-apps/plugin-process'
   import { onDestroy } from 'svelte'
 
   let { onMessage } = $props()
 
+  let cacheMode = $state<CacheMode>('checkNow')
   let isChecking = $state(false)
   let isInstalling = $state(false)
   let newUpdate = $state<Update | undefined>()
@@ -17,7 +18,7 @@
   async function checkUpdate() {
     isChecking = true
     try {
-      const update = await check()
+      const update = await check({ cacheMode })
       if (update) {
         onMessage(`Should update: ${update.available}`)
         onMessage(update)
@@ -65,18 +66,29 @@
   })
 </script>
 
-<div class="flex children:grow children:h10">
-  {#if !isChecking && !newUpdate}
-    <button class="btn" onclick={checkUpdate}>Check update</button>
-  {:else if !isInstalling && newUpdate}
-    <button class="btn" onclick={install}>Install update</button>
-  {:else}
-    <div class="progress">
-      <span>{progress}%</span>
-      <div class="progress-bar" style="width: {progress}%"></div>
-    </div>
-  {/if}
-</div>
+{#if !isChecking && !newUpdate}
+  <div class="flex flex-col gap-2">
+    <button class="btn h10" onclick={checkUpdate}>Check update</button>
+    <label for="updater-cache-mode" class="mt-4 font-semibold">Cache mode</label
+    >
+    <select class="input h10" id="updater-cache-mode" bind:value={cacheMode}>
+      <option value="default">Default</option>
+      <option value="bypass">Bypass</option>
+      <option value="checkNow">Check now</option>
+    </select>
+  </div>
+{:else}
+  <div class="flex children:grow children:h10">
+    {#if !isInstalling && newUpdate}
+      <button class="btn" onclick={install}>Install update</button>
+    {:else}
+      <div class="progress">
+        <span>{progress}%</span>
+        <div class="progress-bar" style="width: {progress}%"></div>
+      </div>
+    {/if}
+  </div>
+{/if}
 
 <style>
   .progress {
