@@ -50,7 +50,7 @@ impl From<CacheMode> for http_cache_reqwest::CacheMode {
 /// Cache configuration for the updater.
 ///
 /// Generally should be set through your `tauri.conf.json` settings.
-#[derive(Debug, Default, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CacheConfig {
     /// Whether to fully disable HTTP caching on update requests.
@@ -62,7 +62,7 @@ pub struct CacheConfig {
     ///
     /// false = `CacheMode::Default`
     /// true = `CacheMode::Bypass`
-    #[serde(default, alias = "disabled-by-default")]
+    #[serde(default = "default_true", alias = "disabled-by-default")]
     pub disabled_by_default: bool,
     /// Sets an upper limit in minutes to how long a response may be cached.
     /// It may be shorter depending on the `cache-control` or `expires` server headers.
@@ -70,6 +70,24 @@ pub struct CacheConfig {
     /// Defaults to 12 hours.
     #[serde(default, alias = "max-ttl-mins")]
     pub max_ttl_mins: Option<u32>,
+}
+
+fn default_true() -> bool {
+    true
+}
+
+impl Default for CacheConfig {
+    fn default() -> Self {
+        Self {
+            disabled: false,
+            // On the first release introducing caching, we'll default to having no caching
+            // unless you explicitly request it on the `check` arguments. This also lets developers
+            // prepare for when this behavior becomes the default and set `CacheMode::CheckNow`
+            // on the relevant call sites.
+            disabled_by_default: default_true(),
+            max_ttl_mins: None,
+        }
+    }
 }
 
 /// TTL for responses where the server doesn't set `max-age` or `expires` headers.
@@ -168,8 +186,12 @@ mod tests {
         serde_json::from_str(json).expect("invalid cache config")
     }
 
-    fn enabled() -> CacheManager {
-        CacheManager::from_config(CacheConfig::default())
+    /// An enabled cache, with the defaults planned for a future release.
+    fn enabled_pending_default() -> CacheManager {
+        CacheManager::from_config(CacheConfig {
+            disabled_by_default: false,
+            ..Default::default()
+        })
     }
 
     /// The mode the middleware applies to a request, panicking if caching is disabled.
@@ -183,9 +205,11 @@ mod tests {
 
     #[test]
     fn config_defaults() {
+        // The current default is `disabled_by_default = true`, later releases will change this
+        // so other tests will look at the future default behavior.
         let config = parse_config("{}");
         assert!(!config.disabled);
-        assert!(!config.disabled_by_default);
+        assert!(config.disabled_by_default);
         assert_eq!(config.max_ttl_mins, None);
     }
 
@@ -232,7 +256,7 @@ mod tests {
 
     #[test]
     fn default_config_enables_private_cache_with_1h_default_and_12h_max_ttl() {
-        let cache = enabled();
+        let cache = enabled_pending_default();
         let middleware = cache.maybe_middleware(None).expect("cache is disabled");
         assert_eq!(middleware.0.mode, HttpCacheMode::Default);
         assert_eq!(
@@ -254,7 +278,7 @@ mod tests {
 
     #[test]
     fn mode_override_takes_precedence() {
-        let cache = enabled();
+        let cache = enabled_pending_default();
         assert_eq!(applied_mode(&cache, None), HttpCacheMode::Default);
         assert_eq!(
             applied_mode(&cache, Some(CacheMode::CheckNow)),
@@ -346,20 +370,20 @@ mod tests {
 
         #[tokio::test]
         async fn serves_fresh_response_from_cache() {
-            let cache = enabled();
+            let cache = enabled_pending_default();
             assert_hits(&cache, None, 200, &[("cache-control", "max-age=60")], 3, 1).await;
         }
 
         #[tokio::test]
         async fn caches_private_responses() {
-            let cache = enabled();
+            let cache = enabled_pending_default();
             let headers = [("cache-control", "private, max-age=60")];
             assert_hits(&cache, None, 200, &headers, 3, 1).await;
         }
 
         #[tokio::test]
         async fn caches_no_update_response() {
-            let cache = enabled();
+            let cache = enabled_pending_default();
             assert_hits(&cache, None, 204, &[("cache-control", "max-age=60")], 3, 1).await;
         }
 
@@ -367,27 +391,27 @@ mod tests {
         // expiring immediately as they would under plain HTTP caching.
         #[tokio::test]
         async fn caches_response_without_caching_headers_for_default_ttl() {
-            let cache = enabled();
+            let cache = enabled_pending_default();
             assert_hits(&cache, None, 200, &[], 3, 1).await;
             assert_hits(&cache, None, 204, &[], 3, 1).await;
         }
 
         #[tokio::test]
         async fn does_not_serve_expired_responses_from_cache() {
-            let cache = enabled();
+            let cache = enabled_pending_default();
             let headers = [("expires", "Thu, 01 Jan 1970 00:00:00 GMT")];
             assert_hits(&cache, None, 200, &headers, 3, 3).await;
         }
 
         #[tokio::test]
         async fn does_not_store_no_store_responses() {
-            let cache = enabled();
+            let cache = enabled_pending_default();
             assert_hits(&cache, None, 200, &[("cache-control", "no-store")], 3, 3).await;
         }
 
         #[tokio::test]
         async fn revalidates_no_cache_responses() {
-            let cache = enabled();
+            let cache = enabled_pending_default();
             let mut server = Server::new_async().await;
             let full = server
                 .mock("GET", "/")
@@ -423,7 +447,7 @@ mod tests {
             for cache_control in [Some("max-age=3600"), None] {
                 let cache = CacheManager {
                     max_ttl: Some(Duration::from_secs(1)),
-                    ..enabled()
+                    ..enabled_pending_default()
                 };
                 let mut server = Server::new_async().await;
                 let mut mock = server.mock("GET", "/");
@@ -442,7 +466,7 @@ mod tests {
 
         #[tokio::test]
         async fn clones_share_the_cache() {
-            let cache = enabled();
+            let cache = enabled_pending_default();
             let mut server = Server::new_async().await;
             let mock = server
                 .mock("GET", "/")
@@ -484,7 +508,7 @@ mod tests {
 
         #[tokio::test]
         async fn bypass_mode_neither_reads_nor_writes() {
-            let cache = enabled();
+            let cache = enabled_pending_default();
             let mut server = Server::new_async().await;
             let mock = server
                 .mock("GET", "/")
@@ -505,7 +529,7 @@ mod tests {
         // `CheckNow` always reaches the server, but revalidates with a conditional request.
         #[tokio::test]
         async fn check_now_revalidates_and_stores() {
-            let cache = enabled();
+            let cache = enabled_pending_default();
             let mut server = Server::new_async().await;
             let v1 = server
                 .mock("GET", "/")
@@ -560,7 +584,7 @@ mod tests {
         async fn max_ttl_caps_after_check_now_revalidation() {
             let cache = CacheManager {
                 max_ttl: Some(Duration::from_secs(1)),
-                ..enabled()
+                ..enabled_pending_default()
             };
             let mut server = Server::new_async().await;
             let full = server
@@ -593,7 +617,7 @@ mod tests {
         #[tokio::test]
         async fn request_headers_only_count_when_listed_in_vary() {
             for (vary, expected_hits) in [(None, 1), (Some("x-channel"), 2)] {
-                let cache = enabled();
+                let cache = enabled_pending_default();
                 let mut server = Server::new_async().await;
                 let mut mock = server
                     .mock("GET", "/")
