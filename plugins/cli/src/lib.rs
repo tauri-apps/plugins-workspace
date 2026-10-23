@@ -12,8 +12,8 @@
 )]
 
 use tauri::{
-    plugin::{Builder, PluginApi, TauriPlugin},
     AppHandle, Manager, Runtime, State,
+    plugin::{Builder, PluginApi, TauriPlugin},
 };
 
 mod config;

@@ -10,6 +10,7 @@ import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Build
+import android.os.PersistableBundle
 import app.tauri.annotation.Command
 import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.TauriPlugin
@@ -35,6 +36,11 @@ sealed class WriteOptions {
     lateinit var text: String
     var label: String? = null
   }
+}
+
+@InvokeArg
+class WriteSecretArgs {
+  lateinit var text: String
 }
 
 @JsonSerialize(using = ReadClipDataSerializer::class)
@@ -100,6 +106,25 @@ class ClipboardPlugin(private val activity: Activity) : Plugin(activity) {
         return
       }
 
+    }
+
+    manager.setPrimaryClip(clipData)
+
+    invoke.resolve()
+  }
+
+  @Command
+  fun writeSecret(invoke: Invoke) {
+    val args = invoke.parseArgs(WriteSecretArgs::class.java)
+
+    val clipData = ClipData.newPlainText(null, args.text)
+    val isSensitiveKey = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      ClipDescription.EXTRA_IS_SENSITIVE
+    } else {
+      "android.content.extra.IS_SENSITIVE"
+    }
+    clipData.description.extras = PersistableBundle().apply {
+      putBoolean(isSensitiveKey, true)
     }
 
     manager.setPrimaryClip(clipData)

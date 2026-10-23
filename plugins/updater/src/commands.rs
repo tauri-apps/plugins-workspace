@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use crate::{cache::CacheMode, Result, Update, UpdaterExt};
+use crate::{Result, Update, UpdaterExt, cache::CacheMode};
 
 use http::{HeaderMap, HeaderName, HeaderValue};
 use serde::Serialize;
-use tauri::{ipc::Channel, Manager, Resource, ResourceId, Runtime, Webview};
+use tauri::{Manager, Resource, ResourceId, Runtime, Webview, ipc::Channel};
 
 use std::{str::FromStr, time::Duration};
 use url::Url;

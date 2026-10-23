@@ -9,11 +9,9 @@
 #![cfg(mobile)]
 
 use tauri::{
-    plugin::{Builder, PluginHandle, TauriPlugin},
     Manager, Runtime,
+    plugin::{Builder, PluginHandle, TauriPlugin},
 };
-
-pub use models::*;
 
 mod error;
 mod models;

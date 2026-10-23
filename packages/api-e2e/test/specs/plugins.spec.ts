@@ -23,13 +23,15 @@ type Surface<T> = { [P in keyof T]: (keyof T[P])[] }
 
 /** Plugins the example registers on every platform. */
 const commonSurface: Surface<CommonPluginApi> = {
+  biometric: ['BiometryType', 'checkStatus', 'authenticate', 'biometricCipher'],
   clipboardManager: [
     'writeText',
     'readText',
     'writeHtml',
     'clear',
     'readImage',
-    'writeImage'
+    'writeImage',
+    'writeSecret'
   ],
   deepLink: [
     'getCurrent',
@@ -108,7 +110,6 @@ const commonSurface: Surface<CommonPluginApi> = {
   // the `Database` class itself
   sql: ['load', 'get'],
   store: ['load', 'getStore', 'LazyStore', 'Store'],
-  stronghold: ['Location', 'Client', 'Store', 'Vault', 'Stronghold'],
   upload: ['download', 'upload', 'HttpMethod'],
   // the `WebSocket` class itself
   websocket: ['connect']
@@ -145,7 +146,6 @@ const mobileSurface: Surface<MobilePluginApi> = {
     'requestPermissions',
     'openAppSettings'
   ],
-  biometric: ['BiometryType', 'checkStatus', 'authenticate'],
   geolocation: [
     'watchPosition',
     'getCurrentPosition',

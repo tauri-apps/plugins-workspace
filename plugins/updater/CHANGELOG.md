@@ -1,5 +1,48 @@
 # Changelog
 
+## [2.14.0]
+
+- [`b6f39cc5`](https://github.com/tauri-apps/plugins-workspace/commit/b6f39cc51c4be15fbc5f8623bcc775e23d0160af) ([#3688](https://github.com/tauri-apps/plugins-workspace/pull/3688) by [@followdarko](https://github.com/tauri-apps/plugins-workspace/../../followdarko)) On Linux, installing an AppImage update no longer fails with `Invalid cross-device link (os error 18)` when the temp or cache directory is a separate mount of the AppImage's file system, such as a bind-mounted or private `/tmp`. The backup now moves on to the next location, ending with the AppImage's own directory.
+- [`f2af373b`](https://github.com/tauri-apps/plugins-workspace/commit/f2af373b6a04b11c1c06fea7bad8636b3cada5a3) ([#3696](https://github.com/tauri-apps/plugins-workspace/pull/3696) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) On Linux, reject an AppImage update that is neither an AppImage nor a compressed AppImage (or a compressed AppImage when the `zip` feature is disabled) before touching the installed app. Such payloads were written over the AppImage as-is, corrupting the app.
+- [`24e6451b`](https://github.com/tauri-apps/plugins-workspace/commit/24e6451b11fbd3378eccf4824552053d8862c66b) ([#3693](https://github.com/tauri-apps/plugins-workspace/pull/3693) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) On Linux, try the next temporary directory location (the user cache directory, then the directory holding the AppImage) when a temporary directory cannot be created in the previous one, instead of failing the AppImage update right away. Also avoids a panic when the app path has no parent directory.
+- [`a819187e`](https://github.com/tauri-apps/plugins-workspace/commit/a819187e121fc7798fd196c54ac8c6347a83a8ad) ([#3690](https://github.com/tauri-apps/plugins-workspace/pull/3690) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) `check()`, `Update.download()` and `Update.downloadAndInstall()` no longer replace the `headers` of the options object they are given with an array.
+- [`7b7c7c62`](https://github.com/tauri-apps/plugins-workspace/commit/7b7c7c62516ad263053adeb37f555e5fee2cfd98) ([#3691](https://github.com/tauri-apps/plugins-workspace/pull/3691) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Calling `Update.download()` again now releases the bytes of the previous download instead of keeping them in memory until the webview is destroyed.
+- [`4b1ba079`](https://github.com/tauri-apps/plugins-workspace/commit/4b1ba07943bda841f5f9be135ac9f1e5f504eafa) ([#3695](https://github.com/tauri-apps/plugins-workspace/pull/3695) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) On Android and iOS, `Update::install` now returns `Error::UnsupportedOs` instead of reporting success without installing anything.
+- [`fce235c3`](https://github.com/tauri-apps/plugins-workspace/commit/fce235c3fbebaf4442362470d91c7b7be190caee) ([#3640](https://github.com/tauri-apps/plugins-workspace/pull/3640) by [@t8y2](https://github.com/tauri-apps/plugins-workspace/../../t8y2)) Add `Updater::restore_update` to restore an update from cached release metadata, and `Update::verify` to verify package bytes using the configured signing key and signed-version policy. Restored updates always require the signature to bind the announced version.
+    
+    `Update::install` now verifies the package bytes before installing them, and `Updater::check` resolves to `None` instead of a target error when the release is not an update and has no entry for the current target.
+- [`d057ec47`](https://github.com/tauri-apps/plugins-workspace/commit/d057ec4736739281624e33c43758ae565737e955) ([#3694](https://github.com/tauri-apps/plugins-workspace/pull/3694) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Log a warning when the download URL of an update does not use `https` and `dangerousInsecureTransportProtocol` is not enabled.
+- [`21ebe1f5`](https://github.com/tauri-apps/plugins-workspace/commit/21ebe1f5314f4ff5a5e5d06a9bac6609728b6d25) ([#3692](https://github.com/tauri-apps/plugins-workspace/pull/3692) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) On Windows, report why launching the installer failed from the `ShellExecuteW` return value (for example "Access is denied" when the user declines the UAC prompt) instead of an unrelated `GetLastError` message.
+
+## [2.13.3]
+
+- [`81631888`](https://github.com/tauri-apps/plugins-workspace/commit/81631888e9482d88de5581769c2e03dea1e73222) ([#3658](https://github.com/tauri-apps/plugins-workspace/pull/3658)) Update `minisign-verify` to 0.3, which rejects signatures with a non-canonical Ed25519 `S` value. The `Error::Minisign` variant now wraps `minisign_verify` 0.3's `Error`, and its message reads like "The signature verification failed" instead of the variant name (`InvalidSignature`).
+
+## [2.13.2]
+
+- [`2a9c29e0`](https://github.com/tauri-apps/plugins-workspace/commit/2a9c29e004325db674fd904089749c38f4aac824) ([#3578](https://github.com/tauri-apps/plugins-workspace/pull/3578) by [@alii13](https://github.com/tauri-apps/plugins-workspace/../../alii13)) On macOS, a failed install no longer deletes the installed app. The bundles are swapped atomically where the file system supports it; otherwise the previous app is restored, or kept as `<name> (previous version).app` and reported through the new `Error::PreviousAppNotRestored`. Also fixes installing apps on a volume other than the temp directory's, and the bundle root's permissions (`0755`).
+
+## [2.13.1]
+
+- [`ecd3273e`](https://github.com/tauri-apps/plugins-workspace/commit/ecd3273e8e4c6e9b123bf9861bf7b925cad1c679) ([#3480](https://github.com/tauri-apps/plugins-workspace/pull/3480) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated `windows-rs` dependencies:
+    
+    - deep-link: updated `windows-registry` to 0.6 and `windows-result` to 0.4. The public `Error::Windows` variant wraps `windows_result::Error`; applications using this type directly should update their `windows-result` dependency.
+    - opener: updated `windows` to 0.62. The public `Error::Win32Error` variant wraps `windows::core::Error`; applications using this type directly should update their `windows` dependency.
+    - single-instance: updated `windows-sys` to 0.61
+    - updater: updated `windows-sys` to 0.61
+- [`90b9869e`](https://github.com/tauri-apps/plugins-workspace/commit/90b9869e610e7453772fa0f84f3e641ff2b36f23) ([#3573](https://github.com/tauri-apps/plugins-workspace/pull/3573) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated `dirs` to v7
+- [`22e286f3`](https://github.com/tauri-apps/plugins-workspace/commit/22e286f3121f9d79f170b7092de884ee19fb2d14) ([#3501](https://github.com/tauri-apps/plugins-workspace/pull/3501) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated dependency `infer` to 0.22
+
+## [2.13.0]
+
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+### bug
+
+- [`101e1b06`](https://github.com/tauri-apps/plugins-workspace/commit/101e1b068a62aeece725362c38f8fe4179b5fe5f) ([#3615](https://github.com/tauri-apps/plugins-workspace/pull/3615)) On Linux, `check()` no longer sets `SSL_CERT_FILE` and `SSL_CERT_DIR` to Debian paths. The override pointed rustls to files that do not exist on distros with a different layout, such as ALT Linux, and left every TLS client in the app without root certificates.
+
 ## [2.12.0]
 
 - [`1308bfa3`](https://github.com/tauri-apps/plugins-workspace/commit/1308bfa399b962b3977c767100a6339d1cbfdd20) **Breaking change:** the `allowDowngrades` option was removed from the `check` command and is now read from the plugin configuration instead.

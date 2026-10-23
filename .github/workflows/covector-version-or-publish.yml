@@ -19,7 +19,51 @@ permissions:
   pull-requests: write
 
 jobs:
+  # covector publishes once no pending change files are left (the version update PR consumed them)
+  # and otherwise opens that PR, which does not need the tests below. In pre-release mode the
+  # change files stay in `.changes` and `pre.json` lists the ones already released.
+  check-publish:
+    runs-on: ubuntu-latest
+    outputs:
+      publish: ${{ steps.check.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: check
+        run: |
+          released=$(if [ -f .changes/pre.json ]; then jq -r '.changes[]' .changes/pre.json; fi)
+          # grep exits 1 when every change file was released; any other failure fails the step
+          pending=$(find .changes -maxdepth 1 -name '*.md' ! -iname 'readme.md' \
+            | { grep -vxF -e "$released" || [ $? -eq 1 ]; })
+          if [ -n "$pending" ]; then
+            printf 'pending change files:\n%s\n' "$pending"
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  integration-tests:
+    needs: check-publish
+    if: needs.check-publish.outputs.publish == 'true'
+    uses: ./.github/workflows/integration-tests.yml
+
+  test-api-e2e:
+    needs: check-publish
+    if: needs.check-publish.outputs.publish == 'true'
+    uses: ./.github/workflows/test-api-e2e.yml
+    secrets: inherit
+
+  test-api-e2e-mobile:
+    needs: check-publish
+    if: needs.check-publish.outputs.publish == 'true'
+    uses: ./.github/workflows/test-api-e2e-mobile.yml
+
   version-or-publish:
+    needs:
+      - integration-tests
+      - test-api-e2e
+      - test-api-e2e-mobile
+    # the tests are skipped when covector only versions
+    if: ${{ !cancelled() && !failure() }}
     runs-on: ubuntu-latest
     timeout-minutes: 65
     outputs:

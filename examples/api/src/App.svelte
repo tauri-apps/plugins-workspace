@@ -32,12 +32,12 @@
   import Biometric from './views/Biometric.svelte'
   import Geolocation from './views/Geolocation.svelte'
   import Haptics from './views/Haptics.svelte'
+  import Torch from './views/Torch.svelte'
   import Nfc from './views/Nfc.svelte'
   import Autostart from './views/Autostart.svelte'
   import DeepLink from './views/DeepLink.svelte'
   import Positioner from './views/Positioner.svelte'
   import Sql from './views/Sql.svelte'
-  import Stronghold from './views/Stronghold.svelte'
   import WebSocket from './views/WebSocket.svelte'
 
   import TitleBar from './lib/TitleBar.svelte'
@@ -148,11 +148,6 @@
       icon: 'i-ph-database'
     },
     {
-      label: 'Stronghold',
-      component: Stronghold,
-      icon: 'i-ph-lock-key'
-    },
-    {
       label: 'Deep link',
       component: DeepLink,
       icon: 'i-ph-link'
@@ -177,7 +172,7 @@
       component: Nfc,
       icon: 'i-ph-nfc'
     },
-    isMobile && {
+    {
       label: 'Biometric',
       component: Biometric,
       icon: 'i-ph-scan'
@@ -191,6 +186,11 @@
       label: 'Haptics',
       component: Haptics,
       icon: 'i-ph-vibrate'
+    },
+    isMobile && {
+      label: 'Torch',
+      component: Torch,
+      icon: 'i-ph-flashlight'
     }
   ].filter(Boolean) as {
     label: string

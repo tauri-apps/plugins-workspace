@@ -8,8 +8,8 @@ mod tray;
 
 use serde::Serialize;
 use tauri::{
+    App, AppHandle, Emitter, Listener, RunEvent, WebviewUrl,
     webview::{PageLoadEvent, WebviewWindowBuilder},
-    App, AppHandle, Emitter, Listener, Manager, RunEvent, WebviewUrl,
 };
 
 #[derive(Clone, Serialize)]
@@ -45,6 +45,7 @@ pub fn run() {
                 .build(),
         )
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_biometric::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_http::init())
@@ -71,14 +72,6 @@ pub fn run() {
                 .build(),
         )
         .setup(move |app| {
-            // the argon2 salt lives next to the snapshots the frontend creates
-            let local_data_dir = app.path().app_local_data_dir()?;
-            std::fs::create_dir_all(&local_data_dir)?;
-            app.handle().plugin(
-                tauri_plugin_stronghold::Builder::with_argon2(&local_data_dir.join("salt.txt"))
-                    .build(),
-            )?;
-
             #[cfg(desktop)]
             {
                 // registered before the tray, whose events it tracks
@@ -100,9 +93,9 @@ pub fn run() {
             {
                 app.handle().plugin(tauri_plugin_barcode_scanner::init())?;
                 app.handle().plugin(tauri_plugin_nfc::init())?;
-                app.handle().plugin(tauri_plugin_biometric::init())?;
                 app.handle().plugin(tauri_plugin_geolocation::init())?;
                 app.handle().plugin(tauri_plugin_haptics::init())?;
+                app.handle().plugin(tauri_plugin_torch::init())?;
             }
 
             let mut webview_window_builder =
@@ -212,12 +205,12 @@ pub fn run() {
 
     app.run(move |_app_handle, _event| {
         #[cfg(desktop)]
-        if let RunEvent::ExitRequested { code, api, .. } = &_event {
-            if code.is_none() {
-                // Keep the event loop running even if all windows are closed
-                // This allow us to catch system tray events when there is no window
-                api.prevent_exit();
-            }
+        if let RunEvent::ExitRequested { code, api, .. } = &_event
+            && code.is_none()
+        {
+            // Keep the event loop running even if all windows are closed
+            // This allow us to catch system tray events when there is no window
+            api.prevent_exit();
         }
     })
 }

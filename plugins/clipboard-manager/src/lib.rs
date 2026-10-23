@@ -10,8 +10,8 @@
 )]
 
 use tauri::{
+    Manager, Runtime,
     plugin::{Builder, TauriPlugin},
-    Manager, RunEvent, Runtime,
 };
 
 #[cfg(desktop)]
@@ -21,6 +21,9 @@ mod mobile;
 
 mod commands;
 mod error;
+
+#[cfg(desktop)]
+mod secret;
 
 pub use error::{Error, Result};
 
@@ -50,7 +53,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::read_image,
             commands::write_image,
             commands::write_html,
-            commands::clear
+            commands::clear,
+            commands::write_secret,
         ])
         .setup(|app, api| {
             #[cfg(mobile)]
@@ -62,7 +66,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         })
         .on_event(|_app, _event| {
             #[cfg(desktop)]
-            if let RunEvent::Exit = _event {
+            if let tauri::RunEvent::Exit = _event {
                 _app.clipboard().cleanup();
             }
         })

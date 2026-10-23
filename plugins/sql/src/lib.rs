@@ -33,8 +33,8 @@ use sqlx::{
     migrate::{Migration as SqlxMigration, MigrationSource, MigrationType, Migrator},
 };
 use tauri::{
-    plugin::{Builder as PluginBuilder, TauriPlugin},
     Manager, RunEvent, Runtime,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
 };
 use tokio::sync::{Mutex, RwLock};
 
@@ -158,7 +158,9 @@ impl Builder {
     /// connected to in that case.
     pub fn new() -> Self {
         #[cfg(not(any(feature = "sqlite", feature = "mysql", feature = "postgres")))]
-        eprintln!("No sql driver enabled. Please set at least one of the \"sqlite\", \"mysql\", \"postgres\" feature flags.");
+        eprintln!(
+            "No sql driver enabled. Please set at least one of the \"sqlite\", \"mysql\", \"postgres\" feature flags."
+        );
 
         Self::default()
     }
@@ -215,7 +217,7 @@ impl Builder {
                     let mut lock = instances.0.write().await;
 
                     for db in config.preload {
-                        let pool = DbPool::connect(&db, app).await?;
+                        let pool = DbPool::connect(&db, app, true).await?;
 
                         if let Some(migrations) =
                             self.migrations.as_mut().and_then(|mm| mm.remove(&db))

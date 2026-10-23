@@ -8,7 +8,7 @@ use std::fs::create_dir_all;
 use indexmap::IndexMap;
 use serde_json::Value as JsonValue;
 #[cfg(any(feature = "sqlite", feature = "mysql", feature = "postgres"))]
-use sqlx::{migrate::MigrateDatabase, Column, Executor, Pool, Row};
+use sqlx::{Column, Executor, Pool, Row, migrate::MigrateDatabase};
 #[cfg(any(feature = "sqlite", feature = "mysql", feature = "postgres"))]
 use tauri::Manager;
 use tauri::{AppHandle, Runtime};
@@ -78,6 +78,7 @@ impl DbPool {
     pub(crate) async fn connect<R: Runtime>(
         conn_url: &str,
         _app: &AppHandle<R>,
+        _auto_create: bool,
     ) -> Result<Self, crate::Error> {
         match conn_url
             .split_once(':')
@@ -91,27 +92,25 @@ impl DbPool {
                     .app_config_dir()
                     .expect("No App config path was found!");
 
-                create_dir_all(&app_path).expect("Couldn't create app config dir");
-
-                let conn_url = &path_mapper(app_path, conn_url);
-
-                if !Sqlite::database_exists(conn_url).await.unwrap_or(false) {
-                    Sqlite::create_database(conn_url).await?;
+                if _auto_create {
+                    create_dir_all(&app_path).expect("Couldn't create app config dir");
                 }
-                Ok(Self::Sqlite(Pool::connect(conn_url).await?))
+
+                let db_url = &path_mapper(app_path, conn_url);
+
+                ensure_database::<Sqlite>(db_url, conn_url, _auto_create).await?;
+                Ok(Self::Sqlite(Pool::connect(db_url).await?))
             }
             #[cfg(feature = "mysql")]
             "mysql" => {
-                if !MySql::database_exists(conn_url).await.unwrap_or(false) {
-                    MySql::create_database(conn_url).await?;
-                }
+                ensure_database::<MySql>(conn_url, &redact_password(conn_url), _auto_create)
+                    .await?;
                 Ok(Self::MySql(Pool::connect(conn_url).await?))
             }
             #[cfg(feature = "postgres")]
             "postgres" => {
-                if !Postgres::database_exists(conn_url).await.unwrap_or(false) {
-                    Postgres::create_database(conn_url).await?;
-                }
+                ensure_database::<Postgres>(conn_url, &redact_password(conn_url), _auto_create)
+                    .await?;
                 Ok(Self::Postgres(Pool::connect(conn_url).await?))
             }
             #[cfg(not(any(feature = "sqlite", feature = "postgres", feature = "mysql")))]
@@ -323,6 +322,43 @@ impl DbPool {
     }
 }
 
+/// Creates the database if it does not exist yet, or fails with
+/// [`crate::Error::DatabaseDoesNotExist`] (naming the connection string `db`
+/// the app passed) when `auto_create` is `false`.
+/// Errors of the existence check itself (unreachable server, bad credentials)
+/// are returned as they are, not as a missing database.
+#[cfg(any(feature = "sqlite", feature = "mysql", feature = "postgres"))]
+async fn ensure_database<DB: MigrateDatabase>(
+    conn_url: &str,
+    db: &str,
+    auto_create: bool,
+) -> Result<(), crate::Error> {
+    match DB::database_exists(conn_url).await {
+        Ok(true) => Ok(()),
+        // When the check fails, creating reports the actual error (or fixes it).
+        Ok(false) | Err(_) if auto_create => Ok(DB::create_database(conn_url).await?),
+        Ok(false) => Err(crate::Error::DatabaseDoesNotExist(db.to_string())),
+        Err(e) => Err(e.into()),
+    }
+}
+
+/// Removes the password from a `scheme://user:password@host/db` connection string,
+/// so it can be put in an error message.
+#[cfg(any(feature = "mysql", feature = "postgres"))]
+fn redact_password(conn_url: &str) -> String {
+    let Some((scheme, rest)) = conn_url.split_once("://") else {
+        return conn_url.to_string();
+    };
+    let authority_end = rest.find(['/', '?']).unwrap_or(rest.len());
+    match rest[..authority_end].rsplit_once('@') {
+        Some((userinfo, _)) => match userinfo.split_once(':') {
+            Some((user, _)) => format!("{scheme}://{user}:***@{}", &rest[userinfo.len() + 1..]),
+            None => conn_url.to_string(),
+        },
+        None => conn_url.to_string(),
+    }
+}
+
 #[cfg(feature = "sqlite")]
 /// Maps the user supplied DB connection string to a connection string
 /// with a fully qualified file path to the App's designed "app_path"
@@ -340,4 +376,60 @@ fn path_mapper(mut app_path: std::path::PathBuf, connection_string: &str) -> Str
             .to_str()
             .expect("Problem creating fully qualified path to Database file!")
     )
+}
+
+#[cfg(test)]
+mod tests {
+    #[cfg(feature = "sqlite")]
+    #[test]
+    fn ensure_database_respects_auto_create() {
+        use super::ensure_database;
+        use sqlx::Sqlite;
+
+        let path = std::env::temp_dir().join(format!("tauri-plugin-sql-{}.db", std::process::id()));
+        let _ = std::fs::remove_file(&path);
+        let url = format!("sqlite:{}", path.display());
+
+        tauri::async_runtime::block_on(async {
+            let err = ensure_database::<Sqlite>(&url, "sqlite:test.db", false)
+                .await
+                .unwrap_err();
+            assert_eq!(err.to_string(), "database sqlite:test.db does not exist");
+            assert!(!path.exists());
+
+            ensure_database::<Sqlite>(&url, "sqlite:test.db", true)
+                .await
+                .unwrap();
+            assert!(path.exists());
+
+            ensure_database::<Sqlite>(&url, "sqlite:test.db", false)
+                .await
+                .unwrap();
+        });
+
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[cfg(any(feature = "mysql", feature = "postgres"))]
+    #[test]
+    fn redact_password() {
+        use super::redact_password;
+
+        assert_eq!(
+            redact_password("mysql://user:secret@localhost:3306/db"),
+            "mysql://user:***@localhost:3306/db"
+        );
+        assert_eq!(
+            redact_password("postgres://user:p@ss@host/db?sslmode=require"),
+            "postgres://user:***@host/db?sslmode=require"
+        );
+        assert_eq!(
+            redact_password("postgres://user@host/db"),
+            "postgres://user@host/db"
+        );
+        assert_eq!(
+            redact_password("postgres://host/db?user=a@b"),
+            "postgres://host/db?user=a@b"
+        );
+    }
 }
