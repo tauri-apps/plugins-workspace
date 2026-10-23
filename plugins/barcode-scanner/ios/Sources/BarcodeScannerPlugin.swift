@@ -122,8 +122,19 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
         jsObject["content"] = found.stringValue
       }
 
+      // Stop scanning and clean up camera and webview state before
+      // resolving. In windowed mode, restoring webView.isOpaque after
+      // resolve() prevents the IPC response from reaching JavaScript.
+      self.isScanning = false
+      dismantleCamera()
+      if windowed {
+        let backgroundColor = previousBackgroundColor ?? UIColor.white
+        webView.isOpaque = true
+        webView.backgroundColor = backgroundColor
+        webView.scrollView.backgroundColor = backgroundColor
+      }
       invoke?.resolve(jsObject)
-      destroy()
+      invoke = nil
 
     }
   }
