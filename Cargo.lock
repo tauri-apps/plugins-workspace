@@ -2750,8 +2750,9 @@ dependencies = [
 
 [[package]]
 name = "http-cache"
-version = "1.0.0-alpha.8"
-source = "git+https://github.com/beanow-at-crabnebula/http-cache.git?branch=dev#28ec695e84e74aa0250a5f6f6daa8013904641d3"
+version = "1.0.0-alpha.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b668f8d78e9c962a3abf1ba5b457366f91f39a4d98df92dc615aa82455805e5"
 dependencies = [
  "bytes",
  "http",
@@ -2768,8 +2769,9 @@ dependencies = [
 
 [[package]]
 name = "http-cache-reqwest"
-version = "1.0.0-alpha.9"
-source = "git+https://github.com/beanow-at-crabnebula/http-cache.git?branch=dev#28ec695e84e74aa0250a5f6f6daa8013904641d3"
+version = "1.0.0-alpha.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "062cdf758bb9b88858411e354135c819251a0597147db53de9b337e8717e6f26"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -7094,6 +7096,7 @@ dependencies = [
  "flate2",
  "futures-util",
  "http",
+ "http-cache",
  "http-cache-reqwest",
  "infer",
  "log",
@@ -8425,7 +8428,7 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
 dependencies = [
- "windows-sys 0.48.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]

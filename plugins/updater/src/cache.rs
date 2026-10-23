@@ -74,8 +74,7 @@ pub struct CacheConfig {
 
 /// TTL for responses where the server doesn't set `max-age` or `expires` headers.
 ///
-/// Note: not configurable on purpose. We shouldn't expose this until the upstream
-/// `default_ttl` behavior is settled, see https://github.com/06chaynes/http-cache/issues/175
+/// Note: not configurable on purpose. Servers can set their own TTL with those headers.
 const DEFAULT_TTL: Duration = Duration::from_secs(60 * 60);
 
 /// The cache capacity per created MokaManager instance.
@@ -554,6 +553,40 @@ mod tests {
                 (200, "v2".into())
             );
             v2.assert_async().await;
+        }
+
+        // `max_ttl` still caps a response after a `CheckNow` revalidates it with a 304.
+        #[tokio::test]
+        async fn max_ttl_caps_after_check_now_revalidation() {
+            let cache = CacheManager {
+                max_ttl: Some(Duration::from_secs(1)),
+                ..enabled()
+            };
+            let mut server = Server::new_async().await;
+            let full = server
+                .mock("GET", "/")
+                .match_header("if-none-match", Matcher::Missing)
+                .with_header("cache-control", "max-age=3600")
+                .with_header("etag", ETAG)
+                .expect(1)
+                .create_async()
+                .await;
+            let not_modified = server
+                .mock("GET", "/")
+                .match_header("if-none-match", ETAG)
+                .with_status(304)
+                .with_header("cache-control", "max-age=3600")
+                .with_header("etag", ETAG)
+                .expect(2)
+                .create_async()
+                .await;
+
+            get(&cache, None, &server.url(), &[]).await;
+            get(&cache, Some(CacheMode::CheckNow), &server.url(), &[]).await;
+            tokio::time::sleep(Duration::from_millis(1500)).await;
+            get(&cache, None, &server.url(), &[]).await;
+            full.assert_async().await;
+            not_modified.assert_async().await;
         }
 
         // The cache key is the method and URL, request headers only count when listed in `Vary`.
