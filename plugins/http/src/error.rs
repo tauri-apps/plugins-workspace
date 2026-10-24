@@ -46,7 +46,7 @@ pub enum Error {
     /// The requested URL uses an unsupported scheme. Only `http`, `https` and `data` are handled.
     #[error("scheme {0} not supported")]
     SchemeNotSupport(String),
-    /// The request was aborted by the frontend before the response was received.
+    /// The request or response body read was aborted by the frontend.
     #[error("Request canceled")]
     RequestCanceled,
     /// Error from the file system plugin.
