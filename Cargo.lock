@@ -6913,6 +6913,7 @@ dependencies = [
  "cookie_store",
  "data-url",
  "http",
+ "percent-encoding",
  "regex",
  "reqwest 0.12.28",
  "schemars",
