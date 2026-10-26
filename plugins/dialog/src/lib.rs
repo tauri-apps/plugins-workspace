@@ -204,8 +204,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
     #[allow(unused_mut)]
     let mut builder = Builder::new("dialog");
 
-    // Dialogs are implemented natively on Android
-    #[cfg(not(target_os = "android"))]
+    // Preserve the synchronous native browser dialogs on Android and OHOS.
+    #[cfg(not(any(target_os = "android", target_env = "ohos")))]
     {
         builder = builder.js_init_script(include_str!("init-iife.js").to_string());
     }
