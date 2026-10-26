@@ -7170,7 +7170,7 @@ dependencies = [
 name = "tauri-plugin-updater"
 version = "2.14.0"
 dependencies = [
- "base64 0.22.1",
+ "base64 0.23.1",
  "dirs 7.0.0",
  "flate2",
  "futures-util",
