@@ -16,19 +16,6 @@ allowBuilds:
   geckodriver: false
 
 overrides:
-  # mocha (via @wdio/mocha-framework) pins a vulnerable range
-  serialize-javascript@<7.0.5: ^7.0.5
-  morgan@<1.12.0: ^1.12.0
-  # appium and its helpers pin vulnerable ranges
-  axios@<1.20.0: ^1.20.0
-  sharp@<0.35.5: ^0.35.5
-  shell-quote@<1.11.0: ^1.11.0
-  # get-uri (via @wdio/utils > @puppeteer/browsers > proxy-agent) is still on
-  # basic-ftp 5; it only uses the stable Client API that 6 keeps
-  basic-ftp@<6.2.1: ^6.2.1
-  # vite > postcss
-  source-map-js@<1.2.2: ^1.2.2
   body-parser@>=2.0.0 <2.4.0: ^2.4.0
-  fast-uri@>=3.0.0 <3.1.9: ^3.1.9
-  undici@>=7.0.0 <7.30.1: ^7.30.1
-  undici@>=8.0.0 <8.12.2: ^8.12.2
+  sharp@<0.35.5: ^0.35.5
+  shell-quote@>=1.8.4 <1.11.0: ^1.11.0
