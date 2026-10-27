@@ -15,8 +15,8 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Default, Clone, Copy, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum CacheMode {
+    /// Serves from cache so long as HTTP headers and settings allow it.
     /// Default caching mode is useful for UI display purposes and background checks.
-    /// Serves from cache so long as HTTP headers allow it.
     #[default]
     Default,
 
@@ -27,9 +27,9 @@ pub enum CacheMode {
     /// Use `CheckNow` when the cache should store the latest response.
     Bypass,
 
-    /// Recommended for a "Check for updates now" feature where the user actively wants to refresh.
     /// Always makes a server request, but can use conditional requests for example using the etag.
     /// Updates the cache with the response.
+    /// Recommended for a "Check for updates now" feature where the user actively wants to refresh.
     ///
     /// Note: this sets a `Cache-Control: no-cache` request header, which requests that the server
     /// also skips any CDN caches and requests updates from the origin server.
