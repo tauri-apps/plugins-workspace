@@ -19,7 +19,7 @@ exclude = [
 
 [features]
 default = ["gtk3"]
-xdg-portal = ["rfd/xdg-portal", "rfd/tokio", "rfd/wayland"]
+xdg-portal = ["rfd/xdg-portal", "rfd/wayland"]
 gtk3 = ["rfd/gtk3"]
 
 [package.metadata.docs.rs]
