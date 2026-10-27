@@ -57,6 +57,18 @@ enum PickerMode: String, Decodable {
 let originUnavailableCode = "ORIGIN_UNAVAILABLE"
 let originUnavailableMessage = "the view controller that originated the call is no longer available"
 
+private final class DialogWindowObserver {
+  var onDeinit: (() -> Void)?
+
+  init(_ onDeinit: @escaping () -> Void) {
+    self.onDeinit = onDeinit
+  }
+
+  deinit {
+    onDeinit?()
+  }
+}
+
 // Each presented controller retains its own session to avoid sharing callbacks between dialogs.
 // If released without a result, the session completes the call in deinit.
 final class DialogSession {
@@ -65,6 +77,14 @@ final class DialogSession {
   let invoke: Invoke
   private let onEvent: (FilePickerEvent) -> Void
   private var completed = false
+  private weak var originWindow: UIWindow?
+  private weak var windowObserver: DialogWindowObserver?
+  private weak var presentedController: UIViewController?
+  private var sceneObserver: NSObjectProtocol?
+
+  private var windowObserverKey: UnsafeRawPointer {
+    UnsafeRawPointer(Unmanaged.passUnretained(self).toOpaque())
+  }
 
   init(invoke: Invoke, onEvent: @escaping (FilePickerEvent) -> Void) {
     self.invoke = invoke
@@ -86,6 +106,14 @@ final class DialogSession {
       return
     }
     completed = true
+    windowObserver?.onDeinit = nil
+    if let window = originWindow {
+      objc_setAssociatedObject(window, windowObserverKey, nil, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+    }
+    if let observer = sceneObserver {
+      NotificationCenter.default.removeObserver(observer)
+      sceneObserver = nil
+    }
     completion()
   }
 
@@ -94,8 +122,39 @@ final class DialogSession {
   }
 
   func attach(to controller: UIViewController) {
+    presentedController = controller
     objc_setAssociatedObject(
       controller, &DialogSession.associationKey, self, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+
+    guard invoke.isContextual, let window = invoke.viewController?.viewIfLoaded?.window else {
+      return
+    }
+    originWindow = window
+    let observer = DialogWindowObserver { [weak self] in
+      DispatchQueue.main.async { [weak self] in
+        self?.originUnavailable()
+      }
+    }
+    windowObserver = observer
+    // File copies may keep a dismissed picker pending while another session uses the same window.
+    objc_setAssociatedObject(window, windowObserverKey, observer, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+    if let scene = window.windowScene {
+      sceneObserver = NotificationCenter.default.addObserver(
+        forName: UIScene.didDisconnectNotification, object: nil, queue: .main
+      ) { [weak self, weak scene] notification in
+        guard let scene = scene, notification.object as? UIScene === scene else {
+          return
+        }
+        self?.originUnavailable()
+      }
+    }
+  }
+
+  private func originUnavailable() {
+    complete {
+      presentedController?.dismiss(animated: false)
+      invoke.reject(originUnavailableMessage, code: originUnavailableCode)
+    }
   }
 
   static func of(_ controller: UIViewController) -> DialogSession? {
