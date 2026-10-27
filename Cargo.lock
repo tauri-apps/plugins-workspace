@@ -211,7 +211,7 @@ checksum = "2a4385e2e34eb35d6b3efe798b9eb88096925d87726c0798709bf56d9ed84af3"
 
 [[package]]
 name = "api"
-version = "2.0.56"
+version = "2.0.57"
 dependencies = [
  "log",
  "serde",
@@ -6793,7 +6793,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-deep-link"
-version = "2.6.2"
+version = "2.6.3"
 dependencies = [
  "dunce",
  "plist",
@@ -6812,7 +6812,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-dialog"
-version = "2.8.3"
+version = "2.8.4"
 dependencies = [
  "log",
  "raw-window-handle",
@@ -6960,7 +6960,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-notification"
-version = "2.7.0"
+version = "2.8.0"
 dependencies = [
  "log",
  "notify-rust",
@@ -7049,7 +7049,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-shell"
-version = "2.5.0"
+version = "2.6.0"
 dependencies = [
  "encoding_rs",
  "libc",
@@ -7070,7 +7070,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.5.4"
+version = "2.5.5"
 dependencies = [
  "semver",
  "serde",
@@ -7152,7 +7152,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-updater"
-version = "2.14.0"
+version = "2.14.1"
 dependencies = [
  "base64 0.23.1",
  "dirs 7.0.0",
@@ -7202,7 +7202,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-websocket"
-version = "2.5.0"
+version = "2.5.1"
 dependencies = [
  "futures-util",
  "http",
@@ -7220,7 +7220,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-window-state"
-version = "2.5.0"
+version = "2.5.1"
 dependencies = [
  "bitflags 2.9.0",
  "log",

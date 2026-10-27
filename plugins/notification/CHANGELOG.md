@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.8.0]
+
+- [`52fa7754`](https://github.com/tauri-apps/plugins-workspace/commit/52fa7754b9d621fd2f04faa60ac4c17902d4a475) ([#3738](https://github.com/tauri-apps/plugins-workspace/pull/3738) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated dependency rand to 0.10
+
+### feat
+
+- [`f36ba7ba`](https://github.com/tauri-apps/plugins-workspace/commit/f36ba7ba48695776bc11cce0bfdc45678ec24f72) ([#3282](https://github.com/tauri-apps/plugins-workspace/pull/3282) by [@Et3rnel](https://github.com/tauri-apps/plugins-workspace/../../Et3rnel)) Added chronometer support for Android notifications with `when`, `usesChronometer`, and `chronometerCountDown` options. This allows displaying an automatically updating elapsed time counter directly in the notification, useful for time-tracking apps, ongoing calls, or timers.
+
 ## [2.7.0]
 
 - [`4356356d`](https://github.com/tauri-apps/plugins-workspace/commit/4356356dab3b87faffcc2f0fc62aec23aede78cc) ([#3588](https://github.com/tauri-apps/plugins-workspace/pull/3588) by [@The-Best-Codes](https://github.com/tauri-apps/plugins-workspace/../../The-Best-Codes)) Fix notifications closing right after they show on GNOME: on Linux and the BSDs, every notification is now sent on the D-Bus connection the plugin keeps open.
