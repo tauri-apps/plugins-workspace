@@ -5,6 +5,7 @@
 package app.tauri.dialog
 
 import android.app.Activity
+import android.app.Dialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Handler
@@ -54,7 +55,7 @@ class SaveFileDialogOptions {
 class DialogPlugin(private val activity: Activity): Plugin(activity) {
   var filePickerOptions: FilePickerOptions? = null
   // Accessed only on the UI thread; activity results do not cover message dialogs.
-  private val pendingMessages = HashMap<Activity, MutableSet<Invoke>>()
+  private val pendingMessages = HashMap<Activity, MutableMap<Invoke, Dialog>>()
 
   @Command
   fun showFilePicker(invoke: Invoke) {
@@ -146,25 +147,23 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
     return mimeTypes.toTypedArray()
   }
 
-  // The returned function removes the pending call and reports whether it was still open.
-  private fun trackMessage(invoke: Invoke, origin: Activity): () -> Boolean {
+  // Removes the pending call and reports whether it was still open.
+  private fun untrackMessage(invoke: Invoke, origin: Activity): Boolean {
     if (!invoke.isContextual) {
-      return { true }
+      return true
     }
-    pendingMessages.getOrPut(origin) { mutableSetOf() }.add(invoke)
-    return {
-      val pending = pendingMessages[origin]
-      val open = pending?.remove(invoke) == true
-      if (pending != null && pending.isEmpty()) {
-        pendingMessages.remove(origin)
-      }
-      open
+    val pending = pendingMessages[origin]
+    val open = pending?.remove(invoke) != null
+    if (pending != null && pending.isEmpty()) {
+      pendingMessages.remove(origin)
     }
+    return open
   }
 
   override fun onDestroy(activity: AppCompatActivity) {
     val pending = pendingMessages.remove(activity) ?: return
-    for (invoke in pending) {
+    for ((invoke, dialog) in pending) {
+      dialog.dismiss()
       invoke.reject(ORIGIN_UNAVAILABLE_MESSAGE, ORIGIN_UNAVAILABLE)
     }
   }
@@ -184,9 +183,8 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
           invoke.reject(ORIGIN_UNAVAILABLE_MESSAGE, ORIGIN_UNAVAILABLE)
           return@post
         }
-        val close = trackMessage(invoke, presenter)
         val handler = { value: String ->
-          if (close()) {
+          if (untrackMessage(invoke, presenter)) {
             val ret = JSObject()
             ret.put("value", value)
             invoke.resolve(ret)
@@ -226,7 +224,10 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
           }
         }
 
-        builder.show()
+        val dialog = builder.show()
+        if (invoke.isContextual) {
+          pendingMessages.getOrPut(presenter) { mutableMapOf() }[invoke] = dialog
+        }
       }
   }
 
