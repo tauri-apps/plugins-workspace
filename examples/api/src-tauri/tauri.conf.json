@@ -93,7 +93,6 @@
         "https://tauri-update-server.vercel.app/update/{{target}}/{{current_version}}"
       ],
       "cache": {
-        "enabled": true,
         "enabledByDefault": true,
         "maxTtlMins": 180
       }

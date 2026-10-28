@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::{fmt::Debug, time::Duration};
+#[cfg(feature = "cache")]
+use std::time::Duration;
 
+#[cfg(feature = "cache")]
 use http_cache_reqwest::{
     Cache, CacheOptions, HttpCache, HttpCacheOptions, MokaCache, MokaManager,
 };
@@ -37,6 +39,7 @@ pub enum CacheMode {
     CheckNow,
 }
 
+#[cfg(feature = "cache")]
 impl From<CacheMode> for http_cache_reqwest::CacheMode {
     fn from(value: CacheMode) -> Self {
         match value {
@@ -50,18 +53,18 @@ impl From<CacheMode> for http_cache_reqwest::CacheMode {
 /// Cache configuration for the updater.
 ///
 /// Generally should be set through your `tauri.conf.json` settings.
-#[derive(Debug, Clone, Deserialize)]
+/// Has no effect without the `cache` feature, caching is then compiled out entirely.
+#[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CacheConfig {
-    /// Whether HTTP caching is enabled on update requests.
-    /// When false, this also ignores any per-request cache options.
-    #[serde(default = "default_true")]
-    pub enabled: bool,
     /// Changes which `CacheMode` is used when no per-request override is given.
-    /// Unlike the `enabled` config this allows selectively caching requests.
     ///
     /// true = `CacheMode::Default`
     /// false = `CacheMode::Bypass`
+    // On the first release introducing caching, we'll default to having no caching
+    // unless you explicitly request it on the `check` arguments. This also lets developers
+    // prepare for when this behavior becomes the default and set `CacheMode::CheckNow`
+    // on the relevant call sites.
     #[serde(default, alias = "enabled-by-default")]
     pub enabled_by_default: bool,
     /// Sets an upper limit in minutes to how long a response may be cached.
@@ -72,27 +75,10 @@ pub struct CacheConfig {
     pub max_ttl_mins: Option<u32>,
 }
 
-fn default_true() -> bool {
-    true
-}
-
-impl Default for CacheConfig {
-    fn default() -> Self {
-        Self {
-            enabled: true,
-            // On the first release introducing caching, we'll default to having no caching
-            // unless you explicitly request it on the `check` arguments. This also lets developers
-            // prepare for when this behavior becomes the default and set `CacheMode::CheckNow`
-            // on the relevant call sites.
-            enabled_by_default: false,
-            max_ttl_mins: None,
-        }
-    }
-}
-
 /// TTL for responses where the server doesn't set `max-age` or `expires` headers.
 ///
 /// Note: not configurable on purpose. Servers can set their own TTL with those headers.
+#[cfg(feature = "cache")]
 const DEFAULT_TTL: Duration = Duration::from_secs(60 * 60);
 
 /// The cache capacity per created MokaManager instance.
@@ -101,37 +87,45 @@ const DEFAULT_TTL: Duration = Duration::from_secs(60 * 60);
 /// Assumes 1-3 endpoints might typically be used.
 /// Assumes redirects don't take up a slot.
 /// Leaves some overhead for changing inputs.
+#[cfg(feature = "cache")]
 const CACHE_CAPACITY: u64 = 6;
 
 /// A cache manager for the updater.
 ///
 /// Uses an internal `Arc` so cloning means we use a shared cache.
 /// Use `from_config` to create a new instance with separate cache storage.
-#[derive(Debug, Default, Clone)]
+///
+/// Without the `cache` feature this never caches.
+#[derive(Debug, Clone)]
 pub struct CacheManager {
-    // None here implies cache is fully disabled.
-    http_cache: Option<MokaManager>,
+    #[cfg(feature = "cache")]
+    http_cache: MokaManager,
 
     // Supplied as-is to `HttpCacheOptions`.
     // None means no limit and it will cache however long the server suggests.
+    #[cfg(feature = "cache")]
     max_ttl: Option<Duration>,
 
     // Mode to use when no override is set.
+    #[cfg(feature = "cache")]
     default_mode: CacheMode,
 }
 
 impl CacheManager {
     /// Creates a new [`CacheManager`] from config.
     ///
-    /// This will also create a new cache storage (if caching is enabled).
+    /// This will also create a new cache storage (if the `cache` feature is enabled).
     /// For a shared cache storage, you should clone an existing [`CacheManager`].
     pub fn from_config(config: CacheConfig) -> Self {
+        #[cfg(not(feature = "cache"))]
+        {
+            let _ = config;
+            Self {}
+        }
+
+        #[cfg(feature = "cache")]
         Self {
-            http_cache: if config.enabled {
-                Some(MokaManager::new(MokaCache::new(CACHE_CAPACITY)))
-            } else {
-                None
-            },
+            http_cache: MokaManager::new(MokaCache::new(CACHE_CAPACITY)),
             max_ttl: config
                 .max_ttl_mins
                 .or(Some(12 * 60))
@@ -145,23 +139,32 @@ impl CacheManager {
     }
 
     /// Shorthand to check if caching is enabled.
-    pub(crate) fn enabled(&self) -> bool {
-        self.http_cache.is_some()
+    pub(crate) const fn enabled() -> bool {
+        cfg!(feature = "cache")
     }
 
-    /// Provides a caching middleware for use with `reqwest-middleware` if caching is enabled.
-    /// `None` when caching is disabled.
-    pub(crate) fn maybe_middleware(
+    /// Adds the caching middleware to `client` if caching is enabled.
+    pub(crate) fn with_middleware(
         &self,
+        client: reqwest_middleware::ClientBuilder,
         mode_override: Option<CacheMode>,
-    ) -> Option<Cache<MokaManager>> {
-        let Some(http_cache) = &self.http_cache else {
-            return None;
-        };
+    ) -> reqwest_middleware::ClientBuilder {
+        #[cfg(not(feature = "cache"))]
+        {
+            let _ = mode_override;
+            client
+        }
 
-        Some(Cache(HttpCache {
+        #[cfg(feature = "cache")]
+        client.with(self.middleware(mode_override))
+    }
+
+    /// Provides a caching middleware for use with `reqwest-middleware`.
+    #[cfg(feature = "cache")]
+    fn middleware(&self, mode_override: Option<CacheMode>) -> Cache<MokaManager> {
+        Cache(HttpCache {
             mode: mode_override.unwrap_or(self.default_mode).into(),
-            manager: http_cache.clone(),
+            manager: self.http_cache.clone(),
             options: HttpCacheOptions {
                 default_ttl: Some(DEFAULT_TTL),
                 max_ttl: self.max_ttl,
@@ -172,7 +175,7 @@ impl CacheManager {
                 }),
                 ..Default::default()
             },
-        }))
+        })
     }
 }
 
@@ -180,13 +183,16 @@ impl CacheManager {
 mod tests {
     use super::*;
 
+    #[cfg(feature = "cache")]
     use http_cache_reqwest::CacheMode as HttpCacheMode;
+    use mockito::Server;
 
     fn parse_config(json: &str) -> CacheConfig {
         serde_json::from_str(json).expect("invalid cache config")
     }
 
     /// An enabled cache, with the defaults planned for a future release.
+    #[cfg(feature = "cache")]
     fn enabled_pending_default() -> CacheManager {
         CacheManager::from_config(CacheConfig {
             enabled_by_default: true,
@@ -194,13 +200,10 @@ mod tests {
         })
     }
 
-    /// The mode the middleware applies to a request, panicking if caching is disabled.
+    /// The mode the middleware applies to a request.
+    #[cfg(feature = "cache")]
     fn applied_mode(cache: &CacheManager, mode_override: Option<CacheMode>) -> HttpCacheMode {
-        cache
-            .maybe_middleware(mode_override)
-            .expect("cache is disabled")
-            .0
-            .mode
+        cache.middleware(mode_override).0.mode
     }
 
     #[test]
@@ -208,7 +211,6 @@ mod tests {
         // The current default is `enabled_by_default = false`, later releases will change this
         // so other tests will look at the future default behavior.
         let config = parse_config("{}");
-        assert!(config.enabled);
         assert!(!config.enabled_by_default);
         assert_eq!(config.max_ttl_mins, None);
     }
@@ -216,11 +218,10 @@ mod tests {
     #[test]
     fn config_accepts_camel_and_kebab_case() {
         for json in [
-            r#"{ "enabled": false, "enabledByDefault": true, "maxTtlMins": 5 }"#,
-            r#"{ "enabled": false, "enabled-by-default": true, "max-ttl-mins": 5 }"#,
+            r#"{ "enabledByDefault": true, "maxTtlMins": 5 }"#,
+            r#"{ "enabled-by-default": true, "max-ttl-mins": 5 }"#,
         ] {
             let config = parse_config(json);
-            assert!(!config.enabled, "{json}");
             assert!(config.enabled_by_default, "{json}");
             assert_eq!(config.max_ttl_mins, Some(5), "{json}");
         }
@@ -255,9 +256,10 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "cache")]
     fn default_config_enables_private_cache_with_1h_default_and_12h_max_ttl() {
         let cache = enabled_pending_default();
-        let middleware = cache.maybe_middleware(None).expect("cache is disabled");
+        let middleware = cache.middleware(None);
         assert_eq!(middleware.0.mode, HttpCacheMode::Default);
         assert_eq!(
             middleware.0.options.default_ttl,
@@ -271,12 +273,14 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "cache")]
     fn max_ttl_is_in_minutes() {
         let cache = CacheManager::from_config(parse_config(r#"{ "maxTtlMins": 5 }"#));
         assert_eq!(cache.max_ttl, Some(Duration::from_secs(5 * 60)));
     }
 
     #[test]
+    #[cfg(feature = "cache")]
     fn mode_override_takes_precedence() {
         let cache = enabled_pending_default();
         assert_eq!(applied_mode(&cache, None), HttpCacheMode::Default);
@@ -287,6 +291,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "cache")]
     fn not_enabled_by_default_still_allows_override() {
         let cache = CacheManager::from_config(parse_config(r#"{ "enabledByDefault": false }"#));
         assert_eq!(applied_mode(&cache, None), HttpCacheMode::NoStore);
@@ -296,77 +301,74 @@ mod tests {
         );
     }
 
-    #[test]
-    fn disabled_ignores_override() {
-        let cache = CacheManager::from_config(parse_config(r#"{ "enabled": false }"#));
-        for mode in [
-            None,
-            Some(CacheMode::Default),
-            Some(CacheMode::Bypass),
-            Some(CacheMode::CheckNow),
-        ] {
-            assert!(cache.maybe_middleware(mode).is_none(), "{mode:?}");
+    /// Sends a GET the way `Updater::check` does, returning the status and body.
+    async fn get(
+        cache: &CacheManager,
+        mode_override: Option<CacheMode>,
+        url: &str,
+        headers: &[(&str, &str)],
+    ) -> (u16, String) {
+        #[cfg(feature = "rustls-tls")]
+        if rustls::crypto::CryptoProvider::get_default().is_none() {
+            let _ = rustls::crypto::ring::default_provider().install_default();
         }
+
+        let client = reqwest::ClientBuilder::new().no_proxy().build().unwrap();
+        let client = cache.with_middleware(
+            reqwest_middleware::ClientBuilder::new(client),
+            mode_override,
+        );
+
+        let mut request = client.build().get(url);
+        for (name, value) in headers {
+            request = request.header(*name, *value);
+        }
+        let response = request.send().await.expect("request failed");
+        let status = response.status().as_u16();
+        (status, response.text().await.unwrap())
+    }
+
+    /// Asserts how many of `count` GETs with `mode_override` reach a server responding with
+    /// `status` and `headers`.
+    async fn assert_hits(
+        cache: &CacheManager,
+        mode_override: Option<CacheMode>,
+        status: usize,
+        headers: &[(&str, &str)],
+        count: usize,
+        expected_hits: usize,
+    ) {
+        let mut server = Server::new_async().await;
+        let mut mock = server.mock("GET", "/").with_status(status);
+        for (name, value) in headers {
+            mock = mock.with_header(*name, value);
+        }
+        let mock = mock.expect(expected_hits).create_async().await;
+
+        for _ in 0..count {
+            get(cache, mode_override, &server.url(), &[]).await;
+        }
+        mock.assert_async().await;
+    }
+
+    #[tokio::test]
+    #[cfg(not(feature = "cache"))]
+    async fn without_feature_never_caches() {
+        let cache = CacheManager::from_config(parse_config(r#"{ "enabledByDefault": true }"#));
+        let headers = [("cache-control", "max-age=60")];
+        assert_hits(&cache, None, 200, &headers, 3, 3).await;
+        assert_hits(&cache, Some(CacheMode::Default), 200, &headers, 3, 3).await;
     }
 
     /// These run the middleware against a local server and count the requests that reach it, to
     /// check how our configuration of `http-cache` behaves rather than the library itself.
+    #[cfg(feature = "cache")]
     mod http {
         use super::*;
 
-        use mockito::{Matcher, Server};
+        use mockito::Matcher;
 
         const ETAG: &str = "\"v1\"";
-
-        /// Sends a GET the way `Updater::check` does, returning the status and body.
-        async fn get(
-            cache: &CacheManager,
-            mode_override: Option<CacheMode>,
-            url: &str,
-            headers: &[(&str, &str)],
-        ) -> (u16, String) {
-            #[cfg(feature = "rustls-tls")]
-            if rustls::crypto::CryptoProvider::get_default().is_none() {
-                let _ = rustls::crypto::ring::default_provider().install_default();
-            }
-
-            let client = reqwest::ClientBuilder::new().no_proxy().build().unwrap();
-            let mut client = reqwest_middleware::ClientBuilder::new(client);
-            if let Some(cache) = cache.maybe_middleware(mode_override) {
-                client = client.with(cache);
-            }
-
-            let mut request = client.build().get(url);
-            for (name, value) in headers {
-                request = request.header(*name, *value);
-            }
-            let response = request.send().await.expect("request failed");
-            let status = response.status().as_u16();
-            (status, response.text().await.unwrap())
-        }
-
-        /// Asserts how many of `count` GETs with `mode_override` reach a server responding with
-        /// `status` and `headers`.
-        async fn assert_hits(
-            cache: &CacheManager,
-            mode_override: Option<CacheMode>,
-            status: usize,
-            headers: &[(&str, &str)],
-            count: usize,
-            expected_hits: usize,
-        ) {
-            let mut server = Server::new_async().await;
-            let mut mock = server.mock("GET", "/").with_status(status);
-            for (name, value) in headers {
-                mock = mock.with_header(*name, value);
-            }
-            let mock = mock.expect(expected_hits).create_async().await;
-
-            for _ in 0..count {
-                get(cache, mode_override, &server.url(), &[]).await;
-            }
-            mock.assert_async().await;
-        }
 
         #[tokio::test]
         async fn serves_fresh_response_from_cache() {
@@ -445,10 +447,8 @@ mod tests {
         #[tokio::test]
         async fn max_ttl_caps_server_max_age_and_default_ttl() {
             for cache_control in [Some("max-age=3600"), None] {
-                let cache = CacheManager {
-                    max_ttl: Some(Duration::from_secs(1)),
-                    ..enabled_pending_default()
-                };
+                let mut cache = enabled_pending_default();
+                cache.max_ttl = Some(Duration::from_secs(1));
                 let mut server = Server::new_async().await;
                 let mut mock = server.mock("GET", "/");
                 if let Some(cache_control) = cache_control {
@@ -478,14 +478,6 @@ mod tests {
             get(&cache, None, &server.url(), &[]).await;
             get(&cache.clone(), None, &server.url(), &[]).await;
             mock.assert_async().await;
-        }
-
-        #[tokio::test]
-        async fn disabled_config_never_caches() {
-            let cache = CacheManager::from_config(parse_config(r#"{ "enabled": false }"#));
-            let headers = [("cache-control", "max-age=60")];
-            assert_hits(&cache, None, 200, &headers, 3, 3).await;
-            assert_hits(&cache, Some(CacheMode::Default), 200, &headers, 3, 3).await;
         }
 
         #[tokio::test]
@@ -582,10 +574,8 @@ mod tests {
         // `max_ttl` still caps a response after a `CheckNow` revalidates it with a 304.
         #[tokio::test]
         async fn max_ttl_caps_after_check_now_revalidation() {
-            let cache = CacheManager {
-                max_ttl: Some(Duration::from_secs(1)),
-                ..enabled_pending_default()
-            };
+            let mut cache = enabled_pending_default();
+            cache.max_ttl = Some(Duration::from_secs(1));
             let mut server = Server::new_async().await;
             let full = server
                 .mock("GET", "/")

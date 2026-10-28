@@ -201,7 +201,11 @@ pub struct UpdaterBuilder {
 }
 
 impl UpdaterBuilder {
-    pub(crate) fn new<R: Runtime>(app: &AppHandle<R>, config: crate::Config) -> Self {
+    pub(crate) fn new<R: Runtime>(
+        app: &AppHandle<R>,
+        config: crate::Config,
+        cache: CacheManager,
+    ) -> Self {
         #[cfg(target_os = "macos")]
         let run_on_main_thread = {
             let app_ = app.clone();
@@ -237,7 +241,7 @@ impl UpdaterBuilder {
             timeout: None,
             proxy: None,
             no_proxy: false,
-            cache: Default::default(),
+            cache,
             cache_mode_override: None,
         }
     }
@@ -638,17 +642,19 @@ impl Updater {
                 client = configure_client(client);
             }
 
-            let mut client = reqwest_middleware::ClientBuilder::new(client.build()?);
-            if let Some(cache) = self.cache.maybe_middleware(self.cache_mode_override) {
-                client = client.with(cache);
-            }
-            let client = client.build();
+            let client = self
+                .cache
+                .with_middleware(
+                    reqwest_middleware::ClientBuilder::new(client.build()?),
+                    self.cache_mode_override,
+                )
+                .build();
 
             let response = client.get(url).headers(headers.clone()).send().await;
 
             match response {
                 Ok(res) => {
-                    if self.cache.enabled() {
+                    if CacheManager::enabled() {
                         // Cache headers are useful information, but other headers may be sensitive.
                         // Apply simple filter and log as Debug output.
                         let cache_headers: Vec<_> = res
@@ -2178,7 +2184,8 @@ mod offline_tests {
             pubkey: encode(PUBLIC_KEY),
             ..Default::default()
         };
-        let mut builder = UpdaterBuilder::new(app.handle(), config)
+        let cache = CacheManager::from_config(Default::default());
+        let mut builder = UpdaterBuilder::new(app.handle(), config, cache)
             .target("test-target")
             .executable_path("runtime-path/app")
             .timeout(Duration::from_secs(30))

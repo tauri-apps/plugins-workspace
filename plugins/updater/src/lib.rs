@@ -88,9 +88,8 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
             cache,
         } = self.state::<UpdaterState>().inner();
 
-        let mut builder = UpdaterBuilder::new(app, config.clone())
-            .headers(headers.clone())
-            .cache_manager(cache.clone());
+        let mut builder =
+            UpdaterBuilder::new(app, config.clone(), cache.clone()).headers(headers.clone());
 
         if let Some(target) = target {
             builder = builder.target(target);

@@ -80,6 +80,8 @@ Note that for these APIs to work you have to properly configure the updater firs
 
 This plugin implements standard HTTP caching when checking for updates. The cache is kept in-memory, so restarting the application also clears the cache.
 
+Caching is part of the default `cache` cargo feature. To remove it from your build, disable default features and re-enable the ones you need, for example `tauri-plugin-updater = { version = "2", default-features = false, features = ["rustls-tls", "system-proxy", "zip"] }`. Without it, `check()` never caches, even when a `cacheMode` is passed.
+
 By default the plugin strikes a good balance between efficiency and update latency. But a few key configurations you should consider.
 
 **Note: on first release, cache will be opt-in. But the default will change to opt-out. Make sure to apply `cacheMode: 'checkNow'` where needed to ensure a good user experience.** You can test the future behavior using `plugins.updater.cache.enabledByDefault = true` in your `tauri.conf.json`.

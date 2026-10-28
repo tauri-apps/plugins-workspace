@@ -19,7 +19,7 @@ exclude = [
 
 [package.metadata.docs.rs]
 no-default-features = true
-features = ["zip"]
+features = ["zip", "cache"]
 
 [package.metadata.platforms.support]
 windows = { level = "full", notes = "" }
@@ -53,9 +53,9 @@ http-cache-reqwest = { version = "=1.0.0-alpha.10", default-features = false, fe
   "manager-moka",
   "reqwest-middleware",
   "url-standard",
-] }
+], optional = true }
 # Not used directly, pins the version http-cache-reqwest would otherwise let float.
-http-cache = { version = "=1.0.0-alpha.9", default-features = false }
+http-cache = { version = "=1.0.0-alpha.9", default-features = false, optional = true }
 rustls = { version = "0.23", default-features = false, features = [
   "ring",
 ], optional = true }
@@ -90,9 +90,11 @@ flate2 = "1"
 osakit = { version = "0.3", features = ["full"] }
 
 [features]
-default = ["rustls-tls", "system-proxy", "zip"]
+default = ["rustls-tls", "system-proxy", "zip", "cache"]
 zip = ["dep:zip", "dep:tar", "dep:flate2"]
 native-tls = ["reqwest/native-tls"]
 native-tls-vendored = ["reqwest/native-tls-vendored"]
 rustls-tls = ["reqwest/rustls-no-provider", "dep:rustls"]
 system-proxy = ["reqwest/system-proxy"]
+# In-memory HTTP cache for update checks. Without it, `check` never caches.
+cache = ["dep:http-cache-reqwest", "dep:http-cache"]
