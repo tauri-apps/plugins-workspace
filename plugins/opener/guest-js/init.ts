@@ -6,9 +6,10 @@
  * Webview script injected by the opener plugin on every page load.
  *
  * It installs a `click` listener on `window` that intercepts clicks on `<a>` elements whose
- * `target` is `_blank` (or that are clicked while holding `Ctrl` or `Shift`) and whose `href`
- * uses the `http:`, `https:`, `mailto:` or `tel:` protocol, cancels the navigation and opens the
- * link with the system's default browser through the `plugin:opener|open_url` command instead.
+ * effective `target` is `_blank`, including targets inherited from `<base>` (or that are
+ * clicked while holding `Ctrl` or `Shift`), and whose `href` uses the `http:`, `https:`,
+ * `mailto:` or `tel:` protocol, cancels the navigation and opens the link with the system's
+ * default browser through the `plugin:opener|open_url` command instead.
  *
  * @module
  */
@@ -36,6 +37,10 @@ window.addEventListener('click', function (evt) {
     | HTMLAnchorElement
     | undefined
 
+  const target =
+    a?.getAttribute('target')
+    ?? a?.ownerDocument.querySelector('base[target]')?.getAttribute('target')
+
   // return early if
   if (
     // not tirggered from <a> element
@@ -44,7 +49,7 @@ window.addEventListener('click', function (evt) {
     || !a.href
     // or not supposed to be open in a new tab
     || !(
-      a.target === '_blank'
+      target === '_blank'
       // or ctrl key pressed
       || evt.ctrlKey
       // or shift key pressed
