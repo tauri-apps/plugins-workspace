@@ -393,9 +393,9 @@ mod tests {
         // expiring immediately as they would under plain HTTP caching.
         #[tokio::test]
         async fn caches_response_without_caching_headers_for_default_ttl() {
-            let cache = enabled_pending_default();
-            assert_hits(&cache, None, 200, &[], 3, 1).await;
-            assert_hits(&cache, None, 204, &[], 3, 1).await;
+            // A cache each, mockito may hand out the same server URL again.
+            assert_hits(&enabled_pending_default(), None, 200, &[], 3, 1).await;
+            assert_hits(&enabled_pending_default(), None, 204, &[], 3, 1).await;
         }
 
         #[tokio::test]
