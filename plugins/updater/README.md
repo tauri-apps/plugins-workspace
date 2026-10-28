@@ -82,7 +82,7 @@ This plugin implements standard HTTP caching when checking for updates. The cach
 
 By default the plugin strikes a good balance between efficiency and update latency. But a few key configurations you should consider.
 
-**Note: on first release, cache will be opt-in. But the default will change to opt-out. Make sure to apply `cacheMode: 'checkNow'` where needed to ensure a good user experience.** You can test the future behavior using `plugins.updater.cache.disabledByDefault = false` in your `tauri.conf.json`.
+**Note: on first release, cache will be opt-in. But the default will change to opt-out. Make sure to apply `cacheMode: 'checkNow'` where needed to ensure a good user experience.** You can test the future behavior using `plugins.updater.cache.enabledByDefault = true` in your `tauri.conf.json`.
 
 For each `check()` call you can provide a `cacheMode` option. This is especially useful if you're creating a "Check for updates now" button for your users.
 

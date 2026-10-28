@@ -53,17 +53,17 @@ impl From<CacheMode> for http_cache_reqwest::CacheMode {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CacheConfig {
-    /// Whether to fully disable HTTP caching on update requests.
-    /// This also ignores any per-request cache options.
-    #[serde(default)]
-    pub disabled: bool,
+    /// Whether HTTP caching is enabled on update requests.
+    /// When false, this also ignores any per-request cache options.
+    #[serde(default = "default_true")]
+    pub enabled: bool,
     /// Changes which `CacheMode` is used when no per-request override is given.
-    /// Unlike the `disabled` config this allows selectively caching requests.
+    /// Unlike the `enabled` config this allows selectively caching requests.
     ///
-    /// false = `CacheMode::Default`
-    /// true = `CacheMode::Bypass`
-    #[serde(default = "default_true", alias = "disabled-by-default")]
-    pub disabled_by_default: bool,
+    /// true = `CacheMode::Default`
+    /// false = `CacheMode::Bypass`
+    #[serde(default, alias = "enabled-by-default")]
+    pub enabled_by_default: bool,
     /// Sets an upper limit in minutes to how long a response may be cached.
     /// It may be shorter depending on the `cache-control` or `expires` server headers.
     /// Responses without those headers are cached for 1 hour, or this limit if lower.
@@ -79,12 +79,12 @@ fn default_true() -> bool {
 impl Default for CacheConfig {
     fn default() -> Self {
         Self {
-            disabled: false,
+            enabled: true,
             // On the first release introducing caching, we'll default to having no caching
             // unless you explicitly request it on the `check` arguments. This also lets developers
             // prepare for when this behavior becomes the default and set `CacheMode::CheckNow`
             // on the relevant call sites.
-            disabled_by_default: default_true(),
+            enabled_by_default: false,
             max_ttl_mins: None,
         }
     }
@@ -127,7 +127,7 @@ impl CacheManager {
     /// For a shared cache storage, you should clone an existing [`CacheManager`].
     pub fn from_config(config: CacheConfig) -> Self {
         Self {
-            http_cache: if !config.disabled {
+            http_cache: if config.enabled {
                 Some(MokaManager::new(MokaCache::new(CACHE_CAPACITY)))
             } else {
                 None
@@ -136,7 +136,7 @@ impl CacheManager {
                 .max_ttl_mins
                 .or(Some(12 * 60))
                 .map(|mins| Duration::from_secs(mins as u64 * 60)),
-            default_mode: if !config.disabled_by_default {
+            default_mode: if config.enabled_by_default {
                 CacheMode::Default
             } else {
                 CacheMode::Bypass
@@ -189,7 +189,7 @@ mod tests {
     /// An enabled cache, with the defaults planned for a future release.
     fn enabled_pending_default() -> CacheManager {
         CacheManager::from_config(CacheConfig {
-            disabled_by_default: false,
+            enabled_by_default: true,
             ..Default::default()
         })
     }
@@ -205,23 +205,23 @@ mod tests {
 
     #[test]
     fn config_defaults() {
-        // The current default is `disabled_by_default = true`, later releases will change this
+        // The current default is `enabled_by_default = false`, later releases will change this
         // so other tests will look at the future default behavior.
         let config = parse_config("{}");
-        assert!(!config.disabled);
-        assert!(config.disabled_by_default);
+        assert!(config.enabled);
+        assert!(!config.enabled_by_default);
         assert_eq!(config.max_ttl_mins, None);
     }
 
     #[test]
     fn config_accepts_camel_and_kebab_case() {
         for json in [
-            r#"{ "disabled": true, "disabledByDefault": true, "maxTtlMins": 5 }"#,
-            r#"{ "disabled": true, "disabled-by-default": true, "max-ttl-mins": 5 }"#,
+            r#"{ "enabled": false, "enabledByDefault": true, "maxTtlMins": 5 }"#,
+            r#"{ "enabled": false, "enabled-by-default": true, "max-ttl-mins": 5 }"#,
         ] {
             let config = parse_config(json);
-            assert!(config.disabled, "{json}");
-            assert!(config.disabled_by_default, "{json}");
+            assert!(!config.enabled, "{json}");
+            assert!(config.enabled_by_default, "{json}");
             assert_eq!(config.max_ttl_mins, Some(5), "{json}");
         }
     }
@@ -287,8 +287,8 @@ mod tests {
     }
 
     #[test]
-    fn disabled_by_default_still_allows_override() {
-        let cache = CacheManager::from_config(parse_config(r#"{ "disabledByDefault": true }"#));
+    fn not_enabled_by_default_still_allows_override() {
+        let cache = CacheManager::from_config(parse_config(r#"{ "enabledByDefault": false }"#));
         assert_eq!(applied_mode(&cache, None), HttpCacheMode::NoStore);
         assert_eq!(
             applied_mode(&cache, Some(CacheMode::Default)),
@@ -298,7 +298,7 @@ mod tests {
 
     #[test]
     fn disabled_ignores_override() {
-        let cache = CacheManager::from_config(parse_config(r#"{ "disabled": true }"#));
+        let cache = CacheManager::from_config(parse_config(r#"{ "enabled": false }"#));
         for mode in [
             None,
             Some(CacheMode::Default),
@@ -482,15 +482,15 @@ mod tests {
 
         #[tokio::test]
         async fn disabled_config_never_caches() {
-            let cache = CacheManager::from_config(parse_config(r#"{ "disabled": true }"#));
+            let cache = CacheManager::from_config(parse_config(r#"{ "enabled": false }"#));
             let headers = [("cache-control", "max-age=60")];
             assert_hits(&cache, None, 200, &headers, 3, 3).await;
             assert_hits(&cache, Some(CacheMode::Default), 200, &headers, 3, 3).await;
         }
 
         #[tokio::test]
-        async fn disabled_by_default_allows_opting_in() {
-            let cache = CacheManager::from_config(parse_config(r#"{ "disabledByDefault": true }"#));
+        async fn not_enabled_by_default_allows_opting_in() {
+            let cache = CacheManager::from_config(parse_config(r#"{ "enabledByDefault": false }"#));
             let mut server = Server::new_async().await;
             let mock = server
                 .mock("GET", "/")
