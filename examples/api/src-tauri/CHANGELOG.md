@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.58]
+
+### Dependencies
+
+- Upgraded to `opener@2.7.3`
+
 ## [2.0.57]
 
 ### Dependencies
