@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.8.4]
+
+- [`1331ca41`](https://github.com/tauri-apps/plugins-workspace/commit/1331ca4101e76f6ef773829df364d76ef77184ea) ([#3737](https://github.com/tauri-apps/plugins-workspace/pull/3737) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated dependency rfd to 0.17
+
 ## [2.8.3]
 
 ### Dependencies

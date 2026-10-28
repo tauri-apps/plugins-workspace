@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-notification"
-version = "2.7.0"
+version = "2.8.0"
 description = "Send desktop and mobile notifications on your Tauri application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -39,7 +39,7 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
-rand = "0.9"
+rand = "0.10"
 time = { version = "0.3", features = ["serde", "parsing", "formatting"] }
 url = { version = "2", features = ["serde"] }
 serde_repr = "0.1"
