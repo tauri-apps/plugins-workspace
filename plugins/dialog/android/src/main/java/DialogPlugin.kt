@@ -5,12 +5,14 @@
 package app.tauri.dialog
 
 import android.app.Activity
+import android.app.Dialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.webkit.MimeTypeMap
 import androidx.activity.result.ActivityResult
+import androidx.appcompat.app.AppCompatActivity
 import app.tauri.Logger
 import app.tauri.annotation.ActivityCallback
 import app.tauri.annotation.Command
@@ -52,6 +54,8 @@ class SaveFileDialogOptions {
 @TauriPlugin
 class DialogPlugin(private val activity: Activity): Plugin(activity) {
   var filePickerOptions: FilePickerOptions? = null
+  // Accessed only on the UI thread; activity results do not cover message dialogs.
+  private val pendingMessages = HashMap<Activity, MutableMap<Invoke, Dialog>>()
 
   @Command
   fun showFilePicker(invoke: Invoke) {
@@ -95,7 +99,9 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
           val callResult = createPickFilesResult(result.data)
           invoke.resolve(callResult)
         }
-        Activity.RESULT_CANCELED -> invoke.reject("File picker cancelled")
+        Activity.RESULT_CANCELED -> {
+          invoke.resolve(createPickFilesResult(null))
+        }
         else -> invoke.reject("Failed to pick files")
       }
     } catch (ex: java.lang.Exception) {
@@ -141,24 +147,51 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
     return mimeTypes.toTypedArray()
   }
 
+  // Removes the pending call and reports whether it was still open.
+  private fun untrackMessage(invoke: Invoke, origin: Activity): Boolean {
+    if (!invoke.isContextual) {
+      return true
+    }
+    val pending = pendingMessages[origin]
+    val open = pending?.remove(invoke) != null
+    if (pending != null && pending.isEmpty()) {
+      pendingMessages.remove(origin)
+    }
+    return open
+  }
+
+  override fun onDestroy(activity: AppCompatActivity) {
+    val pending = pendingMessages.remove(activity) ?: return
+    for ((invoke, dialog) in pending) {
+      dialog.dismiss()
+      invoke.reject(ORIGIN_UNAVAILABLE_MESSAGE, ORIGIN_UNAVAILABLE)
+    }
+  }
+
   @Command
   fun showMessageDialog(invoke: Invoke) {
     val args = invoke.parseArgs(MessageOptions::class.java)
 
-    if (activity.isFinishing) {
+    if (!invoke.isContextual && activity.isFinishing) {
       invoke.reject("App is finishing")
       return
     }
 
-    val handler = { value: String ->
-      val ret = JSObject()
-      ret.put("value", value)
-      invoke.resolve(ret)
-    }
-
     Handler(Looper.getMainLooper())
       .post {
-        val builder = MaterialAlertDialogBuilder(activity)
+        val presenter = presentingActivity(invoke) ?: run {
+          invoke.reject(ORIGIN_UNAVAILABLE_MESSAGE, ORIGIN_UNAVAILABLE)
+          return@post
+        }
+        val handler = { value: String ->
+          if (untrackMessage(invoke, presenter)) {
+            val ret = JSObject()
+            ret.put("value", value)
+            invoke.resolve(ret)
+          }
+        }
+
+        val builder = MaterialAlertDialogBuilder(presenter)
 
         if (args.title != null) {
           builder.setTitle(args.title)
@@ -191,7 +224,10 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
           }
         }
 
-        builder.show()
+        val dialog = builder.show()
+        if (invoke.isContextual) {
+          pendingMessages.getOrPut(presenter) { mutableMapOf() }[invoke] = dialog
+        }
       }
   }
 
@@ -234,7 +270,11 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
           }
           invoke.resolve(callResult)
         }
-        Activity.RESULT_CANCELED -> invoke.reject("File picker cancelled")
+        Activity.RESULT_CANCELED -> {
+          val callResult = JSObject()
+          callResult.put("file", null)
+          invoke.resolve(callResult)
+        }
         else -> invoke.reject("Failed to pick files")
       }
     } catch (ex: java.lang.Exception) {
@@ -244,3 +284,6 @@ class DialogPlugin(private val activity: Activity): Plugin(activity) {
     }
   }
 }
+
+private const val ORIGIN_UNAVAILABLE = "ORIGIN_UNAVAILABLE"
+private const val ORIGIN_UNAVAILABLE_MESSAGE = "the activity that originated the call is no longer available"
