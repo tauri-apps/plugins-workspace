@@ -19,7 +19,7 @@ exclude = [
 
 [package.metadata.docs.rs]
 no-default-features = true
-features = ["zip"]
+features = ["zip", "cache"]
 
 [package.metadata.platforms.support]
 windows = { level = "full", notes = "" }
@@ -33,6 +33,8 @@ tauri-plugin = { workspace = true, features = ["build"] }
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["wry", "test"] }
+tokio = { version = "1", features = ["rt", "macros", "time"] }
+mockito = "1.7"
 
 [dependencies]
 tauri = { workspace = true }
@@ -45,6 +47,16 @@ reqwest = { version = "0.13", default-features = false, features = [
   "json",
   "stream",
 ] }
+reqwest-middleware = "0.5.2"
+# Should pin to a particular version while in alpha.
+http-cache-reqwest = { version = "=1.0.0-alpha.10", default-features = false, features = [
+  "reqwest-middleware",
+  "url-standard",
+], optional = true }
+# Not used directly, pins the version http-cache-reqwest would otherwise let float.
+http-cache = { version = "=1.0.0-alpha.9", default-features = false, optional = true }
+http-cache-quickcache = { version = "=1.0.0-alpha.9", default-features = false, optional = true }
+quick_cache = { version = "0.7", default-features = false, optional = true }
 rustls = { version = "0.23", default-features = false, features = [
   "ring",
 ], optional = true }
@@ -79,9 +91,16 @@ flate2 = "1"
 osakit = { version = "0.3", features = ["full"] }
 
 [features]
-default = ["rustls-tls", "system-proxy", "zip"]
+default = ["rustls-tls", "system-proxy", "zip", "cache"]
 zip = ["dep:zip", "dep:tar", "dep:flate2"]
 native-tls = ["reqwest/native-tls"]
 native-tls-vendored = ["reqwest/native-tls-vendored"]
 rustls-tls = ["reqwest/rustls-no-provider", "dep:rustls"]
 system-proxy = ["reqwest/system-proxy"]
+# In-memory HTTP cache for update checks. Without it, `check` never caches.
+cache = [
+  "dep:http-cache-reqwest",
+  "dep:http-cache",
+  "dep:http-cache-quickcache",
+  "dep:quick_cache",
+]
