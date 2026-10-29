@@ -20,7 +20,7 @@ use std::{
 
 use process::{Command, CommandChild};
 use tauri::{
-    AppHandle, Manager, RunEvent, Runtime,
+    AppHandle, Manager, Runtime,
     plugin::{Builder, TauriPlugin},
 };
 
@@ -99,16 +99,15 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             });
             Ok(())
         })
-        .on_event(|app, event| {
-            if let RunEvent::Exit = event {
-                let shell = app.state::<Shell<R>>();
-                let children = {
-                    let mut lock = shell.children.lock().unwrap();
-                    std::mem::take(&mut *lock)
-                };
-                for child in children.into_values() {
-                    let _ = child.kill();
-                }
+        // unlike `RunEvent::Exit` this also runs when the app restarts on the main thread
+        .on_cleanup_before_exit(|app| {
+            let shell = app.state::<Shell<R>>();
+            let children = {
+                let mut lock = shell.children.lock().unwrap();
+                std::mem::take(&mut *lock)
+            };
+            for child in children.into_values() {
+                let _ = child.kill();
             }
         })
         .build()
