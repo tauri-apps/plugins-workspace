@@ -20,7 +20,7 @@ use std::{
 };
 pub use store::{DeserializeFn, SerializeFn, Store, StoreBuilder, resolve_store_path};
 use tauri::{
-    AppHandle, Manager, ResourceId, RunEvent, Runtime, State,
+    AppHandle, Manager, ResourceId, Runtime, State,
     plugin::{self, TauriPlugin},
 };
 
@@ -465,16 +465,16 @@ impl Builder {
                 });
                 Ok(())
             })
-            .on_event(|app_handle, event| {
-                if let RunEvent::Exit = event {
-                    let collection = app_handle.state::<StoreState>();
-                    let stores = collection.stores.read().unwrap();
-                    for (path, rid) in stores.iter() {
-                        if let Ok(store) = app_handle.resources_table().get::<Store<R>>(*rid)
-                            && let Err(err) = store.save()
-                        {
-                            tracing::error!("failed to save store {path:?} with error {err:?}");
-                        }
+            // unlike `RunEvent::Exit` this also runs when the app restarts on the main thread,
+            // and before the resource table is cleared
+            .on_cleanup_before_exit(|app_handle| {
+                let collection = app_handle.state::<StoreState>();
+                let stores = collection.stores.read().unwrap();
+                for (path, rid) in stores.iter() {
+                    if let Ok(store) = app_handle.resources_table().get::<Store<R>>(*rid)
+                        && let Err(err) = store.save()
+                    {
+                        tracing::error!("failed to save store {path:?} with error {err:?}");
                     }
                 }
             })
