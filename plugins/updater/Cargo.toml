@@ -50,12 +50,13 @@ reqwest = { version = "0.13", default-features = false, features = [
 reqwest-middleware = "0.5.2"
 # Should pin to a particular version while in alpha.
 http-cache-reqwest = { version = "=1.0.0-alpha.10", default-features = false, features = [
-  "manager-moka",
   "reqwest-middleware",
   "url-standard",
 ], optional = true }
 # Not used directly, pins the version http-cache-reqwest would otherwise let float.
 http-cache = { version = "=1.0.0-alpha.9", default-features = false, optional = true }
+http-cache-quickcache = { version = "=1.0.0-alpha.9", default-features = false, optional = true }
+quick_cache = { version = "0.7", default-features = false, optional = true }
 rustls = { version = "0.23", default-features = false, features = [
   "ring",
 ], optional = true }
@@ -97,4 +98,9 @@ native-tls-vendored = ["reqwest/native-tls-vendored"]
 rustls-tls = ["reqwest/rustls-no-provider", "dep:rustls"]
 system-proxy = ["reqwest/system-proxy"]
 # In-memory HTTP cache for update checks. Without it, `check` never caches.
-cache = ["dep:http-cache-reqwest", "dep:http-cache"]
+cache = [
+  "dep:http-cache-reqwest",
+  "dep:http-cache",
+  "dep:http-cache-quickcache",
+  "dep:quick_cache",
+]
