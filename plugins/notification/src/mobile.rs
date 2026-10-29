@@ -175,6 +175,24 @@ impl<R: Runtime> Notification<R> {
             .map_err(Into::into)
     }
 
+    /// Shows or schedules several notifications at once, each built with [`Self::builder`].
+    ///
+    /// Returns their identifiers, in the same order.
+    pub fn batch(
+        &self,
+        notifications: Vec<crate::NotificationBuilder<R>>,
+    ) -> crate::Result<Vec<i32>> {
+        let mut args = HashMap::new();
+        args.insert(
+            "notifications",
+            notifications
+                .into_iter()
+                .map(|n| n.data)
+                .collect::<Vec<_>>(),
+        );
+        self.0.run_mobile_plugin("batch", args).map_err(Into::into)
+    }
+
     /// Lists the scheduled notifications that have not been delivered yet.
     pub fn pending(&self) -> crate::Result<Vec<PendingNotification>> {
         self.0
