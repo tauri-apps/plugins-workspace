@@ -321,11 +321,16 @@ impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
     }
 
     fn get_store(&self, path: impl AsRef<Path>) -> Option<Arc<Store<R>>> {
-        let collection = self.state::<StoreState>();
-        let stores = collection.stores.read().unwrap();
-        stores
-            .get(&resolve_store_path(self.app_handle(), path.as_ref()).ok()?)
-            .and_then(|rid| self.resources_table().get(*rid).ok())
+        let path = resolve_store_path(self.app_handle(), path.as_ref()).ok()?;
+        // copied out so the stores lock is released before the resource table is locked,
+        // closing a store takes them in the opposite order
+        let rid = *self
+            .state::<StoreState>()
+            .stores
+            .read()
+            .unwrap()
+            .get(&path)?;
+        self.resources_table().get(rid).ok()
     }
 }
 
@@ -468,9 +473,16 @@ impl Builder {
             .on_event(|app_handle, event| {
                 if let RunEvent::Exit = event {
                     let collection = app_handle.state::<StoreState>();
-                    let stores = collection.stores.read().unwrap();
-                    for (path, rid) in stores.iter() {
-                        if let Ok(store) = app_handle.resources_table().get::<Store<R>>(*rid)
+                    // collected first so the stores lock is not held while the resource table is locked
+                    let stores: Vec<_> = collection
+                        .stores
+                        .read()
+                        .unwrap()
+                        .iter()
+                        .map(|(path, rid)| (path.clone(), *rid))
+                        .collect();
+                    for (path, rid) in stores {
+                        if let Ok(store) = app_handle.resources_table().get::<Store<R>>(rid)
                             && let Err(err) = store.save()
                         {
                             tracing::error!("failed to save store {path:?} with error {err:?}");

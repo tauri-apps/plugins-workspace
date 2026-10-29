@@ -201,20 +201,20 @@ impl<R: Runtime> StoreBuilder<R> {
     }
 
     pub(crate) fn build_inner(mut self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
+        // Closing a store locks the resource table and then the stores (`Store::close`),
+        // so the stores lock is never held here while waiting for the resource table.
         let stores = self.app.state::<StoreState>().stores.clone();
-        let mut stores = stores.write().unwrap();
 
         self.path = resolve_store_path(&self.app, self.path)?;
 
-        if self.create_new {
-            if let Some(rid) = stores.remove(&self.path) {
-                let _ = self.app.resources_table().take::<Store<R>>(rid);
+        if !self.create_new {
+            let rid = stores.read().unwrap().get(&self.path).copied();
+            if let Some(rid) = rid {
+                // The resource id we stored can be invalid due to
+                // the resource table getting modified by an external source
+                // (e.g. `App::cleanup_before_exit` > `manager.resources_table.clear()`)
+                return Ok((self.app.resources_table().get(rid)?, rid));
             }
-        } else if let Some(rid) = stores.get(&self.path) {
-            // The resource id we stored can be invalid due to
-            // the resource table getting modified by an external source
-            // (e.g. `App::cleanup_before_exit` > `manager.resources_table.clear()`)
-            return Ok((self.app.resources_table().get(*rid)?, *rid));
         }
 
         // if stores.contains_key(&self.path) {
@@ -244,7 +244,18 @@ impl<R: Runtime> StoreBuilder<R> {
         };
 
         let store = Arc::new(store);
-        let rid = self.app.resources_table().add_arc(store.clone());
+
+        let mut resources = self.app.resources_table();
+        let mut stores = stores.write().unwrap();
+        if self.create_new {
+            if let Some(rid) = stores.remove(&self.path) {
+                let _ = resources.take::<Store<R>>(rid);
+            }
+        } else if let Some(rid) = stores.get(&self.path).copied() {
+            // another build of the same path finished first, use its store
+            return Ok((resources.get(rid)?, rid));
+        }
+        let rid = resources.add_arc(store.clone());
         stores.insert(self.path, rid);
 
         Ok((store, rid))
