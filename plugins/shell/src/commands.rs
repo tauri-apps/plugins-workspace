@@ -251,6 +251,7 @@ pub fn spawn<R: Runtime>(
     command_scope: CommandScope<crate::scope::ScopeAllowedCommand>,
     global_scope: GlobalScope<crate::scope::ScopeAllowedCommand>,
 ) -> crate::Result<ChildId> {
+    let process_group = options.process_group;
     let (command, encoding) =
         prepare_cmd(window, program, args, options, command_scope, global_scope)?;
 
@@ -263,7 +264,11 @@ pub fn spawn<R: Runtime>(
     tauri::async_runtime::spawn(async move {
         while let Some(event) = rx.recv().await {
             if matches!(event, crate::process::CommandEvent::Terminated(_)) {
-                children.lock().unwrap().remove(&pid);
+                // a process group can outlive its leader: keep it tracked while it has members,
+                // so `kill` and the exit cleanup still reach them
+                if !(process_group && group_has_members(pid)) {
+                    children.lock().unwrap().remove(&pid);
+                }
             };
             let js_event = JSCommandEvent::new(event, encoding);
 
@@ -285,6 +290,19 @@ pub fn spawn<R: Runtime>(
     });
 
     Ok(pid)
+}
+
+/// Whether the process group led by `pid` still has members after the leader exited.
+#[cfg(unix)]
+fn group_has_members(pid: ChildId) -> bool {
+    // signal 0 only checks that the group exists
+    unsafe { libc::killpg(pid as libc::pid_t, 0) == 0 }
+}
+
+/// Job objects are not checked yet, so on Windows the child is untracked when it exits, as before.
+#[cfg(not(unix))]
+fn group_has_members(_pid: ChildId) -> bool {
+    false
 }
 
 #[tauri::command]
