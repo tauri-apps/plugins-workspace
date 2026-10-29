@@ -85,7 +85,6 @@ impl<R: Runtime, T: Manager<R>> ShellExt<R> for T {
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("shell")
-        .initialization_script(include_str!("init-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![
             commands::execute,
             commands::spawn,
