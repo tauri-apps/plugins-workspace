@@ -9,6 +9,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "ts:check": "pnpm run -r ts:check",
+    "test:notification-init": "node --test .scripts/tests/notification-init.test.js",
     "test:api-e2e": "pnpm run --filter \"api-e2e\" e2e",
     "test:api-e2e:android": "pnpm run --filter \"api-e2e\" e2e:android",
     "test:api-e2e:ios": "pnpm run --filter \"api-e2e\" e2e:ios",
