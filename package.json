@@ -4,6 +4,7 @@
   "license": "MIT OR Apache-2.0",
   "type": "module",
   "scripts": {
+    "test:shell-init": "node --test .scripts/tests/shell-init.test.js",
     "build": "pnpm run -r --parallel --filter !plugins-workspace --filter !\"./plugins/*/examples/**\" --filter !\"./examples/*\" build",
     "lint": "eslint .",
     "format": "prettier --write .",
