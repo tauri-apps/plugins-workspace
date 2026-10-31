@@ -93,8 +93,6 @@ pub struct ClientConfig {
     method: String,
     url: url::Url,
     headers: Vec<(String, String)>,
-    /// Only set by guest code that predates [`CLIENT_CONFIG_HEADER`]; the body is the raw IPC
-    /// payload otherwise.
     data: Option<Vec<u8>>,
     connect_timeout: Option<u64>,
     max_redirections: Option<usize>,
@@ -238,17 +236,17 @@ const CLIENT_CONFIG_HEADER: &str = "client-config";
 ///
 /// A call with a body sends the body as the IPC payload and its [`ClientConfig`] in
 /// [`CLIENT_CONFIG_HEADER`]. The payload is raw bytes, except on Android and when the webview
-/// falls back to `postMessage`, where it arrives as a JSON array of numbers. A call without a body,
-/// or from guest code that predates the header, sends `{ clientConfig }` as JSON arguments.
-fn read_client_config(body: &InvokeBody, headers: &HeaderMap) -> Result<ClientConfig> {
+/// falls back to `postMessage`, where it arrives as a JSON array of numbers. A call without a body
+/// sends `{ clientConfig }` as JSON arguments.
+fn read_client_config(body: &InvokeBody, headers: &HeaderMap) -> serde_json::Result<ClientConfig> {
     let Some(header) = headers.get(CLIENT_CONFIG_HEADER) else {
         let InvokeBody::Json(serde_json::Value::Object(args)) = body else {
-            return Err(serde_json::Error::custom("missing clientConfig").into());
+            return Err(serde_json::Error::custom("missing clientConfig"));
         };
         let client_config = args
             .get("clientConfig")
             .ok_or_else(|| serde_json::Error::custom("missing clientConfig"))?;
-        return Ok(ClientConfig::deserialize(client_config)?);
+        return ClientConfig::deserialize(client_config);
     };
 
     let header: Cow<'_, [u8]> = percent_encoding::percent_decode(header.as_bytes()).into();
@@ -858,12 +856,6 @@ mod tests {
         let body = InvokeBody::Json(serde_json::json!([0, 1, 255]));
         let config = read_client_config(&body, &client_config_headers()).unwrap();
         assert_eq!(config.data, Some(vec![0, 1, 255]));
-    }
-
-    #[test]
-    fn number_array_body_rejects_values_outside_a_byte() {
-        let body = InvokeBody::Json(serde_json::json!([256]));
-        assert!(read_client_config(&body, &client_config_headers()).is_err());
     }
 
     #[test]

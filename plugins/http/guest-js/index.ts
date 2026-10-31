@@ -219,8 +219,7 @@ export async function fetch(
     danger
   }
 
-  // A body sent inside the JSON arguments is encoded as one number per byte on the
-  // main thread, so it goes as the raw IPC payload and the options ride in a header.
+  // if we have a body, send it as raw IPC payload, and pass options using headers
   const rid =
     buffer.byteLength !== 0
       ? await invoke<number>('plugin:http|fetch', new Uint8Array(buffer), {
