@@ -13,7 +13,10 @@ use tauri::{
     command,
     ipc::{CommandScope, GlobalScope},
 };
-use tokio::sync::oneshot::{Receiver, Sender, channel};
+use tokio::sync::{
+    oneshot::{Receiver, Sender, channel},
+    watch,
+};
 
 use crate::{
     Error, Http, Result,
@@ -26,8 +29,52 @@ const HTTP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_P
 /// configure `maxRedirections`.
 const DEFAULT_MAX_REDIRECTIONS: usize = 10;
 
-struct ReqwestResponse(reqwest::Response);
-impl tauri::Resource for ReqwestResponse {}
+struct ReqwestResponse {
+    response: Mutex<Option<reqwest::Response>>,
+    canceled: watch::Sender<bool>,
+}
+
+impl ReqwestResponse {
+    fn new(response: reqwest::Response) -> Self {
+        Self {
+            response: Mutex::new(Some(response)),
+            canceled: watch::channel(false).0,
+        }
+    }
+
+    async fn read_chunk(&self) -> crate::Result<Option<Vec<u8>>> {
+        let mut canceled = self.canceled.subscribe();
+        let mut response = self.response.lock().await;
+        if *canceled.borrow() {
+            response.take();
+            return Err(Error::RequestCanceled);
+        }
+        let Some(inner) = response.as_mut() else {
+            return Ok(None);
+        };
+        let result = tokio::select! {
+            biased;
+            _ = canceled.changed() => Err(Error::RequestCanceled),
+            chunk = inner.chunk() => chunk
+                .map(|chunk| chunk.map(|chunk| chunk.to_vec()))
+                .map_err(Error::from),
+        };
+        if !matches!(result, Ok(Some(_))) {
+            // Drop the response on cancellation, EOF or error even while an IPC
+            // call still holds an Arc to this resource.
+            response.take();
+        }
+        result
+    }
+}
+
+impl tauri::Resource for ReqwestResponse {
+    fn close(self: Arc<Self>) {
+        // ResourceTable::close only removes the table's Arc. Wake a pending body
+        // read so its response is dropped without waiting for another byte.
+        self.canceled.send_replace(true);
+    }
+}
 
 type CancelableResponseResult = Result<reqwest::Response>;
 type CancelableResponseFuture =
@@ -482,7 +529,7 @@ pub async fn fetch_send<R: Runtime>(
     }
 
     let mut resources_table = webview.resources_table();
-    let rid = resources_table.add(ReqwestResponse(res));
+    let rid = resources_table.add(ReqwestResponse::new(res));
 
     Ok(FetchResponse {
         status: status.as_u16(),
@@ -503,15 +550,7 @@ pub async fn fetch_read_body<R: Runtime>(
         resources_table.get::<ReqwestResponse>(rid)?
     };
 
-    // SAFETY: we can access the inner value mutably
-    // because we are the only ones with a reference to it
-    // and we don't want to use `Arc::into_inner` because we want to keep the value in the table
-    // for potential future calls to `fetch_cancel_body`
-    let res_ptr = Arc::as_ptr(&res) as *mut ReqwestResponse;
-    let res = unsafe { &mut *res_ptr };
-    let res = &mut res.0;
-
-    let Some(chunk) = res.chunk().await? else {
+    let Some(mut chunk) = res.read_chunk().await? else {
         let mut resources_table = webview.resources_table();
         resources_table.close(rid)?;
 
@@ -519,7 +558,6 @@ pub async fn fetch_read_body<R: Runtime>(
         return Ok(tauri::ipc::Response::new(vec![1]));
     };
 
-    let mut chunk = chunk.to_vec();
     // append a 0 byte to indicate that the body is not empty
     chunk.push(0);
 
@@ -575,6 +613,162 @@ mod tests {
     };
 
     use super::*;
+
+    /// Send one HTTP/1.1 chunk and then wait for the client to disconnect.
+    fn silent_body_server() -> (String, Receiver<std::io::Result<usize>>) {
+        use std::io::Read;
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let address = listener.local_addr().unwrap();
+        let (closed_tx, closed_rx) = channel();
+        std::thread::spawn(move || {
+            let (mut socket, _) = listener.accept().unwrap();
+            socket
+                .set_read_timeout(Some(Duration::from_secs(5)))
+                .unwrap();
+            let mut request = BufReader::new(socket.try_clone().unwrap());
+            loop {
+                let mut line = String::new();
+                request.read_line(&mut line).unwrap();
+                if line == "\r\n" {
+                    break;
+                }
+            }
+            socket.write_all(b"HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nTransfer-Encoding: chunked\r\nConnection: close\r\n\r\ne\r\ndata: chunk1\n\n\r\n").unwrap();
+            socket.flush().unwrap();
+            let _ = closed_tx.send(socket.read(&mut [0u8; 1]));
+        });
+        (format!("http://{address}/"), closed_rx)
+    }
+
+    async fn assert_server_closed(closed: Receiver<std::io::Result<usize>>) {
+        let result = tokio::time::timeout(Duration::from_secs(2), closed)
+            .await
+            .expect("server did not observe connection closure")
+            .unwrap();
+        match result {
+            Ok(0) => {}
+            Err(error)
+                if matches!(
+                    error.kind(),
+                    std::io::ErrorKind::ConnectionReset | std::io::ErrorKind::ConnectionAborted
+                ) => {}
+            result => panic!("expected socket EOF or reset, got {result:?}"),
+        }
+    }
+
+    #[test]
+    fn body_cancel_interrupts_pending_read() {
+        tauri::async_runtime::block_on(async {
+            let (url, closed) = silent_body_server();
+            let response = reqwest::Client::builder()
+                .no_proxy()
+                .build()
+                .unwrap()
+                .get(url)
+                .send()
+                .await
+                .unwrap();
+            let mut table = ResourceTable::default();
+            let rid = table.add(ReqwestResponse::new(response));
+            let body = table.get::<ReqwestResponse>(rid).unwrap();
+            assert_eq!(
+                body.read_chunk().await.unwrap().unwrap(),
+                b"data: chunk1\n\n"
+            );
+            let pending = body.read_chunk();
+            tokio::pin!(pending);
+            // Poll the actual read once, ensuring it is waiting for silent network data.
+            assert!(
+                std::future::poll_fn(|cx| std::task::Poll::Ready(pending.as_mut().poll(cx)))
+                    .await
+                    .is_pending()
+            );
+            table.close(rid).unwrap();
+            let result = tokio::time::timeout(Duration::from_secs(2), pending)
+                .await
+                .expect("resource close did not interrupt the pending body read");
+            assert!(matches!(result, Err(Error::RequestCanceled)));
+            assert_server_closed(closed).await;
+            assert!(table.get::<ReqwestResponse>(rid).is_err());
+            assert!(table.close(rid).is_err());
+        });
+    }
+
+    #[test]
+    fn body_cancel_before_read_is_observed() {
+        tauri::async_runtime::block_on(async {
+            let (url, closed) = silent_body_server();
+            let response = reqwest::Client::builder()
+                .no_proxy()
+                .build()
+                .unwrap()
+                .get(url)
+                .send()
+                .await
+                .unwrap();
+            let mut table = ResourceTable::default();
+            let rid = table.add(ReqwestResponse::new(response));
+            let body = table.get::<ReqwestResponse>(rid).unwrap();
+            table.close(rid).unwrap();
+            assert!(matches!(
+                body.read_chunk().await,
+                Err(Error::RequestCanceled)
+            ));
+            assert_server_closed(closed).await;
+        });
+    }
+
+    #[test]
+    fn body_cancel_interrupts_read_waiting_for_lock() {
+        tauri::async_runtime::block_on(async {
+            let (url, closed) = silent_body_server();
+            let response = reqwest::Client::builder()
+                .no_proxy()
+                .build()
+                .unwrap()
+                .get(url)
+                .send()
+                .await
+                .unwrap();
+            let mut table = ResourceTable::default();
+            let rid = table.add(ReqwestResponse::new(response));
+            let body = table.get::<ReqwestResponse>(rid).unwrap();
+            assert!(body.read_chunk().await.unwrap().is_some());
+            let first = body.read_chunk();
+            let second = body.read_chunk();
+            tokio::pin!(first, second);
+            for mut pending in [first.as_mut(), second.as_mut()] {
+                assert!(
+                    std::future::poll_fn(|cx| std::task::Poll::Ready(pending.as_mut().poll(cx)))
+                        .await
+                        .is_pending()
+                );
+            }
+            table.close(rid).unwrap();
+            for pending in [first, second] {
+                assert!(matches!(
+                    tokio::time::timeout(Duration::from_secs(2), pending)
+                        .await
+                        .unwrap(),
+                    Err(Error::RequestCanceled)
+                ));
+            }
+            assert_server_closed(closed).await;
+        });
+    }
+
+    #[test]
+    fn body_reads_chunks_and_normal_eof() {
+        tauri::async_runtime::block_on(async {
+            let response = http::Response::builder()
+                .body(reqwest::Body::from("complete"))
+                .unwrap();
+            let body = ReqwestResponse::new(reqwest::Response::from(response));
+            assert_eq!(body.read_chunk().await.unwrap().unwrap(), b"complete");
+            assert!(body.read_chunk().await.unwrap().is_none());
+            assert!(body.read_chunk().await.unwrap().is_none());
+        });
+    }
 
     /// Test server with an open redirect:
     ///
