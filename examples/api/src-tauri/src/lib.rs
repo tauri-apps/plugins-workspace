@@ -196,6 +196,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             cmd::log_operation,
             cmd::perform_request,
+            cmd::webview_resource_names,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");
