@@ -34,6 +34,7 @@ impl<R: Runtime> Geolocation<R> {
     pub fn watch_position<F: Fn(WatchEvent) + Send + Sync + 'static>(
         &self,
         options: PositionOptions,
+        request_updates_in_background: bool,
         callback: F,
     ) -> crate::Result<u32> {
         let channel = Channel::new(move |event| {
@@ -53,7 +54,7 @@ impl<R: Runtime> Geolocation<R> {
         });
         let id = channel.id();
 
-        self.watch_position_inner(options, channel)?;
+        self.watch_position_inner(options, request_updates_in_background, channel)?;
 
         Ok(id)
     }
@@ -61,6 +62,7 @@ impl<R: Runtime> Geolocation<R> {
     pub(crate) fn watch_position_inner(
         &self,
         _options: PositionOptions,
+        _request_updates_in_background: bool,
         _callback_channel: Channel,
     ) -> crate::Result<()> {
         Ok(())
@@ -80,6 +82,7 @@ impl<R: Runtime> Geolocation<R> {
     pub fn request_permissions(
         &self,
         _permissions: Option<Vec<PermissionType>>,
+        _request_updates_in_background: bool,
     ) -> crate::Result<PermissionStatus> {
         Ok(PermissionStatus::default())
     }
