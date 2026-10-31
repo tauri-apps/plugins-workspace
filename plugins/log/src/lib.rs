@@ -275,10 +275,13 @@ impl RotatingFile {
                   // exclude the current active file
                   && old_file_name != format!("{}.log", self.file_name)
                 {
-                    let date = old_file_name
+                    let rest = old_file_name
                         .strip_prefix(&self.file_name)?
-                        .strip_prefix("_")?
-                        .strip_suffix(".log")?;
+                        .strip_prefix("_")?;
+                    // count legacy `.log.bak` files too, so the keep cap holds for them
+                    let date = rest
+                        .strip_suffix(".log")
+                        .or_else(|| rest.strip_suffix(".log.bak"))?;
                     Some((path, date.to_string()))
                 } else {
                     None
@@ -298,7 +301,7 @@ impl RotatingFile {
     }
 
     fn rename_file_to_dated(&self) -> Result<(), Error> {
-        let to = self.dir.join(format!(
+        let mut to = self.dir.join(format!(
             "{}_{}.log",
             self.file_name,
             self.timezone_strategy
@@ -307,14 +310,27 @@ impl RotatingFile {
                 .unwrap(),
         ));
         if to.is_file() {
-            // designated rotated log file name already exists
-            // highly unlikely but defensively handle anyway by adding .bak to filename
-            let mut to_bak = to.clone();
-            to_bak.set_file_name(format!(
-                "{}.bak",
-                to_bak.file_name().unwrap().to_string_lossy()
-            ));
-            fs::rename(&to, to_bak)?;
+            // designated rotated log file name already exists, e.g. two rotations
+            // within the same second. pick the first free `<name>_<date>_<n>.log`
+            // so no already-rotated file is overwritten and the name still ends
+            // in `.log` for remove_old_files to count it.
+            let mut n = 1u32;
+            loop {
+                let candidate = self.dir.join(format!(
+                    "{}_{}_{}.log",
+                    self.file_name,
+                    self.timezone_strategy
+                        .get_now()
+                        .format(LOG_DATE_FORMAT)
+                        .unwrap(),
+                    n
+                ));
+                if !candidate.exists() {
+                    to = candidate;
+                    break;
+                }
+                n += 1;
+            }
         }
         fs::rename(&self.path, &to)?;
         Ok(())
@@ -922,4 +938,122 @@ pub fn attach_logger(
     log::set_boxed_logger(log)?;
     log::set_max_level(max_level);
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn temp_log_dir(tag: &str) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!(
+            "tauri-plugin-log-test-{}-{}",
+            tag,
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    #[test]
+    fn remove_old_files_counts_log_bak_files() {
+        let dir = temp_log_dir("bak");
+        let file_name = "repro".to_string();
+        for name in [
+            "repro.log",
+            "repro_2026-10-14_12-38-13.log",
+            "repro_2026-10-14_12-38-14.log.bak",
+            "repro_2026-10-14_12-38-19.log",
+        ] {
+            fs::write(dir.join(name), b"x").unwrap();
+        }
+        let rotator = RotatingFile::new(
+            &dir,
+            file_name,
+            u64::MAX,
+            RotationStrategy::KeepSome(2),
+            TimezoneStrategy::UseUtc,
+            FileOpenStrategy::Append,
+        )
+        .unwrap();
+        rotator.remove_old_files(2).unwrap();
+        let mut remaining: Vec<_> = fs::read_dir(&dir)
+            .unwrap()
+            .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+            .collect();
+        remaining.sort();
+        // active file plus at most 2 rotated files, oldest removed first
+        assert_eq!(
+            remaining,
+            vec![
+                "repro.log",
+                "repro_2026-10-14_12-38-14.log.bak",
+                "repro_2026-10-14_12-38-19.log"
+            ]
+        );
+        fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn same_second_rotation_never_overwrites() {
+        let dir = temp_log_dir("collision");
+        let file_name = "repro".to_string();
+        let rotator = RotatingFile::new(
+            &dir,
+            file_name.clone(),
+            u64::MAX,
+            RotationStrategy::KeepSome(10),
+            TimezoneStrategy::UseUtc,
+            FileOpenStrategy::Append,
+        )
+        .unwrap();
+        // occupy the name the rotation would pick for the current second,
+        // retrying across a second boundary so the test never flakes
+        let mut occupied = None;
+        for _ in 0..3 {
+            let candidate = dir.join(format!(
+                "{}_{}.log",
+                file_name,
+                TimezoneStrategy::UseUtc
+                    .get_now()
+                    .format(LOG_DATE_FORMAT)
+                    .unwrap()
+            ));
+            fs::write(&candidate, b"first").unwrap();
+            // if the second ticked over between naming and writing, retry
+            let fresh = dir.join(format!(
+                "{}_{}.log",
+                file_name,
+                TimezoneStrategy::UseUtc
+                    .get_now()
+                    .format(LOG_DATE_FORMAT)
+                    .unwrap()
+            ));
+            if candidate == fresh {
+                occupied = Some(candidate);
+                break;
+            }
+            fs::remove_file(&candidate).ok();
+        }
+        let occupied = occupied.expect("could not pin the current second");
+        fs::write(&rotator.path, b"second").unwrap();
+        rotator.rename_file_to_dated().unwrap();
+        // the pre-existing rotated file is untouched
+        assert_eq!(fs::read(&occupied).unwrap(), b"first");
+        // the active file moved to a fresh `.log` name
+        assert!(!rotator.path.exists());
+        let rotated: Vec<_> = fs::read_dir(&dir)
+            .unwrap()
+            .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+            .filter(|n| n != &occupied.file_name().unwrap().to_string_lossy())
+            .collect();
+        assert_eq!(rotated.len(), 1);
+        assert!(rotated[0].ends_with(".log"));
+        assert_eq!(fs::read(dir.join(&rotated[0])).unwrap(), b"second");
+        fs::remove_dir_all(&dir).ok();
+    }
 }
