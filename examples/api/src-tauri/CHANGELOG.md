@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.0.57]
+
+### Dependencies
+
+- Upgraded to `notification@2.8.0`
+- Upgraded to `dialog@2.8.4`
+- Upgraded to `shell@2.6.0`
+- Upgraded to `updater@2.14.1`
+
 ## [2.0.56]
 
 ### Dependencies
