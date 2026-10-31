@@ -178,8 +178,6 @@ export async function fetch(
 
   const req = new Request(input, init)
   const buffer = await req.arrayBuffer()
-  const data =
-    buffer.byteLength !== 0 ? Array.from(new Uint8Array(buffer)) : null
 
   // append new headers created by the browser `Request` implementation,
   // if not already declared by the caller of this function
@@ -211,18 +209,25 @@ export async function fetch(
     throw new Error(ERROR_REQUEST_CANCELLED)
   }
 
-  const rid = await invoke<number>('plugin:http|fetch', {
-    clientConfig: {
-      method: req.method,
-      url: req.url,
-      headers: mappedHeaders,
-      data,
-      maxRedirections,
-      connectTimeout,
-      proxy,
-      danger
-    }
-  })
+  const clientConfig = {
+    method: req.method,
+    url: req.url,
+    headers: mappedHeaders,
+    maxRedirections,
+    connectTimeout,
+    proxy,
+    danger
+  }
+
+  // if we have a body, send it as raw IPC payload, and pass options using headers
+  const rid =
+    buffer.byteLength !== 0
+      ? await invoke<number>('plugin:http|fetch', new Uint8Array(buffer), {
+          headers: {
+            'client-config': encodeURIComponent(JSON.stringify(clientConfig))
+          }
+        })
+      : await invoke<number>('plugin:http|fetch', { clientConfig })
 
   const abort = () =>
     invoke('plugin:http|fetch_cancel', { rid }).catch(() => {})
