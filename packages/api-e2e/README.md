@@ -91,10 +91,10 @@ skipped on desktop, and the rest run everywhere with the odd test gated.
 | `geolocation`       | `getCurrentPosition`, `watchPosition` (several at once) and `clearWatch` against a location simulated from the host, the granted permission state, and the rejections with location services off (Android).                                                                                                                                                                    |
 | mobile-only plugins | `barcode-scanner`, `haptics` and `nfc` need hardware or native UI the driver cannot operate, so only their global API surface is asserted.                                                                                                                                                                                                                                     | Only there.                                                                                                                                                                                                                                |
 
-The notification permission specs are desktop-only: a mobile app starts out ungranted and
-`requestPermission` puts up a system dialog the session would then block on. The rest of the
-notification API (action types, channels, the pending/active lists, listeners) only exists on
-mobile, and is covered there without the permission.
+The notification permission specs cover desktop and repeated requests on Android after
+granting `POST_NOTIFICATIONS` over `adb` (Android 13+). They do not interact with the system
+permission dialog. The rest of the notification API (action types, channels, the
+pending/active lists, listeners) only exists on mobile and is covered there too.
 
 The geolocation specs move the device with `adb emu geo fix` (Android) and
 `xcrun simctl location` (iOS), so on Android they need an emulator rather than a device.

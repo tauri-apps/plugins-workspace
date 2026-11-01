@@ -258,6 +258,8 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     } else {
       if (getPermissionState(LOCAL_NOTIFICATIONS) !== PermissionState.GRANTED) {
         requestPermissionForAlias(LOCAL_NOTIFICATIONS, invoke, "permissionsCallback")
+      } else {
+        permissionState(invoke)
       }
     }
   }
