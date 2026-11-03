@@ -251,7 +251,6 @@ pub fn spawn<R: Runtime>(
     command_scope: CommandScope<crate::scope::ScopeAllowedCommand>,
     global_scope: GlobalScope<crate::scope::ScopeAllowedCommand>,
 ) -> crate::Result<ChildId> {
-    let process_group = options.process_group;
     let (command, encoding) =
         prepare_cmd(window, program, args, options, command_scope, global_scope)?;
 
@@ -263,12 +262,20 @@ pub fn spawn<R: Runtime>(
 
     tauri::async_runtime::spawn(async move {
         while let Some(event) = rx.recv().await {
-            if matches!(event, crate::process::CommandEvent::Terminated(_)) {
-                // a process group can outlive its leader: keep it tracked while it has members,
-                // so `kill` and the exit cleanup still reach them
-                if !(process_group && group_has_members(pid)) {
-                    children.lock().unwrap().remove(&pid);
-                }
+            if matches!(event, crate::process::CommandEvent::Terminated(_))
+                && keep_tracking_group(&children, pid)
+            {
+                // a process group can outlive its leader: keep it reachable by `kill` and the
+                // exit cleanup, but only until it is empty, as its id can be reused after that
+                let children = children.clone();
+                tauri::async_runtime::spawn(async move {
+                    loop {
+                        tokio::time::sleep(GROUP_POLL_INTERVAL).await;
+                        if !keep_tracking_group(&children, pid) {
+                            break;
+                        }
+                    }
+                });
             };
             let js_event = JSCommandEvent::new(event, encoding);
 
@@ -292,17 +299,20 @@ pub fn spawn<R: Runtime>(
     Ok(pid)
 }
 
-/// Whether the process group led by `pid` still has members after the leader exited.
-#[cfg(unix)]
-fn group_has_members(pid: ChildId) -> bool {
-    // signal 0 only checks that the group exists
-    unsafe { libc::killpg(pid as libc::pid_t, 0) == 0 }
-}
+/// How often a process group that outlived its leader is checked for remaining members.
+const GROUP_POLL_INTERVAL: std::time::Duration = std::time::Duration::from_millis(500);
 
-/// Job objects are not checked yet, so on Windows the child is untracked when it exits, as before.
-#[cfg(not(unix))]
-fn group_has_members(_pid: ChildId) -> bool {
-    false
+/// Forgets the exited child `pid` unless its process group or job object still has members.
+/// Returns whether it is still tracked.
+fn keep_tracking_group(children: &crate::ChildStore, pid: ChildId) -> bool {
+    let mut children = children.lock().unwrap();
+    let group_alive = children
+        .get(&pid)
+        .is_some_and(|child| child.group_has_members());
+    if !group_alive {
+        children.remove(&pid);
+    }
+    group_alive
 }
 
 #[tauri::command]

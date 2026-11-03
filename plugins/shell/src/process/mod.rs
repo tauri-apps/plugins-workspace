@@ -124,6 +124,23 @@ impl CommandChild {
         Ok(())
     }
 
+    /// Whether the process group (POSIX) or job object (Windows) still has running processes,
+    /// which it can after the child itself exited. Always `false` without `process_group`.
+    pub(crate) fn group_has_members(&self) -> bool {
+        #[cfg(unix)]
+        if self.process_group {
+            // signal 0 only checks that the group exists
+            return unsafe { libc::killpg(self.inner.id() as libc::pid_t, 0) } == 0;
+        }
+
+        #[cfg(windows)]
+        if let Some(job) = &self.job {
+            return job.has_processes();
+        }
+
+        false
+    }
+
     /// Returns the process pid.
     pub fn pid(&self) -> u32 {
         self.inner.id()
@@ -1086,5 +1103,32 @@ mod tests {
             !alive,
             "grandchild should be killed even though the launcher already exited"
         );
+    }
+
+    /// The process group or job object of an exited launcher counts as alive until its
+    /// last process is gone, so the spawn command keeps it reachable by `kill` until then.
+    #[test]
+    fn test_group_has_members_after_leader_exit() {
+        let (mut rx, child) = sim_command("launcher_sim")
+            .set_process_group(true)
+            .spawn()
+            .unwrap();
+
+        let grandchild_pid = read_grandchild_pid(&mut rx);
+        wait_for_terminated(rx);
+
+        let alive = child.group_has_members();
+        force_kill(grandchild_pid);
+        assert!(alive, "the grandchild should keep the group alive");
+
+        // the kill lands asynchronously, and a POSIX zombie stays in its group until init reaps it
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
+        while child.group_has_members() {
+            assert!(
+                std::time::Instant::now() < deadline,
+                "the group should be empty once the grandchild is gone"
+            );
+            std::thread::sleep(std::time::Duration::from_millis(50));
+        }
     }
 }
