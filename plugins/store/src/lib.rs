@@ -39,6 +39,8 @@ struct ChangePayload<'a> {
 
 #[derive(Debug)]
 struct StoreState {
+    // Because we sync this with resource table and locks this in [`Resource::close`],
+    // we must always lock the resource table first and then lock this when writting into it or we can deadlock.
     stores: Arc<RwLock<HashMap<PathBuf, ResourceId>>>,
     serialize_fns: HashMap<String, SerializeFn>,
     deserialize_fns: HashMap<String, DeserializeFn>,
