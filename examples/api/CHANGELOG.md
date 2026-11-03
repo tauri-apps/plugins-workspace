@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.44-alpha.5]
+
+### Dependencies
+
+- Upgraded to `shell-js@3.0.0-alpha.4`
+
 ## [2.0.44-alpha.4]
 
 ### Dependencies
