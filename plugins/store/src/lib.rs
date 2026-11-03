@@ -469,9 +469,18 @@ impl Builder {
             // and before the resource table is cleared
             .on_cleanup_before_exit(|app_handle| {
                 let collection = app_handle.state::<StoreState>();
-                let stores = collection.stores.read().unwrap();
-                for (path, rid) in stores.iter() {
-                    if let Ok(store) = app_handle.resources_table().get::<Store<R>>(*rid)
+                // collected first so the stores lock is not held while the resource table is
+                // locked, closing a store takes them in the opposite order
+                let stores: Vec<_> = collection
+                    .stores
+                    .read()
+                    .unwrap()
+                    .iter()
+                    .map(|(path, rid)| (path.clone(), *rid))
+                    .collect();
+                for (path, rid) in stores {
+                    let store = app_handle.resources_table().get::<Store<R>>(rid);
+                    if let Ok(store) = store
                         && let Err(err) = store.save()
                     {
                         tracing::error!("failed to save store {path:?} with error {err:?}");
