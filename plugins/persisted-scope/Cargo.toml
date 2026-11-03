@@ -28,6 +28,3 @@ tauri-plugin-fs = { path = "../fs", version = "2.7.1" }
 
 [features]
 protocol-asset = ["tauri/protocol-asset"]
-
-[dev-dependencies]
-tauri = { workspace = true, features = ["test"] }
