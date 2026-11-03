@@ -18,6 +18,7 @@
     ".changes/opener-js-reveal-items-in-dir.md",
     ".changes/opener-reveal-items-in-dir.md",
     ".changes/port-v2.md",
+    ".changes/shell-remove-link-script.md",
     ".changes/shell-remove-open.md",
     ".changes/single-instance-forward-timeout.md",
     ".changes/single-instance-non-unicode-args.md",

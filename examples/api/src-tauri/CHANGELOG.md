@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.0-alpha.5]
+
+### Dependencies
+
+- Upgraded to `shell@3.0.0-alpha.4`
+
 ## [3.0.0-alpha.4]
 
 ### Dependencies

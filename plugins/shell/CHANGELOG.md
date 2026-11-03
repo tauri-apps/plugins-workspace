@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.0-alpha.4]
+
+- [`14ed4c4f`](https://github.com/tauri-apps/plugins-workspace/commit/14ed4c4f9e717929347b9c5609acaefc259a4e22) ([#3744](https://github.com/tauri-apps/plugins-workspace/pull/3744) by [@963s](https://github.com/tauri-apps/plugins-workspace/../../963s)) Removed the webview script that sent clicks on `<a target="_blank">` links to the removed `open` command. Since that command was removed, the script made those links do nothing, even when `tauri-plugin-opener` was registered. Opener now handles them again.
+
 ## [3.0.0-alpha.3]
 
 - [``](https://github.com/tauri-apps/plugins-workspace/commit/undefined) Ported changes from v2.
