@@ -209,11 +209,12 @@ impl<R: Runtime> StoreBuilder<R> {
 
         if !self.create_new {
             let rid = stores.read().unwrap().get(&self.path).copied();
-            if let Some(rid) = rid {
-                // The resource id we stored can be invalid due to
-                // the resource table getting modified by an external source
-                // (e.g. `App::cleanup_before_exit` > `manager.resources_table.clear()`)
-                return Ok((self.app.resources_table().get(rid)?, rid));
+            // A store closed since the lookup is gone from the resource table;
+            // build a fresh one below instead of failing the load.
+            if let Some(rid) = rid
+                && let Ok(store) = self.app.resources_table().get(rid)
+            {
+                return Ok((store, rid));
             }
         }
 

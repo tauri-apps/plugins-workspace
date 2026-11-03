@@ -482,7 +482,8 @@ impl Builder {
                         .map(|(path, rid)| (path.clone(), *rid))
                         .collect();
                     for (path, rid) in stores {
-                        if let Ok(store) = app_handle.resources_table().get::<Store<R>>(rid)
+                        let store = app_handle.resources_table().get::<Store<R>>(rid);
+                        if let Ok(store) = store
                             && let Err(err) = store.save()
                         {
                             tracing::error!("failed to save store {path:?} with error {err:?}");
