@@ -201,20 +201,19 @@ impl<R: Runtime> StoreBuilder<R> {
     }
 
     pub(crate) fn build_inner(mut self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
-        // Closing a store locks the resource table and then the stores (`Store::close`),
-        // so the stores lock is never held here while waiting for the resource table.
+        // Resource table first, then the stores, see `StoreState`.
+        // The store file is read below with neither of them locked.
         let stores = self.app.state::<StoreState>().stores.clone();
 
         self.path = resolve_store_path(&self.app, self.path)?;
 
         if !self.create_new {
-            let rid = stores.read().unwrap().get(&self.path).copied();
-            // A store closed since the lookup is gone from the resource table;
-            // build a fresh one below instead of failing the load.
-            if let Some(rid) = rid
-                && let Ok(store) = self.app.resources_table().get(rid)
-            {
-                return Ok((store, rid));
+            let resources = self.app.resources_table();
+            if let Some(rid) = stores.read().unwrap().get(&self.path).copied() {
+                // The resource id we stored can be invalid due to
+                // the resource table getting modified by an external source
+                // (e.g. `App::cleanup_before_exit` > `manager.resources_table.clear()`)
+                return Ok((resources.get(rid)?, rid));
             }
         }
 
