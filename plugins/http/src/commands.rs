@@ -93,7 +93,6 @@ pub struct ClientConfig {
     method: String,
     url: url::Url,
     headers: Vec<(String, String)>,
-    data: Option<Vec<u8>>,
     connect_timeout: Option<u64>,
     max_redirections: Option<usize>,
     proxy: Option<Proxy>,
@@ -228,34 +227,16 @@ fn map_request_error(error: reqwest::Error) -> Error {
     Error::Network(error)
 }
 
-/// IPC header carrying the percent-encoded JSON [`ClientConfig`] when the request body is sent as
-/// the IPC payload.
+/// IPC header carrying the percent-encoded JSON [`ClientConfig`].
 const CLIENT_CONFIG_HEADER: &str = "client-config";
 
-/// Reads the [`ClientConfig`] of a `fetch` call.
-///
-/// A call with a body sends the body as the IPC payload and its [`ClientConfig`] in
-/// [`CLIENT_CONFIG_HEADER`]. The payload is raw bytes, except on Android and when the webview
-/// falls back to `postMessage`, where it arrives as a JSON array of numbers. A call without a body
-/// sends `{ clientConfig }` as JSON arguments.
-fn read_client_config(body: &InvokeBody, headers: &HeaderMap) -> serde_json::Result<ClientConfig> {
-    let Some(header) = headers.get(CLIENT_CONFIG_HEADER) else {
-        let InvokeBody::Json(serde_json::Value::Object(args)) = body else {
-            return Err(serde_json::Error::custom("missing clientConfig"));
-        };
-        let client_config = args
-            .get("clientConfig")
-            .ok_or_else(|| serde_json::Error::custom("missing clientConfig"))?;
-        return ClientConfig::deserialize(client_config);
-    };
-
+/// Reads the options from the IPC header.
+fn read_client_config(headers: &HeaderMap) -> serde_json::Result<ClientConfig> {
+    let header = headers
+        .get(CLIENT_CONFIG_HEADER)
+        .ok_or_else(|| serde_json::Error::custom("missing client-config header"))?;
     let header: Cow<'_, [u8]> = percent_encoding::percent_decode(header.as_bytes()).into();
-    let mut client_config: ClientConfig = serde_json::from_slice(&header)?;
-    client_config.data = Some(match body {
-        InvokeBody::Raw(data) => data.clone(),
-        InvokeBody::Json(data) => Vec::<u8>::deserialize(data)?,
-    });
-    Ok(client_config)
+    serde_json::from_slice(&header)
 }
 
 #[command]
@@ -270,12 +251,19 @@ pub async fn fetch<R: Runtime>(
         method,
         url,
         headers: headers_raw,
-        data,
         connect_timeout,
         max_redirections,
         proxy,
         danger,
-    } = read_client_config(request.body(), request.headers())?;
+    } = read_client_config(request.headers())?;
+
+    // Even though JS sends a raw payload, Android and the `postMessage` fallback deliver it
+    // as a JSON array of numbers.
+    let data = match request.body() {
+        InvokeBody::Raw(data) => data.clone(),
+        InvokeBody::Json(data) => Vec::<u8>::deserialize(data)?,
+    };
+    let data = if data.is_empty() { None } else { Some(data) };
 
     let scheme = url.scheme();
     let method = Method::from_bytes(method.as_bytes())?;
@@ -822,66 +810,5 @@ mod tests {
     fn request_non_byte_string_falls_back_to_utf8() {
         let value = byte_string_to_header_value("中文").unwrap();
         assert_eq!(value.as_bytes(), "中文".as_bytes());
-    }
-
-    /// `encodeURIComponent(JSON.stringify(clientConfig))` as the guest code sends it, with a
-    /// non-ASCII header value and an `undefined` option that `JSON.stringify` drops.
-    const ENCODED_CLIENT_CONFIG: &str = "%7B%22method%22%3A%22POST%22%2C%22url%22%3A%22http%3A%2F%2Flocalhost%2Fupload%22%2C%22headers%22%3A%5B%5B%22x-name%22%2C%22%C3%A9%22%5D%5D%2C%22connectTimeout%22%3A1000%7D";
-
-    fn client_config_headers() -> HeaderMap {
-        let mut headers = HeaderMap::new();
-        headers.insert(
-            CLIENT_CONFIG_HEADER,
-            HeaderValue::from_static(ENCODED_CLIENT_CONFIG),
-        );
-        headers
-    }
-
-    #[test]
-    fn raw_body_is_read_with_the_config_header() {
-        let body = InvokeBody::Raw(vec![0, 1, 255]);
-        let config = read_client_config(&body, &client_config_headers()).unwrap();
-
-        assert_eq!(config.method, "POST");
-        assert_eq!(config.url.as_str(), "http://localhost/upload");
-        assert_eq!(config.headers, vec![("x-name".into(), "é".into())]);
-        assert_eq!(config.connect_timeout, Some(1000));
-        assert_eq!(config.max_redirections, None);
-        assert_eq!(config.data, Some(vec![0, 1, 255]));
-    }
-
-    #[test]
-    fn number_array_body_is_read_with_the_config_header() {
-        // Android and the `postMessage` fallback deliver a raw payload as a JSON array
-        let body = InvokeBody::Json(serde_json::json!([0, 1, 255]));
-        let config = read_client_config(&body, &client_config_headers()).unwrap();
-        assert_eq!(config.data, Some(vec![0, 1, 255]));
-    }
-
-    #[test]
-    fn json_arguments_are_read_without_the_config_header() {
-        let body = InvokeBody::Json(serde_json::json!({
-            "clientConfig": {
-                "method": "PUT",
-                "url": "http://localhost/upload",
-                "headers": [],
-                "data": [7, 8],
-            }
-        }));
-        let config = read_client_config(&body, &HeaderMap::new()).unwrap();
-        assert_eq!(config.method, "PUT");
-        assert_eq!(config.data, Some(vec![7, 8]));
-
-        let body = InvokeBody::Json(serde_json::json!({
-            "clientConfig": { "method": "GET", "url": "http://localhost/", "headers": [] }
-        }));
-        let config = read_client_config(&body, &HeaderMap::new()).unwrap();
-        assert_eq!(config.data, None);
-    }
-
-    #[test]
-    fn raw_body_without_the_config_header_is_rejected() {
-        let body = InvokeBody::Raw(vec![1]);
-        assert!(read_client_config(&body, &HeaderMap::new()).is_err());
     }
 }

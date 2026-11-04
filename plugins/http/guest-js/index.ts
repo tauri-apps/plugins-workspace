@@ -219,15 +219,15 @@ export async function fetch(
     danger
   }
 
-  // if we have a body, send it as raw IPC payload, and pass options using headers
-  const rid =
-    buffer.byteLength !== 0
-      ? await invoke<number>('plugin:http|fetch', new Uint8Array(buffer), {
-          headers: {
-            'client-config': encodeURIComponent(JSON.stringify(clientConfig))
-          }
-        })
-      : await invoke<number>('plugin:http|fetch', { clientConfig })
+  const rid = await invoke<number>(
+    'plugin:http|fetch',
+    new Uint8Array(buffer),
+    {
+      headers: {
+        'client-config': encodeURIComponent(JSON.stringify(clientConfig))
+      }
+    }
+  )
 
   const abort = () =>
     invoke('plugin:http|fetch_cancel', { rid }).catch(() => {})
