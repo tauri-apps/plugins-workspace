@@ -66,6 +66,21 @@ const response = await fetch('http://localhost:3003/users/2', {
 })
 ```
 
+For streaming responses, pass an `AbortSignal` to `fetch` and abort it when the
+stream is no longer needed. Canceling the response body also interrupts a pending streaming read,
+including while the server is silent:
+
+```javascript
+const controller = new AbortController()
+const response = await fetch('http://localhost:3003/events', {
+  signal: controller.signal
+})
+const reader = response.body.getReader()
+await reader.read()
+await reader.cancel()
+// Alternatively, call controller.abort().
+```
+
 ## Contributing
 
 PRs accepted. Please make sure to read the Contributing Guide before making a pull request.
