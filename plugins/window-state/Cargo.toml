@@ -33,3 +33,6 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 bitflags = "2"
+
+[dev-dependencies]
+tauri = { workspace = true, features = ["test"] }
