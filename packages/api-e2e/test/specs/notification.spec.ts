@@ -95,18 +95,13 @@ describePlugin('notification', () => {
     'android',
     'repeated permission requests resolve when already granted',
     async () => {
-      const sdk = Number(
-        adb(['shell', 'getprop', 'ro.build.version.sdk']).trim()
-      )
-      if (sdk >= 33) {
-        adb([
-          'shell',
-          'pm',
-          'grant',
-          appId,
-          'android.permission.POST_NOTIFICATIONS'
-        ])
-      }
+      adb([
+        'shell',
+        'pm',
+        'grant',
+        appId,
+        'android.permission.POST_NOTIFICATIONS'
+      ])
 
       const result = await tauri(async (api) => {
         if (
