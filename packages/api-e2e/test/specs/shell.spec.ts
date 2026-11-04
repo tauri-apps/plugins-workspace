@@ -35,7 +35,119 @@ function normalizeDir(dir: string): string {
     .toLowerCase()
 }
 
+// Invalid supported URLs reach shell's scope check but can never open an
+// external application. Observe callback registration synchronously so a
+// cancelled click can assert that no IPC was sent, without replacing Tauri's
+// read-only invoke function or relying on a timeout to prove absence.
+async function clickLinks(cancel: boolean) {
+  return tauri(async (_api, cancel) => {
+    // Core globals exist before the document and shell's click listener are ready.
+    if (document.readyState !== 'complete') {
+      await new Promise<void>((resolve) => {
+        window.addEventListener('load', () => resolve(), { once: true })
+      })
+    }
+    const { callbacks } = (
+      window as unknown as {
+        __TAURI_INTERNALS__: { callbacks: ReadonlyMap<number, unknown> }
+      }
+    ).__TAURI_INTERNALS__
+    const cases = cancel
+      ? [
+          { href: 'https://', at: 'target' },
+          { href: 'https://', at: 'capture' }
+        ]
+      : ['http://', 'https://', 'mailto:', 'tel:'].map((href) => ({
+          href,
+          at: ''
+        }))
+    const results = []
+    for (const { href, at } of cases) {
+      const link = document.createElement('a')
+      link.href = href
+      link.target = '_blank'
+      const child = document.createElement('span')
+      child.textContent = 'shell link regression'
+      link.append(child)
+      document.body.append(link)
+      const prevent = (event: Event) => event.preventDefault()
+      let handled = false
+      // Runs after shell's body listener. Record its decision, then block
+      // opener/navigation even if shell's handler regresses or is absent.
+      const guard = (event: Event) => {
+        handled = event.defaultPrevented
+        event.preventDefault()
+        event.stopPropagation()
+      }
+      let rejected!: (message: string) => void
+      const rejection = new Promise<string>((resolve) => {
+        rejected = resolve
+      })
+      const onRejection = (event: PromiseRejectionEvent) => {
+        if (/failed regex validation/.test(String(event.reason))) {
+          event.preventDefault()
+          rejected(String(event.reason))
+        }
+      }
+      let timeout: ReturnType<typeof setTimeout> | undefined
+      window.addEventListener('unhandledrejection', onRejection)
+      document.body.addEventListener('click', guard)
+      if (at === 'target') link.addEventListener('click', prevent)
+      if (at === 'capture') window.addEventListener('click', prevent, true)
+      try {
+        const before = new Set(callbacks.keys())
+        child.dispatchEvent(
+          new MouseEvent('click', { bubbles: true, cancelable: true })
+        )
+        const registeredCallbacks = [...callbacks.keys()].filter(
+          (key) => !before.has(key)
+        ).length
+        let error = ''
+        if (registeredCallbacks > 0) {
+          error = await Promise.race([
+            rejection,
+            new Promise<never>((_resolve, reject) => {
+              timeout = setTimeout(
+                () => reject(new Error('shell scope rejection never arrived')),
+                5000
+              )
+            })
+          ])
+        }
+        results.push({ href, handled, registeredCallbacks, error })
+      } finally {
+        clearTimeout(timeout)
+        window.removeEventListener('unhandledrejection', onRejection)
+        document.body.removeEventListener('click', guard)
+        window.removeEventListener('click', prevent, true)
+        link.remove()
+      }
+    }
+    return results
+  }, cancel)
+}
+
 describePlugin('shell', () => {
+  it('intercepts supported nested _blank links with the default builder', async () => {
+    const results = await clickLinks(false)
+    expect(results).toHaveLength(4)
+    for (const result of results) {
+      expect(result.handled).toBe(true)
+      expect(result.registeredCallbacks).toBeGreaterThan(0)
+      expect(result.error).toMatch(/failed regex validation/)
+    }
+  })
+
+  it('does not send IPC for clicks prevented at the target or capture phase', async () => {
+    const results = await clickLinks(true)
+    expect(results).toHaveLength(2)
+    for (const result of results) {
+      expect(result.handled).toBe(true)
+      expect(result.registeredCallbacks).toBe(0)
+      expect(result.error).toBe('')
+    }
+  })
+
   itSpawns('execute collects stdout, stderr and the exit code', async () => {
     const output = await tauri(
       async (api, program, flag, script) => {
