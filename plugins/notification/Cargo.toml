@@ -51,7 +51,7 @@ tauri = { workspace = true, features = ["wry"] }
 notify-rust = "4.18"
 
 [target."cfg(any(target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
-zbus = "5"
+zbus = "6"
 
 [features]
 # Deprecated: tauri 2.12 no longer supports Windows 7, so this feature does nothing.
