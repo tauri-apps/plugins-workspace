@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::{future::Future, pin::Pin, str::FromStr, sync::Arc, time::Duration};
+use std::{borrow::Cow, future::Future, pin::Pin, str::FromStr, sync::Arc, time::Duration};
 
 use http::{HeaderMap, HeaderName, HeaderValue, Method, StatusCode, header};
 use reqwest::{NoProxy, redirect::Policy};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de::Error as _};
 use tauri::{
     Manager, ResourceId, ResourceTable, Runtime, State, Webview,
     async_runtime::Mutex,
     command,
-    ipc::{CommandScope, GlobalScope},
+    ipc::{CommandScope, GlobalScope, InvokeBody},
 };
 use tokio::sync::oneshot::{Receiver, Sender, channel};
 
@@ -93,7 +93,6 @@ pub struct ClientConfig {
     method: String,
     url: url::Url,
     headers: Vec<(String, String)>,
-    data: Option<Vec<u8>>,
     connect_timeout: Option<u64>,
     max_redirections: Option<usize>,
     proxy: Option<Proxy>,
@@ -228,11 +227,23 @@ fn map_request_error(error: reqwest::Error) -> Error {
     Error::Network(error)
 }
 
+/// IPC header carrying the percent-encoded JSON [`ClientConfig`].
+const CLIENT_CONFIG_HEADER: &str = "client-config";
+
+/// Reads the options from the IPC header.
+fn read_client_config(headers: &HeaderMap) -> serde_json::Result<ClientConfig> {
+    let header = headers
+        .get(CLIENT_CONFIG_HEADER)
+        .ok_or_else(|| serde_json::Error::custom("missing client-config header"))?;
+    let header: Cow<'_, [u8]> = percent_encoding::percent_decode(header.as_bytes()).into();
+    serde_json::from_slice(&header)
+}
+
 #[command]
 pub async fn fetch<R: Runtime>(
     webview: Webview<R>,
     state: State<'_, Http>,
-    client_config: ClientConfig,
+    request: tauri::ipc::Request<'_>,
     command_scope: CommandScope<Entry>,
     global_scope: GlobalScope<Entry>,
 ) -> crate::Result<ResourceId> {
@@ -240,12 +251,19 @@ pub async fn fetch<R: Runtime>(
         method,
         url,
         headers: headers_raw,
-        data,
         connect_timeout,
         max_redirections,
         proxy,
         danger,
-    } = client_config;
+    } = read_client_config(request.headers())?;
+
+    // Even though JS sends a raw payload, Android and the `postMessage` fallback deliver it
+    // as a JSON array of numbers.
+    let data = match request.body() {
+        InvokeBody::Raw(data) => data.clone(),
+        InvokeBody::Json(data) => Vec::<u8>::deserialize(data)?,
+    };
+    let data = if data.is_empty() { None } else { Some(data) };
 
     let scheme = url.scheme();
     let method = Method::from_bytes(method.as_bytes())?;
