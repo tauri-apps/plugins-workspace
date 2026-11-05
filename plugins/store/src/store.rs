@@ -201,12 +201,11 @@ impl<R: Runtime> StoreBuilder<R> {
     }
 
     pub(crate) fn build_inner(mut self) -> crate::Result<(Arc<Store<R>>, ResourceId)> {
-        // Resource table first, then the stores, see `StoreState`.
-        // The store file is read below with neither of them locked.
         let stores = self.app.state::<StoreState>().stores.clone();
 
         self.path = resolve_store_path(&self.app, self.path)?;
 
+        // We do it first here and one more check later to avoid a potential extra load from disk
         if !self.create_new {
             let resources = self.app.resources_table();
             if let Some(rid) = stores.read().unwrap().get(&self.path).copied() {
@@ -252,7 +251,9 @@ impl<R: Runtime> StoreBuilder<R> {
                 let _ = resources.take::<Store<R>>(rid);
             }
         } else if let Some(rid) = stores.get(&self.path).copied() {
-            // another build of the same path finished first, use its store
+            // The resource id we stored can be invalid due to
+            // the resource table getting modified by an external source
+            // (e.g. `App::cleanup_before_exit` > `manager.resources_table.clear()`)
             return Ok((resources.get(rid)?, rid));
         }
         let rid = resources.add_arc(store.clone());
