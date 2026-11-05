@@ -40,4 +40,4 @@ tokio = { version = "1", features = ["sync", "time", "macros"] }
 tauri = { workspace = true, features = ["wry"] }
 
 [dev-dependencies]
-tauri = { workspace = true, features = ["wry"] }
+tauri = { workspace = true, features = ["wry", "test"] }
