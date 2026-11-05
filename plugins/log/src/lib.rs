@@ -301,14 +301,12 @@ impl RotatingFile {
     }
 
     fn rename_file_to_dated(&self) -> Result<(), Error> {
-        let mut to = self.dir.join(format!(
-            "{}_{}.log",
-            self.file_name,
-            self.timezone_strategy
-                .get_now()
-                .format(LOG_DATE_FORMAT)
-                .unwrap(),
-        ));
+        let date = self
+            .timezone_strategy
+            .get_now()
+            .format(LOG_DATE_FORMAT)
+            .unwrap();
+        let mut to = self.dir.join(format!("{}_{}.log", self.file_name, date));
         if to.is_file() {
             // designated rotated log file name already exists, e.g. two rotations
             // within the same second. pick the first free `<name>_<date>_<n>.log`
@@ -316,15 +314,9 @@ impl RotatingFile {
             // in `.log` for remove_old_files to count it.
             let mut n = 1u32;
             loop {
-                let candidate = self.dir.join(format!(
-                    "{}_{}_{}.log",
-                    self.file_name,
-                    self.timezone_strategy
-                        .get_now()
-                        .format(LOG_DATE_FORMAT)
-                        .unwrap(),
-                    n
-                ));
+                let candidate = self
+                    .dir
+                    .join(format!("{}_{}_{}.log", self.file_name, date, n));
                 if !candidate.exists() {
                     to = candidate;
                     break;
