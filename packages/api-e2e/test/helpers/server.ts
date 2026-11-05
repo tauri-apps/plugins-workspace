@@ -55,6 +55,7 @@ export interface FixtureServer {
  *   per byte, so `headers` shows the exact bytes the client sent.
  * - `GET /raw-header` — an empty response whose `content-disposition` names
  *   {@link RAW_HEADER_FILENAME} in raw UTF-8 bytes.
+ * - `GET /empty/{204,205,304}` — a response with no body and the requested status.
  * - `ws /ws` — a WebSocket echo endpoint: text and binary messages are sent
  *   back as-is, and {@link WEBSOCKET_CLOSE_REQUEST} makes the server close the
  *   connection with {@link WEBSOCKET_CLOSE_CODE}. On `/ws/headers` the server
@@ -70,6 +71,14 @@ export function startFixtureServer(): Promise<FixtureServer> {
       const body = Buffer.concat(chunks)
       const url = new URL(req.url ?? '/', FIXTURE_SERVER_URL)
       const [, route, ...rest] = url.pathname.split('/')
+
+      if (route === 'empty' && req.method === 'GET') {
+        const status = Number(rest[0])
+        if ([204, 205, 304].includes(status)) {
+          res.writeHead(status, { 'x-e2e-empty': 'present' }).end()
+          return
+        }
+      }
 
       if (route === 'updater' && req.method === 'GET') {
         const [target] = rest

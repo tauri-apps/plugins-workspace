@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 use serde::Deserialize;
-use tauri::command;
+use tauri::{Manager, command};
 
 #[derive(Debug, Deserialize)]
 #[allow(unused)]
@@ -21,4 +21,14 @@ pub fn log_operation(event: String, payload: Option<String>) {
 pub fn perform_request(endpoint: String, body: RequestBody) -> String {
     println!("{} {:?}", endpoint, body);
     "message response".into()
+}
+
+// Used by e2e tests to check that plugin operations release their native resources.
+#[command]
+pub fn webview_resource_names(webview: tauri::Webview) -> Vec<String> {
+    webview
+        .resources_table()
+        .names()
+        .map(|(_, name)| name.into_owned())
+        .collect()
 }
