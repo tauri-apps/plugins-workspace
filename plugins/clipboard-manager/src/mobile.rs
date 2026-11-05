@@ -27,6 +27,8 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
     let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "ClipboardPlugin")?;
     #[cfg(target_os = "ios")]
     let handle = api.register_ios_plugin(init_plugin_clipboard)?;
+    #[cfg(target_env = "ohos")]
+    let handle = api.register_ohos_plugin()?;
     Ok(Clipboard(handle))
 }
 
