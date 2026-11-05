@@ -29,8 +29,8 @@ pub enum Error {
     #[cfg(feature = "watch")]
     #[error(transparent)]
     Watch(#[from] notify::Error),
-    /// Error invoking the Android plugin implementation.
-    #[cfg(target_os = "android")]
+    /// Error invoking the native mobile plugin implementation.
+    #[cfg(any(target_os = "android", target_env = "ohos"))]
     #[error(transparent)]
     PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
     /// The URL cannot be converted to a file system path.

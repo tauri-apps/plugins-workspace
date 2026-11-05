@@ -4,6 +4,7 @@
 import common from '@ohos.app.ability.common';
 import { BusinessError } from '@ohos.base';
 import { NativeModule, NativePlugin } from './NativePlugin';
+import { Files } from './plugins/Files';
 
 interface Request { id: number; plugin: string; command: string; payload: string; }
 interface NativeError { code: string; message: string; }
@@ -16,6 +17,8 @@ export class TauriPlugins {
 
   constructor(context: common.UIAbilityContext, native: NativeModule) {
     this.native = native;
+    const files = new Files();
+    this.plugins.set('fs', files);
     native.tauriOhosPluginInitialize((request: string): void => {
       void this.invoke(JSON.parse(request) as Request);
     }, context.filesDir, context.cacheDir, context.tempDir);
