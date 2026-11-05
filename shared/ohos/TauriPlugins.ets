@@ -8,6 +8,7 @@ import { Clipboard } from './plugins/Clipboard';
 import { Dialog } from './plugins/Dialog';
 import { Files } from './plugins/Files';
 import { Notification } from './plugins/Notification';
+import { Opener } from './plugins/Opener';
 
 interface Request { id: number; plugin: string; command: string; payload: string; }
 interface NativeError { code: string; message: string; }
@@ -25,6 +26,7 @@ export class TauriPlugins {
     this.plugins.set('clipboard-manager', new Clipboard(context));
     this.plugins.set('dialog', new Dialog(context, files));
     this.plugins.set('notification', new Notification(context));
+    this.plugins.set('opener', new Opener(context));
     native.tauriOhosPluginInitialize((request: string): void => {
       void this.invoke(JSON.parse(request) as Request);
     }, context.filesDir, context.cacheDir, context.tempDir);
