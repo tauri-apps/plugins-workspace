@@ -4,6 +4,7 @@
 import common from '@ohos.app.ability.common';
 import { BusinessError } from '@ohos.base';
 import { NativeModule, NativePlugin } from './NativePlugin';
+import { Dialog } from './plugins/Dialog';
 import { Files } from './plugins/Files';
 
 interface Request { id: number; plugin: string; command: string; payload: string; }
@@ -19,6 +20,7 @@ export class TauriPlugins {
     this.native = native;
     const files = new Files();
     this.plugins.set('fs', files);
+    this.plugins.set('dialog', new Dialog(context, files));
     native.tauriOhosPluginInitialize((request: string): void => {
       void this.invoke(JSON.parse(request) as Request);
     }, context.filesDir, context.cacheDir, context.tempDir);
