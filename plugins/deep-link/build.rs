@@ -111,6 +111,26 @@ fn main() {
 
         #[cfg(any(target_os = "macos", target_os = "ios"))]
         {
+            println!("cargo:rerun-if-env-changed=TAURI_IOS_PROJECT_PATH");
+            println!("cargo:rerun-if-env-changed=TAURI_IOS_APP_NAME");
+            if let (Some(project_path), Ok(app_name)) = (
+                std::env::var_os("TAURI_IOS_PROJECT_PATH"),
+                std::env::var("TAURI_IOS_APP_NAME"),
+            ) {
+                let app_path =
+                    std::path::PathBuf::from(project_path).join(format!("{app_name}_iOS"));
+                for path in [
+                    app_path.join("Info.plist"),
+                    app_path.join(format!("{app_name}_iOS.entitlements")),
+                ] {
+                    // Track the nearest existing parent until generation creates the file.
+                    // Watching a missing file directly would rerun the script on every build.
+                    if let Some(path) = path.ancestors().find(|path| path.exists()) {
+                        println!("cargo:rerun-if-changed={}", path.display());
+                    }
+                }
+            }
+
             // we need to ensure that the entitlements are only
             // generated for explicit app links and not
             // other deep links because then they

@@ -102,6 +102,10 @@ To quickly open an app link on the iOS simulator you can execute `xcrun simctl o
 
 See [supporting associated domains](https://developer.apple.com/documentation/xcode/supporting-associated-domains?language=objc) for more information.
 
+## Development
+
+On a macOS host with Rust installed, run `pnpm test:deep-link-build` from the repository root to check that generated iOS project files are patched again with a warm Cargo cache. The test runs the real plugin build script through Cargo, including missing files and project path changes; it does not build or launch an iOS app.
+
 ## Configuration
 
 Under `tauri.conf.json > plugins > deep-link`, configure the domains (mobile) and schemes (desktop) you want to associate with your application:
