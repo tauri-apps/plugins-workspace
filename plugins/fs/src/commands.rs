@@ -266,7 +266,8 @@ pub struct BaseOptions {
     base_dir: Option<BaseDirectory>,
 }
 
-#[tauri::command]
+#[cfg_attr(target_env = "ohos", tauri::command(async))]
+#[cfg_attr(not(target_env = "ohos"), tauri::command)]
 pub fn create<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
@@ -315,7 +316,8 @@ pub struct OpenOptions {
     options: crate::OpenOptions,
 }
 
-#[tauri::command]
+#[cfg_attr(target_env = "ohos", tauri::command(async))]
+#[cfg_attr(not(target_env = "ohos"), tauri::command)]
 pub fn open<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
@@ -901,7 +903,7 @@ pub async fn seek<R: Runtime>(
         .map_err(Into::into)
 }
 
-#[cfg(target_os = "android")]
+#[cfg(any(target_os = "android", target_env = "ohos"))]
 fn get_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Metadata>>(
     permission: &str,
     metadata_fn: F,
@@ -947,7 +949,7 @@ fn get_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Meta
     }
 }
 
-#[cfg(not(target_os = "android"))]
+#[cfg(not(any(target_os = "android", target_env = "ohos")))]
 fn get_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::Metadata>>(
     permission: &str,
     metadata_fn: F,
@@ -994,7 +996,8 @@ fn get_fs_metadata<R: Runtime, F: FnOnce(&PathBuf) -> std::io::Result<std::fs::M
     Ok(metadata)
 }
 
-#[tauri::command]
+#[cfg_attr(target_env = "ohos", tauri::command(async))]
+#[cfg_attr(not(target_env = "ohos"), tauri::command)]
 pub fn stat<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
@@ -1015,7 +1018,8 @@ pub fn stat<R: Runtime>(
     Ok(get_stat(metadata))
 }
 
-#[tauri::command]
+#[cfg_attr(target_env = "ohos", tauri::command(async))]
+#[cfg_attr(not(target_env = "ohos"), tauri::command)]
 pub fn lstat<R: Runtime>(
     webview: Webview<R>,
     global_scope: GlobalScope<Entry>,
