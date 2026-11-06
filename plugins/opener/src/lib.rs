@@ -25,6 +25,14 @@ tauri::ios_plugin_binding!(init_plugin_opener);
 mod commands;
 mod config;
 mod error;
+#[cfg(any(
+    target_os = "linux",
+    target_os = "dragonfly",
+    target_os = "freebsd",
+    target_os = "netbsd",
+    target_os = "openbsd"
+))]
+mod freedesktop;
 mod open;
 mod reveal_item_in_dir;
 mod scope;
