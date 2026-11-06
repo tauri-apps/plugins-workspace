@@ -143,14 +143,14 @@ fn dbus_setup_errors() -> Result<(), tauri::Error> {
     let name = format!("{id}.SingleInstance");
     let path = format!("/{}", name.replace('.', "/"));
     let (tx, rx) = mpsc::channel();
-    let owner = zbus::blocking::connection::Builder::session()
-        .unwrap()
-        .name(name.as_str())
-        .unwrap()
-        .serve_at(path.as_str(), RejectCallback(tx))
-        .unwrap()
-        .build()
-        .unwrap();
+    // zbus's helper thread serves the connection once `block_on` returns.
+    let owner = zbus::block_on(
+        zbus::connection::Builder::session()
+            .name(name.as_str())
+            .serve_at(path.as_str(), RejectCallback(tx))
+            .build(),
+    )
+    .unwrap();
     let failure = assert_setup_error(TestChild::spawn(&id, &address).wait());
     assert!(failure.contains("test primary rejected delivery"));
     rx.recv_timeout(Duration::from_secs(1)).unwrap();
