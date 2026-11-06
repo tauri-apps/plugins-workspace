@@ -20,7 +20,7 @@ use process::{Command, CommandChild};
 use regex::Regex;
 use tauri::{
     AppHandle, Manager, RunEvent, Runtime,
-    plugin::{Builder, TauriPlugin},
+    plugin::{Builder as PluginBuilder, TauriPlugin},
 };
 
 mod commands;
@@ -119,6 +119,92 @@ impl<R: Runtime, T: Manager<R>> ShellExt<R> for T {
     }
 }
 
+/// The shell plugin builder.
+pub struct Builder {
+    open_js_links_on_click: bool,
+}
+
+impl Default for Builder {
+    fn default() -> Self {
+        Self {
+            open_js_links_on_click: true,
+        }
+    }
+}
+
+impl Builder {
+    /// Create a new shell plugin builder.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Whether to open external `<a target="_blank">` links with the shell plugin.
+    ///
+    /// Enabled by default for `http:`, `https:`, `mailto:` and `tel:` links.
+    /// Disable this when using the opener plugin to handle links instead.
+    /// This only controls the injected click handler; shell commands remain available.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// tauri::Builder::default()
+    ///     .plugin(tauri_plugin_shell::Builder::new().open_js_links_on_click(false).build());
+    /// ```
+    pub fn open_js_links_on_click(mut self, open: bool) -> Self {
+        self.open_js_links_on_click = open;
+        self
+    }
+
+    /// Build and initialize the plugin.
+    pub fn build<R: Runtime>(self) -> TauriPlugin<R, Option<config::Config>> {
+        let mut builder = PluginBuilder::<R, Option<config::Config>>::new("shell")
+            .invoke_handler(tauri::generate_handler![
+                commands::execute,
+                commands::spawn,
+                commands::stdin_write,
+                commands::kill,
+                commands::open
+            ])
+            .setup(|app, api| {
+                let default_config = config::Config::default();
+                let config = api.config().as_ref().unwrap_or(&default_config);
+
+                #[cfg(target_os = "android")]
+                let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "ShellPlugin")?;
+                #[cfg(target_os = "ios")]
+                let handle = api.register_ios_plugin(init_plugin_shell)?;
+
+                app.manage(Shell {
+                    app: app.clone(),
+                    children: Default::default(),
+                    open_scope: open_scope(&config.open),
+
+                    #[cfg(mobile)]
+                    mobile_plugin_handle: handle,
+                });
+                Ok(())
+            })
+            .on_event(|app, event| {
+                if let RunEvent::Exit = event {
+                    let shell = app.state::<Shell<R>>();
+                    let children = {
+                        let mut lock = shell.children.lock().unwrap();
+                        std::mem::take(&mut *lock)
+                    };
+                    for child in children.into_values() {
+                        let _ = child.kill();
+                    }
+                }
+            });
+
+        if self.open_js_links_on_click {
+            builder = builder.js_init_script(include_str!("init-iife.js").to_string());
+        }
+
+        builder.build()
+    }
+}
+
 /// Initializes the shell plugin.
 ///
 /// The plugin state can be accessed with [`ShellExt::shell`],
@@ -132,47 +218,7 @@ impl<R: Runtime, T: Manager<R>> ShellExt<R> for T {
 /// }
 /// ```
 pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
-    Builder::<R, Option<config::Config>>::new("shell")
-        .js_init_script(include_str!("init-iife.js").to_string())
-        .invoke_handler(tauri::generate_handler![
-            commands::execute,
-            commands::spawn,
-            commands::stdin_write,
-            commands::kill,
-            commands::open
-        ])
-        .setup(|app, api| {
-            let default_config = config::Config::default();
-            let config = api.config().as_ref().unwrap_or(&default_config);
-
-            #[cfg(target_os = "android")]
-            let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "ShellPlugin")?;
-            #[cfg(target_os = "ios")]
-            let handle = api.register_ios_plugin(init_plugin_shell)?;
-
-            app.manage(Shell {
-                app: app.clone(),
-                children: Default::default(),
-                open_scope: open_scope(&config.open),
-
-                #[cfg(mobile)]
-                mobile_plugin_handle: handle,
-            });
-            Ok(())
-        })
-        .on_event(|app, event| {
-            if let RunEvent::Exit = event {
-                let shell = app.state::<Shell<R>>();
-                let children = {
-                    let mut lock = shell.children.lock().unwrap();
-                    std::mem::take(&mut *lock)
-                };
-                for child in children.into_values() {
-                    let _ = child.kill();
-                }
-            }
-        })
-        .build()
+    Builder::default().build()
 }
 
 fn open_scope(open: &config::ShellAllowlistOpen) -> scope::OpenScope {
@@ -192,5 +238,50 @@ fn open_scope(open: &config::ShellAllowlistOpen) -> scope::OpenScope {
 
     scope::OpenScope {
         open: shell_scope_open,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tauri::plugin::Plugin;
+
+    #[test]
+    fn init_keeps_link_handling_enabled() {
+        assert_eq!(
+            init::<tauri::Wry>().initialization_script().as_deref(),
+            Some(include_str!("init-iife.js"))
+        );
+    }
+
+    #[test]
+    fn builder_keeps_link_handling_enabled_by_default() {
+        assert!(
+            Builder::new()
+                .build::<tauri::Wry>()
+                .initialization_script()
+                .is_some()
+        );
+    }
+
+    #[test]
+    fn link_handling_can_be_disabled() {
+        let plugin = Builder::new()
+            .open_js_links_on_click(false)
+            .build::<tauri::Wry>();
+        assert_eq!(plugin.name(), "shell");
+        assert!(plugin.initialization_script().is_none());
+    }
+
+    #[test]
+    fn link_handling_can_be_reenabled() {
+        assert!(
+            Builder::new()
+                .open_js_links_on_click(false)
+                .open_js_links_on_click(true)
+                .build::<tauri::Wry>()
+                .initialization_script()
+                .is_some()
+        );
     }
 }

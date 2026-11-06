@@ -18,6 +18,8 @@ import { invoke } from '@tauri-apps/api/core'
 // open <a href="..."> links with the API
 function openLinks(): void {
   document.querySelector('body')?.addEventListener('click', function (e) {
+    if (e.defaultPrevented) return
+
     let target: HTMLElement | null = e.target as HTMLElement
     while (target) {
       if (target.matches('a')) {
