@@ -37,4 +37,4 @@ thiserror = { workspace = true }
 tauri = { workspace = true, features = ["test"] }
 
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
-global-hotkey = { version = "0.8", features = ["serde"] }
+global-hotkey = { version = "0.9", features = ["serde"] }
