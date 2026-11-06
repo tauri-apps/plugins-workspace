@@ -182,6 +182,10 @@ jobs:
             elif [ "$package" = tauri-plugin-single-instance ] && [ "$COMMAND" = test ] && [[ "$TARGET" == *-linux-* ]] \
               && ! dbus-run-session -- $RUNNER test --package "$package" --target "$TARGET" --test dbus_errors --test instance_lock -- --ignored; then
               failed+=("$package (D-Bus tests)")
+            # `--all-features` includes the `cache` feature of `updater`, test the build without it too
+            elif [ "$package" = tauri-plugin-updater ] \
+              && ! $RUNNER $COMMAND --package "$package" --target "$TARGET" --all-targets --no-default-features --features rustls-tls,system-proxy,zip; then
+              failed+=("$package (without cache)")
             fi
             echo "::endgroup::"
           done

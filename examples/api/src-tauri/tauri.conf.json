@@ -91,7 +91,11 @@
       "endpoints": [
         "http://localhost:5173/updater-test/updater.json",
         "https://tauri-update-server.vercel.app/update/{{target}}/{{current_version}}"
-      ]
+      ],
+      "cache": {
+        "enabledByDefault": true,
+        "maxTtlMins": 180
+      }
     }
   },
   "bundle": {

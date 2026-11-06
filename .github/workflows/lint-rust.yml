@@ -127,6 +127,9 @@ jobs:
             # the features of `dialog` cannot all be enabled at once
             elif [ "$package" != tauri-plugin-dialog ] && ! $CARGO clippy --package "$package" --target "$TARGET" --all-targets --all-features -- -D warnings; then
               failed+=("$package (--all-features)")
+            # the `cache` feature of `updater` is on in both runs above, lint the build without it too
+            elif [ "$package" = tauri-plugin-updater ] && ! $CARGO clippy --package "$package" --target "$TARGET" --all-targets --no-default-features --features rustls-tls,system-proxy,zip -- -D warnings; then
+              failed+=("$package (without cache)")
             fi
             echo "::endgroup::"
           done
