@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.1]
+
+- [`685d3424`](https://github.com/tauri-apps/plugins-workspace/commit/685d3424a946346721d839add3bfb6521690eb6e) ([#3746](https://github.com/tauri-apps/plugins-workspace/pull/3746) by [@963s](https://github.com/tauri-apps/plugins-workspace/../../963s)) Fixed a deadlock between loading a store and closing a store at the same time, which could freeze the main thread for good. `StoreExt::get_store` and the save on exit took the same two locks in the wrong order too. Store files are also no longer read while the plugin's stores lock is held.
+
 ## [2.5.0]
 
 - [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
