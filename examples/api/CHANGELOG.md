@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.0.54]
+
+### Dependencies
+
+- Upgraded to `log-js@2.10.2`
+- Upgraded to `http-js@2.9.0`
+- Upgraded to `opener-js@2.7.3`
+- Upgraded to `store-js@2.5.1`
+
 ## [2.0.53]
 
 ### Dependencies

@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.0.58]
+
+### Dependencies
+
+- Upgraded to `log@2.10.2`
+- Upgraded to `http@2.9.0`
+- Upgraded to `opener@2.7.3`
+- Upgraded to `store@2.5.1`
+
 ## [2.0.57]
 
 ### Dependencies

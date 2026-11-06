@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.10.2]
+
+- [`92e47a1c`](https://github.com/tauri-apps/plugins-workspace/commit/92e47a1c08660d58dbfde55f51fd18d9d23ab0d7) ([#3718](https://github.com/tauri-apps/plugins-workspace/pull/3718) by [@h55n](https://github.com/tauri-apps/plugins-workspace/../../h55n)) Fixed `RotationStrategy::KeepSome` never deleting `.log.bak` files created by same-second rotations, so the log directory could grow past the configured cap. Same-second rotations now pick a unique `<name>_<date>_<n>.log` name instead of overwriting the existing `.log.bak`, and the cleanup counts legacy `.log.bak` files against the keep cap.
+
 ## [2.10.1]
 
 - [`42ae8b45`](https://github.com/tauri-apps/plugins-workspace/commit/42ae8b4501f3628cddeab3973eb38a7593304cc8) ([#3684](https://github.com/tauri-apps/plugins-workspace/pull/3684)) On iOS, mark the plugin's `init_plugin_*` entry point `public` so release builds made with Xcode 27 keep it global and link.
