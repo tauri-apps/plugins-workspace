@@ -38,3 +38,49 @@ impl Serialize for Error {
         serializer.serialize_str(self.to_string().as_ref())
     }
 }
+
+// Propagate contextual failures instead of treating them as cancellation.
+#[cfg(any(mobile, test))]
+fn is_contextual_error(code: Option<&str>) -> bool {
+    matches!(code, Some("ORIGIN_UNAVAILABLE" | "RESULT_PENDING"))
+}
+
+// Preserve the legacy fallback for other failures: None for files, Cancel for messages.
+#[cfg(any(mobile, test))]
+pub(crate) fn or_previous_result<T, E>(
+    result: std::result::Result<T, E>,
+    previous: T,
+    error_code: impl FnOnce(&E) -> Option<&str>,
+) -> std::result::Result<T, E> {
+    match result {
+        Err(error) if !is_contextual_error(error_code(&error)) => Ok(previous),
+        result => result,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn contextual_errors_propagate_and_other_failures_keep_the_previous_result() {
+        for (code, contextual) in [
+            (Some("ORIGIN_UNAVAILABLE"), true),
+            (Some("RESULT_PENDING"), true),
+            (Some("OTHER_ERROR"), false),
+            (None, false),
+        ] {
+            assert_eq!(is_contextual_error(code), contextual);
+            assert_eq!(
+                or_previous_result(Err(code), 7, |code| *code),
+                if contextual { Err(code) } else { Ok(7) }
+            );
+        }
+        assert_eq!(
+            or_previous_result(Ok::<_, Option<&str>>(42), 7, |_| panic!(
+                "success has no error"
+            )),
+            Ok(42)
+        );
+    }
+}
