@@ -19,8 +19,6 @@ use std::os::windows::process::CommandExt;
 #[cfg(windows)]
 use windows_sys::Win32::System::Threading::{CREATE_NO_WINDOW, CREATE_SUSPENDED};
 
-const NEWLINE_BYTE: u8 = b'\n';
-
 use tauri::async_runtime::{Receiver, Sender, block_on as block_on_task, channel};
 
 pub use encoding_rs::Encoding;
@@ -504,7 +502,7 @@ impl Command {
     ///   .setup(|app| {
     ///     let output = tauri::async_runtime::block_on(async move { app.shell().command("echo").args(["TAURI"]).output().await.unwrap() });
     ///     assert!(output.status.success());
-    ///     assert_eq!(String::from_utf8(output.stdout).unwrap(), "TAURI");
+    ///     assert_eq!(String::from_utf8(output.stdout).unwrap(), "TAURI\n");
     ///     Ok(())
     ///   });
     /// ```
@@ -520,14 +518,9 @@ impl Command {
                 CommandEvent::Terminated(payload) => {
                     code = payload.code;
                 }
-                CommandEvent::Stdout(line) => {
-                    stdout.extend(line);
-                    stdout.push(NEWLINE_BYTE);
-                }
-                CommandEvent::Stderr(line) => {
-                    stderr.extend(line);
-                    stderr.push(NEWLINE_BYTE);
-                }
+                // lines keep their own line ending and raw chunks are the bytes as written
+                CommandEvent::Stdout(bytes) => stdout.extend(bytes),
+                CommandEvent::Stderr(bytes) => stderr.extend(bytes),
                 CommandEvent::Error(_) => {}
             }
         }
@@ -738,10 +731,7 @@ mod tests {
         let output = tauri::async_runtime::block_on(cmd.output()).unwrap();
 
         assert_eq!(String::from_utf8(output.stderr).unwrap(), "");
-        assert_eq!(
-            String::from_utf8(output.stdout).unwrap(),
-            "This is a test doc!\n"
-        );
+        assert_eq!(output.stdout, std::fs::read("test/test.txt").unwrap());
     }
 
     #[cfg(not(windows))]
@@ -753,8 +743,21 @@ mod tests {
         assert_eq!(String::from_utf8(output.stdout).unwrap(), "");
         assert_eq!(
             String::from_utf8(output.stderr).unwrap(),
-            "cat: test/: Is a directory\n\n"
+            "cat: test/: Is a directory\n"
         );
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn test_cmd_raw_output_is_byte_exact() {
+        let cmd = Command::new("sh")
+            .args(["-c", "printf abc; head -c 300000 /dev/zero"])
+            .set_raw_out(true);
+        let output = tauri::async_runtime::block_on(cmd.output()).unwrap();
+
+        let mut expected = b"abc".to_vec();
+        expected.resize(300_003, 0);
+        assert_eq!(output.stdout, expected);
     }
 
     #[cfg(not(windows))]
