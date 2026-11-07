@@ -97,11 +97,23 @@ import type { Options } from './index'
     }
   })
 
-  void isPermissionGranted().then(function (response) {
-    if (response === null) {
-      setNotificationPermission('default')
-    } else {
-      setNotificationPermission(response ? 'granted' : 'denied')
-    }
-  })
+  // The startup about:blank document can have an opaque origin that IPC rejects.
+  // This script runs again when the real document loads.
+  const isBlankDocument =
+    window.location.protocol === 'about:'
+    && window.location.pathname === 'blank'
+  if (!isBlankDocument) {
+    void isPermissionGranted()
+      .then(function (response) {
+        if (response === null) {
+          setNotificationPermission('default')
+        } else {
+          setNotificationPermission(response ? 'granted' : 'denied')
+        }
+      })
+      .catch(() => {
+        // Automatic priming is best-effort. Keep the default permission so an
+        // explicit permission query or request can retry and report its error.
+      })
+  }
 })()
