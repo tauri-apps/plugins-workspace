@@ -2,15 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::{borrow::Cow, future::Future, pin::Pin, str::FromStr, sync::Arc, time::Duration};
+use std::{
+    borrow::Cow,
+    future::Future,
+    pin::Pin,
+    str::FromStr,
+    sync::{Arc, Mutex},
+    time::Duration,
+};
 
 use http::{HeaderMap, HeaderName, HeaderValue, Method, StatusCode, header};
 use reqwest::{NoProxy, redirect::Policy};
 use serde::{Deserialize, Serialize, de::Error as _};
 use tauri::{
-    Manager, ResourceId, ResourceTable, Runtime, State, Webview,
-    async_runtime::Mutex,
-    command,
+    Manager, ResourceId, Runtime, State, Webview, command,
     ipc::{CommandScope, GlobalScope, InvokeBody},
 };
 use tokio::sync::oneshot::{Receiver, Sender, channel};
@@ -34,38 +39,51 @@ type CancelableResponseFuture =
     Pin<Box<dyn Future<Output = CancelableResponseResult> + Send + Sync>>;
 
 struct FetchRequest {
-    fut: Mutex<CancelableResponseFuture>,
-    abort_tx_rid: ResourceId,
-    abort_rx_rid: ResourceId,
+    inner: Mutex<FetchRequestInner>,
 }
-impl tauri::Resource for FetchRequest {}
 
-struct AbortSender(Sender<()>);
-impl tauri::Resource for AbortRecveiver {}
+struct FetchRequestInner {
+    pending: Option<(CancelableResponseFuture, Receiver<()>)>,
+    abort_tx: Option<Sender<()>>,
+}
 
-impl AbortSender {
-    fn abort(self) {
-        let _ = self.0.send(());
+impl FetchRequest {
+    fn new(fut: CancelableResponseFuture) -> Self {
+        let (abort_tx, abort_rx) = channel();
+        Self {
+            inner: Mutex::new(FetchRequestInner {
+                pending: Some((fut, abort_rx)),
+                abort_tx: Some(abort_tx),
+            }),
+        }
+    }
+
+    fn take_pending(&self) -> Result<(CancelableResponseFuture, Receiver<()>)> {
+        self.inner
+            .lock()
+            .unwrap()
+            .pending
+            .take()
+            .ok_or(Error::RequestCanceled)
+    }
+
+    fn cancel(&self) {
+        let (pending, abort_tx) = {
+            let mut inner = self.inner.lock().unwrap();
+            (inner.pending.take(), inner.abort_tx.take())
+        };
+        if let Some(abort_tx) = abort_tx {
+            let _ = abort_tx.send(());
+        }
+        // If sending has not started, release the future here rather than waiting
+        // for a fetch_send call that may never arrive.
+        drop(pending);
     }
 }
 
-struct AbortRecveiver(Receiver<()>);
-impl tauri::Resource for AbortSender {}
-
-trait AddRequest {
-    fn add_request(&mut self, fut: CancelableResponseFuture) -> ResourceId;
-}
-
-impl AddRequest for ResourceTable {
-    fn add_request(&mut self, fut: CancelableResponseFuture) -> ResourceId {
-        let (tx, rx) = channel::<()>();
-        let (tx, rx) = (AbortSender(tx), AbortRecveiver(rx));
-        let req = FetchRequest {
-            fut: Mutex::new(fut),
-            abort_tx_rid: self.add(tx),
-            abort_rx_rid: self.add(rx),
-        };
-        self.add(req)
+impl tauri::Resource for FetchRequest {
+    fn close(self: Arc<Self>) {
+        self.cancel();
     }
 }
 
@@ -398,7 +416,7 @@ pub async fn fetch<R: Runtime>(
             let fut = async move { request.send().await.map_err(map_request_error) };
 
             let mut resources_table = webview.resources_table();
-            let rid = resources_table.add_request(Box::pin(fut));
+            let rid = resources_table.add(FetchRequest::new(Box::pin(fut)));
 
             Ok(rid)
         }
@@ -419,7 +437,7 @@ pub async fn fetch<R: Runtime>(
 
             let fut = async move { Ok(reqwest::Response::from(response)) };
             let mut resources_table = webview.resources_table();
-            let rid = resources_table.add_request(Box::pin(fut));
+            let rid = resources_table.add(FetchRequest::new(Box::pin(fut)));
             Ok(rid)
         }
         _ => Err(Error::SchemeNotSupport(scheme.to_string())),
@@ -428,12 +446,8 @@ pub async fn fetch<R: Runtime>(
 
 #[command]
 pub fn fetch_cancel<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> crate::Result<()> {
-    let mut resources_table = webview.resources_table();
-    let req = resources_table.get::<FetchRequest>(rid)?;
-    let abort_tx = resources_table.take::<AbortSender>(req.abort_tx_rid)?;
-    if let Some(abort_tx) = Arc::into_inner(abort_tx) {
-        abort_tx.abort();
-    }
+    let req = webview.resources_table().take::<FetchRequest>(rid)?;
+    req.cancel();
     Ok(())
 }
 
@@ -462,29 +476,28 @@ pub async fn fetch_send<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
 ) -> crate::Result<FetchResponse> {
-    let (req, abort_rx) = {
-        let mut resources_table = webview.resources_table();
+    let (req, (mut fut, abort_rx)) = {
+        let resources_table = webview.resources_table();
         let req = resources_table.get::<FetchRequest>(rid)?;
-        let abort_rx = resources_table.take::<AbortRecveiver>(req.abort_rx_rid)?;
-        (req, abort_rx)
+        let pending = req.take_pending()?;
+        (req, pending)
     };
-
-    let Some(abort_rx) = Arc::into_inner(abort_rx) else {
-        return Err(Error::RequestCanceled);
-    };
-
-    let mut fut = req.fut.lock().await;
 
     let res = tokio::select! {
         res = fut.as_mut() => res,
-        _ = abort_rx.0 => Err(Error::RequestCanceled),
+        _ = abort_rx => Err(Error::RequestCanceled),
     };
 
     // Release resources
     {
         let mut resources_table = webview.resources_table();
-        let _ = resources_table.take::<AbortSender>(req.abort_tx_rid);
-        let _ = resources_table.close(rid);
+        // Cancellation can remove the entry before sending finishes. Do not close
+        // another request if the table has since reused its resource ID.
+        if let Ok(current) = resources_table.get::<FetchRequest>(rid)
+            && Arc::ptr_eq(&current, &req)
+        {
+            let _ = resources_table.close(rid);
+        }
     }
 
     let res = res?;
