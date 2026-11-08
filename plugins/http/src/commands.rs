@@ -15,10 +15,15 @@ use http::{HeaderMap, HeaderName, HeaderValue, Method, StatusCode, header};
 use reqwest::{NoProxy, redirect::Policy};
 use serde::{Deserialize, Serialize, de::Error as _};
 use tauri::{
-    Manager, ResourceId, Runtime, State, Webview, command,
+    Manager, ResourceId, Runtime, State, Webview,
+    async_runtime::Mutex as AsyncMutex,
+    command,
     ipc::{CommandScope, GlobalScope, InvokeBody},
 };
-use tokio::sync::oneshot::{Receiver, Sender, channel};
+use tokio::sync::{
+    oneshot::{Receiver, Sender, channel},
+    watch,
+};
 
 use crate::{
     Error, Http, Result,
@@ -31,8 +36,61 @@ const HTTP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_P
 /// configure `maxRedirections`.
 const DEFAULT_MAX_REDIRECTIONS: usize = 10;
 
-struct ReqwestResponse(reqwest::Response);
-impl tauri::Resource for ReqwestResponse {}
+struct ReqwestResponse {
+    response: AsyncMutex<Option<reqwest::Response>>,
+    cancel_tx: watch::Sender<bool>,
+}
+
+impl ReqwestResponse {
+    fn new(response: reqwest::Response) -> Self {
+        let (cancel_tx, _) = watch::channel(false);
+        Self {
+            response: AsyncMutex::new(Some(response)),
+            cancel_tx,
+        }
+    }
+
+    fn cancel(&self) {
+        self.cancel_tx.send_replace(true);
+        // A pending read holds this lock and will release the response when it
+        // observes cancellation. Otherwise, release it immediately.
+        if let Ok(mut response) = self.response.try_lock() {
+            response.take();
+        }
+    }
+
+    async fn read_chunk(&self) -> Result<Option<Vec<u8>>> {
+        let mut cancel_rx = self.cancel_tx.subscribe();
+        let mut response = self.response.lock().await;
+
+        // Cancellation may have happened before subscribing or while waiting for the lock.
+        if *cancel_rx.borrow() {
+            response.take();
+            return Err(Error::RequestCanceled);
+        }
+
+        let body = response.as_mut().ok_or(Error::RequestCanceled)?;
+        let result = tokio::select! {
+            biased;
+            _ = cancel_rx.changed() => Err(Error::RequestCanceled),
+            chunk = body.chunk() => chunk.map_err(Error::from),
+        };
+
+        match result {
+            Ok(Some(chunk)) => Ok(Some(chunk.into())),
+            result => {
+                response.take();
+                result.map(|_| None)
+            }
+        }
+    }
+}
+
+impl tauri::Resource for ReqwestResponse {
+    fn close(self: Arc<Self>) {
+        self.cancel();
+    }
+}
 
 type CancelableResponseResult = Result<reqwest::Response>;
 type CancelableResponseFuture =
@@ -446,8 +504,7 @@ pub async fn fetch<R: Runtime>(
 
 #[command]
 pub fn fetch_cancel<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> crate::Result<()> {
-    let req = webview.resources_table().take::<FetchRequest>(rid)?;
-    req.cancel();
+    webview.resources_table().close(rid)?;
     Ok(())
 }
 
@@ -513,7 +570,7 @@ pub async fn fetch_send<R: Runtime>(
     }
 
     let mut resources_table = webview.resources_table();
-    let rid = resources_table.add(ReqwestResponse(res));
+    let rid = resources_table.add(ReqwestResponse::new(res));
 
     Ok(FetchResponse {
         status: status.as_u16(),
@@ -534,23 +591,21 @@ pub async fn fetch_read_body<R: Runtime>(
         resources_table.get::<ReqwestResponse>(rid)?
     };
 
-    // SAFETY: we can access the inner value mutably
-    // because we are the only ones with a reference to it
-    // and we don't want to use `Arc::into_inner` because we want to keep the value in the table
-    // for potential future calls to `fetch_cancel_body`
-    let res_ptr = Arc::as_ptr(&res) as *mut ReqwestResponse;
-    let res = unsafe { &mut *res_ptr };
-    let res = &mut res.0;
-
-    let Some(chunk) = res.chunk().await? else {
+    let result = res.read_chunk().await;
+    if !matches!(&result, Ok(Some(_))) {
         let mut resources_table = webview.resources_table();
-        resources_table.close(rid)?;
+        if let Ok(current) = resources_table.get::<ReqwestResponse>(rid)
+            && Arc::ptr_eq(&current, &res)
+        {
+            let _ = resources_table.close(rid);
+        }
+    }
 
+    let Some(mut chunk) = result? else {
         // return a response with a single byte to indicate that the body is empty
         return Ok(tauri::ipc::Response::new(vec![1]));
     };
 
-    let mut chunk = chunk.to_vec();
     // append a 0 byte to indicate that the body is not empty
     chunk.push(0);
 
@@ -562,8 +617,7 @@ pub async fn fetch_cancel_body<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
 ) -> crate::Result<()> {
-    let mut resources_table = webview.resources_table();
-    resources_table.close(rid)?;
+    webview.resources_table().close(rid)?;
     Ok(())
 }
 
