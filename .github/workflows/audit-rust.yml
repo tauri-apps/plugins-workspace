@@ -43,7 +43,8 @@ jobs:
         with:
           tool: cargo-audit
       - name: Human-readable report
-        run: cargo audit --format terminal
+        # || true makes sure the next step runs to create GitHub issues.
+        run: cargo audit --format terminal || true
       - uses: rustsec/audit-check@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
