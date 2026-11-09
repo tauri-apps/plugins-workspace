@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.8.1]
+
+- [`52edb98e`](https://github.com/tauri-apps/plugins-workspace/commit/52edb98eb043d09bc7598e0724a2f4bc9f9a4ecd) ([#3758](https://github.com/tauri-apps/plugins-workspace/pull/3758) by [@Lorkydey](https://github.com/tauri-apps/plugins-workspace/../../Lorkydey)) Fix notification permission requests never resolving on Android 13 and newer when the permission has already been granted.
+
 ## [2.8.0]
 
 - [`52fa7754`](https://github.com/tauri-apps/plugins-workspace/commit/52fa7754b9d621fd2f04faa60ac4c17902d4a475) ([#3738](https://github.com/tauri-apps/plugins-workspace/pull/3738) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated dependency rand to 0.10
