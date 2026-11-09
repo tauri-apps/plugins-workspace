@@ -237,7 +237,8 @@ impl<R: Runtime> NotificationBuilder<R> {
     ///
     /// ## Platform-specific
     ///
-    /// - **Linux and the BSDs**: only available there.
+    /// - **Linux and the BSDs**: only available there. When Linux uses the portal, the callback
+    /// only runs when the notification is closed by the application.
     #[cfg(all(desktop, unix, not(target_os = "macos")))]
     pub fn on_close<F: FnOnce() + Send + 'static>(mut self, handler: F) -> Self {
         self.on_close = Some(OnClose(Box::new(handler)));

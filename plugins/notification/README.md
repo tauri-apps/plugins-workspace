@@ -99,6 +99,9 @@ export async function enqueueNotification(title, body) {
 
 You can add sound to your notifications on all platforms (desktop and mobile):
 
+> On Linux, Flatpak applications use the XDG Desktop Portal's Notification spec.
+> <br>The portal supports either `default` or `silent` sound values, so other values are ignored.
+
 ```javascript
 import { sendNotification } from '@tauri-apps/plugin-notification'
 import { platform } from '@tauri-apps/api/os'
