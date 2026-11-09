@@ -298,6 +298,8 @@ mod imp {
     };
 
     use serde_json::{Value, json};
+    #[cfg(all(unix, not(target_os = "macos")))]
+    use zbus::zvariant::StructureBuilder;
 
     use super::Shared;
     #[cfg(all(unix, not(target_os = "macos")))]
@@ -353,8 +355,13 @@ mod imp {
         connection: OnceLock<Option<zbus::blocking::Connection>>,
         /// The tracked notifications the server still shows, by server id: their identifier and
         /// the payload their actions carry.
+        ///
+        /// Linux: when using the portal, notifications closed by the user are not untracked.
         pub(super) shown: Mutex<HashMap<u32, (i32, Value)>>,
         /// The `on_close` callbacks of the tracked notifications, by server id.
+        ///
+        /// Linux: when using the portal, only runs when the close is initiated by the app.
+        /// notifications closed by the user are also not untracked.
         pub(super) on_close: Mutex<HashMap<u32, crate::OnClose>>,
     }
 
@@ -539,11 +546,53 @@ mod imp {
 
     /// The bus name, object path and interface of the Desktop Notifications Specification.
     #[cfg(all(unix, not(target_os = "macos")))]
-    pub(super) const BUS: (&str, &str, &str) = (
+    const BUS: (&str, &str, &str) = (
         "org.freedesktop.Notifications",
         "/org/freedesktop/Notifications",
         "org.freedesktop.Notifications",
     );
+
+    /// The bus name, object path and interface of the XDG Desktop Portal Notifications Specification.
+    #[cfg(target_os = "linux")]
+    const BUS_PORTAL: (&str, &str, &str) = (
+        "org.freedesktop.portal.Desktop",
+        "/org/freedesktop/portal/desktop",
+        "org.freedesktop.portal.Notification",
+    );
+
+    /// Linux: returns BUS_PORTAL if should_use_portal()
+    /// BSDs: always returns BUS
+    #[cfg(all(unix, not(target_os = "macos")))]
+    pub(super) fn bus() -> (&'static str, &'static str, &'static str) {
+        #[cfg(target_os = "linux")]
+        {
+            if should_use_portal() { BUS_PORTAL } else { BUS }
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            BUS
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    fn is_flatpak() -> bool {
+        static IS_FLATPAK: OnceLock<bool> = OnceLock::new();
+        *IS_FLATPAK.get_or_init(|| std::path::Path::new("/.flatpak-info").is_file())
+    }
+
+    /// Linux: returns true if inside a flatpak
+    /// BSDs: always returns false
+    #[cfg(all(unix, not(target_os = "macos")))]
+    pub(super) fn should_use_portal() -> bool {
+        #[cfg(target_os = "linux")]
+        {
+            is_flatpak()
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            false
+        }
+    }
 
     /// Linux and the BSDs: shows the notification and records it, so the listener thread knows
     /// which payload its signals carry, when there is one, and what to run once it closes.
@@ -566,7 +615,7 @@ mod imp {
         // Held while the notification is sent, so a signal that arrives before the server id is
         // recorded waits for it instead of being missed.
         let mut shown = lock(&tracker.shown);
-        if let Ok(server_id) = notify(connection, &notification) {
+        if let Ok(server_id) = notify(&connection, &notification) {
             if let Some(data) = data {
                 shown.insert(server_id, (id, data));
             }
@@ -578,43 +627,97 @@ mod imp {
 
     /// Linux and the BSDs: sends the notification on the connection the signals arrive on, since
     /// some servers, like dunst, send the signals of a notification only to the connection that
-    /// sent it. Returns the server id of the notification.
+    /// sent it. Returns the id of the notification.
     #[cfg(all(unix, not(target_os = "macos")))]
     fn notify(
         connection: &zbus::blocking::Connection,
         notification: &notify_rust::Notification,
     ) -> zbus::Result<u32> {
-        // the only hint the plugin sets
-        let hints = notification
-            .hints
-            .iter()
-            .filter_map(|hint| match hint {
-                notify_rust::Hint::SoundName(name) => {
-                    Some(("sound-name", zbus::zvariant::Value::from(name.as_str())))
+        use zbus::zvariant::Value;
+
+        let (destination, path, interface) = bus();
+        let portal = should_use_portal();
+        let id = if portal { rand::random::<u32>() } else { 0 }; // only used when in portal
+
+        let (method_name, body) = if portal {
+            let mut fields = HashMap::from([
+                ("title", Value::from(&notification.summary)),
+                ("body", Value::from(&notification.body)),
+            ]);
+
+            // A file:// errors out the portal with a org.freedesktop.portal.Error.NotAllowed
+            if !notification.icon.starts_with("file://") {
+                fields.insert("icon", Value::from(&notification.icon));
+            }
+
+            // Loop through every action and collect buttons and set default if exists
+            let mut buttons = Vec::new();
+            for [id, label] in notification.actions.as_chunks::<2>().0 {
+                if id == "default" {
+                    fields.insert("default-action", Value::from(id));
+                } else {
+                    buttons.push(HashMap::from([
+                        // Avoid portal's reserved `app.` prefixes to match existing functionality
+                        ("action", Value::from(format!("dummy-prefix-{}", id))),
+                        ("label", Value::from(label)),
+                    ]));
                 }
-                _ => None,
-            })
-            .collect::<HashMap<_, _>>();
-        let (destination, path, interface) = BUS;
-        connection
-            .call_method(
-                Some(destination),
-                path,
-                Some(interface),
+            }
+            fields.insert("buttons", Value::from(buttons));
+
+            // Loop through hints to set sound
+            for hint in &notification.hints {
+                if let notify_rust::Hint::SoundName(sound) = hint
+                    && matches!(sound.as_str(), "default" | "silent")
+                {
+                    // the portal takes only 'default' or 'silent'
+                    fields.insert("sound", Value::from(sound));
+                }
+            }
+
+            (
+                "AddNotification",
+                StructureBuilder::new()
+                    .add_field(id.to_string())
+                    .add_field(fields)
+                    .build()?,
+            )
+        } else {
+            // the only hint the plugin sets
+            let hints = notification
+                .hints
+                .iter()
+                .filter_map(|hint| match hint {
+                    notify_rust::Hint::SoundName(name) => {
+                        Some(("sound-name", Value::from(name.as_str())))
+                    }
+                    _ => None,
+                })
+                .collect::<HashMap<_, _>>();
+
+            (
                 "Notify",
-                &(
-                    &notification.appname,
-                    0u32,
-                    &notification.icon,
-                    &notification.summary,
-                    &notification.body,
-                    &notification.actions,
-                    hints,
-                    -1i32,
-                ),
-            )?
-            .body()
-            .deserialize()
+                StructureBuilder::new()
+                    .add_field(notification.appname.as_str())
+                    .add_field(0u32)
+                    .add_field(notification.icon.as_str())
+                    .add_field(notification.summary.as_str())
+                    .add_field(notification.body.as_str())
+                    .add_field(notification.actions.clone())
+                    .add_field(hints)
+                    .add_field(-1i32)
+                    .build()?,
+            )
+        };
+
+        let reply =
+            connection.call_method(Some(destination), path, Some(interface), method_name, &body)?;
+
+        if portal {
+            Ok(id)
+        } else {
+            reply.body().deserialize()
+        }
     }
 
     /// Linux and the BSDs: connects to the session bus and subscribes to the signals of the
@@ -623,7 +726,7 @@ mod imp {
     /// missed.
     #[cfg(all(unix, not(target_os = "macos")))]
     fn listen(shared: Weak<Shared>) -> Option<zbus::blocking::Connection> {
-        let (_, path, interface) = BUS;
+        let (_, path, interface) = bus();
         let connection = zbus::blocking::Connection::session().ok()?;
         let rule = zbus::MatchRule::builder()
             .msg_type(zbus::message::Type::Signal)
@@ -655,10 +758,19 @@ mod imp {
         let header = signal.header();
         let body = signal.body();
         let (server_id, action) = match header.member().map(|member| member.as_str()) {
-            Some("ActionInvoked") => match body.deserialize::<(u32, String)>() {
-                Ok((server_id, action)) => (server_id, action),
-                Err(_) => return,
-            },
+            Some("ActionInvoked") => {
+                let parsed = if should_use_portal() {
+                    body.deserialize::<(String, String, Vec<zbus::zvariant::OwnedValue>)>()
+                        .ok()
+                        .and_then(|(id, action, _)| Some((id.parse().ok()?, action)))
+                } else {
+                    body.deserialize::<(u32, String)>().ok()
+                };
+                let Some((server_id, action)) = parsed else {
+                    return;
+                };
+                (server_id, action)
+            }
             Some("NotificationClosed") => {
                 if let Ok((server_id, _reason)) = body.deserialize::<(u32, u32)>() {
                     lock(&shared.tracker.shown).remove(&server_id);
@@ -679,13 +791,22 @@ mod imp {
             .get(&server_id)
             .map(|(_, data)| data.clone());
         if let Some(data) = data {
-            let action = if action == "default" { "tap" } else { &action };
+            let action = if action == "default" {
+                "tap"
+            } else if should_use_portal() {
+                // strip prefix added in notify
+                action.strip_prefix("dummy-prefix-").unwrap_or(&action)
+            } else {
+                &action
+            };
             shared.dispatch(performed(action, &data));
         }
     }
 
     /// Linux and the BSDs: closes the tracked notifications with the given identifiers, or all of
     /// them. They are forgotten when the server reports them closed.
+    ///
+    /// Linux: When using portal it forgets immediately and runs on_close.
     #[cfg(all(unix, not(target_os = "macos")))]
     pub(super) fn close(shared: &Shared, ids: Option<&[i32]>) {
         let Some(Some(connection)) = shared.tracker.connection.get() else {
@@ -696,15 +817,38 @@ mod imp {
             .filter(|(_, (id, _))| ids.is_none_or(|ids| ids.contains(id)))
             .map(|(server_id, _)| *server_id)
             .collect::<Vec<_>>();
-        let (destination, path, interface) = BUS;
+        let portal = should_use_portal();
+        let (destination, path, interface) = bus();
         for server_id in server_ids {
+            let (method_name, builder) = if portal {
+                (
+                    "RemoveNotification",
+                    StructureBuilder::new().add_field(server_id.to_string()),
+                )
+            } else {
+                (
+                    "CloseNotification",
+                    StructureBuilder::new().add_field(server_id),
+                )
+            };
+            let Ok(body) = builder.build() else {
+                continue;
+            };
             let _ = connection.call_method(
                 Some(destination),
                 path,
                 Some(interface),
-                "CloseNotification",
-                &(server_id,),
+                method_name,
+                &body,
             );
+            if portal {
+                // the portal never signals a close, so remove from tracked here
+                lock(&shared.tracker.shown).remove(&server_id);
+                let on_close = lock(&shared.tracker.on_close).remove(&server_id);
+                if let Some(on_close) = on_close {
+                    let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(on_close.0));
+                }
+            }
         }
     }
 
@@ -807,11 +951,29 @@ mod tests {
         member: &str,
         body: &(impl serde::Serialize + zbus::zvariant::DynamicType),
     ) -> zbus::message::Message {
-        let (_, path, interface) = imp::BUS;
+        let (_, path, interface) = imp::bus();
         zbus::message::Message::signal(path, interface, member)
             .unwrap()
             .build(body)
             .unwrap()
+    }
+
+    /// Linux: when using portal, a third needed value is added to the body
+    /// BSDs and Linux (no portals): equivalent of `signal("ActionInvoked", &(id, action))`
+    #[cfg(all(unix, not(target_os = "macos")))]
+    fn action_invoked(id: u32, action: &str) -> zbus::message::Message {
+        if imp::should_use_portal() {
+            signal(
+                "ActionInvoked",
+                &(
+                    id.to_string(),
+                    action,
+                    Vec::<zbus::zvariant::OwnedValue>::new(),
+                ),
+            )
+        } else {
+            signal("ActionInvoked", &(id, action))
+        }
     }
 
     #[cfg(all(unix, not(target_os = "macos")))]
@@ -828,12 +990,12 @@ mod tests {
         }));
         lock(&shared.tracker.shown).insert(41, (7, serde_json::json!({ "id": 7 })));
 
-        imp::on_signal(&shared, &signal("ActionInvoked", &(41u32, "default")));
-        imp::on_signal(&shared, &signal("ActionInvoked", &(41u32, "snooze")));
+        imp::on_signal(&shared, &action_invoked(41u32, "default"));
+        imp::on_signal(&shared, &action_invoked(41u32, "snooze"));
         // another notification, maybe of another app
-        imp::on_signal(&shared, &signal("ActionInvoked", &(42u32, "default")));
+        imp::on_signal(&shared, &action_invoked(42u32, "default"));
         imp::on_signal(&shared, &signal("NotificationClosed", &(41u32, 2u32)));
-        imp::on_signal(&shared, &signal("ActionInvoked", &(41u32, "default")));
+        imp::on_signal(&shared, &action_invoked(41u32, "default"));
 
         assert_eq!(*seen.lock().unwrap(), ["tap", "snooze"]);
         assert!(lock(&shared.tracker.shown).is_empty());
