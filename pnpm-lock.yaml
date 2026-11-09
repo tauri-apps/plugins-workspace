@@ -125,7 +125,7 @@ importers:
         version: 1.0.2(rollup@4.64.12)
       '@rollup/plugin-typescript':
         specifier: 12.3.1
-        version: 12.3.1(rollup@4.64.12)(tslib@2.8.1)(typescript@6.0.3)
+        version: 12.3.1(rollup@4.64.12)(tslib@2.9.1)(typescript@6.0.3)
       eslint:
         specifier: 10.12.0
         version: 10.12.0(jiti@2.7.0)(supports-color@8.1.1)
@@ -142,8 +142,8 @@ importers:
         specifier: 4.64.12
         version: 4.64.12
       tslib:
-        specifier: 2.8.1
-        version: 2.8.1
+        specifier: 2.9.1
+        version: 2.9.1
       typescript:
         specifier: 6.0.3
         version: 6.0.3
@@ -4313,8 +4313,8 @@ packages:
     peerDependencies:
       typescript: '>=4.8.4'
 
-  tslib@2.8.1:
-    resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
+  tslib@2.9.1:
+    resolution: {integrity: sha512-a4Ux9VKuIMHsOS7ENbEq6hK2ZGYIT27Rtl0E4eD9KqwxhKiQeMZE/9xb3IdYwWaSOyIBQLExhQgXDTYoiCxnWA==}
 
   tsx@4.23.15:
     resolution: {integrity: sha512-Yiex1Ovn8z2xPpOWckIiysV1SSyRMY9BkLF++q0yKiDxCqRhosKfMg3janKkiLBwZ5c/YryloKwGZcrEmtwxKw==}
@@ -4844,7 +4844,7 @@ snapshots:
 
   '@emnapi/runtime@1.11.3':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
     optional: true
 
   '@epic-web/invariant@1.0.0': {}
@@ -5440,14 +5440,14 @@ snapshots:
     optionalDependencies:
       rollup: 4.64.12
 
-  '@rollup/plugin-typescript@12.3.1(rollup@4.64.12)(tslib@2.8.1)(typescript@6.0.3)':
+  '@rollup/plugin-typescript@12.3.1(rollup@4.64.12)(tslib@2.9.1)(typescript@6.0.3)':
     dependencies:
       '@rollup/pluginutils': 5.4.0(rollup@4.64.12)
       resolve: 1.22.13
       typescript: 6.0.3
     optionalDependencies:
       rollup: 4.64.12
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@rollup/pluginutils@5.4.0(rollup@4.64.12)':
     dependencies:
@@ -8109,7 +8109,7 @@ snapshots:
 
   rxjs@7.8.2:
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   safaridriver@2.0.0: {}
 
@@ -8474,7 +8474,7 @@ snapshots:
     dependencies:
       typescript: 6.0.3
 
-  tslib@2.8.1: {}
+  tslib@2.9.1: {}
 
   tsx@4.23.15:
     dependencies:
