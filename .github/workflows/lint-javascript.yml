@@ -20,6 +20,7 @@ on:
       - 'plugins/*/tsconfig.json'
       - 'shared/**'
       - 'packages/**'
+      - '.scripts/tests/**'
       - 'eslint.config.js'
       - 'tsconfig.base.json'
       - 'pnpm-lock.yaml'
@@ -53,6 +54,8 @@ jobs:
         run: pnpm lint
       - name: ts:check
         run: pnpm ts:check
+      - name: notification-init tests
+        run: pnpm test:notification-init
       # the build above regenerates the `api-iife.js` and `init-iife.js` files the Rust crates
       # embed, which must be committed along with the guest-js changes they come from
       - name: check generated files are up to date
