@@ -262,8 +262,20 @@ pub fn spawn<R: Runtime>(
 
     tauri::async_runtime::spawn(async move {
         while let Some(event) = rx.recv().await {
-            if matches!(event, crate::process::CommandEvent::Terminated(_)) {
-                children.lock().unwrap().remove(&pid);
+            if matches!(event, crate::process::CommandEvent::Terminated(_))
+                && keep_tracking_group(&children, pid)
+            {
+                // a process group can outlive its leader: keep it reachable by `kill` and the
+                // exit cleanup, but only until it is empty, as its id can be reused after that
+                let children = children.clone();
+                tauri::async_runtime::spawn(async move {
+                    loop {
+                        tokio::time::sleep(GROUP_POLL_INTERVAL).await;
+                        if !keep_tracking_group(&children, pid) {
+                            break;
+                        }
+                    }
+                });
             };
             let js_event = JSCommandEvent::new(event, encoding);
 
@@ -285,6 +297,22 @@ pub fn spawn<R: Runtime>(
     });
 
     Ok(pid)
+}
+
+/// How often a process group that outlived its leader is checked for remaining members.
+const GROUP_POLL_INTERVAL: std::time::Duration = std::time::Duration::from_millis(500);
+
+/// Forgets the exited child `pid` unless its process group or job object still has members.
+/// Returns whether it is still tracked.
+fn keep_tracking_group(children: &crate::ChildStore, pid: ChildId) -> bool {
+    let mut children = children.lock().unwrap();
+    let group_alive = children
+        .get(&pid)
+        .is_some_and(|child| child.group_has_members());
+    if !group_alive {
+        children.remove(&pid);
+    }
+    group_alive
 }
 
 #[tauri::command]
