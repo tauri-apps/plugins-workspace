@@ -3,7 +3,7 @@
 "updater-js": minor
 ---
 
-- Added an in-memory HTTP cache for update checks (downloads are not cached), behind the new `cache` cargo feature (enabled by default). Without it, caching is compiled out and `cacheMode` has no effect.
+- Added an in-memory HTTP cache for update checks (downloads are not cached), behind the new `cache` cargo feature (disabled by default). Without it, caching is compiled out and `cacheMode` has no effect.
 - New `plugins.updater.cache` config: `enabledByDefault` and `maxTtlMins` (defaults to 12 hours).
 - The JS `check` command has a new `cacheMode` option (`default`, `bypass`, `checkNow`). In Rust this is exposed as `UpdaterBuilder::cache_mode_override`.
 - **Behavior change:** Caching is opt-in in this release. You can opt-in with `check({cacheMode: 'checkNow'})`, `cacheMode: 'default'` or set `enabledByDefault = true`. Otherwise the updater behaves the same and transparently skips caching. This is intended as temporary and a future release is expected to change the default!
