@@ -8,7 +8,7 @@ use std::{
     collections::HashMap,
     fs,
     path::{Path, PathBuf},
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, PoisonError},
     time::Duration,
 };
 use tauri::{AppHandle, Emitter, Manager, Resource, ResourceId, Runtime, path::BaseDirectory};
@@ -240,6 +240,7 @@ impl<R: Runtime> StoreBuilder<R> {
             auto_save: self.auto_save,
             auto_save_debounce_sender: Arc::new(Mutex::new(None)),
             store: Arc::new(Mutex::new(store_inner)),
+            change_order: Mutex::new(()),
         };
 
         let store = Arc::new(store);
@@ -294,6 +295,8 @@ struct StoreInner<R: Runtime> {
     defaults: Option<HashMap<String, JsonValue>>,
     serialize_fn: SerializeFn,
     deserialize_fn: DeserializeFn,
+    /// Changes not yet sent as `store://change` events, see [`Store::change`].
+    changes: Vec<(String, Option<JsonValue>)>,
 }
 
 impl<R: Runtime> StoreInner<R> {
@@ -311,6 +314,7 @@ impl<R: Runtime> StoreInner<R> {
             defaults,
             serialize_fn,
             deserialize_fn,
+            changes: Vec::new(),
         }
     }
 
@@ -348,7 +352,7 @@ impl<R: Runtime> StoreInner<R> {
         let key = key.into();
         let value = value.into();
         self.cache.insert(key.clone(), value.clone());
-        let _ = self.emit_change_event(&key, Some(&value));
+        self.record_change(key, Some(value));
     }
 
     /// Returns a reference to the value corresponding to the key.
@@ -365,7 +369,7 @@ impl<R: Runtime> StoreInner<R> {
     pub fn delete(&mut self, key: impl AsRef<str>) -> bool {
         let flag = self.cache.remove(key.as_ref()).is_some();
         if flag {
-            let _ = self.emit_change_event(key.as_ref(), None);
+            self.record_change(key.as_ref().to_owned(), None);
         }
         flag
     }
@@ -376,8 +380,8 @@ impl<R: Runtime> StoreInner<R> {
     pub fn clear(&mut self) {
         let keys: Vec<String> = self.cache.keys().cloned().collect();
         self.cache.clear();
-        for key in &keys {
-            let _ = self.emit_change_event(key, None);
+        for key in keys {
+            self.record_change(key, None);
         }
     }
 
@@ -386,17 +390,19 @@ impl<R: Runtime> StoreInner<R> {
     /// If no default value has been set, this method behaves identical to [`clear`](Self::clear).
     pub fn reset(&mut self) {
         if let Some(defaults) = &self.defaults {
+            let mut changes = Vec::new();
             for (key, value) in &self.cache {
                 if defaults.get(key) != Some(value) {
-                    let _ = self.emit_change_event(key, defaults.get(key));
+                    changes.push((key.clone(), defaults.get(key).cloned()));
                 }
             }
             for (key, value) in defaults {
                 if !self.cache.contains_key(key) {
-                    let _ = self.emit_change_event(key, Some(value));
+                    changes.push((key.clone(), Some(value.clone())));
                 }
             }
             self.cache.clone_from(defaults);
+            self.changes.extend(changes);
         } else {
             self.clear()
         }
@@ -427,22 +433,35 @@ impl<R: Runtime> StoreInner<R> {
         self.cache.is_empty()
     }
 
-    fn emit_change_event(&self, key: &str, value: Option<&JsonValue>) -> crate::Result<()> {
-        let state = self.app.state::<StoreState>();
-        let stores = state.stores.read().unwrap();
-        let exists = value.is_some();
-        self.app.emit(
-            "store://change",
-            ChangePayload {
-                path: &self.path,
-                resource_id: stores.get(&self.path).copied(),
-                key,
-                value,
-                exists,
-            },
-        )?;
-        Ok(())
+    fn record_change(&mut self, key: String, value: Option<JsonValue>) {
+        self.changes.push((key, value));
     }
+}
+
+fn emit_change_event<R: Runtime>(
+    app: &AppHandle<R>,
+    path: &Path,
+    key: &str,
+    value: Option<&JsonValue>,
+) -> crate::Result<()> {
+    let resource_id = app
+        .state::<StoreState>()
+        .stores
+        .read()
+        .unwrap()
+        .get(path)
+        .copied();
+    app.emit(
+        "store://change",
+        ChangePayload {
+            path,
+            resource_id,
+            key,
+            value,
+            exists: value.is_some(),
+        },
+    )?;
+    Ok(())
 }
 
 impl<R: Runtime> std::fmt::Debug for StoreInner<R> {
@@ -467,6 +486,8 @@ pub struct Store<R: Runtime> {
     auto_save: Option<Duration>,
     auto_save_debounce_sender: Arc<Mutex<Option<UnboundedSender<AutoSaveMessage>>>>,
     store: Arc<Mutex<StoreInner<R>>>,
+    /// Held across a change and its events, so they are sent in the order the changes were made.
+    change_order: Mutex<()>,
 }
 
 impl<R: Runtime> Resource for Store<R> {
@@ -486,9 +507,30 @@ impl<R: Runtime> Store<R> {
     //     f(&mut store)
     // }
 
+    /// Runs `f` on the store and sends the `store://change` events it recorded once the store
+    /// is unlocked again. Listeners run inside the emit, so they can read the store.
+    fn change<T>(&self, f: impl FnOnce(&mut StoreInner<R>) -> T) -> T {
+        // guards no data, so a listener that panicked must not block every later change
+        let _order = self
+            .change_order
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner);
+        let (result, app, path, changes) = {
+            let mut store = self.store.lock().unwrap();
+            let result = f(&mut store);
+            let changes = std::mem::take(&mut store.changes);
+            (result, store.app.clone(), store.path.clone(), changes)
+        };
+        for (key, value) in changes {
+            let _ = emit_change_event(&app, &path, &key, value.as_ref());
+        }
+        result
+    }
+
     /// Inserts a key-value pair into the store.
     pub fn set(&self, key: impl Into<String>, value: impl Into<JsonValue>) {
-        self.store.lock().unwrap().set(key.into(), value.into());
+        let (key, value) = (key.into(), value.into());
+        self.change(|store| store.set(key, value));
         let _ = self.trigger_auto_save();
     }
 
@@ -504,7 +546,7 @@ impl<R: Runtime> Store<R> {
 
     /// Removes a key-value pair from the store.
     pub fn delete(&self, key: impl AsRef<str>) -> bool {
-        let deleted = self.store.lock().unwrap().delete(key);
+        let deleted = self.change(|store| store.delete(key));
         if deleted {
             let _ = self.trigger_auto_save();
         }
@@ -515,7 +557,7 @@ impl<R: Runtime> Store<R> {
     ///
     /// Note: To clear the storage and reset it to its `default` value, use [`reset`](Self::reset) instead.
     pub fn clear(&self) {
-        self.store.lock().unwrap().clear();
+        self.change(|store| store.clear());
         let _ = self.trigger_auto_save();
     }
 
@@ -523,7 +565,7 @@ impl<R: Runtime> Store<R> {
     ///
     /// If no default value has been set, this method behaves identical to [`clear`](Self::clear).
     pub fn reset(&self) {
-        self.store.lock().unwrap().reset();
+        self.change(|store| store.reset());
         let _ = self.trigger_auto_save();
     }
 
