@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.3]
+
+- [`2754eedb`](https://github.com/tauri-apps/plugins-workspace/commit/2754eedb8d13ba1a8e19be95bedfe97417407089) ([#3763](https://github.com/tauri-apps/plugins-workspace/pull/3763) by [@963s](https://github.com/tauri-apps/plugins-workspace/../../963s)) Save the scope when a path is forbidden too. Only allowed paths triggered a save, so a path forbidden at runtime was allowed again after a restart.
+
 ## [2.4.2]
 
 ### Dependencies
