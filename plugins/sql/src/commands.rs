@@ -32,10 +32,14 @@ pub(crate) async fn load<R: Runtime>(
     let options = options.unwrap_or_default();
     let pool = DbPool::connect(&db, &app, options.auto_create).await?;
 
-    if let Some(migrations) = migrations.0.lock().await.remove(&db) {
-        let migrator = Migrator::new(migrations).await?;
+    let mut pending = migrations.0.lock().await;
+    if let Some(list) = pending.get(&db) {
+        let migrator = Migrator::new(list.clone()).await?;
         pool.migrate(&migrator).await?;
+        // forget them only once applied, so a load that failed here can be retried
+        pending.remove(&db);
     }
+    drop(pending);
 
     db_instances.0.write().await.insert(db.clone(), pool);
 
