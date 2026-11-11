@@ -297,6 +297,8 @@ mod imp {
         sync::{Mutex, OnceLock, Weak},
     };
 
+    #[cfg(all(unix, not(target_os = "macos")))]
+    use futures_util::StreamExt;
     use serde_json::{Value, json};
 
     use super::Shared;
@@ -350,7 +352,7 @@ mod imp {
     #[derive(Default)]
     pub(crate) struct Tracker {
         /// The connection the signals arrive on; `None` when it could not be set up.
-        connection: OnceLock<Option<zbus::blocking::Connection>>,
+        connection: OnceLock<Option<zbus::Connection>>,
         /// The tracked notifications the server still shows, by server id: their identifier and
         /// the payload their actions carry.
         pub(super) shown: Mutex<HashMap<u32, (i32, Value)>>,
@@ -581,7 +583,7 @@ mod imp {
     /// sent it. Returns the server id of the notification.
     #[cfg(all(unix, not(target_os = "macos")))]
     fn notify(
-        connection: &zbus::blocking::Connection,
+        connection: &zbus::Connection,
         notification: &notify_rust::Notification,
     ) -> zbus::Result<u32> {
         // the only hint the plugin sets
@@ -590,31 +592,35 @@ mod imp {
             .iter()
             .filter_map(|hint| match hint {
                 notify_rust::Hint::SoundName(name) => {
-                    Some(("sound-name", zbus::zvariant::Value::from(name.as_str())))
+                    Some(("sound-name", zbus::Variant::from(name.as_str())))
                 }
                 _ => None,
             })
             .collect::<HashMap<_, _>>();
         let (destination, path, interface) = BUS;
-        connection
-            .call_method(
-                Some(destination),
-                path,
-                Some(interface),
-                "Notify",
-                &(
-                    &notification.appname,
-                    0u32,
-                    &notification.icon,
-                    &notification.summary,
-                    &notification.body,
-                    &notification.actions,
-                    hints,
-                    -1i32,
-                ),
-            )?
-            .body()
-            .deserialize()
+        // Runs on a blocking thread of Tauri's runtime, where blocking on a future is allowed.
+        tauri::async_runtime::block_on(async {
+            connection
+                .call_method(
+                    Some(destination),
+                    path,
+                    Some(interface),
+                    "Notify",
+                    &(
+                        &notification.appname,
+                        0u32,
+                        &notification.icon,
+                        &notification.summary,
+                        &notification.body,
+                        &notification.actions,
+                        hints,
+                        -1i32,
+                    ),
+                )
+                .await?
+                .body()
+                .deserialize()
+        })
     }
 
     /// Linux and the BSDs: connects to the session bus and subscribes to the signals of the
@@ -622,22 +628,31 @@ mod imp {
     /// The subscription is in place when this returns, so no signal of a later notification is
     /// missed.
     #[cfg(all(unix, not(target_os = "macos")))]
-    fn listen(shared: Weak<Shared>) -> Option<zbus::blocking::Connection> {
+    fn listen(shared: Weak<Shared>) -> Option<zbus::Connection> {
         let (_, path, interface) = BUS;
-        let connection = zbus::blocking::Connection::session().ok()?;
-        let rule = zbus::MatchRule::builder()
-            .msg_type(zbus::message::Type::Signal)
-            .path(path)
-            .ok()?
-            .interface(interface)
-            .ok()?
-            .build();
-        let signals =
-            zbus::blocking::MessageIterator::for_match_rule(rule, &connection, None).ok()?;
+        // Runs on a blocking thread of Tauri's runtime. zbus runs the connection on that runtime
+        // when another crate enables its `tokio` feature, and on its own runtime otherwise.
+        let (connection, mut signals) = tauri::async_runtime::block_on(async {
+            let connection = zbus::Connection::session().await.ok()?;
+            let rule = zbus::MatchRule::builder()
+                .msg_type(zbus::message::Type::Signal)
+                .path(path)
+                .interface(interface)
+                .build()
+                .ok()?;
+            let signals = zbus::MessageStream::for_match_rule(rule, &connection, None)
+                .await
+                .ok()?;
+            Some((connection, signals))
+        })?;
         std::thread::Builder::new()
             .name("notification-actions".into())
             .spawn(move || {
-                for signal in signals.flatten() {
+                // Errors of single messages are skipped, the stream ends with the connection.
+                while let Some(signal) = tauri::async_runtime::block_on(signals.next()) {
+                    let Ok(signal) = signal else {
+                        continue;
+                    };
                     let Some(shared) = shared.upgrade() else {
                         return;
                     };
@@ -684,10 +699,40 @@ mod imp {
         }
     }
 
-    /// Linux and the BSDs: closes the tracked notifications with the given identifiers, or all of
-    /// them. They are forgotten when the server reports them closed.
+    /// Linux and the BSDs: asks the server to close the tracked notifications with the given
+    /// identifiers, or all of them, and waits for its replies. They are forgotten when the server
+    /// reports them closed.
     #[cfg(all(unix, not(target_os = "macos")))]
-    pub(super) fn close(shared: &Shared, ids: Option<&[i32]>) {
+    pub(super) fn close(shared: &Arc<Shared>, ids: Option<&[i32]>) {
+        use tokio::runtime::{Handle, RuntimeFlavor};
+
+        if !matches!(shared.tracker.connection.get(), Some(Some(_))) {
+            return;
+        }
+        match Handle::try_current().map(|handle| handle.runtime_flavor()) {
+            Err(_) => send_close(shared, ids),
+            // The async commands call this on a worker. The work runs on a thread of its own, as
+            // `track` may hold `shown` while it waits for a reply that, when another crate enables
+            // zbus's `tokio` feature, a worker has to read; `block_in_place` keeps the runtime
+            // going meanwhile.
+            Ok(RuntimeFlavor::MultiThread) => std::thread::scope(|scope| {
+                let thread = scope.spawn(|| send_close(shared, ids));
+                tokio::task::block_in_place(|| thread.join())
+            })
+            .unwrap_or_else(|panic| std::panic::resume_unwind(panic)),
+            // A current-thread runtime would stop while waiting, so the calls are sent without.
+            Ok(_) => {
+                let shared = Arc::clone(shared);
+                let ids = ids.map(<[i32]>::to_vec);
+                tauri::async_runtime::spawn_blocking(move || send_close(&shared, ids.as_deref()));
+            }
+        }
+    }
+
+    /// Linux and the BSDs: sends `CloseNotification` for the tracked notifications with the given
+    /// identifiers, or all of them, and waits for the replies.
+    #[cfg(all(unix, not(target_os = "macos")))]
+    fn send_close(shared: &Shared, ids: Option<&[i32]>) {
         let Some(Some(connection)) = shared.tracker.connection.get() else {
             return;
         };
@@ -697,15 +742,19 @@ mod imp {
             .map(|(server_id, _)| *server_id)
             .collect::<Vec<_>>();
         let (destination, path, interface) = BUS;
-        for server_id in server_ids {
-            let _ = connection.call_method(
-                Some(destination),
-                path,
-                Some(interface),
-                "CloseNotification",
-                &(server_id,),
-            );
-        }
+        tauri::async_runtime::block_on(async {
+            for server_id in server_ids {
+                let _ = connection
+                    .call_method(
+                        Some(destination),
+                        path,
+                        Some(interface),
+                        "CloseNotification",
+                        &(server_id,),
+                    )
+                    .await;
+            }
+        });
     }
 
     /// macOS and Windows: `notify-rust` cannot remove a shown notification.
@@ -809,7 +858,6 @@ mod tests {
     ) -> zbus::message::Message {
         let (_, path, interface) = imp::BUS;
         zbus::message::Message::signal(path, interface, member)
-            .unwrap()
             .build(body)
             .unwrap()
     }
