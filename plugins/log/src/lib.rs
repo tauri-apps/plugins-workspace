@@ -26,6 +26,7 @@ use std::{
     fs::{self, File},
     iter::FromIterator,
     path::{Path, PathBuf},
+    time::SystemTime,
 };
 use tauri::{AppHandle, Emitter};
 use tauri::{
@@ -279,21 +280,33 @@ impl RotatingFile {
                         .strip_prefix(&self.file_name)?
                         .strip_prefix("_")?;
                     // count legacy `.log.bak` files too, so the keep cap holds for them
-                    let date = rest
+                    let stem = rest
                         .strip_suffix(".log")
                         .or_else(|| rest.strip_suffix(".log.bak"))?;
-                    Some((path, date.to_string()))
+                    let modified = entry
+                        .metadata()
+                        .and_then(|metadata| metadata.modified())
+                        .unwrap_or(SystemTime::UNIX_EPOCH);
+                    Some((path, stem.to_string(), modified))
                 } else {
                     None
                 }
             })
             .collect::<Vec<_>>();
 
-        files.sort_by(|a, b| a.1.cmp(&b.1));
+        // Same-second rotations get a `<name>_<date>_<n>.log` collision suffix whose
+        // numeric order does not survive a plain string sort (`_10` < `_9`), and a
+        // name freed by cleanup can be reused for a newer rotation in that second.
+        // Compare modification times to decide which log is newer, falling back to
+        // the parsed (date, n) name order so equal times still sort deterministically.
+        files.sort_by(|a, b| {
+            a.2.cmp(&b.2)
+                .then_with(|| rotated_stem_order(&a.1).cmp(&rotated_stem_order(&b.1)))
+        });
 
         if files.len() > keep_count {
             let files_to_remove = files.len() - keep_count;
-            for (old_log_path, _) in files.iter().take(files_to_remove) {
+            for (old_log_path, _, _) in files.iter().take(files_to_remove) {
                 fs::remove_file(old_log_path)?;
             }
         }
@@ -326,6 +339,18 @@ impl RotatingFile {
         }
         fs::rename(&self.path, &to)?;
         Ok(())
+    }
+}
+
+/// Ordering key for the stem of a rotated log name, `<date>` or `<date>_<n>`:
+/// the date part, then the numeric collision suffix, absent being `0`. A plain
+/// string compare would order `_10` before `_9`.
+fn rotated_stem_order(stem: &str) -> (&str, u64) {
+    match stem.rsplit_once('_') {
+        Some((date, index)) if !index.is_empty() && index.bytes().all(|b| b.is_ascii_digit()) => {
+            (date, index.parse().unwrap_or(u64::MAX))
+        }
+        _ => (stem, 0),
     }
 }
 
@@ -1046,6 +1071,80 @@ mod tests {
         assert_eq!(rotated.len(), 1);
         assert!(rotated[0].ends_with(".log"));
         assert_eq!(fs::read(dir.join(&rotated[0])).unwrap(), b"second");
+        fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn remove_old_files_keeps_newest_past_suffix_9() {
+        let dir = temp_log_dir("suffix-order");
+        let file_name = "repro".to_string();
+        fs::write(dir.join("repro.log"), b"active").unwrap();
+        // same-second rotation archives, oldest first: `repro_<date>.log`,
+        // then `repro_<date>_1.log` through `repro_<date>_12.log`
+        let date = "2026-10-14_12-38-13";
+        fs::write(dir.join(format!("repro_{date}.log")), b"x").unwrap();
+        for index in 1..=12 {
+            fs::write(dir.join(format!("repro_{date}_{index}.log")), b"x").unwrap();
+        }
+        let rotator = RotatingFile::new(
+            &dir,
+            file_name,
+            u64::MAX,
+            RotationStrategy::KeepSome(3),
+            TimezoneStrategy::UseUtc,
+            FileOpenStrategy::Append,
+        )
+        .unwrap();
+        rotator.remove_old_files(3).unwrap();
+        let mut remaining: Vec<_> = fs::read_dir(&dir)
+            .unwrap()
+            .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+            .collect();
+        remaining.sort();
+        // the three newest archives survive; a lexicographic sort kept `_7`..`_9`
+        assert_eq!(
+            remaining,
+            vec![
+                "repro.log",
+                "repro_2026-10-14_12-38-13_10.log",
+                "repro_2026-10-14_12-38-13_11.log",
+                "repro_2026-10-14_12-38-13_12.log",
+            ]
+        );
+        fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn remove_old_files_keeps_reused_unsuffixed_name() {
+        let dir = temp_log_dir("reused-name");
+        let file_name = "repro".to_string();
+        let date = "2026-10-14_12-38-13";
+        // once cleanup frees `repro_<date>.log`, a rotation in the same second can
+        // reuse it for newer content; the recreated file is newer than `_2` even
+        // though its name still sorts first
+        fs::write(dir.join("repro.log"), b"active").unwrap();
+        fs::write(dir.join(format!("repro_{date}_2.log")), b"older").unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(50));
+        fs::write(dir.join(format!("repro_{date}.log")), b"newer").unwrap();
+        let rotator = RotatingFile::new(
+            &dir,
+            file_name,
+            u64::MAX,
+            RotationStrategy::KeepSome(1),
+            TimezoneStrategy::UseUtc,
+            FileOpenStrategy::Append,
+        )
+        .unwrap();
+        rotator.remove_old_files(1).unwrap();
+        let mut remaining: Vec<_> = fs::read_dir(&dir)
+            .unwrap()
+            .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+            .collect();
+        remaining.sort();
+        assert_eq!(
+            remaining,
+            vec!["repro.log", "repro_2026-10-14_12-38-13.log"]
+        );
         fs::remove_dir_all(&dir).ok();
     }
 }
