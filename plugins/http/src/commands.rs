@@ -36,6 +36,14 @@ const HTTP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_P
 /// configure `maxRedirections`.
 const DEFAULT_MAX_REDIRECTIONS: usize = 10;
 
+fn is_bodyless_response(method: &Method, status: StatusCode) -> bool {
+    method == Method::HEAD
+        || matches!(
+            status,
+            StatusCode::NO_CONTENT | StatusCode::RESET_CONTENT | StatusCode::NOT_MODIFIED
+        )
+}
+
 struct ReqwestResponse {
     response: AsyncMutex<Option<reqwest::Response>>,
     cancel_tx: watch::Sender<bool>,
@@ -98,6 +106,7 @@ type CancelableResponseFuture =
 
 struct FetchRequest {
     inner: Mutex<FetchRequestInner>,
+    method: Method,
 }
 
 struct FetchRequestInner {
@@ -106,13 +115,14 @@ struct FetchRequestInner {
 }
 
 impl FetchRequest {
-    fn new(fut: CancelableResponseFuture) -> Self {
+    fn new(fut: CancelableResponseFuture, method: Method) -> Self {
         let (abort_tx, abort_rx) = channel();
         Self {
             inner: Mutex::new(FetchRequestInner {
                 pending: Some((fut, abort_rx)),
                 abort_tx: Some(abort_tx),
             }),
+            method,
         }
     }
 
@@ -474,7 +484,7 @@ pub async fn fetch<R: Runtime>(
             let fut = async move { request.send().await.map_err(map_request_error) };
 
             let mut resources_table = webview.resources_table();
-            let rid = resources_table.add(FetchRequest::new(Box::pin(fut)));
+            let rid = resources_table.add(FetchRequest::new(Box::pin(fut), method));
 
             Ok(rid)
         }
@@ -495,7 +505,7 @@ pub async fn fetch<R: Runtime>(
 
             let fut = async move { Ok(reqwest::Response::from(response)) };
             let mut resources_table = webview.resources_table();
-            let rid = resources_table.add(FetchRequest::new(Box::pin(fut)));
+            let rid = resources_table.add(FetchRequest::new(Box::pin(fut), method));
             Ok(rid)
         }
         _ => Err(Error::SchemeNotSupport(scheme.to_string())),
@@ -546,11 +556,16 @@ pub async fn fetch_send<R: Runtime>(
         res = fut.as_mut() => res,
     };
 
-    let response = res.map(|res| {
+    let response = res.and_then(|res| {
         #[cfg(feature = "tracing")]
         tracing::trace!("{:?}", res);
 
         let status = res.status();
+        // The JavaScript Response constructor only accepts statuses from 200 to 599.
+        if !(200..=599).contains(&status.as_u16()) {
+            return Err(Error::InvalidResponseStatus(status.as_u16()));
+        }
+
         let url = res.url().to_string();
         let mut headers = Vec::new();
         for (key, val) in res.headers().iter() {
@@ -564,7 +579,7 @@ pub async fn fetch_send<R: Runtime>(
             url,
             rid,
         };
-        (res, metadata)
+        Ok((res, metadata))
     });
 
     let mut resources_table = webview.resources_table();
@@ -577,8 +592,13 @@ pub async fn fetch_send<R: Runtime>(
 
     match response {
         Ok((res, metadata)) => {
-            // Keep cancellation valid across the request-to-response transition.
-            resources_table.replace(rid, ReqwestResponse::new(res));
+            if is_bodyless_response(&req.method, res.status()) {
+                // No body reader will consume or cancel this response.
+                let _ = resources_table.close(rid);
+            } else {
+                // Keep cancellation valid across the request-to-response transition.
+                resources_table.replace(rid, ReqwestResponse::new(res));
+            }
             Ok(metadata)
         }
         Err(error) => {

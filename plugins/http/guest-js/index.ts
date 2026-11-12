@@ -304,29 +304,25 @@ export async function fetch(
     controller.enqueue(actualData)
   }
 
-  // no body for 101, 103, 204, 205 and 304
+  // No body for HEAD requests or null-body statuses.
   // see https://fetch.spec.whatwg.org/#null-body-status
-  const body = [101, 103, 204, 205, 304].includes(status)
-    ? null
-    : new ReadableStream<Uint8Array>({
-        start: (controller) => {
-          // listen for abort events to cancel reading
-          signal?.addEventListener('abort', () => {
-            controller.error(ERROR_REQUEST_CANCELLED)
+  const body =
+    req.method === 'HEAD' || [101, 103, 204, 205, 304].includes(status)
+      ? null
+      : new ReadableStream<Uint8Array>({
+          start: (controller) => {
+            // listen for abort events to cancel reading
+            signal?.addEventListener('abort', () => {
+              controller.error(ERROR_REQUEST_CANCELLED)
+              void dropBody()
+            })
+          },
+          pull: (controller) => readChunk(controller),
+          cancel: () => {
+            // Ensure body resources are released on stream cancellation
             void dropBody()
-          })
-        },
-        pull: (controller) => readChunk(controller),
-        cancel: () => {
-          // Ensure body resources are released on stream cancellation
-          void dropBody()
-        }
-      })
-
-  if (body === null) {
-    // No stream will read or cancel this response's Rust resource.
-    await dropBody()
-  }
+          }
+        })
 
   const res = new Response(body, {
     status,

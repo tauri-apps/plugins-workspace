@@ -24,6 +24,9 @@ pub enum Error {
     /// Error from the [`http`] crate, raised while building the response of a `data:` URL.
     #[error(transparent)]
     Http(#[from] http::Error),
+    /// The response status cannot be represented by the JavaScript Fetch API.
+    #[error("response status {0} is not supported by the Fetch API")]
+    InvalidResponseStatus(u16),
     /// A header name given by the frontend is not a valid HTTP header name.
     #[error(transparent)]
     HttpInvalidHeaderName(#[from] http::header::InvalidHeaderName),
