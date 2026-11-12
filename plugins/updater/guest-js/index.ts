@@ -11,6 +11,8 @@
 
 import { invoke, Channel, Resource } from '@tauri-apps/api/core'
 
+type CacheMode = 'default' | 'bypass' | 'checkNow'
+
 /** Options used when checking for updates */
 interface CheckOptions {
   /**
@@ -29,6 +31,13 @@ interface CheckOptions {
    * Target identifier for the running application. This is sent to the backend.
    */
   target?: string
+  /**
+   * Overrides the default caching behavior for this check.
+   * The most commonly used ones:
+   * - `default` when just displaying whether there's a new update and for low-priority background checks.
+   * - `checkNow` when the user explicitly wants to refresh with a "check for updates now" button.
+   */
+  cacheMode?: CacheMode
 }
 
 /** Options used when downloading an update */
@@ -303,5 +312,5 @@ function toRustHeaders(
   return headers ? Array.from(new Headers(headers).entries()) : undefined
 }
 
-export type { CheckOptions, DownloadOptions, DownloadEvent }
+export type { CacheMode, CheckOptions, DownloadOptions, DownloadEvent }
 export { check, Update }

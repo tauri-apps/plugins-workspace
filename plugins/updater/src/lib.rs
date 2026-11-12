@@ -13,6 +13,7 @@
 //! - **native-tls**: Enables TLS functionality provided by `native-tls`.
 //! - **native-tls-vendored**: Enables the `vendored` feature of `native-tls`.
 //! - **system-proxy** *(enabled by default)*: Use Windows and macOS system proxy settings automatically.
+//! - **cache**: In-memory HTTP cache for update checks. Without it, `check` never caches.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
@@ -28,11 +29,13 @@ use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
 };
 
+mod cache;
 mod commands;
 mod config;
 mod error;
 mod updater;
 
+pub use cache::*;
 pub use config::Config;
 pub use error::{Error, Result};
 pub use updater::*;
@@ -83,9 +86,11 @@ impl<R: Runtime, T: Manager<R>> UpdaterExt<R> for T {
             target,
             version_comparator,
             headers,
+            cache,
         } = self.state::<UpdaterState>().inner();
 
-        let mut builder = UpdaterBuilder::new(app, config.clone()).headers(headers.clone());
+        let mut builder =
+            UpdaterBuilder::new(app, config.clone(), cache.clone()).headers(headers.clone());
 
         if let Some(target) = target {
             builder = builder.target(target);
@@ -135,6 +140,7 @@ struct UpdaterState {
     config: Config,
     version_comparator: Option<VersionComparator>,
     headers: HeaderMap,
+    cache: CacheManager,
 }
 
 /// Builder for the updater plugin.
@@ -280,7 +286,9 @@ impl Builder {
                 if let Some(windows) = &mut config.windows {
                     windows.installer_args.extend(installer_args);
                 }
+
                 app.manage(UpdaterState {
+                    cache: CacheManager::from_config(config.cache.clone().unwrap_or_default()),
                     target,
                     config,
                     version_comparator,
