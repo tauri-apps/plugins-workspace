@@ -15,9 +15,11 @@ use tauri::{
 use tokio::runtime::{Handle, RuntimeFlavor};
 use zbus::{Connection, ObjectPath, connection, interface, names::WellKnownName};
 
-/// Runs `future` on Tauri's async runtime, so that a connection built in it keeps being served
-/// there after this returns. The short-lived thread is there because
-/// [`tauri::async_runtime::block_on`] panics on a thread that is already inside a Tokio runtime.
+/// Runs `future` on Tauri's async runtime. A connection built in it keeps being served after this
+/// returns: on Tauri's runtime when zbus's `tokio` feature is enabled anywhere in the app, and on
+/// zbus's own runtime otherwise. Unlike `zbus::block_on`, this works with either feature. The
+/// short-lived thread is there because [`tauri::async_runtime::block_on`] panics on a thread that
+/// is already inside a Tokio runtime.
 fn block_on<F: Future + Send>(future: F) -> F::Output
 where
     F::Output: Send,
@@ -63,7 +65,8 @@ struct SingleInstanceDBus<R: Runtime> {
 #[interface(name = "org.SingleInstance.DBus")]
 impl<R: Runtime> SingleInstanceDBus<R> {
     fn execute_callback(&mut self, argv: Vec<String>, cwd: String) {
-        // The callback runs in a task on Tauri's runtime.
+        // The callback runs in a task on Tauri's runtime, or on zbus's own runtime when zbus's
+        // `tokio` feature is not enabled.
         block_in_place(|| (self.callback)(&self.app_handle, argv, cwd));
     }
 }

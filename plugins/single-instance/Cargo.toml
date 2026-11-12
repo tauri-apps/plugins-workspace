@@ -47,8 +47,8 @@ features = ["Win32_UI_WindowsAndMessaging"]
 
 [target."cfg(target_os = \"linux\")".dependencies]
 zbus = { version = "6.2", default-features = false, features = [
+  "default-rt",
   "service",
-  "tokio",
 ] }
 
 [features]
