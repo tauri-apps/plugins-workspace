@@ -57,3 +57,6 @@ objc2-foundation = { version = "0.3", features = ["NSURL", "NSString"] }
 
 [features]
 watch = ["notify", "notify-debouncer-full"]
+
+[target.'cfg(target_env = "ohos")'.dependencies]
+libc = "0.2"

@@ -63,7 +63,7 @@ pub enum Error {
     /// Forwarded from a [`zbus::Error`] raised while talking to the file manager or the desktop portal over D-Bus.
     #[error(transparent)]
     #[cfg(any(
-        target_os = "linux",
+        all(target_os = "linux", not(target_env = "ohos")),
         target_os = "dragonfly",
         target_os = "freebsd",
         target_os = "netbsd",
