@@ -216,3 +216,55 @@ fn lock_is_held_during_the_exit_event() {
     // `App::run` cleans up after the exit event.
     assert_started(launch_second_instance(&identifier), &forwarded);
 }
+
+/// Tauri's runtime is set up once per process, so each case runs in a process of its own: the
+/// default runtime with a single worker, as on a machine with one CPU, and a current-thread
+/// runtime passed to [`tauri::async_runtime::set`].
+#[cfg(target_os = "linux")]
+#[test]
+#[ignore = "needs a D-Bus session bus"]
+fn other_runtimes() {
+    const RUNTIME_ENV: &str = "TAURI_SINGLE_INSTANCE_TEST_RUNTIME";
+    let Ok(runtime) = env::var(RUNTIME_ENV) else {
+        for runtime in ["one-worker", "current-thread"] {
+            let output = Command::new(env::current_exe().unwrap())
+                .args(["--ignored", "--exact", "other_runtimes", "--nocapture"])
+                .env(RUNTIME_ENV, runtime)
+                .env("TOKIO_WORKER_THREADS", "1")
+                .output()
+                .unwrap();
+            assert!(output.status.success(), "{runtime}: {output:?}");
+        }
+        return;
+    };
+    // Fails rather than hangs on a deadlock.
+    thread::spawn(|| {
+        thread::sleep(Duration::from_secs(60));
+        eprintln!("timed out");
+        std::process::exit(1);
+    });
+    if runtime == "current-thread" {
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        tauri::async_runtime::set(runtime.handle().clone());
+        thread::spawn(move || runtime.block_on(std::future::pending::<()>()));
+    }
+
+    let identifier = unique_identifier();
+    let (app, forwarded) = primary(&identifier);
+    assert_forwarded(launch_second_instance(&identifier), &forwarded);
+
+    if runtime == "one-worker" {
+        // As in an async command, which holds the only worker while the name is released.
+        let app = app.handle().clone();
+        tauri::async_runtime::block_on(tauri::async_runtime::spawn(async move {
+            tauri_plugin_single_instance::destroy(&app);
+        }))
+        .unwrap();
+    } else {
+        tauri_plugin_single_instance::destroy(&app);
+    }
+    assert_started(launch_second_instance(&identifier), &forwarded);
+}

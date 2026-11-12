@@ -7092,7 +7092,7 @@ dependencies = [
  "tokio",
  "tracing",
  "windows-sys 0.61.2",
- "zbus 5.9.0",
+ "zbus 6.2.1",
 ]
 
 [[package]]
