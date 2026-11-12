@@ -13,6 +13,46 @@ import { FIXTURE_SERVER_URL, RAW_HEADER_FILENAME } from '../helpers/server.js'
 const echoServer = 'http://localhost:3003'
 
 describePlugin('http', () => {
+  for (const status of [204, 205, 304]) {
+    for (const readBody of [false, true]) {
+      it(`fetch releases a ${status} response ${readBody ? 'after reading it' : 'without reading it'}`, async () => {
+        const result = await tauri(
+          async (api, url, status, readBody) => {
+            const resourceNames = () =>
+              api.core.invoke<string[]>('webview_resource_names')
+            const before = await resourceNames()
+            const response = await api.http.fetch(`${url}/empty/${status}`)
+            const bytes = readBody
+              ? (await response.arrayBuffer()).byteLength
+              : null
+            const after = await resourceNames()
+            const responseCount = (names: string[]) =>
+              names.filter((name) => name.endsWith('::ReqwestResponse')).length
+            return {
+              status: response.status,
+              bodyIsNull: response.body === null,
+              bytes,
+              url: response.url,
+              header: response.headers.get('x-e2e-empty'),
+              // Reading an empty JS body succeeds even if its Rust resource leaked.
+              // Inspect the real native resource table instead.
+              retained: responseCount(after) - responseCount(before)
+            }
+          },
+          FIXTURE_SERVER_URL,
+          status,
+          readBody
+        )
+        expect(result.status).toBe(status)
+        expect(result.bodyIsNull).toBe(true)
+        expect(result.bytes).toBe(readBody ? 0 : null)
+        expect(result.url).toBe(`${FIXTURE_SERVER_URL}/empty/${status}`)
+        expect(result.header).toBe('present')
+        expect(result.retained).toBe(0)
+      })
+    }
+  }
+
   it('fetch performs a GET and exposes status, url and headers', async () => {
     const response = await tauri(async (api, url) => {
       const response = await api.http.fetch(url, {

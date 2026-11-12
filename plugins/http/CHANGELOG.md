@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.9.0]
+
+- [`b11126ea`](https://github.com/tauri-apps/plugins-workspace/commit/b11126eae6dad431ce9e84d1c471bfca2e53bdf8) ([#3756](https://github.com/tauri-apps/plugins-workspace/pull/3756) by [@Lorkydey](https://github.com/tauri-apps/plugins-workspace/../../Lorkydey)) Release native HTTP response resources for responses with no body, such as `204 No Content`, even when the response is never read.
+
+### feat
+
+- [`2fbd5634`](https://github.com/tauri-apps/plugins-workspace/commit/2fbd56342730f2fe7067dfa3c00760fae2bb201f) ([#3732](https://github.com/tauri-apps/plugins-workspace/pull/3732) by [@followdarko](https://github.com/tauri-apps/plugins-workspace/../../followdarko)) Improve `fetch` request by avoiding serialization when possible while handling the request body.
+
 ## [2.8.3]
 
 - [`0e176756`](https://github.com/tauri-apps/plugins-workspace/commit/0e17675653142ceed8cf942129a6801003a39b2d) ([#3586](https://github.com/tauri-apps/plugins-workspace/pull/3586) by [@cpruijsen](https://github.com/tauri-apps/plugins-workspace/../../cpruijsen)) Fix `fetch` throwing a `TypeError` when a response header value contains non-ASCII bytes (e.g. a UTF-8 encoded `Content-Disposition` filename). Header values are now treated as byte strings like in a browser: response header values are decoded as ISO-8859-1 so the raw bytes are preserved as a valid `ByteString` for `new Headers()`, and request header values are sent as their raw bytes (one byte per character) instead of being UTF-8 encoded. A request header value with a character such as `é` is now sent as the single byte `0xE9`, as browsers do.

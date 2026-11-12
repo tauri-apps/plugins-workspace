@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-store"
-version = "2.5.0"
+version = "2.5.1"
 description = "Simple, persistent key-value store."
 authors = { workspace = true }
 license = { workspace = true }
@@ -40,4 +40,4 @@ tokio = { version = "1", features = ["sync", "time", "macros"] }
 tauri = { workspace = true, features = ["wry"] }
 
 [dev-dependencies]
-tauri = { workspace = true, features = ["wry"] }
+tauri = { workspace = true, features = ["wry", "test"] }

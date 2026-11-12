@@ -19,12 +19,11 @@ import {
 // macOS), which the suite cannot observe, and sending is fire-and-forget, so
 // only the permission model is covered on desktop.
 //
-// The permission specs are desktop-only: mobile starts out ungranted and
-// `requestPermission` puts up a system dialog the session would then block on.
+// Permission requests can open a system dialog on mobile. The Android regression
+// below grants the permission over adb first, then checks the already-granted path.
 //
 // Scheduling, action types, channels, the pending/active lists and the
-// listeners are only implemented on mobile. None of them need the permission,
-// so they are covered there on an app that has not been granted it.
+// listeners are only implemented on mobile and are covered separately below.
 //
 // On Android, what the system actually posted (`when` and the chronometer
 // flags) is read back from `dumpsys notification` over adb; Appium's
@@ -92,6 +91,61 @@ async function clearNotifications(): Promise<void> {
 }
 
 describePlugin('notification', () => {
+  itOn(
+    'android',
+    'repeated permission requests resolve when already granted',
+    async () => {
+      adb([
+        'shell',
+        'pm',
+        'grant',
+        appId,
+        'android.permission.POST_NOTIFICATIONS'
+      ])
+
+      const result = await tauri(async (api) => {
+        if (
+          !(await api.core.invoke<boolean>(
+            'plugin:notification|is_permission_granted'
+          ))
+        ) {
+          throw new Error('Notification permission must already be granted')
+        }
+        const request = async (fn: () => Promise<string>) => {
+          let timer: ReturnType<typeof setTimeout> | undefined
+          try {
+            return await Promise.race([
+              fn(),
+              new Promise<never>((_, reject) => {
+                timer = setTimeout(
+                  () =>
+                    reject(
+                      new Error('Granted notification request did not resolve')
+                    ),
+                  5000
+                )
+              })
+            ])
+          } finally {
+            clearTimeout(timer)
+          }
+        }
+        const states = []
+        for (let i = 0; i < 2; i++) {
+          states.push(await request(() => api.notification.requestPermission()))
+          states.push(
+            await request(() => window.Notification.requestPermission())
+          )
+        }
+        return { states, permission: window.Notification.permission }
+      })
+      expect(result).toEqual({
+        states: ['granted', 'granted', 'granted', 'granted'],
+        permission: 'granted'
+      })
+    }
+  )
+
   itDesktop('permission is granted on desktop', async () => {
     const result = await tauri(async (api) => ({
       granted: await api.notification.isPermissionGranted(),

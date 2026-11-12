@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.7.3]
+
+- [`74a44c1d`](https://github.com/tauri-apps/plugins-workspace/commit/74a44c1d5694324b7fb9ba5ee9271a3096da9387) ([#3739](https://github.com/tauri-apps/plugins-workspace/pull/3739) by [@ericroberts](https://github.com/tauri-apps/plugins-workspace/../../ericroberts)) Fixed automatic link opening to respect `<base target="_blank">` when the link has no explicit `target` attribute.
+
 ## [2.7.2]
 
 - [`1ab93046`](https://github.com/tauri-apps/plugins-workspace/commit/1ab930465f43fc4574ce71ed2bda57b1f80a802b) ([#3565](https://github.com/tauri-apps/plugins-workspace/pull/3565) by [@cyclone-mind](https://github.com/tauri-apps/plugins-workspace/../../cyclone-mind)) Fixed `revealItemInDir` and the `reveal_item_in_dir` / `reveal_items_in_dir` Rust APIs panicking on Linux and the BSDs with `Cannot start a runtime from within a runtime` when zbus is built with its `tokio` feature and the call happens inside an async runtime. The blocking D-Bus calls now run on a dedicated thread.
