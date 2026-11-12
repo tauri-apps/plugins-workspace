@@ -7,7 +7,7 @@ use std::{
     io::{BufRead, BufReader, Write},
     path::{Path, PathBuf},
     process::{Command as StdCommand, Stdio},
-    sync::Arc,
+    sync::{Arc, Mutex, mpsc},
     thread::{JoinHandle, spawn},
 };
 
@@ -71,6 +71,7 @@ pub struct Command {
 pub struct CommandChild {
     inner: Arc<SharedChild>,
     stdin_writer: PipeWriter,
+    stdin_queue: Option<StdinQueue>,
     #[cfg(unix)]
     process_group: bool,
     #[cfg(windows)]
@@ -78,10 +79,51 @@ pub struct CommandChild {
     kill_on_drop: bool,
 }
 
+/// Background writer used by [`CommandChild::write_queued`].
+#[derive(Debug)]
+struct StdinQueue {
+    tx: mpsc::Sender<Vec<u8>>,
+    /// The error that stopped the writer thread, returned by the next queued write.
+    error: Arc<Mutex<Option<std::io::Error>>>,
+}
+
 impl CommandChild {
     /// Writes to process stdin.
     pub fn write(&mut self, buf: &[u8]) -> crate::Result<()> {
         self.stdin_writer.write_all(buf)?;
+        Ok(())
+    }
+
+    /// Queues `buf` to be written to the process stdin by a background thread and returns
+    /// without waiting for the child to read it. Queued writes keep their order.
+    ///
+    /// Write errors happen on the background thread, so they are returned by the next call.
+    pub(crate) fn write_queued(&mut self, buf: Vec<u8>) -> crate::Result<()> {
+        if self.stdin_queue.is_none() {
+            let mut writer = self.stdin_writer.try_clone()?;
+            let (tx, rx) = mpsc::channel::<Vec<u8>>();
+            let error = Arc::new(Mutex::new(None));
+            let error_ = error.clone();
+            // Exits once the child is dropped and the queue is drained, or on the first error.
+            spawn(move || {
+                for buf in rx {
+                    if let Err(e) = writer.write_all(&buf) {
+                        *error_.lock().unwrap() = Some(e);
+                        break;
+                    }
+                }
+            });
+            self.stdin_queue = Some(StdinQueue { tx, error });
+        }
+
+        let queue = self.stdin_queue.as_ref().unwrap();
+        if let Some(e) = queue.error.lock().unwrap().take() {
+            return Err(e.into());
+        }
+        queue
+            .tx
+            .send(buf)
+            .map_err(|_| std::io::Error::from(std::io::ErrorKind::BrokenPipe))?;
         Ok(())
     }
 
@@ -459,6 +501,7 @@ impl Command {
             CommandChild {
                 inner: child,
                 stdin_writer,
+                stdin_queue: None,
                 #[cfg(unix)]
                 process_group,
                 #[cfg(windows)]
@@ -637,6 +680,75 @@ mod tests {
                 "Tauri.Example"
             })
         );
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn write_queued_does_not_wait_for_reader_and_keeps_order() {
+        // The child only starts reading stdin after a delay, and the first write is
+        // bigger than a pipe buffer, so a blocking write would wait for the sleep.
+        let cmd = Command::new("sh")
+            .args(["-c", "sleep 1; cat"])
+            .set_raw_out(true);
+        let (mut rx, mut child) = cmd.spawn().unwrap();
+
+        // Drain stdout on another thread so `cat` never stalls on a full stdout pipe.
+        let collector = std::thread::spawn(move || {
+            tauri::async_runtime::block_on(async move {
+                let mut out = Vec::new();
+                while let Some(event) = rx.recv().await {
+                    match event {
+                        CommandEvent::Stdout(line) => out.extend(line),
+                        CommandEvent::Terminated(_) => break,
+                        _ => {}
+                    }
+                }
+                out
+            })
+        });
+
+        let big = vec![b'a'; 1024 * 1024];
+        let start = std::time::Instant::now();
+        child.write_queued(big.clone()).unwrap();
+        child.write_queued(b"second".to_vec()).unwrap();
+        let elapsed = start.elapsed();
+        // Closing stdin (by dropping the child) must still deliver everything queued first.
+        drop(child);
+        let out = collector.join().unwrap();
+
+        assert!(
+            elapsed < std::time::Duration::from_millis(500),
+            "write_queued blocked for {elapsed:?}"
+        );
+        let mut expected = big;
+        expected.extend_from_slice(b"second");
+        assert_eq!(out.len(), expected.len());
+        assert!(out == expected, "stdin data arrived out of order");
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn write_queued_reports_error_after_child_exits() {
+        let (mut rx, mut child) = Command::new("true").spawn().unwrap();
+        tauri::async_runtime::block_on(async move {
+            while let Some(event) = rx.recv().await {
+                if let CommandEvent::Terminated(_) = event {
+                    break;
+                }
+            }
+        });
+
+        // The first write is queued; the writer thread then fails with a broken pipe,
+        // which a later write reports.
+        let mut result = child.write_queued(vec![b'x'; 1024 * 1024]);
+        for _ in 0..50 {
+            if result.is_err() {
+                break;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(20));
+            result = child.write_queued(b"x".to_vec());
+        }
+        assert!(result.is_err());
     }
 
     #[cfg(not(windows))]
