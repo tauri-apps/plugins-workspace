@@ -518,6 +518,68 @@ mod tests {
             mock.assert_async().await;
         }
 
+        #[tokio::test]
+        async fn check_now_sends_no_cache_on_cache_miss() {
+            let cache = enabled_pending_default();
+            let mut server = Server::new_async().await;
+            let mock = server
+                .mock("GET", "/")
+                .match_header("cache-control", "no-cache")
+                .with_header("cache-control", "max-age=60")
+                .with_body("v1")
+                .expect(1)
+                .create_async()
+                .await;
+
+            assert_eq!(
+                get(&cache, Some(CacheMode::CheckNow), &server.url(), &[]).await,
+                (200, "v1".into())
+            );
+            assert_eq!(
+                get(&cache, None, &server.url(), &[]).await,
+                (200, "v1".into())
+            );
+            mock.assert_async().await;
+        }
+
+        #[tokio::test]
+        async fn revalidation_replaces_available_update_with_no_update() {
+            let cache = enabled_pending_default();
+            let mut server = Server::new_async().await;
+            let update = server
+                .mock("GET", "/")
+                .with_header("cache-control", "max-age=60")
+                .with_header("etag", ETAG)
+                .with_body("v1")
+                .expect(1)
+                .create_async()
+                .await;
+            assert_eq!(
+                get(&cache, None, &server.url(), &[]).await,
+                (200, "v1".into())
+            );
+            update.assert_async().await;
+            update.remove_async().await;
+
+            let no_update = server
+                .mock("GET", "/")
+                .match_header("if-none-match", ETAG)
+                .with_status(204)
+                .with_header("cache-control", "max-age=60")
+                .expect(1)
+                .create_async()
+                .await;
+            assert_eq!(
+                get(&cache, Some(CacheMode::CheckNow), &server.url(), &[]).await,
+                (204, String::new())
+            );
+            assert_eq!(
+                get(&cache, None, &server.url(), &[]).await,
+                (204, String::new())
+            );
+            no_update.assert_async().await;
+        }
+
         // `CheckNow` always reaches the server, but revalidates with a conditional request.
         #[tokio::test]
         async fn check_now_revalidates_and_stores() {
