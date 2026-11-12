@@ -260,6 +260,12 @@ export async function fetch(
     rid
   })
 
+  // An abort may have happened before the response's stream listener is attached.
+  if (signal?.aborted) {
+    void abort()
+    throw new Error(ERROR_REQUEST_CANCELLED)
+  }
+
   let bodyDropped = false
   const dropBody = () => {
     if (bodyDropped) return Promise.resolve()

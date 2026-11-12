@@ -541,44 +541,51 @@ pub async fn fetch_send<R: Runtime>(
     };
 
     let res = tokio::select! {
-        res = fut.as_mut() => res,
+        biased;
         _ = abort_rx => Err(Error::RequestCanceled),
+        res = fut.as_mut() => res,
     };
 
-    // Release resources
-    {
-        let mut resources_table = webview.resources_table();
-        // Cancellation can remove the entry before sending finishes. Do not close
-        // another request if the table has since reused its resource ID.
-        if let Ok(current) = resources_table.get::<FetchRequest>(rid)
-            && Arc::ptr_eq(&current, &req)
-        {
-            let _ = resources_table.close(rid);
+    let response = res.map(|res| {
+        #[cfg(feature = "tracing")]
+        tracing::trace!("{:?}", res);
+
+        let status = res.status();
+        let url = res.url().to_string();
+        let mut headers = Vec::new();
+        for (key, val) in res.headers().iter() {
+            headers.push((key.as_str().into(), header_value_to_byte_string(val)));
         }
-    }
 
-    let res = res?;
-
-    #[cfg(feature = "tracing")]
-    tracing::trace!("{:?}", res);
-
-    let status = res.status();
-    let url = res.url().to_string();
-    let mut headers = Vec::new();
-    for (key, val) in res.headers().iter() {
-        headers.push((key.as_str().into(), header_value_to_byte_string(val)));
-    }
+        let metadata = FetchResponse {
+            status: status.as_u16(),
+            status_text: status.canonical_reason().unwrap_or_default().to_string(),
+            headers,
+            url,
+            rid,
+        };
+        (res, metadata)
+    });
 
     let mut resources_table = webview.resources_table();
-    let rid = resources_table.add(ReqwestResponse::new(res));
+    let current = resources_table
+        .get::<FetchRequest>(rid)
+        .map_err(|_| Error::RequestCanceled)?;
+    if !Arc::ptr_eq(&current, &req) {
+        return Err(Error::RequestCanceled);
+    }
 
-    Ok(FetchResponse {
-        status: status.as_u16(),
-        status_text: status.canonical_reason().unwrap_or_default().to_string(),
-        headers,
-        url,
-        rid,
-    })
+    match response {
+        Ok((res, metadata)) => {
+            // Keep cancellation valid across the request-to-response transition.
+            resources_table.replace(rid, ReqwestResponse::new(res));
+            Ok(metadata)
+        }
+        Err(error) => {
+            let _ = resources_table.close(rid);
+            Err(error)
+        }
+    }
 }
 
 #[command]
