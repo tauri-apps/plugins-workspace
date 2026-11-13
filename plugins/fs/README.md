@@ -12,7 +12,7 @@ Access the file system.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.90**_
+_This plugin requires a Rust version of at least **1.96**_
 
 There are three general methods of installation that we can recommend.
 
