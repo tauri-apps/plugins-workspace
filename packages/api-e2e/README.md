@@ -22,7 +22,7 @@ in the core repository; the `@tauri-apps/api` modules themselves are covered the
     (registered in `examples/api` behind its off-by-default `automation` Cargo feature, which
     the suite's build enables) and a locally-running `@crabnebula/test-runner-backend`,
     authenticated with `CN_API_KEY`.
-  - **Linux** — `webkit2gtk-driver` (`WebKitWebDriver` on `PATH`).
+  - **Linux** — `webkit2gtk-driver` / `webkitgtk-webdriver` (>= Ubuntu 26.04) (`WebKitWebDriver` on `PATH`).
   - **Windows** — `msedgedriver.exe` on `PATH`. It hands the app the `--remote-debugging-port`
     it attaches to through `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS`, which WebView2 ignores in an
     elevated process ([wry#1782](https://github.com/tauri-apps/wry/issues/1782)), so the suite has
@@ -122,7 +122,7 @@ Platform driver dependencies:
 | Platform | Requirement                                                                                                                                                                                                                                               |
 | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | macOS    | `CN_API_KEY` env var (CrabNebula Cloud). The automation plugin and test-runner-backend are wired up already.                                                                                                                                              |
-| Linux    | `webkit2gtk-driver` package (provides `WebKitWebDriver`).                                                                                                                                                                                                 |
+| Linux    | `webkit2gtk-driver` / `webkitgtk-webdriver` (>= Ubuntu 26.04) package (provides `WebKitWebDriver`).                                                                                                                                                       |
 | Windows  | `msedgedriver.exe` matching your Edge version, on `PATH`. Run the suite unelevated.                                                                                                                                                                       |
 | Android  | The usual Tauri Android setup (`ANDROID_HOME`, `NDK_HOME`, a JDK), which also provides the `adb` the suite shells out to, plus a running emulator or a connected device with USB debugging. Network access the first time, for the chromedriver download. |
 | iOS      | macOS with Xcode and an iOS simulator runtime. The first session compiles WebDriverAgent (a few minutes).                                                                                                                                                 |
