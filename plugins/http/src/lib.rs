@@ -149,6 +149,11 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
                 }
             }
         })
+        .on_page_load(|webview, payload| {
+            if matches!(payload.event(), tauri::webview::PageLoadEvent::Started) {
+                commands::cancel_all_requests(webview);
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             commands::fetch,
             commands::fetch_cancel,

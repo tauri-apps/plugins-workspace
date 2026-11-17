@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 use std::{
+    any::type_name,
     borrow::Cow,
     future::Future,
     pin::Pin,
@@ -15,7 +16,7 @@ use http::{HeaderMap, HeaderName, HeaderValue, Method, StatusCode, header};
 use reqwest::{NoProxy, redirect::Policy};
 use serde::{Deserialize, Serialize, de::Error as _};
 use tauri::{
-    Manager, ResourceId, Runtime, State, Webview,
+    Manager, ResourceId, ResourceTable, Runtime, State, Webview,
     async_runtime::Mutex as AsyncMutex,
     command,
     ipc::{CommandScope, GlobalScope, InvokeBody},
@@ -42,6 +43,43 @@ fn is_bodyless_response(method: &Method, status: StatusCode) -> bool {
             status,
             StatusCode::NO_CONTENT | StatusCode::RESET_CONTENT | StatusCode::NOT_MODIFIED
         )
+}
+
+// Removing this per-page token invalidates requests still being prepared.
+struct HttpPage;
+impl tauri::Resource for HttpPage {}
+
+impl HttpPage {
+    fn current(resources: &mut ResourceTable) -> (ResourceId, Arc<Self>) {
+        let current = resources
+            .names()
+            .filter(|(_, name)| name.as_ref() == type_name::<Self>())
+            .find_map(|(rid, _)| resources.get::<Self>(rid).ok().map(|page| (rid, page)));
+
+        if let Some(current) = current {
+            return current;
+        }
+
+        let page = Arc::new(Self);
+        let rid = resources.add_arc(page.clone());
+        (rid, page)
+    }
+}
+
+pub(crate) fn cancel_all_requests<R: Runtime>(webview: &Webview<R>) {
+    let mut resources = webview.resources_table();
+    let rids: Vec<_> = resources
+        .names()
+        .filter_map(|(rid, name)| {
+            (name == type_name::<HttpPage>()
+                || name == type_name::<FetchRequest>()
+                || name == type_name::<ReqwestResponse>())
+            .then_some(rid)
+        })
+        .collect();
+    for rid in rids {
+        let _ = resources.close(rid);
+    }
 }
 
 struct ReqwestResponse {
@@ -333,6 +371,9 @@ pub async fn fetch<R: Runtime>(
     command_scope: CommandScope<Entry>,
     global_scope: GlobalScope<Entry>,
 ) -> crate::Result<ResourceId> {
+    // Navigation invalidates this token, including while a request is being prepared.
+    let (page_rid, page) = HttpPage::current(&mut webview.resources_table());
+
     let ClientConfig {
         method,
         url,
@@ -374,7 +415,7 @@ pub async fn fetch<R: Runtime>(
         headers.append(name, byte_string_to_header_value(&v)?);
     }
 
-    match scheme {
+    let fut: CancelableResponseFuture = match scheme {
         "http" | "https" => {
             let scope = Scope::new(
                 command_scope
@@ -483,10 +524,7 @@ pub async fn fetch<R: Runtime>(
 
             let fut = async move { request.send().await.map_err(map_request_error) };
 
-            let mut resources_table = webview.resources_table();
-            let rid = resources_table.add(FetchRequest::new(Box::pin(fut), method));
-
-            Ok(rid)
+            Box::pin(fut)
         }
         "data" => {
             let data_url =
@@ -504,12 +542,21 @@ pub async fn fetch<R: Runtime>(
             tracing::trace!("{:?}", response);
 
             let fut = async move { Ok(reqwest::Response::from(response)) };
-            let mut resources_table = webview.resources_table();
-            let rid = resources_table.add(FetchRequest::new(Box::pin(fut), method));
-            Ok(rid)
+            Box::pin(fut)
         }
-        _ => Err(Error::SchemeNotSupport(scheme.to_string())),
+        _ => return Err(Error::SchemeNotSupport(scheme.to_string())),
+    };
+
+    // Reject requests prepared for a page that navigated away before registration.
+    let mut resources = webview.resources_table();
+    let current = resources
+        .get::<HttpPage>(page_rid)
+        .map_err(|_| Error::RequestCanceled)?;
+    if !Arc::ptr_eq(&current, &page) {
+        return Err(Error::RequestCanceled);
     }
+
+    Ok(resources.add(FetchRequest::new(fut, method)))
 }
 
 #[command]
