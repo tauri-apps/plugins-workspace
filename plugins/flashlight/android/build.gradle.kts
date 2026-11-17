@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "app.tauri.torch"
+    namespace = "app.tauri.flashlight"
     compileSdk = 36
 
     defaultConfig {

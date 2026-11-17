@@ -428,7 +428,7 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
         /**
          * The camera bound by an active scan, or `null` when no scan is running.
          *
-         * Looked up through reflection by the torch plugin (`app.tauri.torch`): while a scan holds the
+         * Looked up through reflection by the flashlight plugin (`app.tauri.flashlight`): while a scan holds the
          * camera, Android rejects `CameraManager.setTorchMode`, so the flash must be driven through
          * this camera's `CameraControl` instead. Keep the name and signature stable.
          */

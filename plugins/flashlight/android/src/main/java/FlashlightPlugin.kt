@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-package app.tauri.torch
+package app.tauri.flashlight
 
 import android.app.Activity
 import android.content.Context
@@ -20,18 +20,18 @@ import app.tauri.plugin.Invoke
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
 
-private const val ERROR_NOT_AVAILABLE = "The torch is not available on this device"
+private const val ERROR_NOT_AVAILABLE = "The flashlight is not available on this device"
 private const val SCANNER_PLUGIN_CLASS = "app.tauri.barcodescanner.BarcodeScannerPlugin"
 
 @TauriPlugin
-class TorchPlugin(private val activity: Activity) : Plugin(activity) {
+class FlashlightPlugin(private val activity: Activity) : Plugin(activity) {
     private val cameraManager =
         activity.getSystemService(Context.CAMERA_SERVICE) as CameraManager
 
-    // the camera whose flash unit is used as the torch, or null if the device has none
+    // the camera whose flash unit is used as the flashlight, or null if the device has none
     private val torchCameraId: String? = findTorchCameraId()
 
-    // the system-reported state of the torch, kept in sync by torchCallback so changes made by
+    // the system-reported state of the flashlight, kept in sync by torchCallback so changes made by
     // the system or other apps are reflected
     @Volatile
     private var torchEnabled = false
@@ -97,7 +97,7 @@ class TorchPlugin(private val activity: Activity) : Plugin(activity) {
                 if (error == null) {
                     onSuccess()
                 } else {
-                    invoke.reject("Failed to $action the torch: ${error.message}")
+                    invoke.reject("Failed to $action the flashlight: ${error.message}")
                 }
             }
             return
@@ -115,11 +115,11 @@ class TorchPlugin(private val activity: Activity) : Plugin(activity) {
         } catch (e: CameraAccessException) {
             when (e.reason) {
                 CameraAccessException.CAMERA_IN_USE, CameraAccessException.MAX_CAMERAS_IN_USE ->
-                    invoke.reject("Failed to $action the torch: the camera is in use by another app")
-                else -> invoke.reject("Failed to $action the torch: ${e.message}")
+                    invoke.reject("Failed to $action the flashlight: the camera is in use by another app")
+                else -> invoke.reject("Failed to $action the flashlight: ${e.message}")
             }
         } catch (e: Exception) {
-            invoke.reject("Failed to $action the torch: ${e.message}")
+            invoke.reject("Failed to $action the flashlight: ${e.message}")
         }
     }
 

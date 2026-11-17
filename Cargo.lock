@@ -226,6 +226,7 @@ dependencies = [
  "tauri-plugin-clipboard-manager",
  "tauri-plugin-deep-link",
  "tauri-plugin-dialog",
+ "tauri-plugin-flashlight",
  "tauri-plugin-fs",
  "tauri-plugin-geolocation",
  "tauri-plugin-global-shortcut",
@@ -241,7 +242,6 @@ dependencies = [
  "tauri-plugin-shell",
  "tauri-plugin-sql",
  "tauri-plugin-store",
- "tauri-plugin-torch",
  "tauri-plugin-updater",
  "tauri-plugin-upload",
  "tauri-plugin-websocket",
@@ -6837,6 +6837,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-flashlight"
+version = "2.0.0"
+dependencies = [
+ "log",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 2.0.12",
+]
+
+[[package]]
 name = "tauri-plugin-fs"
 version = "2.7.1"
 dependencies = [
@@ -7147,18 +7159,6 @@ dependencies = [
  "tauri-plugin",
  "thiserror 2.0.12",
  "zeroize",
-]
-
-[[package]]
-name = "tauri-plugin-torch"
-version = "2.0.0"
-dependencies = [
- "log",
- "serde",
- "serde_json",
- "tauri",
- "tauri-plugin",
- "thiserror 2.0.12",
 ]
 
 [[package]]

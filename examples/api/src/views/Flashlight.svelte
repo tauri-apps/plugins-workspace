@@ -6,7 +6,7 @@
     toggle,
     isAvailable,
     isEnabled
-  } from '@tauri-apps/plugin-torch'
+  } from '@tauri-apps/plugin-flashlight'
 
   export let onMessage
 
@@ -39,18 +39,18 @@
     <b>{enabled ?? '...'}</b>
   </p>
 
-  <button class="btn" id="torch-enable" on:click={run(enable)}>enable</button>
-  <button class="btn" id="torch-disable" on:click={run(disable)}
+  <button class="btn" id="flashlight-enable" on:click={run(enable)}>enable</button>
+  <button class="btn" id="flashlight-disable" on:click={run(disable)}
     >disable</button
   >
-  <button class="btn" id="torch-toggle" on:click={run(toggle)}>toggle</button>
-  <button class="btn" id="torch-refresh" on:click={refresh}>refresh state</button
+  <button class="btn" id="flashlight-toggle" on:click={run(toggle)}>toggle</button>
+  <button class="btn" id="flashlight-refresh" on:click={refresh}>refresh state</button
   >
 </div>
 
 <br />
 
 <p>
-  The torch can also be toggled while scanning from the Scanner page, which on
+  The flashlight can also be toggled while scanning from the Scanner page, which on
   Android goes through the barcode scanner's camera.
 </p>

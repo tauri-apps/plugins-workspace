@@ -1,5 +1,5 @@
 [package]
-name = "tauri-plugin-torch"
+name = "tauri-plugin-flashlight"
 version = "2.0.0"
 description = "Control the device flashlight (torch) on Android and iOS"
 edition = { workspace = true }
@@ -7,7 +7,7 @@ authors = { workspace = true }
 license = { workspace = true }
 rust-version = { workspace = true }
 repository = { workspace = true }
-links = "tauri-plugin-torch"
+links = "tauri-plugin-flashlight"
 exclude = ["/guest-js", "/package.json", "/rollup.config.js", "/tsconfig.json"]
 
 [package.metadata.docs.rs]

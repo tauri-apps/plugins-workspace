@@ -6,7 +6,7 @@
     Format,
     cancel
   } from '@tauri-apps/plugin-barcode-scanner'
-  import { toggle as toggleTorch } from '@tauri-apps/plugin-torch'
+  import { toggle as toggleFlashlight } from '@tauri-apps/plugin-flashlight'
 
   export let onMessage
 
@@ -36,9 +36,9 @@
     }
   }
 
-  async function toggleScanTorch() {
-    toggleTorch()
-      .then((on) => onMessage(`torch ${on ? 'on' : 'off'}`))
+  async function toggleScanFlashlight() {
+    toggleFlashlight()
+      .then((on) => onMessage(`flashlight ${on ? 'on' : 'off'}`))
       .catch(onMessage)
   }
 
@@ -74,8 +74,8 @@
           <p>Aim your camera at a QR code</p>
           <button class="btn" type="button" on:click={cancelScan}>Cancel</button
           >
-          <button class="btn" type="button" on:click={toggleScanTorch}
-            >Torch</button
+          <button class="btn" type="button" on:click={toggleScanFlashlight}
+            >Flashlight</button
           >
         </div>
         <div class="square surround-cover">

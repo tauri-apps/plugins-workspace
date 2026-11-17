@@ -6,7 +6,7 @@
 //!
 //! - Supported platforms: Android and iOS.
 //!
-//! On Android the torch keeps working while the
+//! On Android the flashlight keeps working while the
 //! [barcode scanner](https://docs.rs/tauri-plugin-barcode-scanner) plugin holds the camera.
 
 #![cfg(mobile)]
@@ -22,10 +22,10 @@ mod error;
 pub use error::{Error, Result};
 
 #[cfg(target_os = "android")]
-const PLUGIN_IDENTIFIER: &str = "app.tauri.torch";
+const PLUGIN_IDENTIFIER: &str = "app.tauri.flashlight";
 
 #[cfg(target_os = "ios")]
-tauri::ios_plugin_binding!(init_plugin_torch);
+tauri::ios_plugin_binding!(init_plugin_flashlight);
 
 #[derive(Deserialize)]
 struct AvailableResponse {
@@ -37,21 +37,21 @@ struct EnabledResponse {
     enabled: bool,
 }
 
-/// Access to the torch APIs.
-pub struct Torch<R: Runtime>(PluginHandle<R>);
+/// Access to the flashlight APIs.
+pub struct Flashlight<R: Runtime>(PluginHandle<R>);
 
-impl<R: Runtime> Torch<R> {
-    /// Turns the torch on.
+impl<R: Runtime> Flashlight<R> {
+    /// Turns the flashlight on.
     ///
     /// # Errors
     ///
-    /// Returns [`Error::PluginInvoke`] if the device has no torch, the torch is temporarily
+    /// Returns [`Error::PluginInvoke`] if the device has no flashlight, the flashlight is temporarily
     /// unavailable (e.g. the device is overheating) or the camera is held by another app.
     pub fn enable(&self) -> Result<()> {
         self.0.run_mobile_plugin("enable", ()).map_err(Into::into)
     }
 
-    /// Turns the torch off.
+    /// Turns the flashlight off.
     ///
     /// # Errors
     ///
@@ -60,7 +60,7 @@ impl<R: Runtime> Torch<R> {
         self.0.run_mobile_plugin("disable", ()).map_err(Into::into)
     }
 
-    /// Flips the torch and returns its new state (`true` when it is now on).
+    /// Flips the flashlight and returns its new state (`true` when it is now on).
     ///
     /// # Errors
     ///
@@ -72,7 +72,7 @@ impl<R: Runtime> Torch<R> {
             .map_err(Into::into)
     }
 
-    /// Whether the device has a torch.
+    /// Whether the device has a flashlight.
     pub fn is_available(&self) -> Result<bool> {
         self.0
             .run_mobile_plugin::<AvailableResponse>("isAvailable", ())
@@ -80,7 +80,7 @@ impl<R: Runtime> Torch<R> {
             .map_err(Into::into)
     }
 
-    /// Whether the torch is currently on. Reads the hardware state, so it also reflects the torch
+    /// Whether the flashlight is currently on. Reads the hardware state, so it also reflects the flashlight
     /// being turned off by the system or another app.
     pub fn is_enabled(&self) -> Result<bool> {
         self.0
@@ -90,27 +90,27 @@ impl<R: Runtime> Torch<R> {
     }
 }
 
-/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the torch APIs.
-pub trait TorchExt<R: Runtime> {
-    /// Returns the [`Torch`] instance managed by the app.
-    fn torch(&self) -> &Torch<R>;
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the flashlight APIs.
+pub trait FlashlightExt<R: Runtime> {
+    /// Returns the [`Flashlight`] instance managed by the app.
+    fn flashlight(&self) -> &Flashlight<R>;
 }
 
-impl<R: Runtime, T: Manager<R>> crate::TorchExt<R> for T {
-    fn torch(&self) -> &Torch<R> {
-        self.state::<Torch<R>>().inner()
+impl<R: Runtime, T: Manager<R>> crate::FlashlightExt<R> for T {
+    fn flashlight(&self) -> &Flashlight<R> {
+        self.state::<Flashlight<R>>().inner()
     }
 }
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("torch")
+    Builder::new("flashlight")
         .setup(|app, api| {
             #[cfg(target_os = "android")]
-            let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "TorchPlugin")?;
+            let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "FlashlightPlugin")?;
             #[cfg(target_os = "ios")]
-            let handle = api.register_ios_plugin(init_plugin_torch)?;
-            app.manage(Torch(handle));
+            let handle = api.register_ios_plugin(init_plugin_flashlight)?;
+            app.manage(Flashlight(handle));
             Ok(())
         })
         .build()

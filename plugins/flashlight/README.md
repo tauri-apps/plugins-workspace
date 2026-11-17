@@ -1,8 +1,8 @@
-# Torch
+# Flashlight
 
 Control the device flashlight (torch) on Android and iOS.
 
-On Android, turning on the torch while another component holds the camera normally fails. This plugin also works while a [barcode scanner](../barcode-scanner) scan is running, so apps can offer a flashlight button in their scanning UI.
+On Android, turning on the flashlight while another component holds the camera normally fails. This plugin also works while a [barcode scanner](../barcode-scanner) scan is running, so apps can offer a flashlight button in their scanning UI.
 
 | Platform | Supported |
 | -------- | --------- |
@@ -28,9 +28,9 @@ Install the Core plugin by adding the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-tauri-plugin-torch = "2.0.0"
+tauri-plugin-flashlight = "2.0.0"
 # alternatively with Git:
-tauri-plugin-torch = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
+tauri-plugin-flashlight = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 ```
 
 You can install the JavaScript Guest bindings using your preferred JavaScript package manager:
@@ -38,11 +38,11 @@ You can install the JavaScript Guest bindings using your preferred JavaScript pa
 <!-- Add the branch for installations using git! -->
 
 ```sh
-pnpm add @tauri-apps/plugin-torch
+pnpm add @tauri-apps/plugin-flashlight
 # or
-npm add @tauri-apps/plugin-torch
+npm add @tauri-apps/plugin-flashlight
 # or
-yarn add @tauri-apps/plugin-torch
+yarn add @tauri-apps/plugin-flashlight
 ```
 
 ## Usage
@@ -54,7 +54,7 @@ First you need to register the core plugin with Tauri:
 ```rust
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_torch::init())
+        .plugin(tauri_plugin_flashlight::init())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -65,7 +65,7 @@ Second, add the required permissions in the project:
 `src-tauri/capabilities/default.json`
 
 ```json
-  "permissions": ["torch:default"]
+  "permissions": ["flashlight:default"]
 ```
 
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
@@ -77,19 +77,19 @@ import {
   toggle,
   isAvailable,
   isEnabled
-} from '@tauri-apps/plugin-torch'
+} from '@tauri-apps/plugin-flashlight'
 
 if (await isAvailable()) {
   await enable()
   console.log(await isEnabled()) // true
-  await toggle() // returns false, the torch is now off
+  await toggle() // returns false, the flashlight is now off
   await disable()
 }
 ```
 
-`isEnabled` reads the hardware state, so it also reflects the torch being turned off by the system, another app, or a barcode scan ending.
+`isEnabled` reads the hardware state, so it also reflects the flashlight being turned off by the system, another app, or a barcode scan ending.
 
-On iOS, apps can't see the torch state set by Control Center or another app: while the flashlight is on from there, `isEnabled` returns `false` and `toggle` tries to turn the torch on.
+On iOS, apps can't see the flashlight state set by Control Center or another app: while the flashlight is on from there, `isEnabled` returns `false` and `toggle` tries to turn the flashlight on.
 
 ## Contributing
 

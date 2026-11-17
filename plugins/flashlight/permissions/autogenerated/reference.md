@@ -1,11 +1,11 @@
 ## Default Permission
 
 This permission set configures which
-torch features are by default exposed.
+flashlight features are by default exposed.
 
 #### Granted Permissions
 
-It allows all torch related features.
+It allows all flashlight related features.
 
 #### This default permission set includes the following:
 
@@ -27,7 +27,7 @@ It allows all torch related features.
 <tr>
 <td>
 
-`torch:allow-disable`
+`flashlight:allow-disable`
 
 </td>
 <td>
@@ -40,7 +40,7 @@ Enables the disable command without any pre-configured scope.
 <tr>
 <td>
 
-`torch:deny-disable`
+`flashlight:deny-disable`
 
 </td>
 <td>
@@ -53,7 +53,7 @@ Denies the disable command without any pre-configured scope.
 <tr>
 <td>
 
-`torch:allow-enable`
+`flashlight:allow-enable`
 
 </td>
 <td>
@@ -66,7 +66,7 @@ Enables the enable command without any pre-configured scope.
 <tr>
 <td>
 
-`torch:deny-enable`
+`flashlight:deny-enable`
 
 </td>
 <td>
@@ -79,7 +79,7 @@ Denies the enable command without any pre-configured scope.
 <tr>
 <td>
 
-`torch:allow-is-available`
+`flashlight:allow-is-available`
 
 </td>
 <td>
@@ -92,7 +92,7 @@ Enables the is_available command without any pre-configured scope.
 <tr>
 <td>
 
-`torch:deny-is-available`
+`flashlight:deny-is-available`
 
 </td>
 <td>
@@ -105,7 +105,7 @@ Denies the is_available command without any pre-configured scope.
 <tr>
 <td>
 
-`torch:allow-is-enabled`
+`flashlight:allow-is-enabled`
 
 </td>
 <td>
@@ -118,7 +118,7 @@ Enables the is_enabled command without any pre-configured scope.
 <tr>
 <td>
 
-`torch:deny-is-enabled`
+`flashlight:deny-is-enabled`
 
 </td>
 <td>
@@ -131,7 +131,7 @@ Denies the is_enabled command without any pre-configured scope.
 <tr>
 <td>
 
-`torch:allow-toggle`
+`flashlight:allow-toggle`
 
 </td>
 <td>
@@ -144,7 +144,7 @@ Enables the toggle command without any pre-configured scope.
 <tr>
 <td>
 
-`torch:deny-toggle`
+`flashlight:deny-toggle`
 
 </td>
 <td>
