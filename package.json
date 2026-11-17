@@ -29,5 +29,5 @@
     "typescript-eslint": "8.72.1"
   },
   "minimumReleaseAge": 4320,
-  "packageManager": "pnpm@12.3.4"
+  "packageManager": "pnpm@12.21.0"
 }
