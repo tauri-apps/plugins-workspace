@@ -152,8 +152,19 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
                 }
             }
         })
-        // TODO: Also cancel HTTP requests and response bodies on webview close
-        // once Tauri provides a plugin lifecycle hook for it.
+        // TODO: Also cancel on webview close (a webview closed on its own in a
+        // multiwebview window) once Tauri provides a plugin lifecycle hook for it.
+        .on_webview_ready(|webview| {
+            let webview_ = webview.clone();
+            webview.window().on_window_event(move |event| {
+                if matches!(event, tauri::WindowEvent::Destroyed) {
+                    commands::cancel_all_requests(&webview_);
+                    if let Some(state) = webview_.try_state::<Http>() {
+                        state.pages.lock().unwrap().remove(webview_.label());
+                    }
+                }
+            });
+        })
         .on_page_load(|webview, payload| {
             if matches!(payload.event(), tauri::webview::PageLoadEvent::Started) {
                 commands::cancel_all_requests(webview);
