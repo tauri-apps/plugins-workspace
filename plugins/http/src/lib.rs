@@ -152,6 +152,13 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
                 }
             }
         })
+        // Cancel a webview's requests and response bodies when its window is destroyed.
+        // This listens on each window instead of using the plugin's `on_event`:
+        // by the time `on_event` sees `WindowEvent::Destroyed`, Tauri has already
+        // removed the window and its webviews from the app, so their resource tables
+        // can no longer be looked up. The listener keeps the webview it was registered
+        // for, so it also cancels on the right table if the label is reused later.
+        //
         // TODO: Also cancel on webview close (a webview closed on its own in a
         // multiwebview window) once Tauri provides a plugin lifecycle hook for it.
         .on_webview_ready(|webview| {
