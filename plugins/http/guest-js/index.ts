@@ -174,6 +174,38 @@ async function readRequestBody(request: Request): Promise<ArrayBuffer> {
 }
 
 /**
+ * Apply the response URL and headers and preserve them when cloning.
+ * Keep response references out of the body stream's closure scope so WebKit can
+ * collect the response once it is no longer used.
+ */
+function patchResponse(
+  response: Response,
+  url: string,
+  headers: [string, string][]
+): Response {
+  // `Response.url` cannot be set via the constructor, so we define it manually.
+  Object.defineProperty(response, 'url', { value: url, writable: false })
+
+  // Expose `set-cookie` via `response.headers` (and `getSetCookie()` where
+  // supported). This is not Fetch-spec compliant for network responses in
+  // browsers, where `set-cookie` is treated as a forbidden response
+  // header and is generally not readable from JavaScript.
+  Object.defineProperty(response, 'headers', {
+    value: new Headers(headers),
+    writable: false
+  })
+
+  // Use the receiver instead of retaining a response in a bound clone method.
+  Object.defineProperty(response, 'clone', {
+    value: function (this: Response): Response {
+      return patchResponse(Response.prototype.clone.call(this), url, headers)
+    }
+  })
+
+  return response
+}
+
+/**
  * Fetch a resource from the network. It returns a `Promise` that resolves to the
  * `Response` to that `Request`, whether it is successful or not.
  *
@@ -379,36 +411,9 @@ export async function fetch(
           cancel: () => dropBody()
         })
 
-  const res = new Response(body, {
-    status,
-    statusText
-  })
-
-  // `Response.url` cannot be set via the constructor, so we define it manually
-  Object.defineProperty(res, 'url', { value: url, writable: false })
-
-  // Expose `set-cookie` via `response.headers` (and `getSetCookie()` where
-  // supported). This is not Fetch-spec compliant for network responses in
-  // browsers, where `set-cookie` is treated as a forbidden response
-  // header and is generally not readable from JavaScript.
-  Object.defineProperty(res, 'headers', {
-    value: new Headers(responseHeaders),
-    writable: false
-  })
-
-  // Patch clone() per-instance so cloning preserves the overridden properties
-  const originalClone = res.clone.bind(res)
-  Object.defineProperty(res, 'clone', {
-    value: () => {
-      const cloned = originalClone()
-      Object.defineProperty(cloned, 'url', { value: url, writable: false })
-      Object.defineProperty(cloned, 'headers', {
-        value: new Headers(responseHeaders),
-        writable: false
-      })
-      return cloned
-    }
-  })
-
-  return res
+  return patchResponse(
+    new Response(body, { status, statusText }),
+    url,
+    responseHeaders
+  )
 }
