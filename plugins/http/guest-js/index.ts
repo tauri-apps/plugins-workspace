@@ -131,6 +131,13 @@ interface FetchSendResponse {
 
 const ERROR_REQUEST_CANCELLED = 'Request cancelled'
 
+const bodyFinalizer =
+  typeof FinalizationRegistry !== 'undefined' && typeof WeakRef !== 'undefined'
+    ? new FinalizationRegistry<() => Promise<void>>((dropBody) => {
+        void dropBody()
+      })
+    : undefined
+
 /**
  * Read the request body while allowing an abort to interrupt a stalled upload.
  * `request.arrayBuffer()` locks the body internally without observing its abort
@@ -349,11 +356,17 @@ export async function fetch(
     rid: responseRid
   } = response
 
-  let bodyController: ReadableStreamDefaultController<Uint8Array> | undefined
+  // The finalizer and abort listener must not keep the stream alive through its
+  // controller. Older webviews without finalization retain explicit cleanup.
+  let bodyController:
+    | { deref(): ReadableStreamDefaultController<Uint8Array> | undefined }
+    | undefined
+  const finalizerToken = {}
 
   let bodyClosed = false
   const finishBody = () => {
     bodyClosed = true
+    bodyFinalizer?.unregister(finalizerToken)
     signal.removeEventListener('abort', abortBody)
     bodyController = undefined
   }
@@ -365,7 +378,7 @@ export async function fetch(
     }).catch(() => {})
   }
   const abortBody = () => {
-    bodyController?.error(ERROR_REQUEST_CANCELLED)
+    bodyController?.deref()?.error(ERROR_REQUEST_CANCELLED)
     void dropBody()
   }
 
@@ -397,23 +410,37 @@ export async function fetch(
     }
   }
 
-  // No body for HEAD requests or null-body statuses.
-  // see https://fetch.spec.whatwg.org/#null-body-status
-  const body =
-    req.method === 'HEAD' || [101, 103, 204, 205, 304].includes(status)
-      ? null
-      : new ReadableStream<Uint8Array>({
-          start: (controller) => {
-            bodyController = controller
-            signal.addEventListener('abort', abortBody, { once: true })
-          },
-          pull: (controller) => readChunk(controller),
-          cancel: () => dropBody()
-        })
+  const source: UnderlyingDefaultSource<Uint8Array> = {
+    start: (controller) => {
+      bodyController = bodyFinalizer
+        ? new WeakRef(controller)
+        : { deref: () => controller }
+      signal.addEventListener('abort', abortBody, { once: true })
+    },
+    pull: (controller) => readChunk(controller),
+    cancel: () => dropBody()
+  }
 
-  return patchResponse(
-    new Response(body, { status, statusText }),
-    url,
-    responseHeaders
-  )
+  try {
+    // No body for HEAD requests or null-body statuses.
+    // see https://fetch.spec.whatwg.org/#null-body-status
+    const body =
+      req.method === 'HEAD' || [101, 103, 204, 205, 304].includes(status)
+        ? null
+        : new ReadableStream(source)
+
+    if (body !== null) {
+      // Clones share this source, so cleanup waits until none can read it.
+      bodyFinalizer?.register(source, dropBody, finalizerToken)
+    }
+
+    return patchResponse(
+      new Response(body, { status, statusText }),
+      url,
+      responseHeaders
+    )
+  } catch (error) {
+    void dropBody()
+    throw error
+  }
 }
