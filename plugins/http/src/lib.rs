@@ -80,6 +80,8 @@ const COOKIES_FILENAME: &str = ".cookies";
 
 pub(crate) struct Http {
     pub(crate) config: Config,
+    /// Each webview's current page token rid, by webview label.
+    pub(crate) pages: std::sync::Mutex<std::collections::HashMap<String, tauri::ResourceId>>,
     #[cfg(feature = "cookies")]
     cookies_jar: std::sync::Arc<crate::reqwest_cookie_store::CookieStoreMutex>,
 }
@@ -125,6 +127,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
 
             let state = Http {
                 config: api.config().clone().unwrap_or_default(),
+                pages: Default::default(),
                 #[cfg(feature = "cookies")]
                 cookies_jar: std::sync::Arc::new(cookies_jar),
             };

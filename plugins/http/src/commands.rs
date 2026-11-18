@@ -50,18 +50,23 @@ struct HttpPage;
 impl tauri::Resource for HttpPage {}
 
 impl HttpPage {
-    fn current(resources: &mut ResourceTable) -> (ResourceId, Arc<Self>) {
-        let current = resources
-            .names()
-            .filter(|(_, name)| name.as_ref() == type_name::<Self>())
-            .find_map(|(rid, _)| resources.get::<Self>(rid).ok().map(|page| (rid, page)));
+    /// Returns the webview's current page token, creating one after a navigation
+    /// closed the previous token.
+    fn current<R: Runtime>(state: &Http, webview: &Webview<R>) -> (ResourceId, Arc<Self>) {
+        let mut pages = state.pages.lock().unwrap();
+        let mut resources = webview.resources_table();
 
-        if let Some(current) = current {
-            return current;
+        // A stale rid (closed by navigation, or left by a closed webview whose label
+        // was reused) is not an `HttpPage` in this table, so it is replaced below.
+        if let Some(&rid) = pages.get(webview.label())
+            && let Ok(page) = resources.get::<Self>(rid)
+        {
+            return (rid, page);
         }
 
         let page = Arc::new(Self);
         let rid = resources.add_arc(page.clone());
+        pages.insert(webview.label().to_string(), rid);
         (rid, page)
     }
 }
@@ -372,7 +377,7 @@ pub async fn fetch<R: Runtime>(
     global_scope: GlobalScope<Entry>,
 ) -> crate::Result<ResourceId> {
     // Navigation invalidates this token, including while a request is being prepared.
-    let (page_rid, page) = HttpPage::current(&mut webview.resources_table());
+    let (page_rid, page) = HttpPage::current(&state, &webview);
 
     let ClientConfig {
         method,
