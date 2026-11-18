@@ -3,8 +3,28 @@
 // SPDX-License-Identifier: MIT
 
 import { expect } from '@wdio/globals'
-import { tauri, tauriError, describePlugin } from '../helpers/index.js'
-import { FIXTURE_SERVER_URL, RAW_HEADER_FILENAME } from '../helpers/server.js'
+import {
+  tauri,
+  tauriError,
+  describePlugin,
+  eventually
+} from '../helpers/index.js'
+import {
+  FIXTURE_SERVER_URL,
+  RAW_HEADER_FILENAME,
+  STALL_BODY_FIRST_CHUNK
+} from '../helpers/server.js'
+
+// Requests and responses of the http plugin still in the webview's resource table.
+async function httpResourceCount(): Promise<number> {
+  const names = await tauri((api) =>
+    api.core.invoke<string[]>('webview_resource_names')
+  )
+  return names.filter(
+    (name) =>
+      name.endsWith('::FetchRequest') || name.endsWith('::ReqwestResponse')
+  ).length
+}
 
 // The example spawns an echo server on this port: it replies with the request
 // body and the request headers, and sets a `session-token` cookie on requests
@@ -202,6 +222,77 @@ describePlugin('http', () => {
       await api.http.fetch(`${url}/aborted`, { signal: controller.signal })
     }, echoServer)
     expect(message).toMatch(/abort|cancel/i)
+  })
+
+  it('aborting a request that waits for headers releases it', async () => {
+    const before = await httpResourceCount()
+    const message = await tauriError(async (api, url) => {
+      const controller = new AbortController()
+      setTimeout(() => controller.abort(), 300)
+      await api.http.fetch(`${url}/stall`, { signal: controller.signal })
+    }, FIXTURE_SERVER_URL)
+    expect(message).toMatch(/abort|cancel/i)
+    await eventually(async () => expect(await httpResourceCount()).toBe(before))
+  })
+
+  it('aborting a pending body read releases the response', async () => {
+    const before = await httpResourceCount()
+    const result = await tauri(async (api, url) => {
+      const controller = new AbortController()
+      const response = await api.http.fetch(`${url}/stall-body`, {
+        signal: controller.signal
+      })
+      const reader = response.body!.getReader()
+      const first = new TextDecoder().decode((await reader.read()).value)
+      // The server never sends the next chunk, so this read stays pending.
+      const pending = reader.read()
+      setTimeout(() => controller.abort(), 300)
+      try {
+        await pending
+        return { first, second: 'resolved' }
+      } catch (error) {
+        return { first, second: String(error) }
+      }
+    }, FIXTURE_SERVER_URL)
+    expect(result.first).toBe(STALL_BODY_FIRST_CHUNK)
+    expect(result.second).toMatch(/abort|cancel/i)
+    await eventually(async () => expect(await httpResourceCount()).toBe(before))
+  })
+
+  it('canceling the body stream releases the response', async () => {
+    const before = await httpResourceCount()
+    const first = await tauri(async (api, url) => {
+      const response = await api.http.fetch(`${url}/stall-body`)
+      const reader = response.body!.getReader()
+      const chunk = new TextDecoder().decode((await reader.read()).value)
+      await reader.cancel()
+      return chunk
+    }, FIXTURE_SERVER_URL)
+    expect(first).toBe(STALL_BODY_FIRST_CHUNK)
+    await eventually(async () => expect(await httpResourceCount()).toBe(before))
+  })
+
+  it('the cancel commands do not close resources of other APIs', async () => {
+    const result = await tauri(async (api) => {
+      const image = await api.image.Image.new(new Uint8Array(4), 1, 1)
+      const errors: string[] = []
+      for (const command of ['fetch_cancel', 'fetch_cancel_body']) {
+        try {
+          await api.core.invoke(`plugin:http|${command}`, { rid: image.rid })
+          errors.push('resolved')
+        } catch (error) {
+          errors.push(String(error))
+        }
+      }
+      const size = await image.size()
+      await image.close()
+      return { errors, size: `${size.width}x${size.height}` }
+    })
+    expect(result.errors).toEqual([
+      expect.stringMatching(/resource id .* is invalid/),
+      expect.stringMatching(/resource id .* is invalid/)
+    ])
+    expect(result.size).toBe('1x1')
   })
 
   it('rejects URLs outside the configured scope', async () => {

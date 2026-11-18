@@ -37,6 +37,9 @@ export const WEBSOCKET_CLOSE_REQUEST = 'close-me'
 export const WEBSOCKET_CLOSE_CODE = 4000
 export const WEBSOCKET_CLOSE_REASON = 'closed by the fixture server'
 
+/** First (and only) body chunk `GET /stall-body` sends. */
+export const STALL_BODY_FIRST_CHUNK = 'first chunk'
+
 export interface FixtureServer {
   close(): void
 }
@@ -56,6 +59,9 @@ export interface FixtureServer {
  * - `GET /raw-header` — an empty response whose `content-disposition` names
  *   {@link RAW_HEADER_FILENAME} in raw UTF-8 bytes.
  * - `GET /empty/{204,205,304}` — a response with no body and the requested status.
+ * - `GET /stall` — never answers, so a request can be aborted while it waits for headers.
+ * - `GET /stall-body` — answers with headers and {@link STALL_BODY_FIRST_CHUNK}, then
+ *   never sends the rest of the body, so a body read can be aborted mid-stream.
  * - `ws /ws` — a WebSocket echo endpoint: text and binary messages are sent
  *   back as-is, and {@link WEBSOCKET_CLOSE_REQUEST} makes the server close the
  *   connection with {@link WEBSOCKET_CLOSE_CODE}. On `/ws/headers` the server
@@ -78,6 +84,17 @@ export function startFixtureServer(): Promise<FixtureServer> {
           res.writeHead(status, { 'x-e2e-empty': 'present' }).end()
           return
         }
+      }
+
+      if (route === 'stall' && req.method === 'GET') {
+        // The connection is dropped by the client or by `close()`.
+        return
+      }
+
+      if (route === 'stall-body' && req.method === 'GET') {
+        res.writeHead(200, { 'content-type': 'text/plain' })
+        res.write(STALL_BODY_FIRST_CHUNK)
+        return
       }
 
       if (route === 'updater' && req.method === 'GET') {
