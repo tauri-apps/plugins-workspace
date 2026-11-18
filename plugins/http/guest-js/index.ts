@@ -121,7 +121,57 @@ export interface DangerousSettings {
   acceptInvalidHostnames?: boolean
 }
 
+interface FetchSendResponse {
+  status: number
+  statusText: string
+  headers: [[string, string]]
+  url: string
+  rid: number
+}
+
 const ERROR_REQUEST_CANCELLED = 'Request cancelled'
+
+/**
+ * Read the request body while allowing an abort to interrupt a stalled upload.
+ * `request.arrayBuffer()` locks the body internally without observing its abort
+ * signal, so keep access to the reader and cancel it when the signal fires.
+ * The caller checks the signal after buffering to reject canceled uploads.
+ */
+async function readRequestBody(request: Request): Promise<ArrayBuffer> {
+  const signal = request.signal
+  if (signal.aborted) {
+    throw new Error(ERROR_REQUEST_CANCELLED)
+  }
+
+  if (request.body === null) {
+    return new ArrayBuffer(0)
+  }
+
+  const reader = request.body.getReader()
+
+  const abort = () => {
+    void reader.cancel().catch(() => {})
+  }
+  signal.addEventListener('abort', abort, { once: true })
+
+  try {
+    // Keep a reader we can cancel while the browser collects and validates bytes.
+    const body = new ReadableStream<Uint8Array>({
+      async pull(controller) {
+        const { done, value } = await reader.read()
+        if (done) controller.close()
+        else controller.enqueue(value)
+      }
+    })
+    return await new Response(body).arrayBuffer()
+  } catch (error) {
+    abort()
+    throw error
+  } finally {
+    signal.removeEventListener('abort', abort)
+    reader.releaseLock()
+  }
+}
 
 /**
  * Fetch a resource from the network. It returns a `Promise` that resolves to the
@@ -151,12 +201,6 @@ export async function fetch(
   input: URL | Request | string,
   init?: RequestInit & ClientOptions
 ): Promise<Response> {
-  // Optimistically check for abort signal and avoid doing any work
-  const signal = init?.signal
-  if (signal?.aborted) {
-    throw new Error(ERROR_REQUEST_CANCELLED)
-  }
-
   const maxRedirections = init?.maxRedirections
   const connectTimeout = init?.connectTimeout
   const proxy = init?.proxy
@@ -177,7 +221,10 @@ export async function fetch(
     : new Headers()
 
   const req = new Request(input, init)
-  const buffer = await req.arrayBuffer()
+  const signal = req.signal
+
+  // read the upload with abort support.
+  const buffer = await readRequestBody(req)
 
   // append new headers created by the browser `Request` implementation,
   // if not already declared by the caller of this function
@@ -204,8 +251,8 @@ export async function fetch(
     ]
   )
 
-  // Optimistically check for abort signal and avoid doing any work on the Rust side
-  if (signal?.aborted) {
+  // Cancellation may have ended the body read with only a partial upload.
+  if (signal.aborted) {
     throw new Error(ERROR_REQUEST_CANCELLED)
   }
 
@@ -229,25 +276,37 @@ export async function fetch(
     }
   )
 
-  const abort = () =>
-    invoke('plugin:http|fetch_cancel', { rid }).catch(() => {})
+  let requestCancelled = false
+  const abortRequest = () => {
+    if (requestCancelled) return
+    requestCancelled = true
+    void invoke('plugin:http|fetch_cancel', { rid }).catch(() => {})
+  }
 
-  // Optimistically check for abort signal
-  // and avoid doing any work after doing intial work on the Rust side
-  if (signal?.aborted) {
-    // we don't care about the result of this promise
-    void abort()
+  if (signal.aborted) {
+    abortRequest()
     throw new Error(ERROR_REQUEST_CANCELLED)
   }
 
-  signal?.addEventListener('abort', () => void abort())
+  let response: FetchSendResponse
+  try {
+    signal.addEventListener('abort', abortRequest, { once: true })
+    response = await invoke<FetchSendResponse>('plugin:http|fetch_send', {
+      rid
+    })
+  } catch (error) {
+    if (signal.aborted) {
+      throw Object.assign(new Error(ERROR_REQUEST_CANCELLED), { cause: error })
+    }
+    throw error
+  } finally {
+    signal.removeEventListener('abort', abortRequest)
+  }
 
-  interface FetchSendResponse {
-    status: number
-    statusText: string
-    headers: [[string, string]]
-    url: string
-    rid: number
+  // An abort may have happened before the response's stream listener is attached.
+  if (signal.aborted) {
+    abortRequest()
+    throw new Error(ERROR_REQUEST_CANCELLED)
   }
 
   const {
@@ -256,52 +315,54 @@ export async function fetch(
     url,
     headers: responseHeaders,
     rid: responseRid
-  } = await invoke<FetchSendResponse>('plugin:http|fetch_send', {
-    rid
-  })
+  } = response
 
-  // An abort may have happened before the response's stream listener is attached.
-  if (signal?.aborted) {
-    void abort()
-    throw new Error(ERROR_REQUEST_CANCELLED)
+  let bodyController: ReadableStreamDefaultController<Uint8Array> | undefined
+
+  let bodyClosed = false
+  const finishBody = () => {
+    bodyClosed = true
+    signal.removeEventListener('abort', abortBody)
+    bodyController = undefined
   }
-
-  let bodyDropped = false
   const dropBody = () => {
-    if (bodyDropped) return Promise.resolve()
-    bodyDropped = true
-    return invoke('plugin:http|fetch_cancel_body', { rid: responseRid }).catch(
-      () => {}
-    )
+    if (bodyClosed) return Promise.resolve()
+    finishBody()
+    return invoke<void>('plugin:http|fetch_cancel_body', {
+      rid: responseRid
+    }).catch(() => {})
+  }
+  const abortBody = () => {
+    bodyController?.error(ERROR_REQUEST_CANCELLED)
+    void dropBody()
   }
 
   const readChunk = async (
     controller: ReadableStreamDefaultController<Uint8Array>
   ) => {
-    let data: ArrayBuffer
     try {
-      data = await invoke('plugin:http|fetch_read_body', {
+      const data = await invoke<ArrayBuffer>('plugin:http|fetch_read_body', {
         rid: responseRid
       })
-    } catch (e) {
-      // close the stream if an error occurs
-      // and drop the body on Rust side
-      controller.error(e)
+      if (bodyClosed) return
+
+      const dataUint8 = new Uint8Array(data)
+      const lastByte = dataUint8[dataUint8.byteLength - 1]
+      const actualData = dataUint8.slice(0, dataUint8.byteLength - 1)
+
+      // close when the signal to close (last byte is 1) is sent from the IPC.
+      if (lastByte === 1) {
+        finishBody()
+        controller.close()
+        return
+      }
+
+      controller.enqueue(actualData)
+    } catch (error) {
+      if (bodyClosed) return
+      controller.error(error)
       void dropBody()
-      return
     }
-
-    const dataUint8 = new Uint8Array(data)
-    const lastByte = dataUint8[dataUint8.byteLength - 1]
-    const actualData = dataUint8.slice(0, dataUint8.byteLength - 1)
-
-    // close when the signal to close (last byte is 1) is sent from the IPC.
-    if (lastByte === 1) {
-      controller.close()
-      return
-    }
-
-    controller.enqueue(actualData)
   }
 
   // No body for HEAD requests or null-body statuses.
@@ -311,17 +372,11 @@ export async function fetch(
       ? null
       : new ReadableStream<Uint8Array>({
           start: (controller) => {
-            // listen for abort events to cancel reading
-            signal?.addEventListener('abort', () => {
-              controller.error(ERROR_REQUEST_CANCELLED)
-              void dropBody()
-            })
+            bodyController = controller
+            signal.addEventListener('abort', abortBody, { once: true })
           },
           pull: (controller) => readChunk(controller),
-          cancel: () => {
-            // Ensure body resources are released on stream cancellation
-            void dropBody()
-          }
+          cancel: () => dropBody()
         })
 
   const res = new Response(body, {
