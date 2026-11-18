@@ -559,10 +559,25 @@ pub async fn fetch<R: Runtime>(
     Ok(resources.add(FetchRequest::new(fut, method)))
 }
 
+/// Closes `rid` only if it is one of this plugin's requests or responses, so the
+/// cancel commands cannot close resources that belong to other APIs.
+fn close_http_resource(
+    resources: &mut ResourceTable,
+    rid: ResourceId,
+    allow_request: bool,
+) -> Result<()> {
+    let is_request = allow_request && resources.get::<FetchRequest>(rid).is_ok();
+    if !is_request {
+        resources.get::<ReqwestResponse>(rid)?;
+    }
+    resources.close(rid)?;
+    Ok(())
+}
+
 #[command]
 pub fn fetch_cancel<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> crate::Result<()> {
-    webview.resources_table().close(rid)?;
-    Ok(())
+    // The response reuses the request's rid, so this cancels either one.
+    close_http_resource(&mut webview.resources_table(), rid, true)
 }
 
 // Header values are byte strings. Decode as ISO-8859-1 so the raw bytes survive
@@ -691,8 +706,7 @@ pub async fn fetch_cancel_body<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
 ) -> crate::Result<()> {
-    webview.resources_table().close(rid)?;
-    Ok(())
+    close_http_resource(&mut webview.resources_table(), rid, false)
 }
 
 // forbidden headers per fetch spec https://fetch.spec.whatwg.org/#terminology-headers
