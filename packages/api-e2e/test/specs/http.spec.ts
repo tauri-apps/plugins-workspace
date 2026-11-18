@@ -7,7 +7,8 @@ import {
   tauri,
   tauriError,
   describePlugin,
-  eventually
+  eventually,
+  itDesktop
 } from '../helpers/index.js'
 import {
   FIXTURE_SERVER_URL,
@@ -294,6 +295,82 @@ describePlugin('http', () => {
     ])
     expect(result.size).toBe('1x1')
   })
+
+  itDesktop(
+    'closing a window cancels its requests and response bodies',
+    async () => {
+      // `capabilities/http-e2e.json` grants http to `http-e2e-*` windows.
+      const label = 'http-e2e-close'
+      const stallState = async (id: string) => {
+        const response = await fetch(`${FIXTURE_SERVER_URL}/stall-state/${id}`)
+        return ((await response.json()) as { state: string | null }).state
+      }
+
+      const main = await browser.getWindowHandle()
+      const handles = await browser.getWindowHandles()
+      await tauri(
+        (api, label) =>
+          new Promise<void>((resolve, reject) => {
+            const window = new api.webviewWindow.WebviewWindow(label)
+            window.once('tauri://created', () => resolve()).catch(reject)
+            window
+              .once('tauri://error', (event) =>
+                reject(
+                  new Error(`window creation failed: ${String(event.payload)}`)
+                )
+              )
+              .catch(reject)
+          }),
+        label
+      )
+      const handle = await eventually(async () => {
+        const handle = (await browser.getWindowHandles()).find(
+          (handle) => !handles.includes(handle)
+        )
+        if (!handle)
+          throw new Error('the new window has no WebDriver handle yet')
+        return handle
+      })
+
+      await browser.switchToWindow(handle)
+      try {
+        await eventually(async () => {
+          const ready = await browser.execute(
+            () =>
+              typeof (window as { __TAURI__?: { http?: { fetch?: unknown } } })
+                .__TAURI__?.http?.fetch === 'function'
+          )
+          if (!ready) throw new Error('the new window has not loaded yet')
+        })
+        await tauri(async (api, url) => {
+          // One request waiting for headers, one response with an unread body.
+          void api.http.fetch(`${url}/stall/close-window-send`).catch(() => {})
+          // keep the response alive so only the window close can release it
+          ;(window as { __unreadResponse?: Response }).__unreadResponse =
+            await api.http.fetch(`${url}/stall-body/close-window-body`)
+          return null
+        }, FIXTURE_SERVER_URL)
+      } finally {
+        await browser.switchToWindow(main)
+      }
+
+      await eventually(async () =>
+        expect(await stallState('close-window-send')).toBe('open')
+      )
+      expect(await stallState('close-window-body')).toBe('open')
+
+      await tauri(async (api, label) => {
+        const window = await api.webviewWindow.WebviewWindow.getByLabel(label)
+        await window?.close()
+        return null
+      }, label)
+
+      await eventually(async () => {
+        expect(await stallState('close-window-send')).toBe('closed')
+        expect(await stallState('close-window-body')).toBe('closed')
+      })
+    }
+  )
 
   it('rejects URLs outside the configured scope', async () => {
     const message = await tauriError((api) =>
