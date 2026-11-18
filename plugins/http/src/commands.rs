@@ -2,18 +2,29 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::{borrow::Cow, future::Future, pin::Pin, str::FromStr, sync::Arc, time::Duration};
+use std::{
+    any::type_name,
+    borrow::Cow,
+    future::Future,
+    pin::Pin,
+    str::FromStr,
+    sync::{Arc, Mutex},
+    time::Duration,
+};
 
 use http::{HeaderMap, HeaderName, HeaderValue, Method, StatusCode, header};
 use reqwest::{NoProxy, redirect::Policy};
 use serde::{Deserialize, Serialize, de::Error as _};
 use tauri::{
     Manager, ResourceId, ResourceTable, Runtime, State, Webview,
-    async_runtime::Mutex,
+    async_runtime::Mutex as AsyncMutex,
     command,
     ipc::{CommandScope, GlobalScope, InvokeBody},
 };
-use tokio::sync::oneshot::{Receiver, Sender, channel};
+use tokio::sync::{
+    oneshot::{Receiver, Sender, channel},
+    watch,
+};
 
 use crate::{
     Error, Http, Result,
@@ -26,46 +37,164 @@ const HTTP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_P
 /// configure `maxRedirections`.
 const DEFAULT_MAX_REDIRECTIONS: usize = 10;
 
-struct ReqwestResponse(reqwest::Response);
-impl tauri::Resource for ReqwestResponse {}
+fn is_bodyless_response(method: &Method, status: StatusCode) -> bool {
+    method == Method::HEAD
+        || matches!(
+            status,
+            StatusCode::NO_CONTENT | StatusCode::RESET_CONTENT | StatusCode::NOT_MODIFIED
+        )
+}
+
+// Removing this per-page token invalidates requests still being prepared.
+struct HttpPage;
+impl tauri::Resource for HttpPage {}
+
+impl HttpPage {
+    /// Returns the webview's current page token, creating one after a navigation
+    /// closed the previous token.
+    fn current<R: Runtime>(state: &Http, webview: &Webview<R>) -> (ResourceId, Arc<Self>) {
+        let mut pages = state.pages.lock().unwrap();
+        let mut resources = webview.resources_table();
+
+        // A stale rid (closed by navigation, or left by a closed webview whose label
+        // was reused) is not an `HttpPage` in this table, so it is replaced below.
+        if let Some(&rid) = pages.get(webview.label())
+            && let Ok(page) = resources.get::<Self>(rid)
+        {
+            return (rid, page);
+        }
+
+        let page = Arc::new(Self);
+        let rid = resources.add_arc(page.clone());
+        pages.insert(webview.label().to_string(), rid);
+        (rid, page)
+    }
+}
+
+pub(crate) fn cancel_all_requests<R: Runtime>(webview: &Webview<R>) {
+    let mut resources = webview.resources_table();
+    let rids: Vec<_> = resources
+        .names()
+        .filter_map(|(rid, name)| {
+            (name == type_name::<HttpPage>()
+                || name == type_name::<FetchRequest>()
+                || name == type_name::<ReqwestResponse>())
+            .then_some(rid)
+        })
+        .collect();
+    for rid in rids {
+        let _ = resources.close(rid);
+    }
+}
+
+struct ReqwestResponse {
+    response: AsyncMutex<Option<reqwest::Response>>,
+    cancel_tx: watch::Sender<bool>,
+}
+
+impl ReqwestResponse {
+    fn new(response: reqwest::Response) -> Self {
+        let (cancel_tx, _) = watch::channel(false);
+        Self {
+            response: AsyncMutex::new(Some(response)),
+            cancel_tx,
+        }
+    }
+
+    fn cancel(&self) {
+        self.cancel_tx.send_replace(true);
+        // A pending read holds this lock and will release the response when it
+        // observes cancellation. Otherwise, release it immediately.
+        if let Ok(mut response) = self.response.try_lock() {
+            response.take();
+        }
+    }
+
+    async fn read_chunk(&self) -> Result<Option<Vec<u8>>> {
+        let mut cancel_rx = self.cancel_tx.subscribe();
+        let mut response = self.response.lock().await;
+
+        // Cancellation may have happened before subscribing or while waiting for the lock.
+        if *cancel_rx.borrow() {
+            response.take();
+            return Err(Error::RequestCanceled);
+        }
+
+        let body = response.as_mut().ok_or(Error::RequestCanceled)?;
+        let result = tokio::select! {
+            biased;
+            _ = cancel_rx.changed() => Err(Error::RequestCanceled),
+            chunk = body.chunk() => chunk.map_err(Error::from),
+        };
+
+        match result {
+            Ok(Some(chunk)) => Ok(Some(chunk.into())),
+            result => {
+                response.take();
+                result.map(|_| None)
+            }
+        }
+    }
+}
+
+impl tauri::Resource for ReqwestResponse {
+    fn close(self: Arc<Self>) {
+        self.cancel();
+    }
+}
 
 type CancelableResponseResult = Result<reqwest::Response>;
 type CancelableResponseFuture =
     Pin<Box<dyn Future<Output = CancelableResponseResult> + Send + Sync>>;
 
 struct FetchRequest {
-    fut: Mutex<CancelableResponseFuture>,
-    abort_tx_rid: ResourceId,
-    abort_rx_rid: ResourceId,
+    inner: Mutex<FetchRequestInner>,
+    method: Method,
 }
-impl tauri::Resource for FetchRequest {}
 
-struct AbortSender(Sender<()>);
-impl tauri::Resource for AbortRecveiver {}
+struct FetchRequestInner {
+    pending: Option<(CancelableResponseFuture, Receiver<()>)>,
+    abort_tx: Option<Sender<()>>,
+}
 
-impl AbortSender {
-    fn abort(self) {
-        let _ = self.0.send(());
+impl FetchRequest {
+    fn new(fut: CancelableResponseFuture, method: Method) -> Self {
+        let (abort_tx, abort_rx) = channel();
+        Self {
+            inner: Mutex::new(FetchRequestInner {
+                pending: Some((fut, abort_rx)),
+                abort_tx: Some(abort_tx),
+            }),
+            method,
+        }
+    }
+
+    fn take_pending(&self) -> Result<(CancelableResponseFuture, Receiver<()>)> {
+        self.inner
+            .lock()
+            .unwrap()
+            .pending
+            .take()
+            .ok_or(Error::RequestCanceled)
+    }
+
+    fn cancel(&self) {
+        let (pending, abort_tx) = {
+            let mut inner = self.inner.lock().unwrap();
+            (inner.pending.take(), inner.abort_tx.take())
+        };
+        if let Some(abort_tx) = abort_tx {
+            let _ = abort_tx.send(());
+        }
+        // If sending has not started, release the future here rather than waiting
+        // for a fetch_send call that may never arrive.
+        drop(pending);
     }
 }
 
-struct AbortRecveiver(Receiver<()>);
-impl tauri::Resource for AbortSender {}
-
-trait AddRequest {
-    fn add_request(&mut self, fut: CancelableResponseFuture) -> ResourceId;
-}
-
-impl AddRequest for ResourceTable {
-    fn add_request(&mut self, fut: CancelableResponseFuture) -> ResourceId {
-        let (tx, rx) = channel::<()>();
-        let (tx, rx) = (AbortSender(tx), AbortRecveiver(rx));
-        let req = FetchRequest {
-            fut: Mutex::new(fut),
-            abort_tx_rid: self.add(tx),
-            abort_rx_rid: self.add(rx),
-        };
-        self.add(req)
+impl tauri::Resource for FetchRequest {
+    fn close(self: Arc<Self>) {
+        self.cancel();
     }
 }
 
@@ -247,6 +376,9 @@ pub async fn fetch<R: Runtime>(
     command_scope: CommandScope<Entry>,
     global_scope: GlobalScope<Entry>,
 ) -> crate::Result<ResourceId> {
+    // Navigation invalidates this token, including while a request is being prepared.
+    let (page_rid, page) = HttpPage::current(&state, &webview);
+
     let ClientConfig {
         method,
         url,
@@ -288,7 +420,7 @@ pub async fn fetch<R: Runtime>(
         headers.append(name, byte_string_to_header_value(&v)?);
     }
 
-    match scheme {
+    let fut: CancelableResponseFuture = match scheme {
         "http" | "https" => {
             let scope = Scope::new(
                 command_scope
@@ -397,10 +529,7 @@ pub async fn fetch<R: Runtime>(
 
             let fut = async move { request.send().await.map_err(map_request_error) };
 
-            let mut resources_table = webview.resources_table();
-            let rid = resources_table.add_request(Box::pin(fut));
-
-            Ok(rid)
+            Box::pin(fut)
         }
         "data" => {
             let data_url =
@@ -418,23 +547,42 @@ pub async fn fetch<R: Runtime>(
             tracing::trace!("{:?}", response);
 
             let fut = async move { Ok(reqwest::Response::from(response)) };
-            let mut resources_table = webview.resources_table();
-            let rid = resources_table.add_request(Box::pin(fut));
-            Ok(rid)
+            Box::pin(fut)
         }
-        _ => Err(Error::SchemeNotSupport(scheme.to_string())),
+        _ => return Err(Error::SchemeNotSupport(scheme.to_string())),
+    };
+
+    // Reject requests prepared for a page that navigated away before registration.
+    let mut resources = webview.resources_table();
+    let current = resources
+        .get::<HttpPage>(page_rid)
+        .map_err(|_| Error::RequestCanceled)?;
+    if !Arc::ptr_eq(&current, &page) {
+        return Err(Error::RequestCanceled);
     }
+
+    Ok(resources.add(FetchRequest::new(fut, method)))
+}
+
+/// Closes `rid` only if it is one of this plugin's requests or responses, so the
+/// cancel commands cannot close resources that belong to other APIs.
+fn close_http_resource(
+    resources: &mut ResourceTable,
+    rid: ResourceId,
+    allow_request: bool,
+) -> Result<()> {
+    let is_request = allow_request && resources.get::<FetchRequest>(rid).is_ok();
+    if !is_request {
+        resources.get::<ReqwestResponse>(rid)?;
+    }
+    resources.close(rid)?;
+    Ok(())
 }
 
 #[command]
 pub fn fetch_cancel<R: Runtime>(webview: Webview<R>, rid: ResourceId) -> crate::Result<()> {
-    let mut resources_table = webview.resources_table();
-    let req = resources_table.get::<FetchRequest>(rid)?;
-    let abort_tx = resources_table.take::<AbortSender>(req.abort_tx_rid)?;
-    if let Some(abort_tx) = Arc::into_inner(abort_tx) {
-        abort_tx.abort();
-    }
-    Ok(())
+    // The response reuses the request's rid, so this cancels either one.
+    close_http_resource(&mut webview.resources_table(), rid, true)
 }
 
 // Header values are byte strings. Decode as ISO-8859-1 so the raw bytes survive
@@ -462,53 +610,69 @@ pub async fn fetch_send<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
 ) -> crate::Result<FetchResponse> {
-    let (req, abort_rx) = {
-        let mut resources_table = webview.resources_table();
+    let (req, (mut fut, abort_rx)) = {
+        let resources_table = webview.resources_table();
         let req = resources_table.get::<FetchRequest>(rid)?;
-        let abort_rx = resources_table.take::<AbortRecveiver>(req.abort_rx_rid)?;
-        (req, abort_rx)
+        let pending = req.take_pending()?;
+        (req, pending)
     };
-
-    let Some(abort_rx) = Arc::into_inner(abort_rx) else {
-        return Err(Error::RequestCanceled);
-    };
-
-    let mut fut = req.fut.lock().await;
 
     let res = tokio::select! {
+        biased;
+        _ = abort_rx => Err(Error::RequestCanceled),
         res = fut.as_mut() => res,
-        _ = abort_rx.0 => Err(Error::RequestCanceled),
     };
 
-    // Release resources
-    {
-        let mut resources_table = webview.resources_table();
-        let _ = resources_table.take::<AbortSender>(req.abort_tx_rid);
-        let _ = resources_table.close(rid);
-    }
+    let response = res.and_then(|res| {
+        #[cfg(feature = "tracing")]
+        tracing::trace!("{:?}", res);
 
-    let res = res?;
+        let status = res.status();
+        // The JavaScript Response constructor only accepts statuses from 200 to 599.
+        if !(200..=599).contains(&status.as_u16()) {
+            return Err(Error::InvalidResponseStatus(status.as_u16()));
+        }
 
-    #[cfg(feature = "tracing")]
-    tracing::trace!("{:?}", res);
+        let url = res.url().to_string();
+        let mut headers = Vec::new();
+        for (key, val) in res.headers().iter() {
+            headers.push((key.as_str().into(), header_value_to_byte_string(val)));
+        }
 
-    let status = res.status();
-    let url = res.url().to_string();
-    let mut headers = Vec::new();
-    for (key, val) in res.headers().iter() {
-        headers.push((key.as_str().into(), header_value_to_byte_string(val)));
-    }
+        let metadata = FetchResponse {
+            status: status.as_u16(),
+            status_text: status.canonical_reason().unwrap_or_default().to_string(),
+            headers,
+            url,
+            rid,
+        };
+        Ok((res, metadata))
+    });
 
     let mut resources_table = webview.resources_table();
-    let rid = resources_table.add(ReqwestResponse(res));
+    let current = resources_table
+        .get::<FetchRequest>(rid)
+        .map_err(|_| Error::RequestCanceled)?;
+    if !Arc::ptr_eq(&current, &req) {
+        return Err(Error::RequestCanceled);
+    }
 
-    Ok(FetchResponse {
-        status: status.as_u16(),
-        status_text: status.canonical_reason().unwrap_or_default().to_string(),
-        headers,
-        url,
-        rid,
-    })
+    match response {
+        Ok((res, metadata)) => {
+            if is_bodyless_response(&req.method, res.status()) {
+                // No body reader will consume or cancel this response.
+                let _ = resources_table.close(rid);
+            } else {
+                // Keep cancellation valid across the request-to-response transition.
+                resources_table.replace(rid, ReqwestResponse::new(res));
+            }
+            Ok(metadata)
+        }
+        Err(error) => {
+            let _ = resources_table.close(rid);
+            Err(error)
+        }
+    }
 }
 
 #[command]
@@ -521,23 +685,21 @@ pub async fn fetch_read_body<R: Runtime>(
         resources_table.get::<ReqwestResponse>(rid)?
     };
 
-    // SAFETY: we can access the inner value mutably
-    // because we are the only ones with a reference to it
-    // and we don't want to use `Arc::into_inner` because we want to keep the value in the table
-    // for potential future calls to `fetch_cancel_body`
-    let res_ptr = Arc::as_ptr(&res) as *mut ReqwestResponse;
-    let res = unsafe { &mut *res_ptr };
-    let res = &mut res.0;
-
-    let Some(chunk) = res.chunk().await? else {
+    let result = res.read_chunk().await;
+    if !matches!(&result, Ok(Some(_))) {
         let mut resources_table = webview.resources_table();
-        resources_table.close(rid)?;
+        if let Ok(current) = resources_table.get::<ReqwestResponse>(rid)
+            && Arc::ptr_eq(&current, &res)
+        {
+            let _ = resources_table.close(rid);
+        }
+    }
 
+    let Some(mut chunk) = result? else {
         // return a response with a single byte to indicate that the body is empty
         return Ok(tauri::ipc::Response::new(vec![1]));
     };
 
-    let mut chunk = chunk.to_vec();
     // append a 0 byte to indicate that the body is not empty
     chunk.push(0);
 
@@ -549,9 +711,7 @@ pub async fn fetch_cancel_body<R: Runtime>(
     webview: Webview<R>,
     rid: ResourceId,
 ) -> crate::Result<()> {
-    let mut resources_table = webview.resources_table();
-    resources_table.close(rid)?;
-    Ok(())
+    close_http_resource(&mut webview.resources_table(), rid, false)
 }
 
 // forbidden headers per fetch spec https://fetch.spec.whatwg.org/#terminology-headers
