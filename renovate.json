@@ -32,6 +32,22 @@
         "https://github.com/microsoft/windows-rs",
         "https://github.com/wravery/webview2-rs"
       ]
+    },
+    {
+      "description": "Group webdriverio packages",
+      "groupName": "WebdriverIO packages",
+      "matchSourceUrls": ["https://github.com/webdriverio/webdriverio"],
+      "rangeStrategy": "bump"
+    },
+    {
+      "description": "Group appium packages",
+      "groupName": "appium packages",
+      "matchPackageNames": [
+        "appium",
+        "appium-uiautomator2-driver",
+        "appium-xcuitest-driver"
+      ],
+      "rangeStrategy": "bump"
     }
   ],
   "postUpdateOptions": ["pnpmDedupe"]
