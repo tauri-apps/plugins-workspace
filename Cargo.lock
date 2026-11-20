@@ -7012,7 +7012,9 @@ name = "tauri-plugin-os"
 version = "2.4.0"
 dependencies = [
  "gethostname 1.0.1",
+ "libc",
  "log",
+ "objc2-foundation 0.3.2",
  "os_info",
  "serde",
  "serde_json",
@@ -7021,6 +7023,7 @@ dependencies = [
  "tauri",
  "tauri-plugin",
  "thiserror 2.0.12",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]

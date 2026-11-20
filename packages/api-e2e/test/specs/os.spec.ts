@@ -8,6 +8,7 @@ import {
   tauri,
   describePlugin,
   itDesktop,
+  itOn,
   platform,
   isMobile
 } from '../helpers/index.js'
@@ -105,5 +106,69 @@ describePlugin('os', () => {
     const hostname = await tauri((api) => api.os.hostname())
     // Windows can report the name in a different case than Node does.
     expect(hostname!.toLowerCase()).toBe(os.hostname().toLowerCase())
+  })
+
+  itOn(['android', 'ios'], 'version is known on mobile', async () => {
+    const version = await tauri((api) => api.os.version())
+    // os_info reports `Unknown` on mobile, the plugin reads it itself there
+    expect(version).toMatch(/^\d[\d.]*$/)
+  })
+
+  it('deviceInfo reports the device', async () => {
+    const info = await tauri((api) => api.os.deviceInfo())
+    // every platform reports the memory size
+    expect(typeof info.totalMemory).toBe('number')
+    expect(info.totalMemory!).toBeGreaterThan(0)
+    if (isMobile) {
+      expect(info.model).toMatch(/\S/)
+      expect(info.manufacturer).toMatch(/\S/)
+      // usually an emulator/simulator, but E2E_ANDROID_DEVICE can be a real one
+      expect(typeof info.isVirtual).toBe('boolean')
+      expect(info.webviewVersion).toMatch(/^\d[\d.]*$/)
+    } else {
+      expect(info.isVirtual).toBeNull()
+      expect(info.webviewVersion).toBeNull()
+    }
+    if (platform === 'ios' || platform === 'darwin') {
+      expect(info.manufacturer).toBe('Apple')
+    }
+  })
+
+  itOn('ios', 'deviceInfo reports the simulator', async () => {
+    const info = await tauri((api) => api.os.deviceInfo())
+    // the machine identifier of the simulated device, not the host's `arm64`
+    expect(info.model).toMatch(/^(iPhone|iPad|iPod)\d+,\d+$/)
+    expect(info.isVirtual).toBe(true)
+  })
+
+  it('deviceName is a string on mobile and null on desktop', async () => {
+    const name = await tauri((api) => api.os.deviceName())
+    if (platform === 'ios') {
+      expect(name).toMatch(/\S/)
+    } else if (platform === 'android') {
+      // Android only reports it when the device name setting is set
+      if (name !== null) {
+        expect(name).toMatch(/\S/)
+      }
+    } else {
+      expect(name).toBeNull()
+    }
+  })
+
+  it('batteryInfo is an object on mobile and null on desktop', async () => {
+    const battery = await tauri((api) => api.os.batteryInfo())
+    if (!isMobile) {
+      expect(battery).toBeNull()
+      return
+    }
+    expect(battery).not.toBeNull()
+    // the iOS simulator reports no battery
+    if (battery!.level !== null) {
+      expect(battery!.level).toBeGreaterThanOrEqual(0)
+      expect(battery!.level).toBeLessThanOrEqual(1)
+    }
+    if (battery!.isCharging !== null) {
+      expect(typeof battery!.isCharging).toBe('boolean')
+    }
   })
 })

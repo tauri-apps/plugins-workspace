@@ -6,11 +6,13 @@ to gather from the frontend.
 
 #### Granted Permissions
 
-All information except the host name are available.
+All information except the host name, the device name and the
+battery state are available.
 
 #### This default permission set includes the following:
 
 - `allow-arch`
+- `allow-device-info`
 - `allow-exe-extension`
 - `allow-family`
 - `allow-locale`
@@ -49,6 +51,84 @@ Enables the arch command without any pre-configured scope.
 <td>
 
 Denies the arch command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:allow-battery-info`
+
+</td>
+<td>
+
+Enables the battery_info command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:deny-battery-info`
+
+</td>
+<td>
+
+Denies the battery_info command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:allow-device-info`
+
+</td>
+<td>
+
+Enables the device_info command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:deny-device-info`
+
+</td>
+<td>
+
+Denies the device_info command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:allow-device-name`
+
+</td>
+<td>
+
+Enables the device_name command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`os:deny-device-name`
+
+</td>
+<td>
+
+Denies the device_name command without any pre-configured scope.
 
 </td>
 </tr>

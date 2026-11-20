@@ -8,12 +8,14 @@ to gather from the frontend.
 
 #### Granted Permissions
 
-All information except the host name are available.
+All information except the host name, the device name and the
+battery state are available.
 
 """
 
 permissions = [
   "allow-arch",
+  "allow-device-info",
   "allow-exe-extension",
   "allow-family",
   "allow-locale",

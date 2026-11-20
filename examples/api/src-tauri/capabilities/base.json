@@ -28,6 +28,8 @@
     "notification:default",
     "os:default",
     "os:allow-hostname",
+    "os:allow-device-name",
+    "os:allow-battery-info",
     "dialog:default",
     {
       "identifier": "shell:allow-spawn",

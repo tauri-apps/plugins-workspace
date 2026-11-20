@@ -11,10 +11,23 @@ const COMMANDS: &[&str] = &[
     "exe_extension",
     "locale",
     "hostname",
+    "device_info",
+    "device_name",
+    "battery_info",
 ];
 
 fn main() {
-    tauri_plugin::Builder::new(COMMANDS)
+    let result = tauri_plugin::Builder::new(COMMANDS)
         .global_api_script_path("./api-iife.js")
-        .build();
+        .android_path("android")
+        .ios_path("ios")
+        .try_build();
+
+    // when building documentation for Android the plugin build result is always Err() (docs.rs mounts the sources read-only) and is irrelevant to the crate documentation build
+    // `cfg(docsrs)` only reaches rustdoc, build scripts must check the `DOCS_RS` env var instead
+    if !(std::env::var_os("DOCS_RS").is_some()
+        && std::env::var("TARGET").unwrap().contains("android"))
+    {
+        result.unwrap();
+    }
 }

@@ -4,11 +4,21 @@
 
 use serde::{Serialize, Serializer};
 
+/// Alias for a [`std::result::Result`] with the error type [`Error`].
+pub type Result<T> = std::result::Result<T, Error>;
+
 /// All errors that can occur while running the os plugin.
 ///
-/// This enum currently has no variants: none of the plugin's commands can fail.
+/// Only the device APIs on Android and iOS can fail. On desktop this enum has no variants.
 #[derive(Debug, thiserror::Error)]
-pub enum Error {}
+pub enum Error {
+    /// The call to the Android or iOS plugin implementation failed, either because the
+    /// response could not be deserialized or because the native side rejected the call.
+    /// Only produced on Android and iOS.
+    #[cfg(mobile)]
+    #[error(transparent)]
+    PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
+}
 
 impl Serialize for Error {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>

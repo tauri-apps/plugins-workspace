@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-battery-info"
+description = "Enables the battery_info command without any pre-configured scope."
+commands.allow = ["battery_info"]
+
+[[permission]]
+identifier = "deny-battery-info"
+description = "Denies the battery_info command without any pre-configured scope."
+commands.deny = ["battery_info"]

@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-device-info"
+description = "Enables the device_info command without any pre-configured scope."
+commands.allow = ["device_info"]
+
+[[permission]]
+identifier = "deny-device-info"
+description = "Denies the device_info command without any pre-configured scope."
+commands.deny = ["device_info"]

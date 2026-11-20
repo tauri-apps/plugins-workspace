@@ -307,6 +307,42 @@
           "markdownDescription": "Denies the arch command without any pre-configured scope."
         },
         {
+          "description": "Enables the battery_info command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-battery-info",
+          "markdownDescription": "Enables the battery_info command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the battery_info command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-battery-info",
+          "markdownDescription": "Denies the battery_info command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the device_info command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-device-info",
+          "markdownDescription": "Enables the device_info command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the device_info command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-device-info",
+          "markdownDescription": "Denies the device_info command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the device_name command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-device-name",
+          "markdownDescription": "Enables the device_name command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the device_name command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-device-name",
+          "markdownDescription": "Denies the device_name command without any pre-configured scope."
+        },
+        {
           "description": "Enables the exe_extension command without any pre-configured scope.",
           "type": "string",
           "const": "allow-exe-extension",
@@ -391,10 +427,10 @@
           "markdownDescription": "Denies the version command without any pre-configured scope."
         },
         {
-          "description": "This permission set configures which\noperating system information are available\nto gather from the frontend.\n\n#### Granted Permissions\n\nAll information except the host name are available.\n\n\n#### This default permission set includes:\n\n- `allow-arch`\n- `allow-exe-extension`\n- `allow-family`\n- `allow-locale`\n- `allow-os-type`\n- `allow-platform`\n- `allow-version`",
+          "description": "This permission set configures which\noperating system information are available\nto gather from the frontend.\n\n#### Granted Permissions\n\nAll information except the host name, the device name and the\nbattery state are available.\n\n\n#### This default permission set includes:\n\n- `allow-arch`\n- `allow-device-info`\n- `allow-exe-extension`\n- `allow-family`\n- `allow-locale`\n- `allow-os-type`\n- `allow-platform`\n- `allow-version`",
           "type": "string",
           "const": "default",
-          "markdownDescription": "This permission set configures which\noperating system information are available\nto gather from the frontend.\n\n#### Granted Permissions\n\nAll information except the host name are available.\n\n\n#### This default permission set includes:\n\n- `allow-arch`\n- `allow-exe-extension`\n- `allow-family`\n- `allow-locale`\n- `allow-os-type`\n- `allow-platform`\n- `allow-version`"
+          "markdownDescription": "This permission set configures which\noperating system information are available\nto gather from the frontend.\n\n#### Granted Permissions\n\nAll information except the host name, the device name and the\nbattery state are available.\n\n\n#### This default permission set includes:\n\n- `allow-arch`\n- `allow-device-info`\n- `allow-exe-extension`\n- `allow-family`\n- `allow-locale`\n- `allow-os-type`\n- `allow-platform`\n- `allow-version`"
         }
       ]
     }

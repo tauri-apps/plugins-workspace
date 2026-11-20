@@ -16,6 +16,9 @@ exclude = [
   "/tsconfig.json",
 ]
 
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu", "x86_64-linux-android"]
+
 [package.metadata.platforms.support]
 windows = { level = "full", notes = "" }
 linux = { level = "full", notes = "" }
@@ -36,3 +39,20 @@ os_info = "3"
 sys-locale = "0.3"
 gethostname = "1.0"
 serialize-to-javascript = "0.1.1"
+
+[target."cfg(any(target_os = \"macos\", target_os = \"android\"))".dependencies]
+libc = "0.2"
+
+[target."cfg(target_os = \"windows\")".dependencies]
+windows-sys = { version = "0.61", features = [
+  "Win32_Foundation",
+  "Win32_System_Registry",
+  "Win32_System_SystemInformation",
+] }
+
+[target."cfg(target_os = \"ios\")".dependencies]
+tauri = { workspace = true, features = ["wry"] }
+objc2-foundation = { version = "0.3", default-features = false, features = [
+  "std",
+  "NSProcessInfo",
+] }
