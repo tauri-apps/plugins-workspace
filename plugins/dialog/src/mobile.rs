@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use serde::{de::DeserializeOwned, Deserialize};
+use serde::{Deserialize, de::DeserializeOwned};
 use tauri::{
-    plugin::{PluginApi, PluginHandle},
     AppHandle, Runtime,
+    plugin::{PluginApi, PluginHandle},
 };
 
-use crate::{FileDialogBuilder, FileResponse, MessageDialogBuilder};
+use crate::{FileDialogBuilder, FilePath, MessageDialogBuilder, MessageDialogResult};
 
 #[cfg(target_os = "android")]
 const PLUGIN_IDENTIFIER: &str = "app.tauri.dialog";
@@ -46,10 +46,15 @@ impl<R: Runtime> Dialog<R> {
 
 #[derive(Debug, Deserialize)]
 struct FilePickerResponse {
-    files: Vec<FileResponse>,
+    files: Vec<FilePath>,
 }
 
-pub fn pick_file<R: Runtime, F: FnOnce(Option<FileResponse>) + Send + 'static>(
+#[derive(Debug, Deserialize)]
+struct SaveFileResponse {
+    file: FilePath,
+}
+
+pub fn pick_file<R: Runtime, F: FnOnce(Option<FilePath>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
 ) {
@@ -66,7 +71,7 @@ pub fn pick_file<R: Runtime, F: FnOnce(Option<FileResponse>) + Send + 'static>(
     });
 }
 
-pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<FileResponse>>) + Send + 'static>(
+pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<FilePath>>) + Send + 'static>(
     dialog: FileDialogBuilder<R>,
     f: F,
 ) {
@@ -83,15 +88,30 @@ pub fn pick_files<R: Runtime, F: FnOnce(Option<Vec<FileResponse>>) + Send + 'sta
     });
 }
 
+pub fn save_file<R: Runtime, F: FnOnce(Option<FilePath>) + Send + 'static>(
+    dialog: FileDialogBuilder<R>,
+    f: F,
+) {
+    std::thread::spawn(move || {
+        let res = dialog
+            .dialog
+            .0
+            .run_mobile_plugin::<SaveFileResponse>("saveFileDialog", dialog.payload(false));
+        if let Ok(response) = res {
+            f(Some(response.file))
+        } else {
+            f(None)
+        }
+    });
+}
+
 #[derive(Debug, Deserialize)]
 struct ShowMessageDialogResponse {
-    #[allow(dead_code)]
-    cancelled: bool,
-    value: bool,
+    value: String,
 }
 
 /// Shows a message dialog
-pub fn show_message_dialog<R: Runtime, F: FnOnce(bool) + Send + 'static>(
+pub fn show_message_dialog<R: Runtime, F: FnOnce(MessageDialogResult) + Send + 'static>(
     dialog: MessageDialogBuilder<R>,
     f: F,
 ) {
@@ -100,6 +120,8 @@ pub fn show_message_dialog<R: Runtime, F: FnOnce(bool) + Send + 'static>(
             .dialog
             .0
             .run_mobile_plugin::<ShowMessageDialogResponse>("showMessageDialog", dialog.payload());
-        f(res.map(|r| r.value).unwrap_or_default())
+
+        let res = res.map(|res| res.value.into());
+        f(res.unwrap_or_default())
     });
 }

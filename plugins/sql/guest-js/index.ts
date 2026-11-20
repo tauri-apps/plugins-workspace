@@ -2,24 +2,44 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-declare global {
-  interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
-  }
-}
+/**
+ * Interface with SQL databases through [sqlx](https://github.com/launchbadge/sqlx).
+ * Which database engines can be used depends on the drivers enabled on the Rust
+ * side of the plugin: SQLite, MySQL and PostgreSQL.
+ *
+ * @module
+ */
 
+import { invoke } from '@tauri-apps/api/core'
+
+/**
+ * The outcome of a statement run through {@link Database.execute}.
+ */
 export interface QueryResult {
   /** The number of rows affected by the query. */
-  rowsAffected: number;
+  rowsAffected: number
   /**
    * The last inserted `id`.
    *
-   * This value is always `0` when using the Postgres driver. If the
+   * This value is not set for Postgres databases. If the
    * last inserted id is required on Postgres, the `select` function
    * must be used, with a `RETURNING` clause
    * (`INSERT INTO todos (title) VALUES ($1) RETURNING id`).
    */
-  lastInsertId: number;
+  lastInsertId?: number
+}
+
+/**
+ * Options for loading a database.
+ *
+ * @since 2.6.0
+ */
+export interface LoadOptions {
+  /**
+   * Whether to automatically create the database if it does not exist yet.
+   * Defaults to `true`.
+   */
+  autoCreate?: boolean
 }
 
 /**
@@ -27,11 +47,32 @@ export interface QueryResult {
  *
  * The `Database` class serves as the primary interface for
  * communicating with the rust side of the sql plugin.
+ *
+ * @since 2.0.0
  */
 export default class Database {
-  path: string;
+  /**
+   * The connection string identifying the database on the Rust side,
+   * for instance `sqlite:test.db`, `mysql://user:pass@host/database`
+   * or `postgres://user:pass@host/database`.
+   */
+  path: string
+
+  /**
+   * Creates a `Database` instance for the given connection string without
+   * opening a connection to it. Use {@link Database.load} to connect to the
+   * database, or {@link Database.get} for a database that is already loaded.
+   *
+   * @param path The database connection string, such as `sqlite:test.db`.
+   *
+   * @example
+   * ```typescript
+   * import Database from '@tauri-apps/plugin-sql'
+   * const db = new Database('sqlite:test.db')
+   * ```
+   */
   constructor(path: string) {
-    this.path = path;
+    this.path = path
   }
 
   /**
@@ -42,19 +83,26 @@ export default class Database {
    *
    * # Sqlite
    *
-   * The path is relative to `tauri::api::path::BaseDirectory::App` and must start with `sqlite:`.
+   * The path is relative to `tauri::path::BaseDirectory::App` and must start with `sqlite:`.
    *
    * @example
-   * ```ts
-   * const db = await Database.load("sqlite:test.db");
+   * ```typescript
+   * import Database from '@tauri-apps/plugin-sql'
+   * const db = await Database.load('sqlite:test.db')
+   * const existingDb = await Database.load('sqlite:test.db', { autoCreate: false })
    * ```
+   *
+   * @param path The database connection string, such as `sqlite:test.db`. The database is created if it does not exist yet (unless `options.autoCreate` is `false`), and any migration registered for it on the Rust side is run.
+   * @param options Configuration options for connecting to the database.
+   * @returns A promise resolving to a `Database` instance connected to the given database.
    */
-  static async load(path: string): Promise<Database> {
-    const _path = await window.__TAURI_INVOKE__<string>("plugin:sql|load", {
+  static async load(path: string, options?: LoadOptions): Promise<Database> {
+    const _path = await invoke<string>('plugin:sql|load', {
       db: path,
-    });
+      options
+    })
 
-    return new Database(_path);
+    return new Database(_path)
   }
 
   /**
@@ -66,15 +114,19 @@ export default class Database {
    *
    * # Sqlite
    *
-   * The path is relative to `tauri::api::path::BaseDirectory::App` and must start with `sqlite:`.
+   * The path is relative to `tauri::path::BaseDirectory::App` and must start with `sqlite:`.
    *
    * @example
-   * ```ts
-   * const db = Database.get("sqlite:test.db");
+   * ```typescript
+   * import Database from '@tauri-apps/plugin-sql'
+   * const db = Database.get('sqlite:test.db')
    * ```
+   *
+   * @param path The database connection string, such as `sqlite:test.db`.
+   * @returns A `Database` instance bound to the given connection string.
    */
   static get(path: string): Database {
-    return new Database(path);
+    return new Database(path)
   }
 
   /**
@@ -83,7 +135,10 @@ export default class Database {
    * Passes a SQL expression to the database for execution.
    *
    * @example
-   * ```ts
+   * ```typescript
+   * import Database from '@tauri-apps/plugin-sql'
+   * const db = await Database.load('sqlite:test.db')
+   *
    * // for sqlite & postgres
    * // INSERT example
    * const result = await db.execute(
@@ -108,47 +163,59 @@ export default class Database {
    *    [ todos.title, todos.status, todos.id ]
    * );
    * ```
+   *
+   * @param query The SQL statement to run, using `$1`, `$2`, ... placeholders on SQLite and PostgreSQL and `?` placeholders on MySQL.
+   * @param bindValues The values bound to the query placeholders, in the order they appear in the statement. Defaults to no values.
+   * @returns A promise resolving to the number of rows affected by the statement and the last inserted id.
    */
   async execute(query: string, bindValues?: unknown[]): Promise<QueryResult> {
-    const [rowsAffected, lastInsertId] = await window.__TAURI_INVOKE__<
-      [number, number]
-    >("plugin:sql|execute", {
-      db: this.path,
-      query,
-      values: bindValues ?? [],
-    });
-
+    const [rowsAffected, lastInsertId] = await invoke<[number, number]>(
+      'plugin:sql|execute',
+      {
+        db: this.path,
+        query,
+        values: bindValues ?? []
+      }
+    )
     return {
       lastInsertId,
-      rowsAffected,
-    };
+      rowsAffected
+    }
   }
+
   /**
    * **select**
    *
    * Passes in a SELECT query to the database for execution.
    *
    * @example
-   * ```ts
+   * ```typescript
+   * import Database from '@tauri-apps/plugin-sql'
+   * const db = await Database.load('sqlite:test.db')
+   *
    * // for sqlite & postgres
    * const result = await db.select(
-   *    "SELECT * from todos WHERE id = $1", id
+   *    "SELECT * from todos WHERE id = $1", [ id ]
    * );
    *
    * // for mysql
    * const result = await db.select(
-   *    "SELECT * from todos WHERE id = ?", id
+   *    "SELECT * from todos WHERE id = ?", [ id ]
    * );
    * ```
+   *
+   * @param query The SQL query to run, using `$1`, `$2`, ... placeholders on SQLite and PostgreSQL and `?` placeholders on MySQL.
+   * @param bindValues The values bound to the query placeholders, in the order they appear in the query. Defaults to no values.
+   * @returns A promise resolving to the selected rows, each row being an object keyed by column name.
    */
   async select<T>(query: string, bindValues?: unknown[]): Promise<T> {
-    const result = await window.__TAURI_INVOKE__<T>("plugin:sql|select", {
+    const result = await invoke<T>('plugin:sql|select', {
       db: this.path,
       query,
-      values: bindValues ?? [],
-    });
+      values: bindValues ?? []
+    })
 
-    return result;
+    return result
   }
 
   /**
@@ -157,15 +224,19 @@ export default class Database {
    * Closes the database connection pool.
    *
    * @example
-   * ```ts
+   * ```typescript
+   * import Database from '@tauri-apps/plugin-sql'
+   * const db = await Database.load('sqlite:test.db')
    * const success = await db.close()
    * ```
+   *
    * @param db - Optionally state the name of a database if you are managing more than one. Otherwise, all database pools will be in scope.
+   * @returns A promise resolving to `true` once the matching connection pools have been closed.
    */
   async close(db?: string): Promise<boolean> {
-    const success = await window.__TAURI_INVOKE__<boolean>("plugin:sql|close", {
-      db,
-    });
-    return success;
+    const success = await invoke<boolean>('plugin:sql|close', {
+      db
+    })
+    return success
   }
 }

@@ -1,14 +1,30 @@
 [package]
 name = "tauri-plugin-stronghold"
-version = "2.0.0-alpha.2"
-description = "Store secrets and keys using the IOTA Stronghold encrypted database."
+version = "2.4.0"
+description = "Store secrets and keys using the IOTA Stronghold secret management engine."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
+links = "tauri-plugin-stronghold"
+exclude = [
+  "/banner.png",
+  "/guest-js",
+  "/package.json",
+  "/rollup.config.js",
+  "/tsconfig.json",
+]
 
-[package.metadata.docs.rs]
-features = [ "tauri/dox" ]
+[package.metadata.platforms.support]
+windows = { level = "full", notes = "" }
+linux = { level = "full", notes = "" }
+macos = { level = "full", notes = "" }
+android = { level = "full", notes = "" }
+ios = { level = "full", notes = "" }
+
+[build-dependencies]
+tauri-plugin = { workspace = true, features = ["build"] }
 
 [dependencies]
 serde = { workspace = true }
@@ -16,11 +32,18 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
-iota_stronghold = "1"
+iota_stronghold = "2"
 iota-crypto = "0.23"
 hex = "0.4"
-zeroize = { version = "1", features = [ "zeroize_derive" ] }
+zeroize = { version = "1", features = ["zeroize_derive"] }
+rust-argon2 = { version = "2", optional = true }
+rand_chacha = { version = "0.9", optional = true }
+rand_core = { version = "0.9", features = ["os_rng"], optional = true }
 
 [dev-dependencies]
-rand = "0.8"
+rand = "0.10"
 rusty-fork = "0.3"
+
+[features]
+default = ["kdf"]
+kdf = ["dep:rust-argon2", "dep:rand_chacha", "dep:rand_core"]

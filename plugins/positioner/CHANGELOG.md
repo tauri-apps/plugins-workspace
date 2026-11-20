@@ -1,5 +1,128 @@
 # Changelog
 
+## [2.4.0]
+
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+## [2.3.4]
+
+- [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
+
+## \[2.3.3]
+
+- [`4be76900`](https://github.com/tauri-apps/plugins-workspace/commit/4be76900854cae3dc91363dea71b54505896e928) ([#3449](https://github.com/tauri-apps/plugins-workspace/pull/3449) by [@skkap](https://github.com/tauri-apps/plugins-workspace/../../skkap)) Replaced a panic in `calculate_position` with an error return when the window has no associated monitor (e.g. during display sleep or monitor reconfiguration).
+
+## \[2.3.2]
+
+- [`c0d64bf7`](https://github.com/tauri-apps/plugins-workspace/commit/c0d64bf7d9c0f2c8ed1d2614745e15bbb3cde6a7) ([#3420](https://github.com/tauri-apps/plugins-workspace/pull/3420) by [@UrsDeSwardt](https://github.com/tauri-apps/plugins-workspace/../../UrsDeSwardt)) Removed panics and replaced them with error handling.
+
+## \[2.3.1]
+
+- [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
+
+## \[2.3.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+## \[2.2.1]
+
+- [`f634e524`](https://github.com/tauri-apps/plugins-workspace/commit/f634e5248ebe428f8305a59f74c13fc15147fb8e) This is an "empty" release to update the plugins' source files on crates.io and docs.rs. This should fix docs.rs build failures for projects using tauri plugins as dependencies.
+
+## \[2.2.0]
+
+- [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
+
+## \[2.1.0]
+
+- [`4db62635`](https://github.com/tauri-apps/plugins-workspace/commit/4db626354c8e29e37bedcf94787a8dd36ce21c55) ([#2076](https://github.com/tauri-apps/plugins-workspace/pull/2076) by [@jakobwesthoff](https://github.com/tauri-apps/plugins-workspace/../../jakobwesthoff)) Add `moveWindowConstrained` function that is similar to `moveWindow` but constrains the window to the screen dimensions in case of tray icon positions.
+
+## \[2.0.1]
+
+- [`3c1f3874`](https://github.com/tauri-apps/plugins-workspace/commit/3c1f3874f4c828637b3aa983cba13c77427faf58) ([#1911](https://github.com/tauri-apps/plugins-workspace/pull/1911) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Added missing permission for `handleIconState` and fixed its event processing logic.
+
+## \[2.0.1]
+
+- [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
+
+## \[2.0.0]
+
+- [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
+
+## \[2.0.0-rc.2]
+
+- [`2f7e32b5`](https://github.com/tauri-apps/plugins-workspace/commit/2f7e32b5e07454d6c0cf3ab03f8af8da74c4a8a7) ([#1822](https://github.com/tauri-apps/plugins-workspace/pull/1822) by [@jbolda](https://github.com/tauri-apps/plugins-workspace/../../jbolda)) `handleIconState` function for use in JavaScript event handlers. This allows one to update the TrayIcon state through JavaScript and fully create and handle the TrayIcon without requiring Rust (and the side-effect of creating a TrayIcon).
+
+## \[2.0.0-rc.1]
+
+- [`e2e97db5`](https://github.com/tauri-apps/plugins-workspace/commit/e2e97db51983267f5be84d4f6f0278d58834d1f5) ([#1701](https://github.com/tauri-apps/plugins-workspace/pull/1701) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri 2.0.0-rc.8
+
+## \[2.0.0-rc.0]
+
+- [`9887d1`](https://github.com/tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.
+
+## \[2.0.0-beta.8]
+
+- [`99d6ac0f`](https://github.com/tauri-apps/plugins-workspace/commit/99d6ac0f9506a6a4a1aa59c728157190a7441af6) ([#1606](https://github.com/tauri-apps/plugins-workspace/pull/1606) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) The JS packages now specify the *minimum* `@tauri-apps/api` version instead of a single exact version.
+- [`6de87966`](https://github.com/tauri-apps/plugins-workspace/commit/6de87966ecc00ad9d91c25be452f1f46bd2b7e1f) ([#1597](https://github.com/tauri-apps/plugins-workspace/pull/1597) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Update to tauri beta.25.
+
+## \[2.0.0-beta.7]
+
+- [`22a17980`](https://github.com/tauri-apps/plugins-workspace/commit/22a17980ff4f6f8c40adb1b8f4ffc6dae2fe7e30) ([#1537](https://github.com/tauri-apps/plugins-workspace/pull/1537) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri beta.24.
+
+## \[2.0.0-beta.6]
+
+- [`76daee7a`](https://github.com/tauri-apps/plugins-workspace/commit/76daee7aafece34de3092c86e531cf9eb1138989) ([#1512](https://github.com/tauri-apps/plugins-workspace/pull/1512) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update to tauri beta.23.
+
+## \[2.0.0-beta.5]
+
+- [`9013854f`](https://github.com/tauri-apps/plugins-workspace/commit/9013854f42a49a230b9dbb9d02774765528a923f)([#1382](https://github.com/tauri-apps/plugins-workspace/pull/1382)) Update to tauri beta.22.
+
+## \[2.0.0-beta.4]
+
+- [`430bd6f4`](https://github.com/tauri-apps/plugins-workspace/commit/430bd6f4f379bee5d232ae6b098ae131db7f178a)([#1363](https://github.com/tauri-apps/plugins-workspace/pull/1363)) Update to tauri beta.20.
+
+## \[2.0.0-beta.5]
+
+- [`d9de5b19`](https://github.com/tauri-apps/plugins-workspace/commit/d9de5b19d1e950c06f0915ae92a862acb266d108)([#1283](https://github.com/tauri-apps/plugins-workspace/pull/1283)) Implement `WindowExt` for `WebviewWindow`.
+
+## \[2.0.0-beta.3]
+
+- [`bd1ed590`](https://github.com/tauri-apps/plugins-workspace/commit/bd1ed5903ffcce5500310dac1e59e8c67674ef1e)([#1237](https://github.com/tauri-apps/plugins-workspace/pull/1237)) Update to tauri beta.17.
+
+## \[2.0.0-beta.3]
+
+- [`a04ea2f`](https://github.com/tauri-apps/plugins-workspace/commit/a04ea2f38294d5a3987578283badc8eec87a7752)([#1071](https://github.com/tauri-apps/plugins-workspace/pull/1071)) The global API script is now only added to the binary when the `withGlobalTauri` config is true.
+
+## \[2.0.0-beta.2]
+
+- [`99bea25`](https://github.com/tauri-apps/plugins-workspace/commit/99bea2559c2c0648c2519c50a18cd124dacef57b)([#1005](https://github.com/tauri-apps/plugins-workspace/pull/1005)) Update to tauri beta.8.
+
+## \[2.0.0-beta.1]
+
+- [`569defb`](https://github.com/tauri-apps/plugins-workspace/commit/569defbe9492e38938554bb7bdc1be9151456d21) Update to tauri beta.4.
+
+## \[2.0.0-beta.0]
+
+- [`d198c01`](https://github.com/tauri-apps/plugins-workspace/commit/d198c014863ee260cb0de88a14b7fc4356ef7474)([#862](https://github.com/tauri-apps/plugins-workspace/pull/862)) Update to tauri beta.
+
+## \[2.0.0-alpha.5]
+
+- [`387c2f9`](https://github.com/tauri-apps/plugins-workspace/commit/387c2f9e0ce4c75c07ffa3fd76391a25b58f5daf)([#802](https://github.com/tauri-apps/plugins-workspace/pull/802)) Update to @tauri-apps/api v2.0.0-alpha.13.
+
+## \[2.0.0-alpha.4]
+
+- [`387c2f9`](https://github.com/tauri-apps/plugins-workspace/commit/387c2f9e0ce4c75c07ffa3fd76391a25b58f5daf)([#802](https://github.com/tauri-apps/plugins-workspace/pull/802)) Update to @tauri-apps/api v2.0.0-alpha.12.
+
+## \[2.0.0-alpha.3]
+
+- [`e438e0a`](https://github.com/tauri-apps/plugins-workspace/commit/e438e0a62d4b430a5159f05f13ecd397dd891a0d)([#676](https://github.com/tauri-apps/plugins-workspace/pull/676)) Update to @tauri-apps/api v2.0.0-alpha.11.
+
+## \[2.0.0-alpha.2]
+
+- [`5c13736`](https://github.com/tauri-apps/plugins-workspace/commit/5c137365c60790e8d4037d449e8237aa3fffdab0)([#673](https://github.com/tauri-apps/plugins-workspace/pull/673)) Update to @tauri-apps/api v2.0.0-alpha.9.
+
 ## \[2.0.0-alpha.2]
 
 - [`4e2cef9`](https://github.com/tauri-apps/plugins-workspace/commit/4e2cef9b702bbbb9cf4ee17de50791cb21f1b2a4)([#593](https://github.com/tauri-apps/plugins-workspace/pull/593)) Update to alpha.12.
@@ -11,6 +134,11 @@
 ## \[2.0.0-alpha.0]
 
 - [`717ae67`](https://github.com/tauri-apps/plugins-workspace/commit/717ae670978feb4492fac1f295998b93f2b9347f)([#371](https://github.com/tauri-apps/plugins-workspace/pull/371)) First v2 alpha release!
+
+## \[1.0.5]
+
+- `TrayLeft`, `TrayRight` and `TrayCenter` will now position the window according to the tray position relative to the monitor dimensions to prevent windows being displayed partially off-screen.
+  - [3d27909](https://github.com/tauri-apps/plugins-workspace/commit/3d279094d44be78cdc5d1de3938f1414e13db6b0) fix(positioner): Prevent tray relative windows from being moved off-screen ([#291](https://github.com/tauri-apps/plugins-workspace/pull/291)) on 2023-09-27
 
 ## \[0.2.7]
 
@@ -63,11 +191,3 @@
 ## \[0.1.0]
 
 - Update package/crate metadata
-  - [119d9c4](https://www.github.com/JonasKruckenberg/tauri-plugin-positioner/commit/119d9c47639e1df16f5520a08f039bdb6f39532b) update metadata on 2021-11-19
-  - [39e517c](https://www.github.com/JonasKruckenberg/tauri-plugin-positioner/commit/39e517c145a4a901839ae9b46e296370ce6ababf) Update update-metadata.md on 2021-11-19
-    data on 2021-11-19
-  - [39e517c](https://www.github.com/JonasKruckenberg/tauri-plugin-positioner/commit/39e517c145a4a901839ae9b46e296370ce6ababf) Update update-metadata.md on 2021-11-19
-    nberg/tauri-plugin-positioner/commit/119d9c47639e1df16f5520a08f039bdb6f39532b) update metadata on 2021-11-19
-  - [39e517c](https://www.github.com/JonasKruckenberg/tauri-plugin-positioner/commit/39e517c145a4a901839ae9b46e296370ce6ababf) Update update-metadata.md on 2021-11-19
-    data on 2021-11-19
-  - [39e517c](https://www.github.com/JonasKruckenberg/tauri-plugin-positioner/commit/39e517c145a4a901839ae9b46e296370ce6ababf) Update update-metadata.md on 2021-11-19

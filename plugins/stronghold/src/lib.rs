@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/stronghold/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/stronghold)
-//!
 //! Store secrets and keys using the [IOTA Stronghold](https://github.com/iotaledger/stronghold.rs) encrypted database and secure runtime.
+//!
+//! ## Cargo features
+//!
+//! - **kdf** *(enabled by default)*: Exposes the key-derivation module and provides the default Argon2-based password-to-key derivation.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
@@ -19,21 +21,25 @@ use std::{
     time::Duration,
 };
 
+use crypto::keys::bip39;
 use iota_stronghold::{
+    Client, Location,
     procedures::{
-        BIP39Generate, BIP39Recover, Chain, Ed25519Sign, KeyType as StrongholdKeyType,
+        BIP39Generate, BIP39Recover, Curve, Ed25519Sign, KeyType as StrongholdKeyType,
         MnemonicLanguage, PublicKey, Slip10Derive, Slip10DeriveInput, Slip10Generate,
         StrongholdProcedure,
     },
-    Client, Location,
 };
-use serde::{de::Visitor, Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, de::Visitor};
 use stronghold::{Error, Result, Stronghold};
 use tauri::{
-    plugin::{Builder as PluginBuilder, TauriPlugin},
     Manager, Runtime, State,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
 };
-use zeroize::Zeroize;
+use zeroize::{Zeroize, Zeroizing};
+
+#[cfg(feature = "kdf")]
+pub mod kdf;
 
 pub mod stronghold;
 
@@ -102,8 +108,13 @@ impl From<Slip10DeriveInputDto> for Slip10DeriveInput {
     }
 }
 
+/// The type of a key pair handled by the plugin procedures.
+///
+/// Deserialized from the strings `ed25519` and `x25519`, ignoring case.
 pub enum KeyType {
+    /// The Ed25519 signature scheme.
     Ed25519,
+    /// The X25519 key exchange scheme.
     X25519,
 }
 
@@ -123,7 +134,7 @@ impl<'de> Deserialize<'de> for KeyType {
     {
         struct KeyTypeVisitor;
 
-        impl<'de> Visitor<'de> for KeyTypeVisitor {
+        impl Visitor<'_> for KeyTypeVisitor {
             type Value = KeyType;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
@@ -196,7 +207,8 @@ impl From<ProcedureDto> for StrongholdProcedure {
                 input,
                 output,
             } => StrongholdProcedure::Slip10Derive(Slip10Derive {
-                chain: Chain::from_u32_hardened(chain),
+                curve: Curve::Ed25519,
+                chain,
                 input: input.into(),
                 output: output.into(),
             }),
@@ -205,13 +217,13 @@ impl From<ProcedureDto> for StrongholdProcedure {
                 passphrase,
                 output,
             } => StrongholdProcedure::BIP39Recover(BIP39Recover {
-                mnemonic,
-                passphrase,
+                mnemonic: bip39::Mnemonic::from(mnemonic),
+                passphrase: bip39::Passphrase::from(passphrase.unwrap_or_default()),
                 output: output.into(),
             }),
             ProcedureDto::BIP39Generate { passphrase, output } => {
                 StrongholdProcedure::BIP39Generate(BIP39Generate {
-                    passphrase,
+                    passphrase: bip39::Passphrase::from(passphrase.unwrap_or_default()),
                     output: output.into(),
                     language: MnemonicLanguage::English,
                 })
@@ -258,11 +270,11 @@ async fn destroy(
     snapshot_path: PathBuf,
 ) -> Result<()> {
     let mut collection = collection.0.lock().unwrap();
-    if let Some(stronghold) = collection.remove(&snapshot_path) {
-        if let Err(e) = stronghold.save() {
-            collection.insert(snapshot_path, stronghold);
-            return Err(e);
-        }
+    if let Some(stronghold) = collection.remove(&snapshot_path)
+        && let Err(e) = stronghold.save()
+    {
+        collection.insert(snapshot_path, stronghold);
+        return Err(e);
     }
     Ok(())
 }
@@ -348,7 +360,10 @@ async fn save_secret(
     let client = get_client(collection, snapshot_path, client)?;
     client
         .vault(&vault)
-        .write_secret(Location::generic(vault, record_path), secret)
+        .write_secret(
+            Location::generic(vault, record_path),
+            Zeroizing::new(secret),
+        )
         .map_err(Into::into)
 }
 
@@ -407,27 +422,99 @@ fn get_client(
     }
 }
 
+enum PasswordHashFunctionKind {
+    #[cfg(feature = "kdf")]
+    Argon2(PathBuf),
+    Custom(Box<PasswordHashFn>),
+}
+
+/// Builder for the stronghold plugin.
+///
+/// It defines how the password sent by the frontend is hashed into the key that
+/// encrypts the snapshot file.
 pub struct Builder {
-    password_hash_function: Box<PasswordHashFn>,
+    password_hash_function: PasswordHashFunctionKind,
 }
 
 impl Builder {
+    /// Initializes [`Self`] with a custom password hash function.
+    ///
+    /// The function is called with the password sent by the frontend and must return the
+    /// key used to encrypt the snapshot, which must be 32 bytes long.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// fn init<R: tauri::Runtime>(builder: tauri::Builder<R>) -> tauri::Builder<R> {
+    ///     builder.plugin(
+    ///         tauri_plugin_stronghold::Builder::new(|_password| {
+    ///             // hash the password with a secure algorithm such as argon2 or blake2b
+    ///             // and return the resulting 32 bytes hash
+    ///             unimplemented!()
+    ///         })
+    ///         .build(),
+    ///     )
+    /// }
+    /// ```
     pub fn new<F: Fn(&str) -> Vec<u8> + Send + Sync + 'static>(password_hash_function: F) -> Self {
         Self {
-            password_hash_function: Box::new(password_hash_function),
+            password_hash_function: PasswordHashFunctionKind::Custom(Box::new(
+                password_hash_function,
+            )),
         }
     }
 
+    /// Initializes [`Self`] with argon2 as password hash function.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use tauri::Manager;
+    ///
+    /// fn init<R: tauri::Runtime>(builder: tauri::Builder<R>) -> tauri::Builder<R> {
+    ///     builder.setup(|app| {
+    ///         let salt_path = app
+    ///             .path()
+    ///             .app_local_data_dir()
+    ///             .expect("could not resolve app local data path")
+    ///             .join("salt.txt");
+    ///         app.handle()
+    ///             .plugin(tauri_plugin_stronghold::Builder::with_argon2(&salt_path).build())?;
+    ///         Ok(())
+    ///     })
+    /// }
+    /// ```
+    #[cfg(feature = "kdf")]
+    pub fn with_argon2(salt_path: &std::path::Path) -> Self {
+        Self {
+            password_hash_function: PasswordHashFunctionKind::Argon2(salt_path.to_owned()),
+        }
+    }
+
+    /// Builds the plugin, registering the password hash function and the commands used
+    /// by the JavaScript guest bindings.
     pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
         let password_hash_function = self.password_hash_function;
 
-        PluginBuilder::new("stronghold")
-            .js_init_script(include_str!("api-iife.js").to_string())
-            .setup(move |app, _api| {
-                app.manage(StrongholdCollection::default());
-                app.manage(PasswordHashFunction(password_hash_function));
-                Ok(())
-            })
+        let plugin_builder = PluginBuilder::new("stronghold").setup(move |app, _api| {
+            app.manage(StrongholdCollection::default());
+            app.manage(PasswordHashFunction(match password_hash_function {
+                #[cfg(feature = "kdf")]
+                PasswordHashFunctionKind::Argon2(path) => {
+                    Box::new(move |p| kdf::KeyDerivation::argon2(p, &path))
+                }
+                PasswordHashFunctionKind::Custom(f) => f,
+            }));
+            Ok(())
+        });
+
+        Builder::invoke_stronghold_handlers_and_build(plugin_builder)
+    }
+
+    fn invoke_stronghold_handlers_and_build<R: Runtime>(
+        builder: PluginBuilder<R>,
+    ) -> TauriPlugin<R> {
+        builder
             .invoke_handler(tauri::generate_handler![
                 initialize,
                 destroy,

@@ -2,15 +2,38 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::process::exit;
+const COMMANDS: &[&str] = &[
+    "notify",
+    "request_permission",
+    "is_permission_granted",
+    "register_action_types",
+    "register_listener",
+    "remove_listener",
+    "cancel",
+    "get_pending",
+    "remove_active",
+    "get_active",
+    "check_permissions",
+    "show",
+    "batch",
+    "list_channels",
+    "delete_channel",
+    "create_channel",
+    "permission_state",
+];
 
 fn main() {
-    if let Err(error) = tauri_build::mobile::PluginBuilder::new()
+    let result = tauri_plugin::Builder::new(COMMANDS)
+        .global_api_script_path("./api-iife.js")
         .android_path("android")
         .ios_path("ios")
-        .run()
+        .try_build();
+
+    // when building documentation for Android the plugin build result is always Err() (docs.rs mounts the sources read-only) and is irrelevant to the crate documentation build
+    // `cfg(docsrs)` only reaches rustdoc, build scripts must check the `DOCS_RS` env var instead
+    if !(std::env::var_os("DOCS_RS").is_some()
+        && std::env::var("TARGET").unwrap().contains("android"))
     {
-        println!("{error:#}");
-        exit(1);
+        result.unwrap();
     }
 }

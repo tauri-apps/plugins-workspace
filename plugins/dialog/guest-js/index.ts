@@ -2,23 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-declare global {
-  interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
-  }
-}
+/**
+ * Native system dialogs for opening and saving files, along with message, ask and confirm dialogs.
+ *
+ * @module
+ */
 
-interface FileResponse {
-  base64Data?: string;
-  duration?: number;
-  height?: number;
-  width?: number;
-  mimeType?: string;
-  modifiedAt?: number;
-  name?: string;
-  path: string;
-  size: number;
-}
+import { invoke } from '@tauri-apps/api/core'
 
 /**
  * Extension filters for the file dialog.
@@ -26,16 +16,26 @@ interface FileResponse {
  * @since 2.0.0
  */
 interface DialogFilter {
-  /** Filter name. */
-  name: string;
+  /** The name of the filter, shown to the user in the dialog's filter selector. */
+  name: string
   /**
    * Extensions to filter, without a `.` prefix.
+   *
+   * **Note:** Mobile platforms have different APIs for filtering that may not support extensions.
+   * iOS: Extensions are supported in the document picker, but not in the media picker.
+   * Android: Extensions are not supported.
+   *
+   * For these platforms, MIME types are the primary way to filter files, as opposed to extensions.
+   * This means the string values here labeled as `extensions` may also be a MIME type.
+   * This property name of `extensions` is being kept for backwards compatibility, but this may be revisited to
+   * specify the difference between extension or MIME type filtering.
+   *
    * @example
    * ```typescript
    * extensions: ['svg', 'png']
    * ```
    */
-  extensions: string[];
+  extensions: string[]
 }
 
 /**
@@ -44,21 +44,69 @@ interface DialogFilter {
  * @since 2.0.0
  */
 interface OpenDialogOptions {
-  /** The title of the dialog window. */
-  title?: string;
-  /** The filters of the dialog. */
-  filters?: DialogFilter[];
-  /** Initial directory or file path. */
-  defaultPath?: string;
+  /** The title of the dialog window (desktop only). */
+  title?: string
+  /**
+   * The filters of the dialog.
+   * On mobile platforms, if either:
+   * A) the {@linkcode pickerMode} is set to `media`, `image`, or `video`
+   * -- or --
+   * B) the filters include **only** either image or video mime types, the media picker will be displayed.
+   * Otherwise, the document picker will be displayed.
+   */
+  filters?: DialogFilter[]
+  /**
+   * Initial directory or file path.
+   * If it's a directory path, the dialog interface will change to that folder.
+   * If it's not an existing directory, the file name will be set to the dialog's file name input and the dialog will be set to the parent folder.
+   *
+   * On mobile the file name is always used on the dialog's file name input.
+   * If not provided, Android uses `(invalid).txt` as default file name.
+   */
+  defaultPath?: string
   /** Whether the dialog allows multiple selection or not. */
-  multiple?: boolean;
+  multiple?: boolean
   /** Whether the dialog is a directory selection or not. */
-  directory?: boolean;
+  directory?: boolean
   /**
    * If `directory` is true, indicates that it will be read recursively later.
    * Defines whether subdirectories will be allowed on the scope or not.
    */
-  recursive?: boolean;
+  recursive?: boolean
+  /** Whether to allow creating directories in the dialog. Enabled by default. **macOS Only** */
+  canCreateDirectories?: boolean
+  /**
+   * The preferred mode of the dialog.
+   * This is meant for mobile platforms (iOS and Android) which have distinct file and media pickers.
+   * If not provided, the dialog will automatically choose the best mode based on the MIME types or extensions of the {@linkcode filters}.
+   * On desktop, this option is ignored.
+   */
+  pickerMode?: PickerMode
+  /**
+   * The file access mode of the dialog.
+   * If not provided, `copy` is used, which matches the behavior of the {@linkcode open} method before the introduction of this option.
+   *
+   * **Usage**
+   * If a file is opened with {@linkcode fileAccessMode: 'copy'}, it will be copied to the app's sandbox.
+   * This means the file can be read, edited, deleted, copied, or any other operation without any issues, since the file
+   * now belongs to the app.
+   * This also means that the caller has responsibility of deleting the file if this file is not meant to be retained
+   * in the app sandbox.
+   *
+   * If a file is opened with {@linkcode fileAccessMode: 'scoped'}, the file will remain in its original location
+   * and security-scoped access will be automatically managed by the system.
+   *
+   * **Note**
+   * This is specifically meant for document pickers on iOS or MacOS, in conjunction with [security scoped resources](https://developer.apple.com/documentation/foundation/nsurl/startaccessingsecurityscopedresource()).
+   *
+   * Why only document pickers, and not image or video pickers?
+   * The image and video pickers on iOS behave differently from the document pickers, and return [NSItemProvider](https://developer.apple.com/documentation/foundation/nsitemprovider) objects instead of file URLs.
+   * These are meant to be ephemeral (only available within the callback of the picker), and are not accessible outside of the callback.
+   * So for image and video pickers, the only way to access the file is to copy it to the app's sandbox, and this is the URL that is returned from this API.
+   * This means there is no provision for using `scoped` mode with image or video pickers.
+   * If an image or video picker is used, `copy` is always used.
+   */
+  fileAccessMode?: FileAccessMode
 }
 
 /**
@@ -67,53 +115,211 @@ interface OpenDialogOptions {
  * @since 2.0.0
  */
 interface SaveDialogOptions {
-  /** The title of the dialog window. */
-  title?: string;
+  /** The title of the dialog window (desktop only). */
+  title?: string
   /** The filters of the dialog. */
-  filters?: DialogFilter[];
+  filters?: DialogFilter[]
   /**
    * Initial directory or file path.
    * If it's a directory path, the dialog interface will change to that folder.
    * If it's not an existing directory, the file name will be set to the dialog's file name input and the dialog will be set to the parent folder.
+   *
+   * On mobile the file name is always used on the dialog's file name input.
+   * If not provided, Android uses `(invalid).txt` as default file name.
    */
-  defaultPath?: string;
+  defaultPath?: string
+  /** Whether to allow creating directories in the dialog. Enabled by default. **macOS Only** */
+  canCreateDirectories?: boolean
 }
 
 /**
+ * The preferred mode of the dialog.
+ * This is meant for mobile platforms (iOS and Android) which have distinct file and media pickers.
+ * On desktop, this option is ignored.
+ * If not provided, the dialog will automatically choose the best mode based on the MIME types or extensions of the {@linkcode filters}.
+ *
+ * **Note:** This option is only supported on iOS 14 and above. This parameter is ignored on iOS 13 and below.
+ */
+export type PickerMode = 'document' | 'media' | 'image' | 'video'
+
+/**
+ * The file access mode of the dialog.
+ *
+ * - `copy`: copy/move the picked file to the app sandbox; no scoped access required.
+ * - `scoped`: keep file in place; security-scoped access is automatically managed.
+ *
+ * **Note:** This option is only supported on iOS 14 and above. This parameter is ignored on iOS 13 and below.
+ */
+export type FileAccessMode = 'copy' | 'scoped'
+
+/**
+ * Default buttons for a message dialog.
+ *
+ * @since 2.4.0
+ */
+export type MessageDialogDefaultButtons =
+  | 'Ok'
+  | 'OkCancel'
+  | 'YesNo'
+  | 'YesNoCancel'
+
+/** All possible button keys. */
+type ButtonKey = 'ok' | 'cancel' | 'yes' | 'no'
+
+/** Ban everything except a set of keys. */
+type BanExcept<Allowed extends ButtonKey> = Partial<
+  Record<Exclude<ButtonKey, Allowed>, never>
+>
+
+/**
+ * The Yes, No and Cancel buttons of a message dialog.
+ *
+ * @since 2.4.0
+ */
+export type MessageDialogButtonsYesNoCancel = {
+  /** The label of the Yes button. */
+  yes: string
+  /** The label of the No button. */
+  no: string
+  /** The label of the Cancel button. */
+  cancel: string
+} & BanExcept<'yes' | 'no' | 'cancel'>
+
+/**
+ * The Ok and Cancel buttons of a message dialog.
+ *
+ * @since 2.4.0
+ */
+export type MessageDialogButtonsOkCancel = {
+  /** The label of the Ok button. */
+  ok: string
+  /** The label of the Cancel button. */
+  cancel: string
+} & BanExcept<'ok' | 'cancel'>
+
+/**
+ * The Ok button of a message dialog.
+ *
+ * @since 2.4.0
+ */
+export type MessageDialogButtonsOk = {
+  /** The label of the Ok button. */
+  ok: string
+} & BanExcept<'ok'>
+
+/**
+ * Custom buttons for a message dialog.
+ *
+ * @since 2.4.0
+ */
+export type MessageDialogCustomButtons =
+  | MessageDialogButtonsYesNoCancel
+  | MessageDialogButtonsOkCancel
+  | MessageDialogButtonsOk
+
+/**
+ * The buttons of a message dialog.
+ *
+ * @since 2.4.0
+ */
+export type MessageDialogButtons =
+  | MessageDialogDefaultButtons
+  | MessageDialogCustomButtons
+
+/**
+ * Options for the message dialog.
+ *
  * @since 2.0.0
  */
 interface MessageDialogOptions {
   /** The title of the dialog. Defaults to the app name. */
-  title?: string;
-  /** The type of the dialog. Defaults to `info`. */
-  type?: "info" | "warning" | "error";
-  /** The label of the confirm button. */
-  okLabel?: string;
+  title?: string
+  /** The kind of the dialog. Defaults to `info`. */
+  kind?: 'info' | 'warning' | 'error'
+  /**
+   * The label of the Ok button.
+   *
+   * @deprecated Use {@linkcode MessageDialogOptions.buttons} instead.
+   */
+  okLabel?: string
+  /**
+   * The buttons of the dialog.
+   *
+   * @example
+   *
+   * ```ts
+   * // Use system default buttons texts
+   * await message('Hello World!', { buttons: 'Ok' })
+   * await message('Hello World!', { buttons: 'OkCancel' })
+   *
+   * // Or with custom button texts
+   * await message('Hello World!', { buttons: { ok: 'Yes!' } })
+   * await message('Take on the task?', {
+   *   buttons: { ok: 'Accept', cancel: 'Cancel' }
+   * })
+   * await message('Show the file content?', {
+   *   buttons: { yes: 'Show content', no: 'Show in folder', cancel: 'Cancel' }
+   * })
+   * ```
+   *
+   * @since 2.4.0
+   */
+  buttons?: MessageDialogButtons
 }
 
+/**
+ * Internal function to convert the buttons to the Rust type.
+ */
+function buttonsToRust(buttons: MessageDialogButtons | undefined) {
+  if (buttons === undefined) {
+    return undefined
+  }
+
+  if (typeof buttons === 'string') {
+    return buttons
+  } else if ('ok' in buttons && 'cancel' in buttons) {
+    return { OkCancelCustom: [buttons.ok, buttons.cancel] }
+  } else if ('yes' in buttons && 'no' in buttons && 'cancel' in buttons) {
+    return {
+      YesNoCancelCustom: [buttons.yes, buttons.no, buttons.cancel]
+    }
+  } else if ('ok' in buttons) {
+    return { OkCustom: buttons.ok }
+  }
+
+  return undefined
+}
+
+/**
+ * Options for the {@linkcode ask} and {@linkcode confirm} dialogs.
+ *
+ * @since 2.0.0
+ */
 interface ConfirmDialogOptions {
   /** The title of the dialog. Defaults to the app name. */
-  title?: string;
-  /** The type of the dialog. Defaults to `info`. */
-  type?: "info" | "warning" | "error";
+  title?: string
+  /** The kind of the dialog. Defaults to `info`. */
+  kind?: 'info' | 'warning' | 'error'
   /** The label of the confirm button. */
-  okLabel?: string;
+  okLabel?: string
   /** The label of the cancel button. */
-  cancelLabel?: string;
+  cancelLabel?: string
 }
 
-async function open(
-  options?: OpenDialogOptions & { multiple?: false; directory?: false },
-): Promise<null | FileResponse>;
-async function open(
-  options?: OpenDialogOptions & { multiple?: true; directory?: false },
-): Promise<null | FileResponse[]>;
-async function open(
-  options?: OpenDialogOptions & { multiple?: false; directory?: true },
-): Promise<null | string>;
-async function open(
-  options?: OpenDialogOptions & { multiple?: true; directory?: true },
-): Promise<null | string[]>;
+/**
+ * The return type of {@linkcode open}, derived from its options: a single path, an array of
+ * paths when {@linkcode OpenDialogOptions.multiple} is `true`, or `null` when the user cancels.
+ *
+ * @since 2.0.0
+ */
+type OpenDialogReturn<T extends OpenDialogOptions> = T['directory'] extends true
+  ? T['multiple'] extends true
+    ? string[] | null
+    : string | null
+  : T['multiple'] extends true
+    ? string[] | null
+    : string | null
+
 /**
  * Open a file/directory selection dialog.
  *
@@ -162,18 +368,20 @@ async function open(
  * }
  * ```
  *
+ * @param options The dialog's options.
+ *
  * @returns A promise resolving to the selected path(s)
  *
  * @since 2.0.0
  */
-async function open(
-  options: OpenDialogOptions = {},
-): Promise<null | string | string[] | FileResponse | FileResponse[]> {
-  if (typeof options === "object") {
-    Object.freeze(options);
+async function open<T extends OpenDialogOptions>(
+  options: T = {} as T
+): Promise<OpenDialogReturn<T>> {
+  if (typeof options === 'object') {
+    Object.freeze(options)
   }
 
-  return window.__TAURI_INVOKE__("plugin:dialog|open", { options });
+  return await invoke('plugin:dialog|open', { options })
 }
 
 /**
@@ -196,16 +404,40 @@ async function open(
  * });
  * ```
  *
+ * @param options The dialog's options.
+ *
  * @returns A promise resolving to the selected path.
  *
  * @since 2.0.0
  */
 async function save(options: SaveDialogOptions = {}): Promise<string | null> {
-  if (typeof options === "object") {
-    Object.freeze(options);
+  if (typeof options === 'object') {
+    Object.freeze(options)
   }
 
-  return window.__TAURI_INVOKE__("plugin:dialog|save", { options });
+  return await invoke('plugin:dialog|save', { options })
+}
+
+/**
+ * The result of a message dialog.
+ *
+ * The result is a string if the dialog has custom buttons,
+ * otherwise it is one of the default buttons.
+ *
+ * @since 2.4.0
+ */
+export type MessageDialogResult = 'Yes' | 'No' | 'Ok' | 'Cancel' | (string & {})
+
+async function messageCommand(
+  message: string,
+  options?: Omit<MessageDialogOptions, 'okLabel'>
+) {
+  return await invoke<MessageDialogResult>('plugin:dialog|message', {
+    message,
+    title: options?.title,
+    kind: options?.kind,
+    buttons: buttonsToRust(options?.buttons)
+  })
 }
 
 /**
@@ -214,7 +446,7 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
  * ```typescript
  * import { message } from '@tauri-apps/plugin-dialog';
  * await message('Tauri is awesome', 'Tauri');
- * await message('File not found', { title: 'Tauri', type: 'error' });
+ * await message('File not found', { title: 'Tauri', kind: 'error' });
  * ```
  *
  * @param message The message to show.
@@ -227,24 +459,25 @@ async function save(options: SaveDialogOptions = {}): Promise<string | null> {
  */
 async function message(
   message: string,
-  options?: string | MessageDialogOptions,
-): Promise<void> {
-  const opts = typeof options === "string" ? { title: options } : options;
-  return window.__TAURI_INVOKE__("plugin:dialog|message", {
-    message: message.toString(),
-    title: opts?.title?.toString(),
-    type_: opts?.type,
-    okButtonLabel: opts?.okLabel?.toString(),
-  });
+  options?: string | MessageDialogOptions
+): Promise<MessageDialogResult> {
+  const opts = typeof options === 'string' ? { title: options } : options
+  if (opts && !opts.buttons && opts.okLabel) {
+    opts.buttons = { ok: opts.okLabel }
+  }
+  return messageCommand(message, opts)
 }
 
 /**
  * Shows a question dialog with `Yes` and `No` buttons.
+ *
+ * Convenient wrapper for `await message('msg', { buttons: 'YesNo' }) === 'Yes'`
+ *
  * @example
  * ```typescript
  * import { ask } from '@tauri-apps/plugin-dialog';
  * const yes = await ask('Are you sure?', 'Tauri');
- * const yes2 = await ask('This action cannot be reverted. Are you sure?', { title: 'Tauri', type: 'warning' });
+ * const yes2 = await ask('This action cannot be reverted. Are you sure?', { title: 'Tauri', kind: 'warning' });
  * ```
  *
  * @param message The message to show.
@@ -256,25 +489,32 @@ async function message(
  */
 async function ask(
   message: string,
-  options?: string | ConfirmDialogOptions,
+  options?: string | ConfirmDialogOptions
 ): Promise<boolean> {
-  const opts = typeof options === "string" ? { title: options } : options;
-  return window.__TAURI_INVOKE__("plugin:dialog|ask", {
-    message: message.toString(),
-    title: opts?.title?.toString(),
-    type_: opts?.type,
-    okButtonLabel: opts?.okLabel?.toString() ?? "Yes",
-    cancelButtonLabel: opts?.cancelLabel?.toString() ?? "No",
-  });
+  const opts = typeof options === 'string' ? { title: options } : options
+  const customButtons = opts?.okLabel || opts?.cancelLabel
+  const okLabel = opts?.okLabel ?? 'Yes'
+  return (
+    (await messageCommand(message, {
+      title: opts?.title,
+      kind: opts?.kind,
+      buttons: customButtons
+        ? { ok: okLabel, cancel: opts.cancelLabel ?? 'No' }
+        : 'YesNo'
+    })) === okLabel
+  )
 }
 
 /**
  * Shows a question dialog with `Ok` and `Cancel` buttons.
+ *
+ * Convenient wrapper for `await message('msg', { buttons: 'OkCancel' }) === 'Ok'`
+ *
  * @example
  * ```typescript
  * import { confirm } from '@tauri-apps/plugin-dialog';
  * const confirmed = await confirm('Are you sure?', 'Tauri');
- * const confirmed2 = await confirm('This action cannot be reverted. Are you sure?', { title: 'Tauri', type: 'warning' });
+ * const confirmed2 = await confirm('This action cannot be reverted. Are you sure?', { title: 'Tauri', kind: 'warning' });
  * ```
  *
  * @param message The message to show.
@@ -286,24 +526,29 @@ async function ask(
  */
 async function confirm(
   message: string,
-  options?: string | ConfirmDialogOptions,
+  options?: string | ConfirmDialogOptions
 ): Promise<boolean> {
-  const opts = typeof options === "string" ? { title: options } : options;
-  return window.__TAURI_INVOKE__("plugin:dialog|confirm", {
-    message: message.toString(),
-    title: opts?.title?.toString(),
-    type_: opts?.type,
-    okButtonLabel: opts?.okLabel?.toString() ?? "Ok",
-    cancelButtonLabel: opts?.cancelLabel?.toString() ?? "Cancel",
-  });
+  const opts = typeof options === 'string' ? { title: options } : options
+  const customButtons = opts?.okLabel || opts?.cancelLabel
+  const okLabel = opts?.okLabel ?? 'Ok'
+  return (
+    (await messageCommand(message, {
+      title: opts?.title,
+      kind: opts?.kind,
+      buttons: customButtons
+        ? { ok: okLabel, cancel: opts.cancelLabel ?? 'Cancel' }
+        : 'OkCancel'
+    })) === okLabel
+  )
 }
 
 export type {
   DialogFilter,
   OpenDialogOptions,
+  OpenDialogReturn,
   SaveDialogOptions,
   MessageDialogOptions,
-  ConfirmDialogOptions,
-};
+  ConfirmDialogOptions
+}
 
-export { open, save, message, ask, confirm };
+export { open, save, message, ask, confirm }

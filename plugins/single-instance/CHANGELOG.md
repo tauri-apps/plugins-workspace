@@ -1,5 +1,310 @@
 # Changelog
 
+## [2.5.5]
+
+- [`aedd883c`](https://github.com/tauri-apps/plugins-workspace/commit/aedd883cf318947e3d8915db2ec7caa77e7a90d0) ([#3482](https://github.com/tauri-apps/plugins-workspace/pull/3482) by [@JGuest121](https://github.com/tauri-apps/plugins-workspace/../../JGuest121)) Release the single instance lock in `AppHandle::cleanup_before_exit`, right before the process exits or restarts, instead of on `RunEvent::Exit`. The app now remains the single instance while your own `RunEvent::Exit` handler runs. `destroy` can still release the lock earlier.
+- [`6c9746e5`](https://github.com/tauri-apps/plugins-workspace/commit/6c9746e5515491a25c9d8c168c73e43a9edec6bb) ([#3704](https://github.com/tauri-apps/plugins-workspace/pull/3704) by [@karan5028ji](https://github.com/tauri-apps/plugins-workspace/../../karan5028ji)) Fix race condition on Windows where a secondary instance fails to exit if `FindWindowW` misses the target event window during startup.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.6.3`
+
+## [2.5.4]
+
+- [`f83c5d3b`](https://github.com/tauri-apps/plugins-workspace/commit/f83c5d3b0f88a24914c54ff906ec947fd3a659a3) ([#3584](https://github.com/tauri-apps/plugins-workspace/pull/3584) by [@vincentkoc](https://github.com/tauri-apps/plugins-workspace/../../vincentkoc)) On Linux, a secondary instance that cannot deliver its arguments to the primary instance now returns a plugin initialization error instead of exiting successfully, and an invalid `dbus_id` returns an error instead of panicking. When the session bus is unavailable the app keeps launching normally, without single-instance support, and logs a warning.
+- [`b53d1984`](https://github.com/tauri-apps/plugins-workspace/commit/b53d1984618da35083e91a2523f2b8aa53a2fcd1) ([#3686](https://github.com/tauri-apps/plugins-workspace/pull/3686) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) On Windows, an argument containing a `|` is no longer split into several arguments when it is forwarded to the running instance.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.6.2`
+
+## [2.5.3]
+
+- [`818d2e04`](https://github.com/tauri-apps/plugins-workspace/commit/818d2e04d92fd208f11aafdf32bb4a0605f344b2) ([#3645](https://github.com/tauri-apps/plugins-workspace/pull/3645)) On Windows, a second instance no longer waits indefinitely for a first instance that stopped processing messages: it stops waiting after 10 seconds and exits. The first instance may still receive the arguments once it resumes processing messages.
+- [`323fe80d`](https://github.com/tauri-apps/plugins-workspace/commit/323fe80df1f0a78fb2c8d1dfca7a635fd5e0a3c3) ([#3644](https://github.com/tauri-apps/plugins-workspace/pull/3644)) A second instance no longer panics when a command-line argument is not valid Unicode: such an argument is forwarded with its invalid parts replaced by U+FFFD. A working directory that is not valid Unicode is now forwarded the same way instead of as an empty string.
+
+## [2.5.2]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.6.1`
+
+## [2.5.1]
+
+- [`ecd3273e`](https://github.com/tauri-apps/plugins-workspace/commit/ecd3273e8e4c6e9b123bf9861bf7b925cad1c679) ([#3480](https://github.com/tauri-apps/plugins-workspace/pull/3480) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated `windows-rs` dependencies:
+    
+    - deep-link: updated `windows-registry` to 0.6 and `windows-result` to 0.4. The public `Error::Windows` variant wraps `windows_result::Error`; applications using this type directly should update their `windows-result` dependency.
+    - opener: updated `windows` to 0.62. The public `Error::Win32Error` variant wraps `windows::core::Error`; applications using this type directly should update their `windows` dependency.
+    - single-instance: updated `windows-sys` to 0.61
+    - updater: updated `windows-sys` to 0.61
+
+### Dependencies
+
+- Upgraded to `deep-link@2.6.0`
+
+## [2.5.0]
+
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.5.0`
+
+## [2.4.5]
+
+- [`67cd25a1`](https://github.com/tauri-apps/plugins-workspace/commit/67cd25a10ce3deb1b935e725228e528766f24ad7) ([#3592](https://github.com/tauri-apps/plugins-workspace/pull/3592)) On Windows, the second instance now allows the first instance to bring its window to the front before exiting, so focusing a window from the callback no longer gets refused by Windows.
+
+## [2.4.4]
+
+- [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.10`
+
+## \[2.4.3]
+
+- [`d1573877`](https://github.com/tauri-apps/plugins-workspace/commit/d1573877226e609461761aa538cd0ca4f24d22be) ([#3466](https://github.com/tauri-apps/plugins-workspace/pull/3466) by [@bajoca05](https://github.com/tauri-apps/plugins-workspace/../../bajoca05)) Fix blocked thread on the single-instance plugin for MacOS: replace standard `UnixListener` with `tokio::net::UnixListener`, so the task can yield.
+
+## \[2.4.2]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.9`
+
+## \[2.4.1]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.8`
+
+## \[2.4.0]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.7`
+
+### fix
+
+- [`98e2c11e`](https://github.com/tauri-apps/plugins-workspace/commit/98e2c11eefc3ee562f1ed280efe7e8ea6ff0f3b0) ([#3194](https://github.com/tauri-apps/plugins-workspace/pull/3194) by [@mrquantumoff](https://github.com/tauri-apps/plugins-workspace/../../mrquantumoff)) **Breaking Change:** On Linux, the DBus ID/name will now be `<bundle-id>.SingleInstance` instead of `org.<bundle_id_underscores>.SingleInstance` to follow DBus specifications.
+
+  This will break the single-instance mechanism across different app versions if the app was installed multiple times.
+
+  Added `dbus_id` builder method, which can be used to restore previous behavior. For a bundle identifier of `com.tauri.my-example` this would be `dbus_id("org.com_tauri_my_example")`.
+
+## \[2.3.7]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.6`
+
+## \[2.3.6]
+
+- [`93426f85`](https://github.com/tauri-apps/plugins-workspace/commit/93426f85120f49beb9f40222bff45185a32d54a9) Fixed an issue that caused docs.rs builds to fail. No user facing changes.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.5`
+
+## \[2.3.5]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.4`
+
+## \[2.3.4]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.3`
+
+## \[2.3.3]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.2`
+
+## \[2.3.2]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.1`
+
+## \[2.3.1]
+
+- [`6f345870`](https://github.com/tauri-apps/plugins-workspace/commit/6f345870df4e7b187deb869df03b79858e03b4fe) ([#2860](https://github.com/tauri-apps/plugins-workspace/pull/2860) by [@MorpheusXAUT](https://github.com/tauri-apps/plugins-workspace/../../MorpheusXAUT)) Fix D-Bus name replacement logic on Linux to prevent multiple instances from acquiring the same well-known name.\
+  This patch updates the `zbus` dependency to the latest compatible version (`^5.9`) and explicitly sets `RequestNameFlags` to ensure a second instance fails to acquire the D-Bus name when another one is already running.
+
+## \[2.3.0]
+
+- [`f209b2f2`](https://github.com/tauri-apps/plugins-workspace/commit/f209b2f23cb29133c97ad5961fb46ef794dbe063) ([#2804](https://github.com/tauri-apps/plugins-workspace/pull/2804) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated tauri to 2.6
+
+### Dependencies
+
+- Upgraded to `deep-link@2.4.0`
+
+## \[2.2.4]
+
+- [`dc84f8d8`](https://github.com/tauri-apps/plugins-workspace/commit/dc84f8d8bbaa70de3bb3185fbacb472993b996ef) ([#2609](https://github.com/tauri-apps/plugins-workspace/pull/2609) by [@Simon-Laux](https://github.com/tauri-apps/plugins-workspace/../../Simon-Laux)) fix `cwd` in single instance on macOS, which was the cwd of the first instance, instead of the second (like it is on windows and linux)
+
+### Dependencies
+
+- Upgraded to `deep-link@2.3.0`
+
+## \[2.2.3]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.2.1`
+
+## \[2.2.2]
+
+- [`1ab5f157`](https://github.com/tauri-apps/plugins-workspace/commit/1ab5f1576333174095bc7dad4bef7a8576bb29ab) ([#2452](https://github.com/tauri-apps/plugins-workspace/pull/2452) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Fixed `null pointer dereference` panic on rust nightly on Windows.
+
+## \[2.2.1]
+
+- [`da5c59e2`](https://github.com/tauri-apps/plugins-workspace/commit/da5c59e2fe879d177e3cfd52fcacce85440423cb) ([#2271](https://github.com/tauri-apps/plugins-workspace/pull/2271) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated `zbus` dependency to version 5. No API changes.
+
+## \[2.2.0]
+
+- [`3a79266b`](https://github.com/tauri-apps/plugins-workspace/commit/3a79266b8cf96a55b1ae6339d725567d45a44b1d) ([#2173](https://github.com/tauri-apps/plugins-workspace/pull/2173) by [@FabianLars](https://github.com/tauri-apps/plugins-workspace/../../FabianLars)) Bumped all plugins to `v2.2.0`. From now, the versions for the Rust and JavaScript packages of each plugin will be in sync with each other.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.1.0`
+
+## \[2.0.2]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.0.2`
+
+## \[2.0.1]
+
+- [`a1a82208`](https://github.com/tauri-apps/plugins-workspace/commit/a1a82208ed4ab87f83310be0dc95428aec9ab241) ([#1873](https://github.com/tauri-apps/plugins-workspace/pull/1873) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Downgrade MSRV to 1.77.2 to support Windows 7.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.0.1`
+
+## \[2.0.0]
+
+- [`e2c4dfb6`](https://github.com/tauri-apps/plugins-workspace/commit/e2c4dfb6af43e5dd8d9ceba232c315f5febd55c1) Update to tauri v2 stable release.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.0.0`
+
+## \[2.0.0-rc.5]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.0.0-rc.7`
+
+## \[2.0.0-rc.4]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.0.0-rc.6`
+
+## \[2.0.0-rc.3]
+
+- [`b2269333`](https://github.com/tauri-apps/plugins-workspace/commit/b2269333e39afe32629a11763a8e25d0b12b132b) ([#1766](https://github.com/tauri-apps/plugins-workspace/pull/1766) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Put deep link integration behined a feature
+
+### Dependencies
+
+- Upgraded to `deep-link@2.0.0-rc.5`
+
+## \[2.0.0-rc.2]
+
+- [`64a6240f`](https://github.com/tauri-apps/plugins-workspace/commit/64a6240f79fcd52267c8d721b727ae695055d7ff) ([#1759](https://github.com/tauri-apps/plugins-workspace/pull/1759) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Integrate with the deep link plugin out of the box.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.0.0-rc.4`
+
+## \[2.0.0-rc.1]
+
+- [`3c52f30e`](https://github.com/tauri-apps/plugins-workspace/commit/3c52f30ea4ec29c51f7021aa7871614d72e43258) ([#1665](https://github.com/tauri-apps/plugins-workspace/pull/1665) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Updated `windows-sys` crate to `0.59`
+- [`e2e97db5`](https://github.com/tauri-apps/plugins-workspace/commit/e2e97db51983267f5be84d4f6f0278d58834d1f5) ([#1701](https://github.com/tauri-apps/plugins-workspace/pull/1701) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri 2.0.0-rc.8
+
+## \[2.0.0-rc.0]
+
+- [`9887d1`](https://github.com/tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.
+
+## \[2.0.0-beta.12]
+
+- [`e847cedc`](https://github.com/tauri-apps/plugins-workspace/commit/e847cedc1f46f3e7a2ad81ea579b620bc5b992d7) ([#1402](https://github.com/tauri-apps/plugins-workspace/pull/1402) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Use no default features on tauri for all plugins so that consumers can use `default-features = false` on tauri, note that this will still enable wry feature on iOS
+- [`6de87966`](https://github.com/tauri-apps/plugins-workspace/commit/6de87966ecc00ad9d91c25be452f1f46bd2b7e1f) ([#1597](https://github.com/tauri-apps/plugins-workspace/pull/1597) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Update to tauri beta.25.
+
+## \[2.0.0-beta.11]
+
+- [`22a17980`](https://github.com/tauri-apps/plugins-workspace/commit/22a17980ff4f6f8c40adb1b8f4ffc6dae2fe7e30) ([#1537](https://github.com/tauri-apps/plugins-workspace/pull/1537) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) Update to tauri beta.24.
+
+## \[2.0.0-beta.10]
+
+- [`76daee7a`](https://github.com/tauri-apps/plugins-workspace/commit/76daee7aafece34de3092c86e531cf9eb1138989) ([#1512](https://github.com/tauri-apps/plugins-workspace/pull/1512) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Update to tauri beta.23.
+
+## \[2.0.0-beta.9]
+
+- [`9013854f`](https://github.com/tauri-apps/plugins-workspace/commit/9013854f42a49a230b9dbb9d02774765528a923f)([#1382](https://github.com/tauri-apps/plugins-workspace/pull/1382)) Update to tauri beta.22.
+
+## \[2.0.0-beta.8]
+
+- [`430bd6f4`](https://github.com/tauri-apps/plugins-workspace/commit/430bd6f4f379bee5d232ae6b098ae131db7f178a)([#1363](https://github.com/tauri-apps/plugins-workspace/pull/1363)) Update to tauri beta.20.
+
+## \[2.0.0-beta.7]
+
+- [`bd1ed590`](https://github.com/tauri-apps/plugins-workspace/commit/bd1ed5903ffcce5500310dac1e59e8c67674ef1e)([#1237](https://github.com/tauri-apps/plugins-workspace/pull/1237)) Update to tauri beta.17.
+
+## \[2.0.0-beta.6]
+
+- [`ed46dca`](https://github.com/tauri-apps/plugins-workspace/commit/ed46dca74ff3947dbbcb26a7b571c129bf925698) Added the `semver` feature flag to make the single instance mechanism only trigger for semver compatible versions.
+
+## \[2.0.0-beta.5]
+
+- [`dabac0e`](https://github.com/tauri-apps/plugins-workspace/commit/dabac0eedfd6e6d192c6c5a214e708b3c0223f6f)([#1035](https://github.com/tauri-apps/plugins-workspace/pull/1035)) Added implementation for MacOS.
+
+## \[2.0.0-beta.4]
+
+- [`a04ea2f`](https://github.com/tauri-apps/plugins-workspace/commit/a04ea2f38294d5a3987578283badc8eec87a7752)([#1071](https://github.com/tauri-apps/plugins-workspace/pull/1071)) The global API script is now only added to the binary when the `withGlobalTauri` config is true.
+
+## \[2.0.0-beta.3]
+
+- [`2397ec5`](https://github.com/tauri-apps/plugins-workspace/commit/2397ec5937e594397e533925ccd257cae30b4cd1)([#1019](https://github.com/tauri-apps/plugins-workspace/pull/1019)) Fix doesn't shutdown immediately.
+- [`99bea25`](https://github.com/tauri-apps/plugins-workspace/commit/99bea2559c2c0648c2519c50a18cd124dacef57b)([#1005](https://github.com/tauri-apps/plugins-workspace/pull/1005)) Update to tauri beta.8.
+
+## \[2.0.0-beta.2]
+
+- [`6d1e621`](https://github.com/tauri-apps/plugins-workspace/commit/6d1e6218b5877ef91f589f790f7251acda9c9605)([#981](https://github.com/tauri-apps/plugins-workspace/pull/981)) Fix `zbus::blocking::connection::Builder` import.
+
+## \[2.0.0-beta.1]
+
+- [`14f381a`](https://github.com/tauri-apps/plugins-workspace/commit/14f381acf8fe690acecc676922c6f05939b95734) Update MSRV to 1.75.
+- [`569defb`](https://github.com/tauri-apps/plugins-workspace/commit/569defbe9492e38938554bb7bdc1be9151456d21) Update to tauri beta.4.
+
+## \[2.0.0-beta.0]
+
+- [`d198c01`](https://github.com/tauri-apps/plugins-workspace/commit/d198c014863ee260cb0de88a14b7fc4356ef7474)([#862](https://github.com/tauri-apps/plugins-workspace/pull/862)) Update to tauri beta.
+- [`d198c01`](https://github.com/tauri-apps/plugins-workspace/commit/d198c014863ee260cb0de88a14b7fc4356ef7474)([#862](https://github.com/tauri-apps/plugins-workspace/pull/862)) Add permissions.
+
+## \[2.0.0-alpha.6]
+
+- [`2cf8faa`](https://github.com/tauri-apps/plugins-workspace/commit/2cf8faa3e149af55eb86e5aba8ebfc54210ca703)([#839](https://github.com/tauri-apps/plugins-workspace/pull/839)) Update to tauri@alpha.20.
+
+## \[2.0.0-alpha.5]
+
+- [`387c2f9`](https://github.com/tauri-apps/plugins-workspace/commit/387c2f9e0ce4c75c07ffa3fd76391a25b58f5daf)([#802](https://github.com/tauri-apps/plugins-workspace/pull/802)) Update to tauri@alpha.18.
+
+## \[2.0.0-alpha.4]
+
+- [`e438e0a`](https://github.com/tauri-apps/plugins-workspace/commit/e438e0a62d4b430a5159f05f13ecd397dd891a0d)([#676](https://github.com/tauri-apps/plugins-workspace/pull/676)) Update to tauri@alpha.17.
+
+## \[2.0.0-alpha.3]
+
+- [`5c13736`](https://github.com/tauri-apps/plugins-workspace/commit/5c137365c60790e8d4037d449e8237aa3fffdab0)([#673](https://github.com/tauri-apps/plugins-workspace/pull/673)) Update MSRV to 1.75.
+
 ## \[2.0.0-alpha.2]
 
 - [`4e2cef9`](https://github.com/tauri-apps/plugins-workspace/commit/4e2cef9b702bbbb9cf4ee17de50791cb21f1b2a4)([#593](https://github.com/tauri-apps/plugins-workspace/pull/593)) Update to alpha.12.

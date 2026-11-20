@@ -1,14 +1,30 @@
 [package]
 name = "tauri-plugin-window-state"
-version = "2.0.0-alpha.2"
+version = "2.5.1"
 description = "Save window positions and sizes and restore them when the app is reopened."
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
+repository = { workspace = true }
+links = "tauri-plugin-window-state"
+exclude = [
+  "/banner.png",
+  "/guest-js",
+  "/package.json",
+  "/rollup.config.js",
+  "/tsconfig.json",
+]
 
-[package.metadata.docs.rs]
-features = [ "tauri/dox" ]
+[package.metadata.platforms.support]
+windows = { level = "full", notes = "" }
+linux = { level = "full", notes = "" }
+macos = { level = "full", notes = "" }
+android = { level = "none", notes = "" }
+ios = { level = "none", notes = "" }
+
+[build-dependencies]
+tauri-plugin = { workspace = true, features = ["build"] }
 
 [dependencies]
 serde = { workspace = true }
@@ -16,5 +32,4 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
-bincode = "1.3"
 bitflags = "2"

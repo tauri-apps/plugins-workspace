@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-filename"
+description = "Enables the filename command without any pre-configured scope."
+commands.allow = ["filename"]
+
+[[permission]]
+identifier = "deny-filename"
+description = "Denies the filename command without any pre-configured scope."
+commands.deny = ["filename"]

@@ -19,9 +19,11 @@ import UserNotifications
     center.delegate = self
   }
 
-  public func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                    willPresent notification: UNNotification,
-                                    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+  public func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    willPresent notification: UNNotification,
+    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+  ) {
     var presentationOptions: UNNotificationPresentationOptions? = nil
 
     if notification.request.trigger?.isKind(of: UNPushNotificationTrigger.self) != true {
@@ -31,9 +33,11 @@ import UserNotifications
     completionHandler(presentationOptions ?? [])
   }
 
-  public func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                      didReceive response: UNNotificationResponse,
-                                      withCompletionHandler completionHandler: @escaping () -> Void) {
+  public func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    didReceive response: UNNotificationResponse,
+    withCompletionHandler completionHandler: @escaping () -> Void
+  ) {
     if response.notification.request.trigger?.isKind(of: UNPushNotificationTrigger.self) != true {
       notificationHandler?.didReceive(response: response)
     }

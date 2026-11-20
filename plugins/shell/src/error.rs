@@ -6,24 +6,44 @@ use std::path::PathBuf;
 
 use serde::{Serialize, Serializer};
 
+/// Errors returned by the shell plugin.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    /// Failed to invoke the mobile plugin implementation.
+    ///
+    /// Only available on mobile.
+    #[cfg(mobile)]
+    #[error(transparent)]
+    PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
+    /// I/O error, usually raised when spawning a process or reading its output.
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    /// The path of the current executable has no parent directory,
+    /// so the path of a sidecar program could not be resolved.
     #[error("current executable path has no parent")]
     CurrentExeHasNoParent,
+    /// The string does not match any of the known programs
+    /// accepted by the deprecated `open` API.
     #[error("unknown program {0}")]
     UnknownProgramName(String),
+    /// The command is not allowed by the configured shell scope.
     #[error(transparent)]
     Scope(#[from] crate::scope::Error),
     /// Sidecar not allowed by the configuration.
-    #[error("sidecar not configured under `tauri.conf.json > tauri > bundle > externalBin`: {0}")]
+    #[error("sidecar not configured under `tauri.conf.json > bundle > externalBin`: {0}")]
     SidecarNotAllowed(PathBuf),
     /// Program not allowed by the scope.
     #[error("program not allowed on the configured shell scope: {0}")]
     ProgramNotAllowed(PathBuf),
+    /// The `encoding` spawn option is neither `raw` nor a label of a known character encoding.
     #[error("unknown encoding {0}")]
     UnknownEncoding(String),
+    /// JSON error.
+    #[error(transparent)]
+    Json(#[from] serde_json::Error),
+    /// Utf8 error.
+    #[error(transparent)]
+    Utf8(#[from] std::string::FromUtf8Error),
 }
 
 impl Serialize for Error {

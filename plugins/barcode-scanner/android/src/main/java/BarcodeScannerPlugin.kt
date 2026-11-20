@@ -37,11 +37,11 @@ import app.tauri.Logger
 import app.tauri.PermissionState
 import app.tauri.annotation.ActivityCallback
 import app.tauri.annotation.Command
+import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.Permission
 import app.tauri.annotation.PermissionCallback
 import app.tauri.annotation.TauriPlugin
 import app.tauri.plugin.Invoke
-import app.tauri.plugin.JSArray
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
 import com.google.common.util.concurrent.ListenableFuture
@@ -49,13 +49,18 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
-import org.json.JSONException
 import java.util.Collections
 import java.util.concurrent.ExecutionException
 
 private const val PERMISSION_ALIAS_CAMERA = "camera"
 private const val PERMISSION_NAME = Manifest.permission.CAMERA
-private const val PREFS_PERMISSION_FIRST_TIME_ASKING = "PREFS_PERMISSION_FIRST_TIME_ASKING"
+
+@InvokeArg
+class ScanOptions {
+    var formats: Array<String>? = null
+    var windowed: Boolean = false
+    var cameraDirection: String? = null
+}
 
 @TauriPlugin(
     permissions = [
@@ -70,6 +75,10 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
     private var cameraProvider: ProcessCameraProvider? = null
     private var graphicOverlay: GraphicOverlay? = null
     private var camera: Camera? = null
+        set(value) {
+            field = value
+            activeCamera = value
+        }
     private var vibrator: Vibrator? = null
 
     private var scannerOptions: BarcodeScannerOptions? = null
@@ -206,19 +215,12 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
             }
     }
 
-    private fun getFormats(invoke: Invoke): List<Int> {
-        val jsFormats = invoke.getArray("formats", JSArray())
+    private fun getFormats(args: ScanOptions): List<Int> {
         val formats = ArrayList<Int>()
-        for (i in 0 until jsFormats.length()) {
-            try {
-                val targetedFormat: String = jsFormats.getString(i)
-                val targetedBarcodeFormat =
-                    supportedFormats[targetedFormat]
-                if (targetedBarcodeFormat != null) {
-                    formats.add(targetedBarcodeFormat)
-                }
-            } catch (e: JSONException) {
-                e.printStackTrace()
+        for (format in args.formats ?: arrayOf()) {
+            val targetedBarcodeFormat = supportedFormats[format]
+            if (targetedBarcodeFormat != null) {
+                formats.add(targetedBarcodeFormat)
             }
         }
         return formats
@@ -334,34 +336,27 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
 
     @Command
     fun cancel(invoke: Invoke) {
-        destroy()
+        // Reject the pending scan before destroy() clears savedInvoke, otherwise the
+        // scan() promise is never settled. Mirrors the iOS implementation.
         savedInvoke?.reject("cancelled")
+        destroy()
         invoke.resolve()
     }
 
     @Command
     fun scan(invoke: Invoke) {
+        val args = invoke.parseArgs(ScanOptions::class.java)
+
         savedInvoke = invoke
         if (hasCamera()) {
             if (getPermissionState("camera") != PermissionState.GRANTED) {
                 throw Exception("No permission to use camera. Did you request it yet?")
             } else {
                 webViewBackground = null
-                prepare(invoke.getString("cameraDirection", "back"), invoke.getBoolean("windowed", false))
-                configureCamera(getFormats(invoke))
+                prepare(args.cameraDirection ?: "back", args.windowed)
+                configureCamera(getFormats(args))
             }
         }
-    }
-
-    private fun markFirstPermissionRequest() {
-        val sharedPreference: SharedPreferences =
-            activity.getSharedPreferences(PREFS_PERMISSION_FIRST_TIME_ASKING, MODE_PRIVATE)
-        sharedPreference.edit().putBoolean(PERMISSION_NAME, false).apply()
-    }
-
-    private fun firstPermissionRequest(): Boolean {
-        return activity.getSharedPreferences(PREFS_PERMISSION_FIRST_TIME_ASKING, MODE_PRIVATE)
-            .getBoolean(PERMISSION_NAME, true)
     }
 
     @SuppressLint("ObsoleteSdkInt")
@@ -379,9 +374,7 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
             requestPermissionResponse.put(PERMISSION_ALIAS_CAMERA, PermissionState.GRANTED)
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (!activity.shouldShowRequestPermissionRationale(PERMISSION_NAME)) {
-                    requestPermissionResponse.put(PERMISSION_ALIAS_CAMERA, PermissionState.DENIED)
-                }
+                requestPermissionResponse.put(PERMISSION_ALIAS_CAMERA, PermissionState.DENIED)
             } else {
                 requestPermissionResponse.put(PERMISSION_ALIAS_CAMERA, PermissionState.GRANTED)
             }
@@ -400,20 +393,12 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
             requestPermissionResponse.put(PERMISSION_ALIAS_CAMERA, PermissionState.GRANTED)
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (firstPermissionRequest() || activity.shouldShowRequestPermissionRationale(
-                        PERMISSION_NAME
-                    )
-                ) {
-                    markFirstPermissionRequest()
-                    requestPermissionForAlias(
-                        PERMISSION_ALIAS_CAMERA,
-                        invoke,
-                        "cameraPermissionCallback"
-                    )
-                    return
-                } else {
-                    requestPermissionResponse.put(PERMISSION_ALIAS_CAMERA, PermissionState.DENIED)
-                }
+                requestPermissionForAlias(
+                    PERMISSION_ALIAS_CAMERA,
+                    invoke,
+                    "cameraPermissionCallback"
+                )
+                return
             } else {
                 requestPermissionResponse.put(PERMISSION_ALIAS_CAMERA, PermissionState.GRANTED)
             }
@@ -434,5 +419,20 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
     @ActivityCallback
     private fun openSettingsResult(invoke: Invoke, result: ActivityResult) {
         invoke.resolve()
+    }
+
+    companion object {
+        @Volatile
+        private var activeCamera: Camera? = null
+
+        /**
+         * The camera bound by an active scan, or `null` when no scan is running.
+         *
+         * Looked up through reflection by the torch plugin (`app.tauri.torch`): while a scan holds the
+         * camera, Android rejects `CameraManager.setTorchMode`, so the flash must be driven through
+         * this camera's `CameraControl` instead. Keep the name and signature stable.
+         */
+        @JvmStatic
+        fun getActiveCamera(): Camera? = activeCamera
     }
 }

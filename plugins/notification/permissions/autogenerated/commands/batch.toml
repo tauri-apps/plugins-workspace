@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-batch"
+description = "Enables the batch command without any pre-configured scope."
+commands.allow = ["batch"]
+
+[[permission]]
+identifier = "deny-batch"
+description = "Denies the batch command without any pre-configured scope."
+commands.deny = ["batch"]

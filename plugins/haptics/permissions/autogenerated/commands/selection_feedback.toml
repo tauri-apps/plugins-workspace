@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-selection-feedback"
+description = "Enables the selection_feedback command without any pre-configured scope."
+commands.allow = ["selection_feedback"]
+
+[[permission]]
+identifier = "deny-selection-feedback"
+description = "Denies the selection_feedback command without any pre-configured scope."
+commands.deny = ["selection_feedback"]

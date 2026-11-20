@@ -1,0 +1,82 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+# Scopes Section
+# This section contains scopes, which define file level access
+
+[[permission]]
+identifier = "scope-font-recursive"
+description = "This scope permits recursive access to the complete `$FONT` folder, including sub directories and files."
+
+[[permission.scope.allow]]
+path = "$FONT"
+[[permission.scope.allow]]
+path = "$FONT/**"
+
+[[permission]]
+identifier = "scope-font"
+description = "This scope permits access to all files and list content of top level directories in the `$FONT` folder."
+
+[[permission.scope.allow]]
+path = "$FONT"
+[[permission.scope.allow]]
+path = "$FONT/*"
+
+[[permission]]
+identifier = "scope-font-index"
+description = "This scope permits to list all files and folders in the `$FONT`folder."
+
+[[permission.scope.allow]]
+path = "$FONT"
+
+# Sets Section
+# This section combines the scope elements with enablement of commands
+
+[[set]]
+identifier = "allow-font-read-recursive"
+description = "This allows full recursive read access to the complete `$FONT` folder, files and subdirectories."
+permissions = [
+    "read-all",
+    "scope-font-recursive"
+]
+
+[[set]]
+identifier = "allow-font-write-recursive"
+description = "This allows full recursive write access to the complete `$FONT` folder, files and subdirectories."
+permissions = [
+    "write-all",
+    "scope-font-recursive"
+]
+
+[[set]]
+identifier = "allow-font-read"
+description = "This allows non-recursive read access to the `$FONT` folder."
+permissions = [
+    "read-all",
+    "scope-font"
+]
+
+[[set]]
+identifier = "allow-font-write"
+description = "This allows non-recursive write access to the `$FONT` folder."
+permissions = [
+    "write-all",
+    "scope-font"
+]
+
+[[set]]
+identifier = "allow-font-meta-recursive"
+description = "This allows full recursive read access to metadata of the `$FONT` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-font-recursive"
+]
+
+[[set]]
+identifier = "allow-font-meta"
+description = "This allows non-recursive read access to metadata of the `$FONT` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-font-index"
+]

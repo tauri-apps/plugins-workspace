@@ -1,0 +1,28 @@
+"$schema" = "schemas/schema.json"
+
+[[permission]]
+identifier = "scope"
+description = """
+An empty permission you can use to modify the global scope.
+
+## Example
+
+```json
+{
+  "identifier": "read-documents",
+  "windows": ["main"],
+  "permissions": [
+    "fs:allow-read",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        "$APPDATA/documents/**/*"
+      ],
+      "deny": [
+        "$APPDATA/documents/secret.txt"
+      ]
+    }
+  ]
+}
+```
+"""

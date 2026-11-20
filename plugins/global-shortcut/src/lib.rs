@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/global-shortcut/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/global-shortcut)
-//!
 //! Register global shortcuts.
 //!
 //! - Supported platforms: Windows, Linux and macOS.
+//! - On macOS, registering and unregistering shortcuts must happen on the main thread, so every
+//!   [`GlobalShortcut`] operation dispatches to it and blocks until it completes.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
@@ -20,35 +20,29 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-pub use global_hotkey::hotkey::{Code, HotKey as Shortcut, Modifiers};
-use global_hotkey::{GlobalHotKeyEvent, GlobalHotKeyManager};
+use global_hotkey::GlobalHotKeyEvent;
+pub use global_hotkey::{
+    GlobalHotKeyEvent as ShortcutEvent, HotKeyState as ShortcutState,
+    hotkey::{Code, HotKey as Shortcut, Modifiers},
+};
+use serde::Serialize;
 use tauri::{
+    AppHandle, Manager, Runtime, State,
     ipc::Channel,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    AppHandle, Manager, Runtime, State, Window,
 };
 
 mod error;
 
 pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
+
 type HotKeyId = u32;
-type HandlerFn = Box<dyn Fn(&Shortcut) + Send + Sync + 'static>;
+type HandlerFn<R> = Box<dyn Fn(&AppHandle<R>, &Shortcut, ShortcutEvent) + Send + Sync + 'static>;
 
-enum ShortcutSource {
-    Ipc(Channel),
-    Rust,
-}
-
-impl Clone for ShortcutSource {
-    fn clone(&self) -> Self {
-        match self {
-            Self::Ipc(channel) => Self::Ipc(channel.clone()),
-            Self::Rust => Self::Rust,
-        }
-    }
-}
-
+/// Internal wrapper around a [`Shortcut`] that lets the shortcut-accepting APIs on
+/// [`GlobalShortcut`] and [`Builder`] be generic over an already-parsed [`Shortcut`] or a
+/// string accelerator such as `"CmdOrControl+Q"`.
 pub struct ShortcutWrapper(Shortcut);
 
 impl From<Shortcut> for ShortcutWrapper {
@@ -58,109 +52,218 @@ impl From<Shortcut> for ShortcutWrapper {
 }
 
 impl TryFrom<&str> for ShortcutWrapper {
-    type Error = global_hotkey::Error;
+    type Error = global_hotkey::hotkey::HotKeyParseError;
     fn try_from(value: &str) -> std::result::Result<Self, Self::Error> {
         Shortcut::from_str(value).map(ShortcutWrapper)
     }
 }
 
-struct RegisteredShortcut {
-    source: ShortcutSource,
-    shortcut: (Shortcut, Option<String>),
+struct RegisteredShortcut<R: Runtime> {
+    shortcut: Shortcut,
+    handler: Option<Arc<HandlerFn<R>>>,
 }
 
+/// Runs the handlers registered for the shortcut behind `event`.
+///
+/// The shortcut and its handler are copied out of the map and the lock is released before any
+/// user code runs, so a handler can call back into the plugin (or pump messages that dispatch
+/// another shortcut event) without deadlocking on `shortcuts`.
+fn dispatch_shortcut_event<R: Runtime>(
+    shortcuts: &Mutex<HashMap<HotKeyId, RegisteredShortcut<R>>>,
+    app: &AppHandle<R>,
+    global_handler: Option<&HandlerFn<R>>,
+    event: GlobalHotKeyEvent,
+) {
+    let registered = shortcuts
+        .lock()
+        .unwrap()
+        .get(&event.id)
+        .map(|s| (s.shortcut, s.handler.clone()));
+    if let Some((shortcut, shortcut_handler)) = registered {
+        if let Some(handler) = &shortcut_handler {
+            handler(app, &shortcut, event);
+        }
+        if let Some(handler) = global_handler {
+            handler(app, &shortcut, event);
+        }
+    }
+}
+
+struct GlobalHotKeyManager(global_hotkey::GlobalHotKeyManager);
+
+/// SAFETY: we ensure it is run on main thread only
+unsafe impl Send for GlobalHotKeyManager {}
+/// SAFETY: we ensure it is run on main thread only
+unsafe impl Sync for GlobalHotKeyManager {}
+
+/// The global shortcut APIs, accessible through [`GlobalShortcutExt::global_shortcut`].
+///
+/// Registering, unregistering and checking a shortcut all dispatch the underlying
+/// `global_hotkey` call to the app's main thread and block until it finishes, since macOS
+/// requires the hotkey manager to run on the main thread.
 pub struct GlobalShortcut<R: Runtime> {
     #[allow(dead_code)]
     app: AppHandle<R>,
-    manager: std::result::Result<GlobalHotKeyManager, global_hotkey::Error>,
-    shortcuts: Arc<Mutex<HashMap<HotKeyId, RegisteredShortcut>>>,
+    manager: Arc<GlobalHotKeyManager>,
+    shortcuts: Arc<Mutex<HashMap<HotKeyId, RegisteredShortcut<R>>>>,
+}
+
+macro_rules! run_main_thread {
+    ($handle:expr, $manager:expr, |$m:ident| $ex:expr) => {{
+        let (tx, rx) = std::sync::mpsc::channel();
+        let manager = $manager.clone();
+        let task = move || {
+            let f = |$m: &GlobalHotKeyManager| $ex;
+            let _ = tx.send(f(&*manager));
+        };
+        $handle.run_on_main_thread(task)?;
+        rx.recv()?
+    }};
 }
 
 impl<R: Runtime> GlobalShortcut<R> {
-    fn register_internal(
+    fn register_internal<F: Fn(&AppHandle<R>, &Shortcut, ShortcutEvent) + Send + Sync + 'static>(
         &self,
-        shortcut: (Shortcut, Option<String>),
-        source: ShortcutSource,
+        shortcut: Shortcut,
+        handler: Option<F>,
     ) -> Result<()> {
-        let id = shortcut.0.id();
-        acquire_manager(&self.manager)?.register(shortcut.0)?;
+        let id = shortcut.id();
+        let handler = handler.map(|h| Arc::new(Box::new(h) as HandlerFn<R>));
+        run_main_thread!(self.app, self.manager, |m| m.0.register(shortcut))?;
         self.shortcuts
             .lock()
             .unwrap()
-            .insert(id, RegisteredShortcut { source, shortcut });
+            .insert(id, RegisteredShortcut { shortcut, handler });
         Ok(())
     }
 
-    fn register_all_internal<S: IntoIterator<Item = (Shortcut, Option<String>)>>(
-        &self,
-        shortcuts: S,
-        source: ShortcutSource,
-    ) -> Result<()> {
-        let hotkeys = shortcuts
-            .into_iter()
-            .collect::<Vec<(Shortcut, Option<String>)>>();
+    fn register_multiple_internal<S, F>(&self, shortcuts: S, handler: Option<F>) -> Result<()>
+    where
+        S: IntoIterator<Item = Shortcut>,
+        F: Fn(&AppHandle<R>, &Shortcut, ShortcutEvent) + Send + Sync + 'static,
+    {
+        let handler = handler.map(|h| Arc::new(Box::new(h) as HandlerFn<R>));
 
-        let manager = acquire_manager(&self.manager)?;
+        let hotkeys = shortcuts.into_iter().collect::<Vec<_>>();
+
         let mut shortcuts = self.shortcuts.lock().unwrap();
-        for hotkey in hotkeys {
-            manager.register(hotkey.0)?;
-
+        for shortcut in hotkeys {
+            run_main_thread!(self.app, self.manager, |m| m.0.register(shortcut))?;
             shortcuts.insert(
-                hotkey.0.id(),
+                shortcut.id(),
                 RegisteredShortcut {
-                    source: source.clone(),
-                    shortcut: hotkey,
+                    shortcut,
+                    handler: handler.clone(),
                 },
             );
         }
 
         Ok(())
     }
+}
 
-    pub fn register<S: TryInto<ShortcutWrapper>>(&self, shortcut: S) -> Result<()>
+impl<R: Runtime> GlobalShortcut<R> {
+    /// Register a shortcut. Returns an error if the shortcut is invalid or already registered
+    /// by this [`GlobalShortcut`] instance.
+    pub fn register<S>(&self, shortcut: S) -> Result<()>
     where
+        S: TryInto<ShortcutWrapper>,
         S::Error: std::error::Error,
     {
-        self.register_internal((try_into_shortcut(shortcut)?, None), ShortcutSource::Rust)
+        self.register_internal(
+            try_into_shortcut(shortcut)?,
+            None::<fn(&AppHandle<R>, &Shortcut, ShortcutEvent)>,
+        )
     }
 
-    pub fn register_all<T: TryInto<ShortcutWrapper>, S: IntoIterator<Item = T>>(
-        &self,
-        shortcuts: S,
-    ) -> Result<()>
+    /// Register a shortcut with a handler that is called with the app handle, the triggered
+    /// [`Shortcut`] and the [`ShortcutEvent`] (whose `state` is [`ShortcutState::Pressed`] or
+    /// [`ShortcutState::Released`]) whenever the shortcut's key combination is pressed or
+    /// released.
+    pub fn on_shortcut<S, F>(&self, shortcut: S, handler: F) -> Result<()>
     where
-        T::Error: std::error::Error,
-    {
-        let mut s = Vec::new();
-        for shortcut in shortcuts {
-            s.push((try_into_shortcut(shortcut)?, None));
-        }
-        self.register_all_internal(s, ShortcutSource::Rust)
-    }
-
-    pub fn unregister<S: TryInto<ShortcutWrapper>>(&self, shortcut: S) -> Result<()>
-    where
+        S: TryInto<ShortcutWrapper>,
         S::Error: std::error::Error,
+        F: Fn(&AppHandle<R>, &Shortcut, ShortcutEvent) + Send + Sync + 'static,
     {
-        acquire_manager(&self.manager)?
-            .unregister(try_into_shortcut(shortcut)?)
-            .map_err(Into::into)
+        self.register_internal(try_into_shortcut(shortcut)?, Some(handler))
     }
 
-    pub fn unregister_all<T: TryInto<ShortcutWrapper>, S: IntoIterator<Item = T>>(
-        &self,
-        shortcuts: S,
-    ) -> Result<()>
+    /// Register multiple shortcuts.
+    pub fn register_multiple<S, T>(&self, shortcuts: S) -> Result<()>
     where
+        S: IntoIterator<Item = T>,
+        T: TryInto<ShortcutWrapper>,
         T::Error: std::error::Error,
     {
         let mut s = Vec::new();
         for shortcut in shortcuts {
             s.push(try_into_shortcut(shortcut)?);
         }
-        acquire_manager(&self.manager)?
-            .unregister_all(&s)
-            .map_err(Into::into)
+        self.register_multiple_internal(s, None::<fn(&AppHandle<R>, &Shortcut, ShortcutEvent)>)
+    }
+
+    /// Register multiple shortcuts with a handler.
+    pub fn on_shortcuts<S, T, F>(&self, shortcuts: S, handler: F) -> Result<()>
+    where
+        S: IntoIterator<Item = T>,
+        T: TryInto<ShortcutWrapper>,
+        T::Error: std::error::Error,
+        F: Fn(&AppHandle<R>, &Shortcut, ShortcutEvent) + Send + Sync + 'static,
+    {
+        let mut s = Vec::new();
+        for shortcut in shortcuts {
+            s.push(try_into_shortcut(shortcut)?);
+        }
+        self.register_multiple_internal(s, Some(handler))
+    }
+
+    /// Unregister a shortcut
+    pub fn unregister<S: TryInto<ShortcutWrapper>>(&self, shortcut: S) -> Result<()>
+    where
+        S::Error: std::error::Error,
+    {
+        let shortcut = try_into_shortcut(shortcut)?;
+        run_main_thread!(self.app, self.manager, |m| m.0.unregister(shortcut))?;
+        self.shortcuts.lock().unwrap().remove(&shortcut.id());
+        Ok(())
+    }
+
+    /// Unregister multiple shortcuts.
+    pub fn unregister_multiple<T: TryInto<ShortcutWrapper>, S: IntoIterator<Item = T>>(
+        &self,
+        shortcuts: S,
+    ) -> Result<()>
+    where
+        T::Error: std::error::Error,
+    {
+        let mut mapped_shortcuts = Vec::new();
+        for shortcut in shortcuts {
+            mapped_shortcuts.push(try_into_shortcut(shortcut)?);
+        }
+
+        {
+            let mapped_shortcuts = mapped_shortcuts.clone();
+            #[rustfmt::skip]
+            run_main_thread!(self.app, self.manager, |m| m.0.unregister_all(&mapped_shortcuts))?;
+        }
+
+        let mut shortcuts = self.shortcuts.lock().unwrap();
+        for s in mapped_shortcuts {
+            shortcuts.remove(&s.id());
+        }
+
+        Ok(())
+    }
+
+    /// Unregister all registered shortcuts.
+    pub fn unregister_all(&self) -> Result<()> {
+        let mut shortcuts = self.shortcuts.lock().unwrap();
+        let hotkeys = std::mem::take(&mut *shortcuts);
+        let hotkeys = hotkeys.values().map(|s| s.shortcut).collect::<Vec<_>>();
+        #[rustfmt::skip]
+        let res = run_main_thread!(self.app, self.manager, |m| m.0.unregister_all(hotkeys.as_slice()));
+        res.map_err(Into::into)
     }
 
     /// Determines whether the given shortcut is registered by this application or not.
@@ -178,7 +281,28 @@ impl<R: Runtime> GlobalShortcut<R> {
     }
 }
 
+/// Extension trait for [`Manager`] implementors (e.g. [`AppHandle`]) that exposes access to the
+/// global shortcut APIs.
+///
+/// # Examples
+///
+/// ```rust,no_run
+/// use tauri::Runtime;
+/// use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
+///
+/// fn setup<R: Runtime>(app: &tauri::App<R>) -> Result<(), Box<dyn std::error::Error>> {
+///     app.global_shortcut()
+///         .on_shortcut("CommandOrControl+Shift+C", |_app, shortcut, event| {
+///             if event.state == ShortcutState::Pressed {
+///                 println!("{shortcut:?} pressed");
+///             }
+///         })?;
+///
+///     Ok(())
+/// }
+/// ```
 pub trait GlobalShortcutExt<R: Runtime> {
+    /// Returns the [`GlobalShortcut`] instance managed by this plugin.
     fn global_shortcut(&self) -> &GlobalShortcut<R>;
 }
 
@@ -186,14 +310,6 @@ impl<R: Runtime, T: Manager<R>> GlobalShortcutExt<R> for T {
     fn global_shortcut(&self) -> &GlobalShortcut<R> {
         self.state::<GlobalShortcut<R>>().inner()
     }
-}
-
-fn acquire_manager(
-    manager: &std::result::Result<GlobalHotKeyManager, global_hotkey::Error>,
-) -> Result<&GlobalHotKeyManager> {
-    manager
-        .as_ref()
-        .map_err(|e| Error::GlobalHotkey(e.to_string()))
 }
 
 fn parse_shortcut<S: AsRef<str>>(shortcut: S) -> Result<Shortcut> {
@@ -210,44 +326,46 @@ where
         .map_err(|e| Error::GlobalHotkey(e.to_string()))
 }
 
+#[derive(Clone, Serialize)]
+struct ShortcutJsEvent {
+    shortcut: String,
+    id: u32,
+    state: ShortcutState,
+}
+
 #[tauri::command]
 fn register<R: Runtime>(
-    _window: Window<R>,
+    _app: AppHandle<R>,
     global_shortcut: State<'_, GlobalShortcut<R>>,
-    shortcut: String,
-    handler: Channel,
+    shortcuts: Vec<String>,
+    handler: Channel<ShortcutJsEvent>,
 ) -> Result<()> {
-    global_shortcut.register_internal(
-        (parse_shortcut(&shortcut)?, Some(shortcut)),
-        ShortcutSource::Ipc(handler),
+    let mut hotkeys = Vec::new();
+
+    let mut shortcut_map = HashMap::new();
+    for shortcut in shortcuts {
+        let hotkey = parse_shortcut(&shortcut)?;
+        shortcut_map.insert(hotkey.id(), shortcut);
+        hotkeys.push(hotkey);
+    }
+
+    global_shortcut.register_multiple_internal(
+        hotkeys,
+        Some(
+            move |_app: &AppHandle<R>, shortcut: &Shortcut, e: ShortcutEvent| {
+                let js_event = ShortcutJsEvent {
+                    id: e.id,
+                    state: e.state,
+                    shortcut: shortcut.into_string(),
+                };
+                let _ = handler.send(js_event);
+            },
+        ),
     )
 }
 
 #[tauri::command]
-fn register_all<R: Runtime>(
-    _window: Window<R>,
-    global_shortcut: State<'_, GlobalShortcut<R>>,
-    shortcuts: Vec<String>,
-    handler: Channel,
-) -> Result<()> {
-    let mut hotkeys = Vec::new();
-    for shortcut in shortcuts {
-        hotkeys.push((parse_shortcut(&shortcut)?, Some(shortcut)));
-    }
-    global_shortcut.register_all_internal(hotkeys, ShortcutSource::Ipc(handler))
-}
-
-#[tauri::command]
 fn unregister<R: Runtime>(
-    _app: AppHandle<R>,
-    global_shortcut: State<'_, GlobalShortcut<R>>,
-    shortcut: String,
-) -> Result<()> {
-    global_shortcut.unregister(parse_shortcut(shortcut)?)
-}
-
-#[tauri::command]
-fn unregister_all<R: Runtime>(
     _app: AppHandle<R>,
     global_shortcut: State<'_, GlobalShortcut<R>>,
     shortcuts: Vec<String>,
@@ -256,7 +374,15 @@ fn unregister_all<R: Runtime>(
     for shortcut in shortcuts {
         hotkeys.push(parse_shortcut(&shortcut)?);
     }
-    global_shortcut.unregister_all(hotkeys)
+    global_shortcut.unregister_multiple(hotkeys)
+}
+
+#[tauri::command]
+fn unregister_all<R: Runtime>(
+    _app: AppHandle<R>,
+    global_shortcut: State<'_, GlobalShortcut<R>>,
+) -> Result<()> {
+    global_shortcut.unregister_all()
 }
 
 #[tauri::command]
@@ -268,60 +394,184 @@ fn is_registered<R: Runtime>(
     Ok(global_shortcut.is_registered(parse_shortcut(shortcut)?))
 }
 
-#[derive(Default)]
-pub struct Builder {
-    handler: Option<HandlerFn>,
+/// Builder for the global shortcut plugin, letting you configure shortcuts and a handler that
+/// are registered as soon as the plugin is set up, before [`Builder::build`] is called.
+///
+/// # Examples
+///
+/// ```rust,no_run
+/// use tauri::Runtime;
+///
+/// fn setup<R: Runtime>(builder: tauri::Builder<R>) -> tauri::Builder<R> {
+///     builder.plugin(
+///         tauri_plugin_global_shortcut::Builder::new()
+///             .with_shortcut("CommandOrControl+Shift+C")
+///             .unwrap()
+///             .with_handler(|_app, shortcut, event| {
+///                 println!("{shortcut:?}: {event:?}");
+///             })
+///             .build(),
+///     )
+/// }
+/// ```
+pub struct Builder<R: Runtime> {
+    shortcuts: Vec<Shortcut>,
+    handler: Option<HandlerFn<R>>,
 }
 
-impl Builder {
+impl<R: Runtime> Default for Builder<R> {
+    fn default() -> Self {
+        Self {
+            shortcuts: Vec::new(),
+            handler: Default::default(),
+        }
+    }
+}
+
+impl<R: Runtime> Builder<R> {
+    /// Creates a new [`Builder`] with no shortcuts or handler configured.
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn with_handler<F: Fn(&Shortcut) + Send + Sync + 'static>(handler: F) -> Self {
-        Self {
-            handler: Some(Box::new(handler)),
-        }
+    /// Add a shortcut to be registerd.
+    pub fn with_shortcut<T>(mut self, shortcut: T) -> Result<Self>
+    where
+        T: TryInto<ShortcutWrapper>,
+        T::Error: std::error::Error,
+    {
+        self.shortcuts.push(try_into_shortcut(shortcut)?);
+        Ok(self)
     }
 
-    pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
+    /// Add multiple shortcuts to be registerd.
+    pub fn with_shortcuts<S, T>(mut self, shortcuts: S) -> Result<Self>
+    where
+        S: IntoIterator<Item = T>,
+        T: TryInto<ShortcutWrapper>,
+        T::Error: std::error::Error,
+    {
+        for shortcut in shortcuts {
+            self.shortcuts.push(try_into_shortcut(shortcut)?);
+        }
+
+        Ok(self)
+    }
+
+    /// Specify a global shortcut handler that will be triggered for any and all shortcuts.
+    pub fn with_handler<F: Fn(&AppHandle<R>, &Shortcut, ShortcutEvent) + Send + Sync + 'static>(
+        mut self,
+        handler: F,
+    ) -> Self {
+        self.handler.replace(Box::new(handler));
+        self
+    }
+
+    /// Builds the plugin. Shortcuts configured with [`Builder::with_shortcut`] /
+    /// [`Builder::with_shortcuts`] are registered when the plugin is set up, and the handler
+    /// configured with [`Builder::with_handler`] (if any) is called for every hotkey event, in
+    /// addition to any handler passed to [`GlobalShortcut::on_shortcut`] /
+    /// [`GlobalShortcut::on_shortcuts`] for that specific shortcut.
+    pub fn build(self) -> TauriPlugin<R> {
         let handler = self.handler;
-        PluginBuilder::new("globalShortcut")
-            .js_init_script(include_str!("api-iife.js").to_string())
+        let shortcuts = self.shortcuts;
+        PluginBuilder::new("global-shortcut")
             .invoke_handler(tauri::generate_handler![
                 register,
-                register_all,
                 unregister,
                 unregister_all,
-                is_registered
+                is_registered,
             ])
             .setup(move |app, _api| {
-                let shortcuts =
-                    Arc::new(Mutex::new(HashMap::<HotKeyId, RegisteredShortcut>::new()));
+                let manager = global_hotkey::GlobalHotKeyManager::new()?;
+                let mut store = HashMap::<HotKeyId, RegisteredShortcut<R>>::new();
+                for shortcut in shortcuts {
+                    manager.register(shortcut)?;
+                    store.insert(
+                        shortcut.id(),
+                        RegisteredShortcut {
+                            shortcut,
+                            handler: None,
+                        },
+                    );
+                }
+
+                let shortcuts = Arc::new(Mutex::new(store));
                 let shortcuts_ = shortcuts.clone();
 
+                let app_handle = app.clone();
                 GlobalHotKeyEvent::set_event_handler(Some(move |e: GlobalHotKeyEvent| {
-                    if let Some(shortcut) = shortcuts_.lock().unwrap().get(&e.id) {
-                        match &shortcut.source {
-                            ShortcutSource::Ipc(channel) => {
-                                let _ = channel.send(&shortcut.shortcut.1);
-                            }
-                            ShortcutSource::Rust => {
-                                if let Some(handler) = &handler {
-                                    handler(&shortcut.shortcut.0);
-                                }
-                            }
-                        }
-                    }
+                    dispatch_shortcut_event(&shortcuts_, &app_handle, handler.as_ref(), e);
                 }));
 
                 app.manage(GlobalShortcut {
                     app: app.clone(),
-                    manager: GlobalHotKeyManager::new(),
+                    manager: Arc::new(GlobalHotKeyManager(manager)),
                     shortcuts,
                 });
                 Ok(())
             })
             .build()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use tauri::test::{MockRuntime, mock_app};
+
+    #[test]
+    fn handlers_run_without_holding_the_shortcuts_lock() {
+        let app = mock_app();
+        let shortcut = Shortcut::new(Some(Modifiers::ALT), Code::KeyW);
+        let shortcuts = Arc::new(Mutex::new(HashMap::<
+            HotKeyId,
+            RegisteredShortcut<MockRuntime>,
+        >::new()));
+        let calls = Arc::new(AtomicUsize::new(0));
+
+        let shortcut_handler: HandlerFn<MockRuntime> = {
+            let shortcuts = shortcuts.clone();
+            let calls = calls.clone();
+            Box::new(move |_, _, _| {
+                assert!(
+                    shortcuts.try_lock().is_ok(),
+                    "the shortcuts lock must not be held while a handler runs"
+                );
+                calls.fetch_add(1, Ordering::SeqCst);
+            })
+        };
+        let global_handler: HandlerFn<MockRuntime> = {
+            let shortcuts = shortcuts.clone();
+            let calls = calls.clone();
+            Box::new(move |_, _, _| {
+                assert!(
+                    shortcuts.try_lock().is_ok(),
+                    "the shortcuts lock must not be held while a handler runs"
+                );
+                calls.fetch_add(1, Ordering::SeqCst);
+            })
+        };
+
+        shortcuts.lock().unwrap().insert(
+            shortcut.id(),
+            RegisteredShortcut {
+                shortcut,
+                handler: Some(Arc::new(shortcut_handler)),
+            },
+        );
+
+        dispatch_shortcut_event(
+            &shortcuts,
+            app.handle(),
+            Some(&global_handler),
+            GlobalHotKeyEvent {
+                id: shortcut.id(),
+                state: ShortcutState::Pressed,
+            },
+        );
+
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
     }
 }

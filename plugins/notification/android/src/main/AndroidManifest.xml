@@ -4,7 +4,7 @@
         <receiver android:name="app.tauri.notification.TimedNotificationPublisher" />
         <receiver android:name="app.tauri.notification.NotificationDismissReceiver" />
         <receiver
-            android:name="app.tauri.notification.NotificationRestoreReceiver"
+            android:name="app.tauri.notification.LocalNotificationRestoreReceiver"
             android:directBootAware="true"
             android:exported="false">
             <intent-filter>
@@ -14,6 +14,7 @@
             </intent-filter>
         </receiver>
     </application>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 </manifest>

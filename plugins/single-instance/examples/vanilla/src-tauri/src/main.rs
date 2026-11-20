@@ -3,15 +3,25 @@
 // SPDX-License-Identifier: MIT
 
 #![cfg_attr(
-  all(not(debug_assertions), target_os = "windows"),
-  windows_subsystem = "windows"
+    all(not(debug_assertions), target_os = "windows"),
+    windows_subsystem = "windows"
 )]
 
 fn main() {
-  tauri::Builder::default()
-    .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
-      println!("{}, {argv:?}, {cwd}", app.package_info().name);
-    }))
-    .run(tauri::generate_context!())
-    .expect("error while running tauri application");
+    let builder = tauri::Builder::default();
+
+    // single-instance is only available on desktop
+    #[cfg(desktop)]
+    let builder = builder.plugin(
+        tauri_plugin_single_instance::Builder::new()
+            .callback(move |app, argv, cwd| {
+                println!("{}, {argv:?}, {cwd}", app.package_info().name);
+            })
+            .dbus_id("org.Tauri.SIExampleApp".to_owned())
+            .build(),
+    );
+
+    builder
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
 }

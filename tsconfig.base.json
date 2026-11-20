@@ -1,20 +1,13 @@
 {
   "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "lib": ["ES2019", "ES2020.Promise", "ES2020.String", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "noEmit": true,
-    "noEmitOnError": false,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "pretty": true,
-    "sourceMap": true,
+    "target": "es2021",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
     "strict": true,
-    "target": "ES2019",
-    "declaration": true,
-    "declarationDir": "./"
+    "noUnusedLocals": true,
+    "noImplicitAny": true,
+    "noEmit": true
   },
   "exclude": ["dist-js", "node_modules", "test/types"]
 }

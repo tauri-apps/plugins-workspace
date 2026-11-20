@@ -8,13 +8,11 @@
  * @module
  */
 
-declare global {
-  interface Window {
-    __TAURI_INVOKE__: <T>(cmd: string, args?: unknown) => Promise<T>;
-  }
-}
+import { invoke } from '@tauri-apps/api/core'
 
 /**
+ * The resolution of a single CLI argument match.
+ *
  * @since 2.0.0
  */
 interface ArgMatch {
@@ -23,27 +21,35 @@ interface ArgMatch {
    * boolean if flag
    * string[] or null if takes multiple values
    */
-  value: string | boolean | string[] | null;
+  value: string | boolean | string[] | null
   /**
    * Number of occurrences
    */
-  occurrences: number;
+  occurrences: number
 }
 
 /**
+ * The result of matching a subcommand of the CLI definition.
+ *
  * @since 2.0.0
  */
 interface SubcommandMatch {
-  name: string;
-  matches: CliMatches;
+  /** The name of the matched subcommand. */
+  name: string
+  /** The argument matches of the subcommand, resolved the same way as the parent command's matches. */
+  matches: CliMatches
 }
 
 /**
+ * The resolved matches of the CLI arguments and, if any, its matched subcommand.
+ *
  * @since 2.0.0
  */
 interface CliMatches {
-  args: Record<string, ArgMatch>;
-  subcommand: SubcommandMatch | null;
+  /** The matched arguments, keyed by argument name. */
+  args: Record<string, ArgMatch>
+  /** The matched subcommand, or `null` if no subcommand was invoked. */
+  subcommand: SubcommandMatch | null
 }
 
 /**
@@ -65,12 +71,13 @@ interface CliMatches {
  * }
  * ```
  *
+ * @returns A promise resolving to the parsed CLI matches.
  * @since 2.0.0
  */
 async function getMatches(): Promise<CliMatches> {
-  return await window.__TAURI_INVOKE__("plugin:cli|cli_matches");
+  return await invoke('plugin:cli|cli_matches')
 }
 
-export type { ArgMatch, SubcommandMatch, CliMatches };
+export type { ArgMatch, SubcommandMatch, CliMatches }
 
-export { getMatches };
+export { getMatches }

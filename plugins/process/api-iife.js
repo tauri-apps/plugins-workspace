@@ -1,0 +1,1 @@
+if("__TAURI__"in window){var __TAURI_PLUGIN_PROCESS__=function(_,n){"use strict";return _.exit=async function(_=0){await n.invoke("plugin:process|exit",{code:_})},_.relaunch=async function(){await n.invoke("plugin:process|restart")},_}({},window.__TAURI__.core);Object.defineProperty(window.__TAURI__,"process",{value:__TAURI_PLUGIN_PROCESS__})}

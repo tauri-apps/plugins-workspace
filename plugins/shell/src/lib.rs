@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/shell/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/shell)
-//!
 //! Access the system shell. Allows you to spawn child processes and manage files and URLs using their default application.
 
 #![doc(
@@ -20,28 +18,43 @@ use std::{
 
 use process::{Command, CommandChild};
 use regex::Regex;
-use scope::{Scope, ScopeAllowedCommand, ScopeConfig};
 use tauri::{
-    plugin::{Builder, TauriPlugin},
     AppHandle, Manager, RunEvent, Runtime,
+    plugin::{Builder, TauriPlugin},
 };
 
 mod commands;
 mod config;
 mod error;
-mod open;
+#[deprecated(since = "2.1.0", note = "Use tauri-plugin-opener instead.")]
+#[allow(deprecated)]
+pub mod open;
+/// Types and helpers to spawn and interact with child processes.
 pub mod process;
 mod scope;
+mod scope_entry;
 
-use config::{Config, ShellAllowedArg, ShellAllowedArgs, ShellAllowlistOpen, ShellAllowlistScope};
 pub use error::Error;
 type Result<T> = std::result::Result<T, Error>;
+
+#[cfg(mobile)]
+use tauri::plugin::PluginHandle;
+#[cfg(target_os = "android")]
+const PLUGIN_IDENTIFIER: &str = "app.tauri.shell";
+#[cfg(target_os = "ios")]
+tauri::ios_plugin_binding!(init_plugin_shell);
+
 type ChildStore = Arc<Mutex<HashMap<u32, CommandChild>>>;
 
+/// Access to the shell APIs.
+///
+/// Get an instance of this type with [`ShellExt::shell`].
 pub struct Shell<R: Runtime> {
     #[allow(dead_code)]
     app: AppHandle<R>,
-    scope: Scope,
+    #[cfg(mobile)]
+    mobile_plugin_handle: PluginHandle<R>,
+    open_scope: scope::OpenScope,
     children: ChildStore,
 }
 
@@ -61,13 +74,42 @@ impl<R: Runtime> Shell<R> {
 
     /// Open a (url) path with a default or specific browser opening program.
     ///
-    /// See [`crate::api::shell::open`] for how it handles security-related measures.
+    /// See [`crate::open::open`] for how it handles security-related measures.
+    #[cfg(desktop)]
+    #[deprecated(since = "2.1.0", note = "Use tauri-plugin-opener instead.")]
+    #[allow(deprecated)]
     pub fn open(&self, path: impl Into<String>, with: Option<open::Program>) -> Result<()> {
-        open::open(&self.scope, path.into(), with).map_err(Into::into)
+        open::open(None, path.into(), with)
+    }
+
+    /// Open a (url) path with a default or specific browser opening program.
+    ///
+    /// See [`crate::open::open`] for how it handles security-related measures.
+    #[cfg(mobile)]
+    #[deprecated(since = "2.1.0", note = "Use tauri-plugin-opener instead.")]
+    #[allow(deprecated)]
+    pub fn open(&self, path: impl Into<String>, _with: Option<open::Program>) -> Result<()> {
+        self.mobile_plugin_handle
+            .run_mobile_plugin("open", path.into())
+            .map_err(Into::into)
     }
 }
 
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`],
+/// [`tauri::Webview`] and [`tauri::Window`] to access the shell APIs.
 pub trait ShellExt<R: Runtime> {
+    /// Gets the shell APIs.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use tauri_plugin_shell::ShellExt;
+    ///
+    /// async fn run_echo<R: tauri::Runtime>(app: &tauri::AppHandle<R>) {
+    ///     let output = app.shell().command("echo").args(["hello"]).output().await.unwrap();
+    ///     println!("{}", String::from_utf8_lossy(&output.stdout));
+    /// }
+    /// ```
     fn shell(&self) -> &Shell<R>;
 }
 
@@ -77,25 +119,44 @@ impl<R: Runtime, T: Manager<R>> ShellExt<R> for T {
     }
 }
 
-pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
-    let mut init_script = include_str!("init.js").to_string();
-    init_script.push_str(include_str!("api-iife.js"));
-
-    Builder::<R, Option<Config>>::new("shell")
-        .js_init_script(init_script)
+/// Initializes the shell plugin.
+///
+/// The plugin state can be accessed with [`ShellExt::shell`],
+/// and all spawned child processes are killed when the application exits.
+///
+/// # Examples
+///
+/// ```no_run
+/// fn setup<R: tauri::Runtime>(builder: tauri::Builder<R>) -> tauri::Builder<R> {
+///     builder.plugin(tauri_plugin_shell::init())
+/// }
+/// ```
+pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
+    Builder::<R, Option<config::Config>>::new("shell")
+        .js_init_script(include_str!("init-iife.js").to_string())
         .invoke_handler(tauri::generate_handler![
             commands::execute,
+            commands::spawn,
             commands::stdin_write,
             commands::kill,
             commands::open
         ])
         .setup(|app, api| {
-            let default_config = Config::default();
+            let default_config = config::Config::default();
             let config = api.config().as_ref().unwrap_or(&default_config);
+
+            #[cfg(target_os = "android")]
+            let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "ShellPlugin")?;
+            #[cfg(target_os = "ios")]
+            let handle = api.register_ios_plugin(init_plugin_shell)?;
+
             app.manage(Shell {
                 app: app.clone(),
                 children: Default::default(),
-                scope: Scope::new(app, shell_scope(config.scope.clone(), &config.open)),
+                open_scope: open_scope(&config.open),
+
+                #[cfg(mobile)]
+                mobile_plugin_handle: handle,
             });
             Ok(())
         })
@@ -114,56 +175,22 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
         .build()
 }
 
-fn shell_scope(scope: ShellAllowlistScope, open: &ShellAllowlistOpen) -> ScopeConfig {
-    let shell_scopes = get_allowed_clis(scope);
-
+fn open_scope(open: &config::ShellAllowlistOpen) -> scope::OpenScope {
     let shell_scope_open = match open {
-        ShellAllowlistOpen::Flag(false) => None,
-        ShellAllowlistOpen::Flag(true) => {
-            Some(Regex::new(r#"^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+"#).unwrap())
+        config::ShellAllowlistOpen::Flag(false) => None,
+        // we want to add a basic regex validation even if the config is not set
+        config::ShellAllowlistOpen::Unset | config::ShellAllowlistOpen::Flag(true) => {
+            Some(Regex::new(r"^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+").unwrap())
         }
-        ShellAllowlistOpen::Validate(validator) => {
+        config::ShellAllowlistOpen::Validate(validator) => {
+            let regex = format!("^{validator}$");
             let validator =
-                Regex::new(validator).unwrap_or_else(|e| panic!("invalid regex {validator}: {e}"));
+                Regex::new(&regex).unwrap_or_else(|e| panic!("invalid regex {regex}: {e}"));
             Some(validator)
         }
     };
 
-    ScopeConfig {
+    scope::OpenScope {
         open: shell_scope_open,
-        scopes: shell_scopes,
     }
-}
-
-fn get_allowed_clis(scope: ShellAllowlistScope) -> HashMap<String, ScopeAllowedCommand> {
-    scope
-        .0
-        .into_iter()
-        .map(|scope| {
-            let args = match scope.args {
-                ShellAllowedArgs::Flag(true) => None,
-                ShellAllowedArgs::Flag(false) => Some(Vec::new()),
-                ShellAllowedArgs::List(list) => {
-                    let list = list.into_iter().map(|arg| match arg {
-                        ShellAllowedArg::Fixed(fixed) => scope::ScopeAllowedArg::Fixed(fixed),
-                        ShellAllowedArg::Var { validator } => {
-                            let validator = Regex::new(&validator)
-                                .unwrap_or_else(|e| panic!("invalid regex {validator}: {e}"));
-                            scope::ScopeAllowedArg::Var { validator }
-                        }
-                    });
-                    Some(list.collect())
-                }
-            };
-
-            (
-                scope.name,
-                ScopeAllowedCommand {
-                    command: scope.command,
-                    args,
-                    sidecar: scope.sidecar,
-                },
-            )
-        })
-        .collect()
 }

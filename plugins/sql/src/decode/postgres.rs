@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use rust_decimal::prelude::ToPrimitive;
 use serde_json::Value as JsonValue;
-use sqlx::{postgres::PgValueRef, TypeInfo, Value, ValueRef};
+use sqlx::{TypeInfo, Value, ValueRef, postgres::PgValueRef};
 use time::{Date, OffsetDateTime, PrimitiveDateTime, Time};
+use uuid::Uuid;
 
 use crate::Error;
 
@@ -21,14 +23,42 @@ pub(crate) fn to_json(v: PgValueRef) -> Result<JsonValue, Error> {
                 JsonValue::Null
             }
         }
-        "FLOAT4" | "FLOAT8" => {
+        "UUID" => {
+            if let Ok(v) = ValueRef::to_owned(&v).try_decode::<Uuid>() {
+                JsonValue::String(v.to_string())
+            } else {
+                JsonValue::Null
+            }
+        }
+        "FLOAT4" => {
+            if let Ok(v) = ValueRef::to_owned(&v).try_decode::<f32>() {
+                JsonValue::from(v)
+            } else {
+                JsonValue::Null
+            }
+        }
+        "FLOAT8" => {
             if let Ok(v) = ValueRef::to_owned(&v).try_decode::<f64>() {
                 JsonValue::from(v)
             } else {
                 JsonValue::Null
             }
         }
-        "INT2" | "INT4" | "INT8" => {
+        "INT2" => {
+            if let Ok(v) = ValueRef::to_owned(&v).try_decode::<i16>() {
+                JsonValue::Number(v.into())
+            } else {
+                JsonValue::Null
+            }
+        }
+        "INT4" => {
+            if let Ok(v) = ValueRef::to_owned(&v).try_decode::<i32>() {
+                JsonValue::Number(v.into())
+            } else {
+                JsonValue::Null
+            }
+        }
+        "INT8" => {
             if let Ok(v) = ValueRef::to_owned(&v).try_decode::<i64>() {
                 JsonValue::Number(v.into())
             } else {
@@ -78,8 +108,28 @@ pub(crate) fn to_json(v: PgValueRef) -> Result<JsonValue, Error> {
                 JsonValue::Null
             }
         }
+        "NUMERIC" => {
+            if let Ok(v) = ValueRef::to_owned(&v).try_decode::<rust_decimal::Decimal>() {
+                if let Some(n) = v.to_f64().and_then(serde_json::Number::from_f64) {
+                    JsonValue::Number(n)
+                } else {
+                    JsonValue::String(v.to_string())
+                }
+            } else {
+                JsonValue::Null
+            }
+        }
         "VOID" => JsonValue::Null,
-        _ => return Err(Error::UnsupportedDatatype(v.type_info().name().to_string())),
+        // Handle custom types (enums, domains, etc.) by trying to decode as string
+        _ => {
+            let type_name = v.type_info().name().to_string();
+            if let Ok(v) = ValueRef::to_owned(&v).try_decode_unchecked::<String>() {
+                log::warn!("unsupported type {type_name} decoded as string");
+                JsonValue::String(v)
+            } else {
+                return Err(Error::UnsupportedDatatype(v.type_info().name().to_string()));
+            }
+        }
     };
 
     Ok(res)

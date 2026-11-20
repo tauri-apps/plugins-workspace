@@ -1,14 +1,14 @@
 <script>
-  import { getMatches } from "@tauri-apps/plugin-cli";
+  import { getMatches } from '@tauri-apps/plugin-cli'
 
-  export let onMessage;
+  export let onMessage
 
   function cliMatches() {
-    getMatches().then(onMessage).catch(onMessage);
+    getMatches().then(onMessage).catch(onMessage)
   }
 </script>
 
-<p>
+<div>
   This binary can be run from the terminal and takes the following arguments:
   <code class="code-block flex flex-wrap my-2">
     <pre>
@@ -17,7 +17,7 @@
   --verbose</pre>
   </code>
   Additionally, it has a <code>update --background</code> subcommand.
-</p>
+</div>
 <br />
 <div class="note">
   Note that the arguments are only parsed, not implemented.

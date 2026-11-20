@@ -3,14 +3,18 @@
 // SPDX-License-Identifier: MIT
 
 use serde::{Serialize, Serializer};
-use std::path::PathBuf;
+
+/// Alias for a [`Result`](std::result::Result) with the error type [`Error`].
+pub type Result<T> = std::result::Result<T, Error>;
 
 /// The error types.
 #[derive(thiserror::Error, Debug)]
 #[non_exhaustive]
 pub enum Error {
+    /// The store contents could not be serialized by the configured [`SerializeFn`](crate::SerializeFn).
     #[error("Failed to serialize store. {0}")]
     Serialize(Box<dyn std::error::Error + Send + Sync>),
+    /// The store contents could not be deserialized by the configured [`DeserializeFn`](crate::DeserializeFn).
     #[error("Failed to deserialize store. {0}")]
     Deserialize(Box<dyn std::error::Error + Send + Sync>),
     /// JSON error.
@@ -19,9 +23,15 @@ pub enum Error {
     /// IO error.
     #[error(transparent)]
     Io(#[from] std::io::Error),
-    /// Store not found
-    #[error("Store \"{0}\" not found")]
-    NotFound(PathBuf),
+    // /// Store already exists
+    // #[error("Store at \"{0}\" already exists")]
+    // AlreadyExists(PathBuf),
+    /// Serialize function not found
+    #[error("Serialize Function \"{0}\" not found")]
+    SerializeFunctionNotFound(String),
+    /// Deserialize function not found
+    #[error("Deserialize Function \"{0}\" not found")]
+    DeserializeFunctionNotFound(String),
     /// Some Tauri API failed
     #[error(transparent)]
     Tauri(#[from] tauri::Error),

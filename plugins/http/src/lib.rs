@@ -2,93 +2,187 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/http/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/http)
-//!
 //! Access the HTTP client written in Rust.
-
-use std::sync::atomic::AtomicU32;
-use std::{collections::HashMap, future::Future, pin::Pin};
+//!
+//! ## Cargo features
+//!
+//! ### Reqwest feature forwards
+//!
+//! These features forwards [`reqwest`](https://docs.rs/reqwest/0.12.28/reqwest/index.html) features:
+//!
+//! - **http2** *(enabled by default)*: Enables HTTP/2 support.
+//! - **native-tls**: Enables TLS functionality provided by native-tls.
+//! - **native-tls-vendored**: Enables the vendored feature of native-tls.
+//! - **native-tls-alpn**: Enables the alpn feature of native-tls.
+//! - **rustls-tls** *(enabled by default)*: Enables TLS functionality provided by rustls. Equivalent to
+//!   rustls-tls-webpki-roots.
+//! - **rustls-tls-manual-roots**: Enables TLS functionality provided by rustls, without setting any root
+//!   certificates. Roots have to be specified manually.
+//! - **rustls-tls-webpki-roots**: Enables TLS functionality provided by rustls, while using root certificates
+//!   from the webpki-roots crate.
+//! - **rustls-tls-native-roots**: Enables TLS functionality provided by rustls, while using root certificates
+//!   from the rustls-native-certs crate.
+//! - **blocking**: Provides the [blocking](https://docs.rs/reqwest/0.12.28/reqwest/blocking/index.html) client API.
+//! - **charset** *(enabled by default)*: Improved support for decoding text.
+//! - **cookies** *(enabled by default)*: Provides cookie session support.
+//! - **gzip**: Provides response body gzip decompression.
+//! - **brotli**: Provides response body brotli decompression.
+//! - **zstd**: Provides response body zstd decompression.
+//! - **deflate**: Provides response body deflate decompression.
+//! - **json**: Provides serialization and deserialization for JSON bodies.
+//! - **multipart**: Provides functionality for multipart forms.
+//! - **stream**: Adds support for futures::Stream.
+//! - **socks**: Provides SOCKS5 proxy support.
+//! - **trust-dns**: Enables a trust-dns/Hickory DNS async resolver instead of the default threadpool using
+//!   getaddrinfo.
+//! - **macos-system-configuration** *(deprecated, use `system-proxy` instead)*: Use Windows and macOS system proxy settings automatically.
+//! - **system-proxy** *(enabled by default)*: Use Windows and macOS system proxy settings automatically.
+//!
+//! ### tauri-plugin-http features
+//!
+//! - **tracing**: Adds request, response, and cookie-store diagnostics through `tracing`.
+//! - **unsafe-headers**: Allows webview requests to send any headers.
+//! - **dangerous-settings**: Allows dangerous client settings such as accepting invalid certificates or hostnames.
+//!
+//! ## Configuration
+//!
+//! See [`Config`] for the options that can be set on the `plugins > http` object of your
+//! `tauri.conf.json`:
+//!
+//! ```json
+//! {
+//!   "plugins": {
+//!     "http": {
+//!       "scopeRedirects": true
+//!     }
+//!   }
+//! }
+//! ```
 
 pub use reqwest;
-use reqwest::Response;
-use tauri::async_runtime::Mutex;
 use tauri::{
+    Manager, Runtime,
     plugin::{Builder, TauriPlugin},
-    AppHandle, Manager, Runtime,
 };
 
-use crate::config::{Config, HttpAllowlistScope};
+pub use config::Config;
 pub use error::{Error, Result};
 
 mod commands;
 mod config;
 mod error;
+#[cfg(feature = "cookies")]
+mod reqwest_cookie_store;
 mod scope;
 
-type RequestId = u32;
-type CancelableResponseResult = Result<Result<reqwest::Response>>;
-type CancelableResponseFuture =
-    Pin<Box<dyn Future<Output = CancelableResponseResult> + Send + Sync>>;
-type RequestTable = HashMap<RequestId, FetchRequest>;
-type ResponseTable = HashMap<RequestId, Response>;
+#[cfg(feature = "cookies")]
+const COOKIES_FILENAME: &str = ".cookies";
 
-struct FetchRequest(Mutex<CancelableResponseFuture>);
-impl FetchRequest {
-    fn new(f: CancelableResponseFuture) -> Self {
-        Self(Mutex::new(f))
-    }
+pub(crate) struct Http {
+    pub(crate) config: Config,
+    /// Each webview's current page token rid, by webview label.
+    pub(crate) pages: std::sync::Mutex<std::collections::HashMap<String, tauri::ResourceId>>,
+    #[cfg(feature = "cookies")]
+    cookies_jar: std::sync::Arc<crate::reqwest_cookie_store::CookieStoreMutex>,
 }
 
-struct Http<R: Runtime> {
-    #[allow(dead_code)]
-    app: AppHandle<R>,
-    scope: scope::Scope,
-    current_id: AtomicU32,
-    requests: Mutex<RequestTable>,
-    responses: Mutex<ResponseTable>,
-}
-
-impl<R: Runtime> Http<R> {
-    fn next_id(&self) -> RequestId {
-        self.current_id
-            .fetch_add(1, std::sync::atomic::Ordering::Relaxed)
-    }
-}
-
-trait HttpExt<R: Runtime> {
-    fn http(&self) -> &Http<R>;
-}
-
-impl<R: Runtime, T: Manager<R>> HttpExt<R> for T {
-    fn http(&self) -> &Http<R> {
-        self.state::<Http<R>>().inner()
-    }
-}
-
+/// Initializes the plugin.
+///
+/// The plugin reads its [`Config`] from the `plugins > http` object of the `tauri.conf.json` file;
+/// when that object is missing, [`Config::default`] is used.
+///
+/// With the `cookies` Cargo feature (enabled by default), a cookie jar is loaded from a `.cookies`
+/// file in the application cache directory on setup and written back to it when the application
+/// exits. A jar that cannot be read is replaced by an empty one.
+///
+/// Register it on the Tauri builder with `.plugin(tauri_plugin_http::init())`.
 pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
     Builder::<R, Option<Config>>::new("http")
-        .js_init_script(include_str!("api-iife.js").to_string())
+        .setup(|app, api| {
+            #[cfg(feature = "cookies")]
+            let cookies_jar = {
+                use crate::reqwest_cookie_store::*;
+                use std::fs::File;
+                use std::io::BufReader;
+
+                let cache_dir = app.path().app_cache_dir()?;
+                std::fs::create_dir_all(&cache_dir)?;
+
+                let path = cache_dir.join(COOKIES_FILENAME);
+                let file = File::options()
+                    .create(true)
+                    .append(true)
+                    .read(true)
+                    .open(&path)?;
+
+                let reader = BufReader::new(file);
+                CookieStoreMutex::load(path.clone(), reader).unwrap_or_else(|_e| {
+                    #[cfg(feature = "tracing")]
+                    tracing::warn!(
+                        "failed to load cookie store: {_e}, falling back to empty store"
+                    );
+                    CookieStoreMutex::new(path, Default::default())
+                })
+            };
+
+            let state = Http {
+                config: api.config().clone().unwrap_or_default(),
+                pages: Default::default(),
+                #[cfg(feature = "cookies")]
+                cookies_jar: std::sync::Arc::new(cookies_jar),
+            };
+
+            app.manage(state);
+
+            Ok(())
+        })
+        .on_event(|app, event| {
+            #[cfg(feature = "cookies")]
+            if let tauri::RunEvent::Exit = event {
+                let state = app.state::<Http>();
+
+                match state.cookies_jar.request_save() {
+                    Ok(rx) => {
+                        let _ = rx.recv();
+                    }
+                    Err(_e) => {
+                        #[cfg(feature = "tracing")]
+                        tracing::error!("failed to save cookie jar: {_e}");
+                    }
+                }
+            }
+        })
+        // Cancel a webview's requests and response bodies when its window is destroyed.
+        // This listens on each window instead of using the plugin's `on_event`:
+        // by the time `on_event` sees `WindowEvent::Destroyed`, Tauri has already
+        // removed the window and its webviews from the app, so their resource tables
+        // can no longer be looked up. The listener keeps the webview it was registered
+        // for, so it also cancels on the right table if the label is reused later.
+        //
+        // TODO: Also cancel on webview close (a webview closed on its own in a
+        // multiwebview window) once Tauri provides a plugin lifecycle hook for it.
+        .on_webview_ready(|webview| {
+            let webview_ = webview.clone();
+            webview.window().on_window_event(move |event| {
+                if matches!(event, tauri::WindowEvent::Destroyed) {
+                    commands::cancel_all_requests(&webview_);
+                    if let Some(state) = webview_.try_state::<Http>() {
+                        state.pages.lock().unwrap().remove(webview_.label());
+                    }
+                }
+            });
+        })
+        .on_page_load(|webview, payload| {
+            if matches!(payload.event(), tauri::webview::PageLoadEvent::Started) {
+                commands::cancel_all_requests(webview);
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             commands::fetch,
             commands::fetch_cancel,
             commands::fetch_send,
             commands::fetch_read_body,
+            commands::fetch_cancel_body,
         ])
-        .setup(|app, api| {
-            let default_scope = HttpAllowlistScope::default();
-            app.manage(Http {
-                app: app.clone(),
-                current_id: 0.into(),
-                requests: Default::default(),
-                responses: Default::default(),
-                scope: scope::Scope::new(
-                    api.config()
-                        .as_ref()
-                        .map(|c| &c.scope)
-                        .unwrap_or(&default_scope),
-                ),
-            });
-            Ok(())
-        })
         .build()
 }

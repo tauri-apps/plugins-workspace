@@ -2,33 +2,54 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/websocket/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/websocket)
+//! Open a WebSocket connection using a Rust client in JS.
 //!
-//! Expose a WebSocket server to your Tauri frontend.
+//! ## Cargo features
+//!
+//! - **rustls-tls** *(enabled by default)*: Enables TLS functionality provided by `rustls` with WebPKI roots.
+//! - **rustls-tls-native-roots**: Enables TLS functionality provided by `rustls` with the platform's native certificate roots.
+//! - **native-tls**: Enables TLS functionality provided by `native-tls`.
+//! - **native-tls-vendored**: Enables the `vendored` feature of `native-tls`.
+//!
+//! At least one TLS feature is required for `wss://`; plain `ws://` works without one.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-use futures_util::{stream::SplitSink, SinkExt, StreamExt};
-use serde::{ser::Serializer, Deserialize, Serialize};
+use futures_util::{SinkExt, StreamExt, stream::SplitSink};
+use http::header::{HeaderName, HeaderValue};
+use serde::{Deserialize, Serialize, ser::Serializer};
 use tauri::{
+    Manager, Runtime, State, Window,
     ipc::Channel,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    Manager, Runtime, State, Window,
 };
 use tokio::{net::TcpStream, sync::Mutex};
+#[cfg(any(
+    feature = "rustls-tls",
+    feature = "rustls-tls-native-roots",
+    feature = "native-tls"
+))]
+use tokio_tungstenite::connect_async_tls_with_config;
+#[cfg(not(any(
+    feature = "rustls-tls",
+    feature = "rustls-tls-native-roots",
+    feature = "native-tls"
+)))]
+use tokio_tungstenite::connect_async_with_config;
 use tokio_tungstenite::{
-    connect_async_with_config,
+    Connector, MaybeTlsStream, WebSocketStream,
     tungstenite::{
-        protocol::{CloseFrame as ProtocolCloseFrame, WebSocketConfig},
         Message,
+        client::IntoClientRequest,
+        protocol::{CloseFrame as ProtocolCloseFrame, WebSocketConfig},
     },
-    MaybeTlsStream, WebSocketStream,
 };
 
 use std::collections::HashMap;
+use std::str::FromStr;
 
 type Id = u32;
 type WebSocket = WebSocketStream<MaybeTlsStream<TcpStream>>;
@@ -41,6 +62,10 @@ enum Error {
     Websocket(#[from] tokio_tungstenite::tungstenite::Error),
     #[error("connection not found for the given id: {0}")]
     ConnectionNotFound(Id),
+    #[error(transparent)]
+    InvalidHeaderValue(#[from] tokio_tungstenite::tungstenite::http::header::InvalidHeaderValue),
+    #[error(transparent)]
+    InvalidHeaderName(#[from] tokio_tungstenite::tungstenite::http::header::InvalidHeaderName),
 }
 
 impl Serialize for Error {
@@ -55,23 +80,67 @@ impl Serialize for Error {
 #[derive(Default)]
 struct ConnectionManager(Mutex<HashMap<Id, WebSocketWriter>>);
 
-#[derive(Default, Deserialize)]
+#[cfg(any(
+    feature = "rustls-tls",
+    feature = "rustls-tls-native-roots",
+    feature = "native-tls"
+))]
+struct TlsConnector(Mutex<Option<Connector>>);
+
+#[derive(Deserialize)]
+#[serde(untagged, rename_all = "camelCase")]
+enum Max {
+    None,
+    Number(usize),
+}
+
+#[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ConnectionConfig {
-    pub max_send_queue: Option<usize>,
-    pub max_message_size: Option<usize>,
-    pub max_frame_size: Option<usize>,
+pub(crate) struct ConnectionConfig {
+    pub read_buffer_size: Option<usize>,
+    pub write_buffer_size: Option<usize>,
+    pub max_write_buffer_size: Option<usize>,
+    pub max_message_size: Option<Max>,
+    pub max_frame_size: Option<Max>,
+    #[serde(default)]
     pub accept_unmasked_frames: bool,
+    pub headers: Option<Vec<(String, String)>>,
 }
 
 impl From<ConnectionConfig> for WebSocketConfig {
     fn from(config: ConnectionConfig) -> Self {
-        Self {
-            max_send_queue: config.max_send_queue,
-            max_message_size: config.max_message_size,
-            max_frame_size: config.max_frame_size,
-            accept_unmasked_frames: config.accept_unmasked_frames,
+        let mut builder =
+            WebSocketConfig::default().accept_unmasked_frames(config.accept_unmasked_frames);
+
+        if let Some(read_buffer_size) = config.read_buffer_size {
+            builder = builder.read_buffer_size(read_buffer_size)
         }
+
+        if let Some(write_buffer_size) = config.write_buffer_size {
+            builder = builder.write_buffer_size(write_buffer_size)
+        }
+
+        if let Some(max_write_buffer_size) = config.max_write_buffer_size {
+            builder = builder.max_write_buffer_size(max_write_buffer_size)
+        }
+
+        if let Some(max_message_size) = config.max_message_size {
+            let max_size = match max_message_size {
+                Max::None => Option::None,
+                Max::Number(n) => Some(n),
+            };
+            builder = builder.max_message_size(max_size);
+        }
+
+        if let Some(max_frame_size) = config.max_frame_size {
+            let max_size = match max_frame_size {
+                Max::None => Option::None,
+                Max::Number(n) => Some(n),
+            };
+            builder = builder.max_frame_size(max_size);
+        }
+
+        builder
     }
 }
 
@@ -95,11 +164,44 @@ enum WebSocketMessage {
 async fn connect<R: Runtime>(
     window: Window<R>,
     url: String,
-    on_message: Channel,
+    on_message: Channel<serde_json::Value>,
     config: Option<ConnectionConfig>,
 ) -> Result<Id> {
     let id = rand::random();
-    let (ws_stream, _) = connect_async_with_config(url, config.map(Into::into), false).await?;
+    let mut request = url.into_client_request()?;
+
+    if let Some(headers) = config.as_ref().and_then(|c| c.headers.as_ref()) {
+        for (k, v) in headers {
+            let header_name = HeaderName::from_str(k.as_str())?;
+            let header_value = HeaderValue::from_str(v.as_str())?;
+            request.headers_mut().insert(header_name, header_value);
+        }
+    }
+
+    #[cfg(any(
+        feature = "rustls-tls",
+        feature = "rustls-tls-native-roots",
+        feature = "native-tls"
+    ))]
+    let tls_connector = match window.try_state::<TlsConnector>() {
+        Some(tls_connector) => tls_connector.0.lock().await.clone(),
+        None => None,
+    };
+
+    #[cfg(any(
+        feature = "rustls-tls",
+        feature = "rustls-tls-native-roots",
+        feature = "native-tls"
+    ))]
+    let (ws_stream, _) =
+        connect_async_tls_with_config(request, config.map(Into::into), false, tls_connector)
+            .await?;
+    #[cfg(not(any(
+        feature = "rustls-tls",
+        feature = "rustls-tls-native-roots",
+        feature = "native-tls"
+    )))]
+    let (ws_stream, _) = connect_async_with_config(request, config.map(Into::into), false).await?;
 
     tauri::async_runtime::spawn(async move {
         let (write, read) = ws_stream.split();
@@ -116,21 +218,21 @@ async fn connect<R: Runtime>(
 
                 let response = match message {
                     Ok(Message::Text(t)) => {
-                        serde_json::to_value(WebSocketMessage::Text(t)).unwrap()
+                        serde_json::to_value(WebSocketMessage::Text(t.to_string())).unwrap()
                     }
                     Ok(Message::Binary(t)) => {
-                        serde_json::to_value(WebSocketMessage::Binary(t)).unwrap()
+                        serde_json::to_value(WebSocketMessage::Binary(t.to_vec())).unwrap()
                     }
                     Ok(Message::Ping(t)) => {
-                        serde_json::to_value(WebSocketMessage::Ping(t)).unwrap()
+                        serde_json::to_value(WebSocketMessage::Ping(t.to_vec())).unwrap()
                     }
                     Ok(Message::Pong(t)) => {
-                        serde_json::to_value(WebSocketMessage::Pong(t)).unwrap()
+                        serde_json::to_value(WebSocketMessage::Pong(t.to_vec())).unwrap()
                     }
                     Ok(Message::Close(t)) => {
                         serde_json::to_value(WebSocketMessage::Close(t.map(|v| CloseFrame {
                             code: v.code.into(),
-                            reason: v.reason.into_owned(),
+                            reason: v.reason.to_string(),
                         })))
                         .unwrap()
                     }
@@ -156,13 +258,13 @@ async fn send(
     if let Some(write) = manager.0.lock().await.get_mut(&id) {
         write
             .send(match message {
-                WebSocketMessage::Text(t) => Message::Text(t),
-                WebSocketMessage::Binary(t) => Message::Binary(t),
-                WebSocketMessage::Ping(t) => Message::Ping(t),
-                WebSocketMessage::Pong(t) => Message::Pong(t),
+                WebSocketMessage::Text(t) => Message::Text(t.into()),
+                WebSocketMessage::Binary(t) => Message::Binary(t.into()),
+                WebSocketMessage::Ping(t) => Message::Ping(t.into()),
+                WebSocketMessage::Pong(t) => Message::Pong(t.into()),
                 WebSocketMessage::Close(t) => Message::Close(t.map(|v| ProtocolCloseFrame {
                     code: v.code.into(),
-                    reason: std::borrow::Cow::Owned(v.reason),
+                    reason: v.reason.into(),
                 })),
             })
             .await?;
@@ -172,13 +274,58 @@ async fn send(
     }
 }
 
+/// Initializes the plugin with the default [`Builder`], i.e. without a custom TLS [`Connector`].
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    PluginBuilder::new("websocket")
-        .js_init_script(include_str!("api-iife.js").to_string())
-        .invoke_handler(tauri::generate_handler![connect, send])
-        .setup(|app, _api| {
-            app.manage(ConnectionManager::default());
-            Ok(())
-        })
-        .build()
+    Builder::default().build()
+}
+
+/// Builder for the WebSocket plugin, used to configure a custom TLS [`Connector`] before calling [`Builder::build`].
+#[derive(Default)]
+pub struct Builder {
+    tls_connector: Option<Connector>,
+}
+
+impl Builder {
+    /// Creates a new [`Builder`] with no custom TLS [`Connector`] configured.
+    pub fn new() -> Self {
+        Self {
+            tls_connector: None,
+        }
+    }
+
+    /// Sets the TLS [`Connector`] used to establish `wss://` connections.
+    ///
+    /// When this is not called (or is called with [`Connector::Plain`]) and a `rustls-tls` or
+    /// `rustls-tls-native-roots` feature is enabled, [`Builder::build`] installs `rustls`'s `ring`
+    /// crypto provider as the process default if none is installed yet.
+    pub fn tls_connector(mut self, connector: Connector) -> Self {
+        self.tls_connector.replace(connector);
+        self
+    }
+
+    /// Builds the plugin, registering the `connect` and `send` commands and the shared connection state.
+    pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
+        PluginBuilder::new("websocket")
+            .invoke_handler(tauri::generate_handler![connect, send])
+            .setup(|app, _api| {
+                #[cfg(any(feature = "rustls-tls", feature = "rustls-tls-native-roots"))]
+                if (self.tls_connector.is_none()
+                    || matches!(self.tls_connector, Some(Connector::Plain)))
+                    && rustls::crypto::CryptoProvider::get_default().is_none()
+                {
+                    // This can only fail if there is already a default provider which we checked for already.
+                    let _ = rustls::crypto::ring::default_provider().install_default();
+                }
+
+                app.manage(ConnectionManager::default());
+                #[cfg(any(
+                    feature = "rustls-tls",
+                    feature = "rustls-tls-native-roots",
+                    feature = "native-tls"
+                ))]
+                app.manage(TlsConnector(Mutex::new(self.tls_connector)));
+                Ok(())
+            })
+            .build()
+    }
 }

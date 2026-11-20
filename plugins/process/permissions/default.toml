@@ -1,0 +1,14 @@
+"$schema" = "schemas/schema.json"
+
+[default]
+description = """
+This permission set configures which
+process features are by default exposed.
+
+#### Granted Permissions
+
+This enables to quit via `allow-exit` and restart via `allow-restart`
+the application.
+"""
+
+permissions = ["allow-exit", "allow-restart"]

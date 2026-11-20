@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-//! [![](https://github.com/tauri-apps/plugins-workspace/raw/v2/plugins/os/banner.png)](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/os)
-//!
 //! Read information about the operating system.
 
 #![doc(
@@ -14,10 +12,10 @@
 use std::fmt::Display;
 
 pub use os_info::Version;
-use serialize_to_javascript::{default_template, DefaultTemplate, Template};
+use serialize_to_javascript::{DefaultTemplate, Template, default_template};
 use tauri::{
-    plugin::{Builder, TauriPlugin},
     Runtime,
+    plugin::{Builder, TauriPlugin},
 };
 
 mod commands;
@@ -25,11 +23,17 @@ mod error;
 
 pub use error::Error;
 
+/// The type of the current operating system, as returned by [`type_`].
 pub enum OsType {
+    /// Linux and Linux-based systems such as FreeBSD, DragonFly BSD, NetBSD and OpenBSD.
     Linux,
+    /// Windows.
     Windows,
+    /// macOS.
     Macos,
+    /// iOS.
     IOS,
+    /// Android.
     Android,
 }
 
@@ -90,7 +94,7 @@ pub fn exe_extension() -> &'static str {
     std::env::consts::EXE_EXTENSION
 }
 
-/// Returns the current operating system locale with the `BCP-47` language tag. If the locale couldn’t be obtained, `None` is returned instead.
+/// Returns the current operating system locale with the `BCP-47` language tag. If the locale couldn't be obtained, `None` is returned instead.
 pub fn locale() -> Option<String> {
     sys_locale::get_locale()
 }
@@ -102,33 +106,43 @@ pub fn hostname() -> String {
 
 #[derive(Template)]
 #[default_template("./init.js")]
-struct InitJavascript {
-    #[raw]
-    global_os_api: &'static str,
+struct InitJavascript<'a> {
     eol: &'static str,
+    os_type: String,
+    platform: &'a str,
+    family: &'a str,
+    version: String,
+    arch: &'a str,
+    exe_extension: &'a str,
 }
 
-pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    let init_js = InitJavascript {
-        global_os_api: include_str!("api-iife.js"),
-        #[cfg(windows)]
-        eol: "\r\n",
-        #[cfg(not(windows))]
-        eol: "\n",
+impl InitJavascript<'_> {
+    fn new() -> Self {
+        Self {
+            #[cfg(windows)]
+            eol: "\r\n",
+            #[cfg(not(windows))]
+            eol: "\n",
+            os_type: crate::type_().to_string(),
+            platform: crate::platform(),
+            family: crate::family(),
+            version: crate::version().to_string(),
+            arch: crate::arch(),
+            exe_extension: crate::exe_extension(),
+        }
     }
-    .render_default(&Default::default())
-    // this will never fail with the above global_os_api eol values
-    .unwrap();
+}
+
+/// Initializes the plugin.
+pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    let init_js = InitJavascript::new()
+        .render_default(&Default::default())
+        // this will never fail with the above global_os_api values
+        .unwrap();
 
     Builder::new("os")
         .js_init_script(init_js.to_string())
         .invoke_handler(tauri::generate_handler![
-            commands::platform,
-            commands::version,
-            commands::os_type,
-            commands::family,
-            commands::arch,
-            commands::exe_extension,
             commands::locale,
             commands::hostname
         ])

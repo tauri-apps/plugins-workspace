@@ -1,0 +1,82 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+# Scopes Section
+# This section contains scopes, which define file level access
+
+[[permission]]
+identifier = "scope-public-recursive"
+description = "This scope permits recursive access to the complete `$PUBLIC` folder, including sub directories and files."
+
+[[permission.scope.allow]]
+path = "$PUBLIC"
+[[permission.scope.allow]]
+path = "$PUBLIC/**"
+
+[[permission]]
+identifier = "scope-public"
+description = "This scope permits access to all files and list content of top level directories in the `$PUBLIC` folder."
+
+[[permission.scope.allow]]
+path = "$PUBLIC"
+[[permission.scope.allow]]
+path = "$PUBLIC/*"
+
+[[permission]]
+identifier = "scope-public-index"
+description = "This scope permits to list all files and folders in the `$PUBLIC`folder."
+
+[[permission.scope.allow]]
+path = "$PUBLIC"
+
+# Sets Section
+# This section combines the scope elements with enablement of commands
+
+[[set]]
+identifier = "allow-public-read-recursive"
+description = "This allows full recursive read access to the complete `$PUBLIC` folder, files and subdirectories."
+permissions = [
+    "read-all",
+    "scope-public-recursive"
+]
+
+[[set]]
+identifier = "allow-public-write-recursive"
+description = "This allows full recursive write access to the complete `$PUBLIC` folder, files and subdirectories."
+permissions = [
+    "write-all",
+    "scope-public-recursive"
+]
+
+[[set]]
+identifier = "allow-public-read"
+description = "This allows non-recursive read access to the `$PUBLIC` folder."
+permissions = [
+    "read-all",
+    "scope-public"
+]
+
+[[set]]
+identifier = "allow-public-write"
+description = "This allows non-recursive write access to the `$PUBLIC` folder."
+permissions = [
+    "write-all",
+    "scope-public"
+]
+
+[[set]]
+identifier = "allow-public-meta-recursive"
+description = "This allows full recursive read access to metadata of the `$PUBLIC` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-public-recursive"
+]
+
+[[set]]
+identifier = "allow-public-meta"
+description = "This allows non-recursive read access to metadata of the `$PUBLIC` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-public-index"
+]

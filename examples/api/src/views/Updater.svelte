@@ -1,67 +1,79 @@
-<script>
-  import { check } from "@tauri-apps/plugin-updater";
-  import { relaunch } from "@tauri-apps/plugin-process";
+<script lang="ts">
+  import { check, Update } from '@tauri-apps/plugin-updater'
+  import { relaunch } from '@tauri-apps/plugin-process'
+  import { onDestroy } from 'svelte'
 
-  export let onMessage;
+  let { onMessage } = $props()
 
-  let isChecking, isInstalling, newUpdate;
-  let totalSize = 0,
-    downloadedSize = 0;
+  let isChecking = $state(false)
+  let isInstalling = $state(false)
+  let newUpdate = $state<Update | undefined>()
+  let totalSize = $state(0)
+  let downloadedSize = $state(0)
+  let progress = $derived(
+    totalSize ? Math.round((downloadedSize / totalSize) * 100) : 0
+  )
 
   async function checkUpdate() {
-    isChecking = true;
+    isChecking = true
     try {
-      const update = await check();
-      onMessage(`Should update: ${update.response.available}`);
-      onMessage(update.response);
+      const update = await check()
+      if (update) {
+        onMessage(`Should update: ${update.available}`)
+        onMessage(update)
 
-      newUpdate = update;
+        newUpdate = update
+      } else {
+        onMessage('No update available')
+      }
     } catch (e) {
-      onMessage(e);
+      onMessage(e)
     } finally {
-      isChecking = false;
+      isChecking = false
     }
   }
 
   async function install() {
-    isInstalling = true;
-    downloadedSize = 0;
+    isInstalling = true
+    downloadedSize = 0
     try {
-      await newUpdate.downloadAndInstall((downloadProgress) => {
+      await newUpdate!.downloadAndInstall((downloadProgress) => {
         switch (downloadProgress.event) {
-          case "Started":
-            totalSize = downloadProgress.data.contentLength;
-            break;
-          case "Progress":
-            downloadedSize += downloadProgress.data.chunkLength;
-            break;
-          case "Finished":
-            break;
+          case 'Started':
+            totalSize = downloadProgress.data.contentLength!
+            break
+          case 'Progress':
+            downloadedSize += downloadProgress.data.chunkLength
+            break
+          case 'Finished':
+            break
         }
-      });
-      onMessage("Installation complete, restarting...");
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      await relaunch();
+      })
+      onMessage('Installation complete, restarting...')
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      await relaunch()
     } catch (e) {
-      console.error(e);
-      onMessage(e);
+      console.error(e)
+      onMessage(e)
     } finally {
-      isInstalling = false;
+      isInstalling = false
     }
   }
 
-  $: progress = totalSize ? Math.round((downloadedSize / totalSize) * 100) : 0;
+  onDestroy(() => {
+    newUpdate?.close()
+  })
 </script>
 
 <div class="flex children:grow children:h10">
   {#if !isChecking && !newUpdate}
-    <button class="btn" on:click={checkUpdate}>Check update</button>
+    <button class="btn" onclick={checkUpdate}>Check update</button>
   {:else if !isInstalling && newUpdate}
-    <button class="btn" on:click={install}>Install update</button>
+    <button class="btn" onclick={install}>Install update</button>
   {:else}
     <div class="progress">
       <span>{progress}%</span>
-      <div class="progress-bar" style="width: {progress}%" />
+      <div class="progress-bar" style="width: {progress}%"></div>
     </div>
   {/if}
 </div>

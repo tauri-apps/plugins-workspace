@@ -1,0 +1,82 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+# Scopes Section
+# This section contains scopes, which define file level access
+
+[[permission]]
+identifier = "scope-applog-recursive"
+description = "This scope permits recursive access to the complete `$APPLOG` folder, including sub directories and files."
+
+[[permission.scope.allow]]
+path = "$APPLOG"
+[[permission.scope.allow]]
+path = "$APPLOG/**"
+
+[[permission]]
+identifier = "scope-applog"
+description = "This scope permits access to all files and list content of top level directories in the `$APPLOG` folder."
+
+[[permission.scope.allow]]
+path = "$APPLOG"
+[[permission.scope.allow]]
+path = "$APPLOG/*"
+
+[[permission]]
+identifier = "scope-applog-index"
+description = "This scope permits to list all files and folders in the `$APPLOG`folder."
+
+[[permission.scope.allow]]
+path = "$APPLOG"
+
+# Sets Section
+# This section combines the scope elements with enablement of commands
+
+[[set]]
+identifier = "allow-applog-read-recursive"
+description = "This allows full recursive read access to the complete `$APPLOG` folder, files and subdirectories."
+permissions = [
+    "read-all",
+    "scope-applog-recursive"
+]
+
+[[set]]
+identifier = "allow-applog-write-recursive"
+description = "This allows full recursive write access to the complete `$APPLOG` folder, files and subdirectories."
+permissions = [
+    "write-all",
+    "scope-applog-recursive"
+]
+
+[[set]]
+identifier = "allow-applog-read"
+description = "This allows non-recursive read access to the `$APPLOG` folder."
+permissions = [
+    "read-all",
+    "scope-applog"
+]
+
+[[set]]
+identifier = "allow-applog-write"
+description = "This allows non-recursive write access to the `$APPLOG` folder."
+permissions = [
+    "write-all",
+    "scope-applog"
+]
+
+[[set]]
+identifier = "allow-applog-meta-recursive"
+description = "This allows full recursive read access to metadata of the `$APPLOG` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-applog-recursive"
+]
+
+[[set]]
+identifier = "allow-applog-meta"
+description = "This allows non-recursive read access to metadata of the `$APPLOG` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-applog-index"
+]

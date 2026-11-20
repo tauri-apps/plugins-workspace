@@ -1,0 +1,435 @@
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
+#[cfg(feature = "sqlite")]
+use std::fs::create_dir_all;
+
+use indexmap::IndexMap;
+use serde_json::Value as JsonValue;
+#[cfg(any(feature = "sqlite", feature = "mysql", feature = "postgres"))]
+use sqlx::{Column, Executor, Pool, Row, migrate::MigrateDatabase};
+#[cfg(any(feature = "sqlite", feature = "mysql", feature = "postgres"))]
+use tauri::Manager;
+use tauri::{AppHandle, Runtime};
+
+#[cfg(feature = "mysql")]
+use sqlx::MySql;
+#[cfg(feature = "postgres")]
+use sqlx::Postgres;
+#[cfg(feature = "sqlite")]
+use sqlx::Sqlite;
+
+use crate::LastInsertId;
+
+/// A connection pool for one of the supported database drivers.
+///
+/// The variant is picked from the scheme of the connection string
+/// (`sqlite:`, `mysql:` or `postgres:`) and only the variants whose Cargo
+/// feature is enabled exist.
+pub enum DbPool {
+    /// A SQLite connection pool. Only available with the `sqlite` Cargo feature.
+    #[cfg(feature = "sqlite")]
+    Sqlite(Pool<Sqlite>),
+    /// A MySQL connection pool. Only available with the `mysql` Cargo feature.
+    #[cfg(feature = "mysql")]
+    MySql(Pool<MySql>),
+    /// A PostgreSQL connection pool. Only available with the `postgres` Cargo feature.
+    #[cfg(feature = "postgres")]
+    Postgres(Pool<Postgres>),
+    /// Placeholder used when none of the `sqlite`, `mysql` and `postgres` Cargo
+    /// features is enabled. Connecting always fails and every other operation is a no-op.
+    #[cfg(not(any(feature = "sqlite", feature = "mysql", feature = "postgres")))]
+    None,
+}
+
+// public methods
+/* impl DbPool {
+    /// Get the inner Sqlite Pool. Returns None for MySql and Postgres pools.
+    #[cfg(feature = "sqlite")]
+    pub fn sqlite(&self) -> Option<&Pool<Sqlite>> {
+        match self {
+            DbPool::Sqlite(pool) => Some(pool),
+            _ => None,
+        }
+    }
+
+    /// Get the inner MySql Pool. Returns None for Sqlite and Postgres pools.
+    #[cfg(feature = "mysql")]
+    pub fn mysql(&self) -> Option<&Pool<MySql>> {
+        match self {
+            DbPool::MySql(pool) => Some(pool),
+            _ => None,
+        }
+    }
+
+    /// Get the inner Postgres Pool. Returns None for MySql and Sqlite pools.
+    #[cfg(feature = "postgres")]
+    pub fn postgres(&self) -> Option<&Pool<Postgres>> {
+        match self {
+            DbPool::Postgres(pool) => Some(pool),
+            _ => None,
+        }
+    }
+} */
+
+// private methods
+impl DbPool {
+    pub(crate) async fn connect<R: Runtime>(
+        conn_url: &str,
+        _app: &AppHandle<R>,
+        _auto_create: bool,
+    ) -> Result<Self, crate::Error> {
+        match conn_url
+            .split_once(':')
+            .ok_or_else(|| crate::Error::InvalidDbUrl(conn_url.to_string()))?
+            .0
+        {
+            #[cfg(feature = "sqlite")]
+            "sqlite" => {
+                let app_path = _app
+                    .path()
+                    .app_config_dir()
+                    .expect("No App config path was found!");
+
+                if _auto_create {
+                    create_dir_all(&app_path).expect("Couldn't create app config dir");
+                }
+
+                let db_url = &path_mapper(app_path, conn_url);
+
+                ensure_database::<Sqlite>(db_url, conn_url, _auto_create).await?;
+                Ok(Self::Sqlite(Pool::connect(db_url).await?))
+            }
+            #[cfg(feature = "mysql")]
+            "mysql" => {
+                ensure_database::<MySql>(conn_url, &redact_password(conn_url), _auto_create)
+                    .await?;
+                Ok(Self::MySql(Pool::connect(conn_url).await?))
+            }
+            #[cfg(feature = "postgres")]
+            "postgres" => {
+                ensure_database::<Postgres>(conn_url, &redact_password(conn_url), _auto_create)
+                    .await?;
+                Ok(Self::Postgres(Pool::connect(conn_url).await?))
+            }
+            #[cfg(not(any(feature = "sqlite", feature = "postgres", feature = "mysql")))]
+            _ => Err(crate::Error::InvalidDbUrl(format!(
+                "{conn_url} - No database driver enabled!"
+            ))),
+            #[cfg(any(feature = "sqlite", feature = "postgres", feature = "mysql"))]
+            _ => Err(crate::Error::InvalidDbUrl(conn_url.to_string())),
+        }
+    }
+
+    pub(crate) async fn migrate(
+        &self,
+        _migrator: &sqlx::migrate::Migrator,
+    ) -> Result<(), crate::Error> {
+        match self {
+            #[cfg(feature = "sqlite")]
+            DbPool::Sqlite(pool) => _migrator.run(pool).await?,
+            #[cfg(feature = "mysql")]
+            DbPool::MySql(pool) => _migrator.run(pool).await?,
+            #[cfg(feature = "postgres")]
+            DbPool::Postgres(pool) => _migrator.run(pool).await?,
+            #[cfg(not(any(feature = "sqlite", feature = "mysql", feature = "postgres")))]
+            DbPool::None => (),
+        }
+        Ok(())
+    }
+
+    pub(crate) async fn close(&self) {
+        match self {
+            #[cfg(feature = "sqlite")]
+            DbPool::Sqlite(pool) => pool.close().await,
+            #[cfg(feature = "mysql")]
+            DbPool::MySql(pool) => pool.close().await,
+            #[cfg(feature = "postgres")]
+            DbPool::Postgres(pool) => pool.close().await,
+            #[cfg(not(any(feature = "sqlite", feature = "mysql", feature = "postgres")))]
+            DbPool::None => (),
+        }
+    }
+
+    pub(crate) async fn execute(
+        &self,
+        _query: String,
+        _values: Vec<JsonValue>,
+    ) -> Result<(u64, LastInsertId), crate::Error> {
+        Ok(match self {
+            #[cfg(feature = "sqlite")]
+            DbPool::Sqlite(pool) => {
+                let mut query = sqlx::query(&_query);
+                for value in _values {
+                    if value.is_null() {
+                        query = query.bind(None::<JsonValue>);
+                    } else if value.is_string() {
+                        query = query.bind(value.as_str().unwrap().to_owned())
+                    } else if let Some(number) = value.as_number() {
+                        query = query.bind(number.as_f64().unwrap_or_default())
+                    } else {
+                        query = query.bind(value);
+                    }
+                }
+                let result = pool.execute(query).await?;
+                (
+                    result.rows_affected(),
+                    LastInsertId::Sqlite(result.last_insert_rowid()),
+                )
+            }
+            #[cfg(feature = "mysql")]
+            DbPool::MySql(pool) => {
+                let mut query = sqlx::query(&_query);
+                for value in _values {
+                    if value.is_null() {
+                        query = query.bind(None::<JsonValue>);
+                    } else if value.is_string() {
+                        query = query.bind(value.as_str().unwrap().to_owned())
+                    } else if let Some(number) = value.as_number() {
+                        query = query.bind(number.as_f64().unwrap_or_default())
+                    } else {
+                        query = query.bind(value);
+                    }
+                }
+                let result = pool.execute(query).await?;
+                (
+                    result.rows_affected(),
+                    LastInsertId::MySql(result.last_insert_id()),
+                )
+            }
+            #[cfg(feature = "postgres")]
+            DbPool::Postgres(pool) => {
+                let mut query = sqlx::query(&_query);
+                for value in _values {
+                    if value.is_null() {
+                        query = query.bind(None::<JsonValue>);
+                    } else if value.is_string() {
+                        query = query.bind(value.as_str().unwrap().to_owned())
+                    } else if let Some(number) = value.as_number() {
+                        query = query.bind(number.as_f64().unwrap_or_default())
+                    } else {
+                        query = query.bind(value);
+                    }
+                }
+                let result = pool.execute(query).await?;
+                (result.rows_affected(), LastInsertId::Postgres(()))
+            }
+            #[cfg(not(any(feature = "sqlite", feature = "mysql", feature = "postgres")))]
+            DbPool::None => (0, LastInsertId::None),
+        })
+    }
+
+    pub(crate) async fn select(
+        &self,
+        _query: String,
+        _values: Vec<JsonValue>,
+    ) -> Result<Vec<IndexMap<String, JsonValue>>, crate::Error> {
+        Ok(match self {
+            #[cfg(feature = "sqlite")]
+            DbPool::Sqlite(pool) => {
+                let mut query = sqlx::query(&_query);
+                for value in _values {
+                    if value.is_null() {
+                        query = query.bind(None::<JsonValue>);
+                    } else if value.is_string() {
+                        query = query.bind(value.as_str().unwrap().to_owned())
+                    } else if let Some(number) = value.as_number() {
+                        query = query.bind(number.as_f64().unwrap_or_default())
+                    } else {
+                        query = query.bind(value);
+                    }
+                }
+                let rows = pool.fetch_all(query).await?;
+                let mut values = Vec::new();
+                for row in rows {
+                    let mut value = IndexMap::default();
+                    for (i, column) in row.columns().iter().enumerate() {
+                        let v = row.try_get_raw(i)?;
+
+                        let v = crate::decode::sqlite::to_json(v)?;
+
+                        value.insert(column.name().to_string(), v);
+                    }
+
+                    values.push(value);
+                }
+                values
+            }
+            #[cfg(feature = "mysql")]
+            DbPool::MySql(pool) => {
+                let mut query = sqlx::query(&_query);
+                for value in _values {
+                    if value.is_null() {
+                        query = query.bind(None::<JsonValue>);
+                    } else if value.is_string() {
+                        query = query.bind(value.as_str().unwrap().to_owned())
+                    } else if let Some(number) = value.as_number() {
+                        query = query.bind(number.as_f64().unwrap_or_default())
+                    } else {
+                        query = query.bind(value);
+                    }
+                }
+                let rows = pool.fetch_all(query).await?;
+                let mut values = Vec::new();
+                for row in rows {
+                    let mut value = IndexMap::default();
+                    for (i, column) in row.columns().iter().enumerate() {
+                        let v = row.try_get_raw(i)?;
+
+                        let v = crate::decode::mysql::to_json(v)?;
+
+                        value.insert(column.name().to_string(), v);
+                    }
+
+                    values.push(value);
+                }
+                values
+            }
+            #[cfg(feature = "postgres")]
+            DbPool::Postgres(pool) => {
+                let mut query = sqlx::query(&_query);
+                for value in _values {
+                    if value.is_null() {
+                        query = query.bind(None::<JsonValue>);
+                    } else if value.is_string() {
+                        query = query.bind(value.as_str().unwrap().to_owned())
+                    } else if let Some(number) = value.as_number() {
+                        query = query.bind(number.as_f64().unwrap_or_default())
+                    } else {
+                        query = query.bind(value);
+                    }
+                }
+                let rows = pool.fetch_all(query).await?;
+                let mut values = Vec::new();
+                for row in rows {
+                    let mut value = IndexMap::default();
+                    for (i, column) in row.columns().iter().enumerate() {
+                        let v = row.try_get_raw(i)?;
+
+                        let v = crate::decode::postgres::to_json(v)?;
+
+                        value.insert(column.name().to_string(), v);
+                    }
+
+                    values.push(value);
+                }
+                values
+            }
+            #[cfg(not(any(feature = "sqlite", feature = "mysql", feature = "postgres")))]
+            DbPool::None => Vec::new(),
+        })
+    }
+}
+
+/// Creates the database if it does not exist yet, or fails with
+/// [`crate::Error::DatabaseDoesNotExist`] (naming the connection string `db`
+/// the app passed) when `auto_create` is `false`.
+/// Errors of the existence check itself (unreachable server, bad credentials)
+/// are returned as they are, not as a missing database.
+#[cfg(any(feature = "sqlite", feature = "mysql", feature = "postgres"))]
+async fn ensure_database<DB: MigrateDatabase>(
+    conn_url: &str,
+    db: &str,
+    auto_create: bool,
+) -> Result<(), crate::Error> {
+    match DB::database_exists(conn_url).await {
+        Ok(true) => Ok(()),
+        // When the check fails, creating reports the actual error (or fixes it).
+        Ok(false) | Err(_) if auto_create => Ok(DB::create_database(conn_url).await?),
+        Ok(false) => Err(crate::Error::DatabaseDoesNotExist(db.to_string())),
+        Err(e) => Err(e.into()),
+    }
+}
+
+/// Removes the password from a `scheme://user:password@host/db` connection string,
+/// so it can be put in an error message.
+#[cfg(any(feature = "mysql", feature = "postgres"))]
+fn redact_password(conn_url: &str) -> String {
+    let Some((scheme, rest)) = conn_url.split_once("://") else {
+        return conn_url.to_string();
+    };
+    let authority_end = rest.find(['/', '?']).unwrap_or(rest.len());
+    match rest[..authority_end].rsplit_once('@') {
+        Some((userinfo, _)) => match userinfo.split_once(':') {
+            Some((user, _)) => format!("{scheme}://{user}:***@{}", &rest[userinfo.len() + 1..]),
+            None => conn_url.to_string(),
+        },
+        None => conn_url.to_string(),
+    }
+}
+
+#[cfg(feature = "sqlite")]
+/// Maps the user supplied DB connection string to a connection string
+/// with a fully qualified file path to the App's designed "app_path"
+fn path_mapper(mut app_path: std::path::PathBuf, connection_string: &str) -> String {
+    app_path.push(
+        connection_string
+            .split_once(':')
+            .expect("Couldn't parse the connection string for DB!")
+            .1,
+    );
+
+    format!(
+        "sqlite:{}",
+        app_path
+            .to_str()
+            .expect("Problem creating fully qualified path to Database file!")
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    #[cfg(feature = "sqlite")]
+    #[test]
+    fn ensure_database_respects_auto_create() {
+        use super::ensure_database;
+        use sqlx::Sqlite;
+
+        let path = std::env::temp_dir().join(format!("tauri-plugin-sql-{}.db", std::process::id()));
+        let _ = std::fs::remove_file(&path);
+        let url = format!("sqlite:{}", path.display());
+
+        tauri::async_runtime::block_on(async {
+            let err = ensure_database::<Sqlite>(&url, "sqlite:test.db", false)
+                .await
+                .unwrap_err();
+            assert_eq!(err.to_string(), "database sqlite:test.db does not exist");
+            assert!(!path.exists());
+
+            ensure_database::<Sqlite>(&url, "sqlite:test.db", true)
+                .await
+                .unwrap();
+            assert!(path.exists());
+
+            ensure_database::<Sqlite>(&url, "sqlite:test.db", false)
+                .await
+                .unwrap();
+        });
+
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[cfg(any(feature = "mysql", feature = "postgres"))]
+    #[test]
+    fn redact_password() {
+        use super::redact_password;
+
+        assert_eq!(
+            redact_password("mysql://user:secret@localhost:3306/db"),
+            "mysql://user:***@localhost:3306/db"
+        );
+        assert_eq!(
+            redact_password("postgres://user:p@ss@host/db?sslmode=require"),
+            "postgres://user:***@host/db?sslmode=require"
+        );
+        assert_eq!(
+            redact_password("postgres://user@host/db"),
+            "postgres://user@host/db"
+        );
+        assert_eq!(
+            redact_password("postgres://host/db?user=a@b"),
+            "postgres://host/db?user=a@b"
+        );
+    }
+}

@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-unregister-all"
+description = "Enables the unregister_all command without any pre-configured scope."
+commands.allow = ["unregister_all"]
+
+[[permission]]
+identifier = "deny-unregister-all"
+description = "Denies the unregister_all command without any pre-configured scope."
+commands.deny = ["unregister_all"]

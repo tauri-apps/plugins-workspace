@@ -4,29 +4,33 @@
 
 use std::{
     ffi::OsStr,
-    io::{BufReader, Write},
+    io::{BufRead, BufReader, Write},
     path::{Path, PathBuf},
     process::{Command as StdCommand, Stdio},
-    sync::{Arc, RwLock},
-    thread::spawn,
+    sync::Arc,
+    thread::{JoinHandle, spawn},
 };
 
 #[cfg(unix)]
-use std::os::unix::process::ExitStatusExt;
+use std::os::unix::process::{CommandExt, ExitStatusExt};
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
 
 #[cfg(windows)]
-const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+use windows_sys::Win32::System::Threading::{CREATE_NO_WINDOW, CREATE_SUSPENDED};
+
 const NEWLINE_BYTE: u8 = b'\n';
 
-use tauri::async_runtime::{block_on as block_on_task, channel, Receiver, Sender};
+use tauri::async_runtime::{Receiver, Sender, block_on as block_on_task, channel};
 
 pub use encoding_rs::Encoding;
-use os_pipe::{pipe, PipeReader, PipeWriter};
+use os_pipe::{PipeReader, PipeWriter, pipe};
 use serde::Serialize;
 use shared_child::SharedChild;
 use tauri::utils::platform;
+
+#[cfg(windows)]
+mod job_object;
 
 /// Payload for the [`CommandEvent::Terminated`] command event.
 #[derive(Debug, Clone, Serialize)]
@@ -41,11 +45,13 @@ pub struct TerminatedPayload {
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub enum CommandEvent {
-    /// Stderr bytes until a newline (\n) or carriage return (\r) is found.
+    /// If configured for raw output, all bytes written to stderr.
+    /// Otherwise, bytes until a newline (\n) or carriage return (\r) is found.
     Stderr(Vec<u8>),
-    /// Stdout bytes until a newline (\n) or carriage return (\r) is found.
+    /// If configured for raw output, all bytes written to stdout.
+    /// Otherwise, bytes until a newline (\n) or carriage return (\r) is found.
     Stdout(Vec<u8>),
-    /// An error happened waiting for the command to finish or converting the stdout/stderr bytes to an UTF-8 string.
+    /// An error happened waiting for the command to finish or converting the stdout/stderr bytes to a UTF-8 string.
     Error(String),
     /// Command process terminated.
     Terminated(TerminatedPayload),
@@ -53,13 +59,23 @@ pub enum CommandEvent {
 
 /// The type to spawn commands.
 #[derive(Debug)]
-pub struct Command(StdCommand);
+pub struct Command {
+    cmd: StdCommand,
+    raw_out: bool,
+    process_group: bool,
+    kill_on_drop: bool,
+}
 
 /// Spawned child process.
 #[derive(Debug)]
 pub struct CommandChild {
     inner: Arc<SharedChild>,
     stdin_writer: PipeWriter,
+    #[cfg(unix)]
+    process_group: bool,
+    #[cfg(windows)]
+    job: Option<job_object::JobObject>,
+    kill_on_drop: bool,
 }
 
 impl CommandChild {
@@ -69,9 +85,42 @@ impl CommandChild {
         Ok(())
     }
 
-    /// Sends a kill signal to the child.
-    pub fn kill(self) -> crate::Result<()> {
-        self.inner.kill()?;
+    /// Sends a kill signal to the child and waits for it to exit.
+    /// With `process_group` enabled this kills the whole process group (POSIX) or job object (Windows).
+    pub fn kill(mut self) -> crate::Result<()> {
+        self.send_kill()?;
+        // Already killed, so `Drop` must not do it again.
+        self.kill_on_drop = false;
+        self.inner.wait()?;
+        Ok(())
+    }
+
+    /// Sends the kill signal without waiting for the child to exit.
+    fn send_kill(&self) -> crate::Result<()> {
+        // No early return when the child already exited: the rest of its
+        // process group or job object may still be running.
+        #[cfg(unix)]
+        if self.process_group {
+            // The pgid can't be reused while the group has members, so this is
+            // safe even after the group leader was reaped.
+            let pgid = self.inner.id() as libc::pid_t;
+            if unsafe { libc::killpg(pgid, libc::SIGKILL) } != 0 {
+                let err = std::io::Error::last_os_error();
+                // ESRCH: every process in the group already exited.
+                if err.raw_os_error() != Some(libc::ESRCH) {
+                    return Err(err.into());
+                }
+            }
+        } else {
+            self.inner.kill()?;
+        }
+
+        #[cfg(windows)]
+        match &self.job {
+            Some(job) => job.terminate()?,
+            None => self.inner.kill()?,
+        }
+
         Ok(())
     }
 
@@ -81,9 +130,22 @@ impl CommandChild {
     }
 }
 
+impl Drop for CommandChild {
+    /// Kills the child process (or its process group / job object) if `kill_on_drop` is enabled.
+    fn drop(&mut self) {
+        if self.kill_on_drop
+            && let Err(e) = self.send_kill()
+        {
+            log::error!("Failed to kill child process {}: {}", self.inner.id(), e);
+        }
+    }
+}
+
 /// Describes the result of a process after it has terminated.
 #[derive(Debug)]
 pub struct ExitStatus {
+    // This field is intentionally left private.
+    // See: https://github.com/tauri-apps/plugins-workspace/pull/3115.
     code: Option<i32>,
 }
 
@@ -111,23 +173,52 @@ pub struct Output {
 }
 
 fn relative_command_path(command: &Path) -> crate::Result<PathBuf> {
-    match platform::current_exe()?.parent() {
-        #[cfg(windows)]
-        Some(exe_dir) => Ok(exe_dir.join(command).with_extension("exe")),
-        #[cfg(not(windows))]
-        Some(exe_dir) => Ok(exe_dir.join(command)),
-        None => Err(crate::Error::CurrentExeHasNoParent),
+    let exe_path = platform::current_exe()?;
+
+    let exe_dir = exe_path
+        .parent()
+        .ok_or(crate::Error::CurrentExeHasNoParent)?;
+
+    // If a test is being run, the executable is in the "deps" directory, so we need to go up one level.
+    let base_dir = if exe_dir.ends_with("deps") {
+        exe_dir.parent().unwrap_or(exe_dir)
+    } else {
+        exe_dir
+    };
+
+    let mut command_path = base_dir.join(command);
+
+    #[cfg(windows)]
+    {
+        let already_exe = command_path.extension().is_some_and(|ext| ext == "exe");
+        if !already_exe {
+            // do not use with_extension to retain dots in the command filename
+            command_path.as_mut_os_string().push(".exe");
+        }
     }
+
+    #[cfg(not(windows))]
+    {
+        if command_path.extension().is_some_and(|ext| ext == "exe") {
+            command_path.set_extension("");
+        }
+    }
+
+    Ok(command_path)
 }
 
 impl From<Command> for StdCommand {
     fn from(cmd: Command) -> StdCommand {
-        cmd.0
+        cmd.cmd
     }
 }
 
 impl Command {
     pub(crate) fn new<S: AsRef<OsStr>>(program: S) -> Self {
+        log::debug!(
+            "Creating sidecar {}",
+            program.as_ref().to_str().unwrap_or("")
+        );
         let mut command = StdCommand::new(program);
 
         command.stdout(Stdio::piped());
@@ -136,7 +227,12 @@ impl Command {
         #[cfg(windows)]
         command.creation_flags(CREATE_NO_WINDOW);
 
-        Self(command)
+        Self {
+            cmd: command,
+            raw_out: false,
+            process_group: false,
+            kill_on_drop: false,
+        }
     }
 
     pub(crate) fn new_sidecar<S: AsRef<Path>>(program: S) -> crate::Result<Self> {
@@ -146,7 +242,7 @@ impl Command {
     /// Appends an argument to the command.
     #[must_use]
     pub fn arg<S: AsRef<OsStr>>(mut self, arg: S) -> Self {
-        self.0.arg(arg);
+        self.cmd.arg(arg);
         self
     }
 
@@ -157,14 +253,14 @@ impl Command {
         I: IntoIterator<Item = S>,
         S: AsRef<OsStr>,
     {
-        self.0.args(args);
+        self.cmd.args(args);
         self
     }
 
     /// Clears the entire environment map for the child process.
     #[must_use]
     pub fn env_clear(mut self) -> Self {
-        self.0.env_clear();
+        self.cmd.env_clear();
         self
     }
 
@@ -175,7 +271,7 @@ impl Command {
         K: AsRef<OsStr>,
         V: AsRef<OsStr>,
     {
-        self.0.env(key, value);
+        self.cmd.env(key, value);
         self
     }
 
@@ -187,14 +283,45 @@ impl Command {
         K: AsRef<OsStr>,
         V: AsRef<OsStr>,
     {
-        self.0.envs(envs);
+        self.cmd.envs(envs);
         self
     }
 
     /// Sets the working directory for the child process.
     #[must_use]
     pub fn current_dir<P: AsRef<Path>>(mut self, current_dir: P) -> Self {
-        self.0.current_dir(current_dir);
+        self.cmd.current_dir(current_dir);
+        self
+    }
+
+    /// Configures the reader to output bytes from the child process exactly as received
+    pub fn set_raw_out(mut self, raw_out: bool) -> Self {
+        self.raw_out = raw_out;
+        self
+    }
+
+    /// Configures the command to spawn in a new process group (POSIX) or job object (Windows).
+    ///
+    /// When enabled, killing the child process will also kill all processes in the group,
+    /// which is useful for programs that spawn child processes (e.g. PyInstaller wrappers).
+    #[must_use]
+    pub fn set_process_group(mut self, process_group: bool) -> Self {
+        self.process_group = process_group;
+        self
+    }
+
+    /// Configures whether the child process is killed when its [`CommandChild`] is dropped.
+    /// Defaults to `false`, so a dropped [`CommandChild`] leaves the process running.
+    ///
+    /// The kill works like [`CommandChild::kill`] but does not wait for the process to exit.
+    /// Without [`Command::set_process_group`] only the child itself is killed, and any
+    /// processes it spawned keep running; enable it to kill the whole process group (POSIX)
+    /// or job object (Windows).
+    ///
+    /// This has no effect on processes spawned from the JavaScript API; the plugin kills those when the app exits.
+    #[must_use]
+    pub fn kill_on_drop(mut self, kill_on_drop: bool) -> Self {
+        self.kill_on_drop = kill_on_drop;
         self
     }
 
@@ -208,7 +335,9 @@ impl Command {
     ///   .setup(|app| {
     ///     let handle = app.handle().clone();
     ///     tauri::async_runtime::spawn(async move {
-    ///       let (mut rx, mut child) = handle.shell().command("cargo")
+    ///       let (mut rx, mut child) = handle
+    ///         .shell()
+    ///         .command("cargo")
     ///         .args(["tauri", "dev"])
     ///         .spawn()
     ///         .expect("Failed to spawn cargo");
@@ -226,9 +355,39 @@ impl Command {
     ///       }
     ///     });
     ///     Ok(())
-    /// });
+    ///   });
+    /// ```
+    ///
+    /// Depending on the command you spawn, it might output in a specific encoding, to parse the output lines in this case:
+    ///
+    /// ```rust,no_run
+    /// use tauri_plugin_shell::{process::{CommandEvent, Encoding}, ShellExt};
+    /// tauri::Builder::default()
+    ///   .setup(|app| {
+    ///     let handle = app.handle().clone();
+    ///     tauri::async_runtime::spawn(async move {
+    ///       let (mut rx, mut child) = handle
+    ///         .shell()
+    ///         .command("some-program")
+    ///         .arg("some-arg")
+    ///         .spawn()
+    ///         .expect("Failed to spawn some-program");
+    ///
+    ///       let encoding = Encoding::for_label(b"windows-1252").unwrap();
+    ///       while let Some(event) = rx.recv().await {
+    ///         if let CommandEvent::Stdout(line) = event {
+    ///           let (decoded, _, _) = encoding.decode(&line);
+    ///           println!("got: {decoded}");
+    ///         }
+    ///       }
+    ///     });
+    ///     Ok(())
+    ///   });
     /// ```
     pub fn spawn(self) -> crate::Result<(Receiver<CommandEvent>, CommandChild)> {
+        let raw = self.raw_out;
+        let process_group = self.process_group;
+        let kill_on_drop = self.kill_on_drop;
         let mut command: StdCommand = self.into();
         let (stdout_reader, stdout_writer) = pipe()?;
         let (stderr_reader, stderr_writer) = pipe()?;
@@ -237,43 +396,59 @@ impl Command {
         command.stderr(stderr_writer);
         command.stdin(stdin_reader);
 
-        let shared_child = SharedChild::spawn(&mut command)?;
-        let child = Arc::new(shared_child);
-        let child_ = child.clone();
-        let guard = Arc::new(RwLock::new(()));
+        #[cfg(unix)]
+        if process_group {
+            command.process_group(0);
+        }
+        #[cfg(windows)]
+        if process_group {
+            // Start suspended so nothing can be spawned before the child is in the job.
+            command.creation_flags(CREATE_NO_WINDOW | CREATE_SUSPENDED);
+        }
 
+        let child = command.spawn()?;
+
+        #[cfg(windows)]
+        let job = if process_group {
+            match job_object::JobObject::assign(&child) {
+                Ok(job) => Some(job),
+                Err(e) => {
+                    // Don't leave the suspended child behind.
+                    let mut child = child;
+                    let _ = child.kill();
+                    let _ = child.wait();
+                    return Err(e.into());
+                }
+            }
+        } else {
+            None
+        };
+
+        let child = Arc::new(SharedChild::new(child)?);
+        let child_ = child.clone();
         let (tx, rx) = channel(1);
 
-        spawn_pipe_reader(
-            tx.clone(),
-            guard.clone(),
-            stdout_reader,
-            CommandEvent::Stdout,
-        );
-        spawn_pipe_reader(
-            tx.clone(),
-            guard.clone(),
-            stderr_reader,
-            CommandEvent::Stderr,
-        );
+        let stdout_thread = spawn_pipe_reader(tx.clone(), stdout_reader, CommandEvent::Stdout, raw);
+        let stderr_thread = spawn_pipe_reader(tx.clone(), stderr_reader, CommandEvent::Stderr, raw);
 
         spawn(move || {
-            let _ = match child_.wait() {
-                Ok(status) => {
-                    let _l = guard.write().unwrap();
-                    block_on_task(async move {
-                        tx.send(CommandEvent::Terminated(TerminatedPayload {
-                            code: status.code(),
-                            #[cfg(windows)]
-                            signal: None,
-                            #[cfg(unix)]
-                            signal: status.signal(),
-                        }))
-                        .await
-                    })
-                }
+            let status = child_.wait();
+            // `Terminated` must be the last event: wait for the readers to drain the pipes,
+            // since a short-lived child can exit before they have read anything.
+            let _ = stdout_thread.join();
+            let _ = stderr_thread.join();
+            let _ = match status {
+                Ok(status) => block_on_task(async move {
+                    tx.send(CommandEvent::Terminated(TerminatedPayload {
+                        code: status.code(),
+                        #[cfg(windows)]
+                        signal: None,
+                        #[cfg(unix)]
+                        signal: status.signal(),
+                    }))
+                    .await
+                }),
                 Err(e) => {
-                    let _l = guard.write().unwrap();
                     block_on_task(async move { tx.send(CommandEvent::Error(e.to_string())).await })
                 }
             };
@@ -284,6 +459,11 @@ impl Command {
             CommandChild {
                 inner: child,
                 stdin_writer,
+                #[cfg(unix)]
+                process_group,
+                #[cfg(windows)]
+                job,
+                kill_on_drop,
             },
         ))
     }
@@ -359,43 +539,105 @@ impl Command {
     }
 }
 
-fn spawn_pipe_reader<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
+fn read_raw_bytes<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
+    mut reader: BufReader<PipeReader>,
     tx: Sender<CommandEvent>,
-    guard: Arc<RwLock<()>>,
-    pipe_reader: PipeReader,
     wrapper: F,
 ) {
-    spawn(move || {
-        let _lock = guard.read().unwrap();
-        let mut reader = BufReader::new(pipe_reader);
-
-        loop {
-            let mut buf = Vec::new();
-            match tauri::utils::io::read_line(&mut reader, &mut buf) {
-                Ok(n) => {
-                    if n == 0 {
-                        break;
-                    }
-                    let tx_ = tx.clone();
-                    let _ = block_on_task(async move { tx_.send(wrapper(buf)).await });
+    loop {
+        let result = reader.fill_buf();
+        match result {
+            Ok(buf) => {
+                let length = buf.len();
+                if length == 0 {
+                    break;
                 }
-                Err(e) => {
-                    let tx_ = tx.clone();
-                    let _ =
-                        block_on_task(
-                            async move { tx_.send(CommandEvent::Error(e.to_string())).await },
-                        );
-                }
+                let tx_ = tx.clone();
+                let _ = block_on_task(async move { tx_.send(wrapper(buf.to_vec())).await });
+                reader.consume(length);
+            }
+            Err(e) => {
+                let tx_ = tx.clone();
+                let _ = block_on_task(
+                    async move { tx_.send(CommandEvent::Error(e.to_string())).await },
+                );
             }
         }
-    });
+    }
+}
+
+fn read_line<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
+    mut reader: BufReader<PipeReader>,
+    tx: Sender<CommandEvent>,
+    wrapper: F,
+) {
+    loop {
+        let mut buf = Vec::new();
+        match tauri::utils::io::read_line(&mut reader, &mut buf) {
+            Ok(n) => {
+                if n == 0 {
+                    break;
+                }
+                let tx_ = tx.clone();
+                let _ = block_on_task(async move { tx_.send(wrapper(buf)).await });
+            }
+            Err(e) => {
+                let _ =
+                    block_on_task(async move { tx.send(CommandEvent::Error(e.to_string())).await });
+                break;
+            }
+        }
+    }
+}
+
+fn spawn_pipe_reader<F: Fn(Vec<u8>) -> CommandEvent + Send + Copy + 'static>(
+    tx: Sender<CommandEvent>,
+    pipe_reader: PipeReader,
+    wrapper: F,
+    raw_out: bool,
+) -> JoinHandle<()> {
+    spawn(move || {
+        let reader = BufReader::new(pipe_reader);
+
+        if raw_out {
+            read_raw_bytes(reader, tx, wrapper);
+        } else {
+            read_line(reader, tx, wrapper);
+        }
+    })
 }
 
 // tests for the commands functions.
 #[cfg(test)]
 mod tests {
-    #[cfg(not(windows))]
     use super::*;
+
+    #[test]
+    fn relative_command_path_resolves() {
+        let cwd_parent = platform::current_exe()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .parent() // Go up once more to get out of the "deps" directory
+            .unwrap()
+            .to_owned();
+        assert_eq!(
+            relative_command_path(Path::new("Tauri.Example")).unwrap(),
+            cwd_parent.join(if cfg!(windows) {
+                "Tauri.Example.exe"
+            } else {
+                "Tauri.Example"
+            })
+        );
+        assert_eq!(
+            relative_command_path(Path::new("Tauri.Example.exe")).unwrap(),
+            cwd_parent.join(if cfg!(windows) {
+                "Tauri.Example.exe"
+            } else {
+                "Tauri.Example"
+            })
+        );
+    }
 
     #[cfg(not(windows))]
     #[test]
@@ -455,7 +697,7 @@ mod tests {
                     CommandEvent::Stderr(line) => {
                         assert_eq!(
                             String::from_utf8(line).unwrap(),
-                            "cat: test/: Is a directory"
+                            "cat: test/: Is a directory\n"
                         );
                     }
                     _ => {}
@@ -480,7 +722,7 @@ mod tests {
                     CommandEvent::Stderr(line) => {
                         assert_eq!(
                             String::from_utf8(line).unwrap(),
-                            "cat: test/: Is a directory"
+                            "cat: test/: Is a directory\n"
                         );
                     }
                     _ => {}
@@ -511,7 +753,338 @@ mod tests {
         assert_eq!(String::from_utf8(output.stdout).unwrap(), "");
         assert_eq!(
             String::from_utf8(output.stderr).unwrap(),
-            "cat: test/: Is a directory\n"
+            "cat: test/: Is a directory\n\n"
+        );
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn test_cmd_spawn_process_group_output() {
+        let cmd = Command::new("cat")
+            .args(["test/test.txt"])
+            .set_process_group(true);
+        let (mut rx, _) = cmd.spawn().unwrap();
+
+        tauri::async_runtime::block_on(async move {
+            while let Some(event) = rx.recv().await {
+                match event {
+                    CommandEvent::Terminated(payload) => {
+                        assert_eq!(payload.code, Some(0));
+                    }
+                    CommandEvent::Stdout(line) => {
+                        assert_eq!(String::from_utf8(line).unwrap(), "This is a test doc!");
+                    }
+                    _ => {}
+                }
+            }
+        });
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn test_cmd_process_group_kill() {
+        // Spawn a shell that runs a sleep command as a child process.
+        // With process_group enabled, killing the parent should also kill the child.
+        let cmd = Command::new("sh")
+            .args(["-c", "sleep 60"])
+            .set_process_group(true);
+        let (mut rx, child) = cmd.spawn().unwrap();
+        let pid = child.pid();
+
+        // Verify the process is running
+        let ret = unsafe { libc::kill(pid as i32, 0) };
+        assert_eq!(ret, 0, "process should be running");
+
+        // Kill the process group
+        child.kill().unwrap();
+
+        tauri::async_runtime::block_on(async move {
+            while let Some(event) = rx.recv().await {
+                if let CommandEvent::Terminated(payload) = event {
+                    // Process was killed by signal, so code is None and signal is Some
+                    assert!(payload.code.is_none() || payload.signal.is_some());
+                    break;
+                }
+            }
+        });
+
+        // Verify the process group is gone
+        let ret = unsafe { libc::killpg(pid as i32, 0) };
+        assert_ne!(ret, 0, "process group should no longer exist");
+    }
+
+    #[cfg(not(windows))]
+    fn wait_terminated(mut rx: Receiver<CommandEvent>) -> TerminatedPayload {
+        tauri::async_runtime::block_on(async move {
+            while let Some(event) = rx.recv().await {
+                if let CommandEvent::Terminated(payload) = event {
+                    return payload;
+                }
+            }
+            panic!("channel closed without a Terminated event");
+        })
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn test_cmd_kill_on_drop() {
+        let (rx, child) = Command::new("sleep")
+            .args(["60"])
+            .kill_on_drop(true)
+            .spawn()
+            .unwrap();
+        drop(child);
+
+        let payload = wait_terminated(rx);
+        assert_eq!(payload.signal, Some(libc::SIGKILL));
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn test_cmd_no_kill_on_drop_by_default() {
+        let (_rx, child) = Command::new("sleep").args(["60"]).spawn().unwrap();
+        let pid = child.pid();
+        drop(child);
+
+        std::thread::sleep(std::time::Duration::from_millis(200));
+        let ret = unsafe { libc::kill(pid as i32, 0) };
+        assert_eq!(ret, 0, "process should still be running");
+        unsafe { libc::kill(pid as i32, libc::SIGKILL) };
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn test_cmd_kill_on_drop_process_group() {
+        // The shell's own child (sleep) must die too, not just the shell.
+        let (rx, child) = Command::new("sh")
+            .args(["-c", "sleep 60; true"])
+            .set_process_group(true)
+            .kill_on_drop(true)
+            .spawn()
+            .unwrap();
+        let pid = child.pid();
+        drop(child);
+
+        wait_terminated(rx);
+        let ret = unsafe { libc::killpg(pid as i32, 0) };
+        assert_ne!(ret, 0, "process group should no longer exist");
+    }
+
+    #[test]
+    fn test_cmd_process_group_output() {
+        // Hangs on Windows if the suspended child is never resumed.
+        #[cfg(not(windows))]
+        let cmd = Command::new("cat").args(["test/test.txt"]);
+        #[cfg(windows)]
+        let cmd = Command::new("cmd").args(["/C", "type test\\test.txt"]);
+
+        let output = tauri::async_runtime::block_on(cmd.set_process_group(true).output()).unwrap();
+
+        assert!(output.status.success());
+        assert_eq!(String::from_utf8(output.stderr).unwrap(), "");
+        assert_eq!(
+            String::from_utf8(output.stdout).unwrap().trim(),
+            "This is a test doc!"
+        );
+    }
+
+    #[test]
+    fn test_cmd_kill_after_exit() {
+        for process_group in [false, true] {
+            #[cfg(not(windows))]
+            let cmd = Command::new("true");
+            #[cfg(windows)]
+            let cmd = Command::new("cmd").args(["/C", "exit 0"]);
+            let (rx, child) = cmd.set_process_group(process_group).spawn().unwrap();
+            wait_for_terminated(rx);
+            child.kill().unwrap();
+        }
+    }
+
+    /// Runs `test/<script>.ps1` on Windows or `test/<script>.sh` elsewhere.
+    fn sim_command(script: &str) -> Command {
+        if cfg!(windows) {
+            Command::new("powershell").args([
+                "-NoProfile".to_string(),
+                "-ExecutionPolicy".to_string(),
+                "Bypass".to_string(),
+                "-File".to_string(),
+                format!("test/{script}.ps1"),
+            ])
+        } else {
+            Command::new("sh").args([format!("test/{script}.sh")])
+        }
+    }
+
+    /// Reads command output until the wrapper script reports the grandchild pid.
+    fn read_grandchild_pid(rx: &mut Receiver<CommandEvent>) -> u32 {
+        tauri::async_runtime::block_on(async {
+            let mut pid = None;
+            while let Some(event) = rx.recv().await {
+                if let CommandEvent::Stdout(line) = &event {
+                    let line_str = String::from_utf8_lossy(line);
+                    if let Some(rest) = line_str.strip_prefix("CHILD_PID=") {
+                        pid = rest.trim().parse::<u32>().ok();
+                    }
+                }
+                if pid.is_some() {
+                    break;
+                }
+            }
+            pid.expect("should have received CHILD_PID from script")
+        })
+    }
+
+    /// Asserts that the child produces a `Terminated` event.
+    fn wait_for_terminated(mut rx: Receiver<CommandEvent>) {
+        let got = tauri::async_runtime::block_on(async move {
+            while let Some(event) = rx.recv().await {
+                if let CommandEvent::Terminated(_) = event {
+                    return true;
+                }
+            }
+            false
+        });
+        assert!(got, "expected a Terminated event");
+    }
+
+    #[cfg(not(windows))]
+    fn pid_alive(pid: u32) -> bool {
+        unsafe { libc::kill(pid as i32, 0) == 0 }
+    }
+
+    #[cfg(windows)]
+    fn pid_alive(pid: u32) -> bool {
+        use windows_sys::Win32::{
+            Foundation::{CloseHandle, STILL_ACTIVE},
+            System::Threading::{
+                GetExitCodeProcess, OpenProcess, PROCESS_QUERY_LIMITED_INFORMATION,
+            },
+        };
+        let handle = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid) };
+        if handle.is_null() {
+            return false;
+        }
+        let mut code = 0u32;
+        let alive =
+            unsafe { GetExitCodeProcess(handle, &mut code) } != 0 && code == STILL_ACTIVE as u32;
+        unsafe { CloseHandle(handle) };
+        alive
+    }
+
+    #[cfg(not(windows))]
+    fn force_kill(pid: u32) {
+        unsafe { libc::kill(pid as i32, libc::SIGKILL) };
+    }
+
+    #[cfg(windows)]
+    fn force_kill(pid: u32) {
+        use windows_sys::Win32::{
+            Foundation::CloseHandle,
+            System::Threading::{OpenProcess, PROCESS_TERMINATE, TerminateProcess},
+        };
+        let handle = unsafe { OpenProcess(PROCESS_TERMINATE, 0, pid) };
+        if !handle.is_null() {
+            unsafe { TerminateProcess(handle, 1) };
+            unsafe { CloseHandle(handle) };
+        }
+    }
+
+    /// End-to-end test simulating the PyInstaller scenario from issue #1332.
+    ///
+    /// PyInstaller wraps the real application in a thin bootloader process.
+    /// Without process groups, killing the bootloader orphans the real app.
+    /// This test verifies that with `process_group` enabled, killing the
+    /// wrapper also kills the grandchild process.
+    #[test]
+    fn test_pyinstaller_simulation_without_process_group() {
+        // Without process_group: killing the wrapper does NOT kill the grandchild.
+        let (mut rx, child) = sim_command("pyinstaller_sim").spawn().unwrap();
+
+        let grandchild_pid = read_grandchild_pid(&mut rx);
+        assert!(
+            pid_alive(grandchild_pid),
+            "grandchild should be running before kill"
+        );
+
+        // Kill just the direct child (no process group)
+        child.kill().unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(100));
+
+        // The grandchild is STILL alive — this is the bug
+        assert!(
+            pid_alive(grandchild_pid),
+            "grandchild should survive when process_group is off"
+        );
+
+        // Clean up the orphaned grandchild. This also closes the inherited
+        // stdout pipe, which the Terminated event is gated on.
+        force_kill(grandchild_pid);
+        wait_for_terminated(rx);
+    }
+
+    #[test]
+    fn test_pyinstaller_simulation_with_process_group() {
+        // With process_group: killing the wrapper ALSO kills the grandchild.
+        let (mut rx, child) = sim_command("pyinstaller_sim")
+            .set_process_group(true)
+            .spawn()
+            .unwrap();
+
+        let grandchild_pid = read_grandchild_pid(&mut rx);
+        assert!(
+            pid_alive(grandchild_pid),
+            "grandchild should be running before kill"
+        );
+
+        // Kill the process group
+        child.kill().unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(100));
+
+        // The grandchild should now be DEAD
+        assert!(
+            !pid_alive(grandchild_pid),
+            "grandchild should be killed when process_group is on"
+        );
+
+        wait_for_terminated(rx);
+    }
+
+    /// The direct child exits right after starting a grandchild (like a launcher).
+    /// Killing the process group or job object afterwards must still kill the grandchild.
+    #[test]
+    fn test_process_group_kill_after_leader_exit() {
+        let (mut rx, child) = sim_command("launcher_sim")
+            .set_process_group(true)
+            .spawn()
+            .unwrap();
+
+        let grandchild_pid = read_grandchild_pid(&mut rx);
+
+        // Wait until the launcher has exited and been reaped.
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(30);
+        while child.inner.try_wait().unwrap().is_none() {
+            assert!(
+                std::time::Instant::now() < deadline,
+                "launcher should exit on its own"
+            );
+            std::thread::sleep(std::time::Duration::from_millis(50));
+        }
+        assert!(
+            pid_alive(grandchild_pid),
+            "grandchild should outlive the launcher"
+        );
+
+        child.kill().unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(100));
+
+        let alive = pid_alive(grandchild_pid);
+        if alive {
+            force_kill(grandchild_pid);
+        }
+        assert!(
+            !alive,
+            "grandchild should be killed even though the launcher already exited"
         );
     }
 }

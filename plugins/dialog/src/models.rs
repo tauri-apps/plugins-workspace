@@ -6,20 +6,15 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 /// Types of message, ask and confirm dialogs.
 #[non_exhaustive]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Default)]
 pub enum MessageDialogKind {
     /// Information dialog.
+    #[default]
     Info,
     /// Warning dialog.
     Warning,
     /// Error dialog.
     Error,
-}
-
-impl Default for MessageDialogKind {
-    fn default() -> Self {
-        Self::Info
-    }
 }
 
 impl<'de> Deserialize<'de> for MessageDialogKind {
@@ -46,6 +41,69 @@ impl Serialize for MessageDialogKind {
             Self::Info => serializer.serialize_str("info"),
             Self::Warning => serializer.serialize_str("warning"),
             Self::Error => serializer.serialize_str("error"),
+        }
+    }
+}
+
+/// Set of button that will be displayed on the dialog
+#[non_exhaustive]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub enum MessageDialogButtons {
+    #[default]
+    /// A single `Ok` button with OS default dialog text
+    Ok,
+    /// 2 buttons `Ok` and `Cancel` with OS default dialog texts
+    OkCancel,
+    /// 2 buttons `Yes` and `No` with OS default dialog texts
+    YesNo,
+    /// 3 buttons `Yes`, `No` and `Cancel` with OS default dialog texts
+    YesNoCancel,
+    /// A single `Ok` button with custom text
+    OkCustom(String),
+    /// 2 buttons `Ok` and `Cancel` with custom texts
+    OkCancelCustom(String, String),
+    /// 3 buttons `Yes`, `No` and `Cancel` with custom texts
+    YesNoCancelCustom(String, String, String),
+}
+
+/// Result of a message dialog
+#[derive(Debug, Default, Clone, PartialEq, Eq, Deserialize, Serialize)]
+pub enum MessageDialogResult {
+    /// The user pressed the `Yes` button.
+    Yes,
+    /// The user pressed the `No` button.
+    No,
+    /// The user pressed the `Ok` button.
+    Ok,
+    /// The user pressed the `Cancel` button, or closed the dialog without pressing a button.
+    #[default]
+    Cancel,
+    /// The user pressed a button with a custom label, holding that label's text.
+    #[serde(untagged)]
+    Custom(String),
+}
+
+#[cfg(desktop)]
+impl From<rfd::MessageDialogResult> for MessageDialogResult {
+    fn from(result: rfd::MessageDialogResult) -> Self {
+        match result {
+            rfd::MessageDialogResult::Yes => Self::Yes,
+            rfd::MessageDialogResult::No => Self::No,
+            rfd::MessageDialogResult::Ok => Self::Ok,
+            rfd::MessageDialogResult::Cancel => Self::Cancel,
+            rfd::MessageDialogResult::Custom(s) => Self::Custom(s),
+        }
+    }
+}
+
+impl From<String> for MessageDialogResult {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "Yes" => Self::Yes,
+            "No" => Self::No,
+            "Ok" => Self::Ok,
+            "Cancel" => Self::Cancel,
+            _ => Self::Custom(value),
         }
     }
 }

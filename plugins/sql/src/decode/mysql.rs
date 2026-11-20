@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 use serde_json::Value as JsonValue;
-use sqlx::{mysql::MySqlValueRef, TypeInfo, Value, ValueRef};
+use sqlx::{TypeInfo, Value, ValueRef, mysql::MySqlValueRef};
 use time::{Date, OffsetDateTime, PrimitiveDateTime, Time};
 
 use crate::Error;
@@ -21,7 +21,14 @@ pub(crate) fn to_json(v: MySqlValueRef) -> Result<JsonValue, Error> {
                 JsonValue::Null
             }
         }
-        "FLOAT" | "DOUBLE" => {
+        "FLOAT" => {
+            if let Ok(v) = ValueRef::to_owned(&v).try_decode::<f32>() {
+                JsonValue::from(v)
+            } else {
+                JsonValue::Null
+            }
+        }
+        "DOUBLE" => {
             if let Ok(v) = ValueRef::to_owned(&v).try_decode::<f64>() {
                 JsonValue::from(v)
             } else {

@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-register-action-types"
+description = "Enables the register_action_types command without any pre-configured scope."
+commands.allow = ["register_action_types"]
+
+[[permission]]
+identifier = "deny-register-action-types"
+description = "Denies the register_action_types command without any pre-configured scope."
+commands.deny = ["register_action_types"]

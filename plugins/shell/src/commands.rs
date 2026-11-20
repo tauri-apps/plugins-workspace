@@ -2,17 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use std::{collections::HashMap, path::PathBuf, string::FromUtf8Error};
+use std::{collections::HashMap, future::Future, path::PathBuf, pin::Pin, string::FromUtf8Error};
 
 use encoding_rs::Encoding;
 use serde::{Deserialize, Serialize};
-use tauri::{ipc::Channel, Manager, Runtime, State, Window};
+use tauri::{
+    Manager, Runtime, State, Window,
+    ipc::{Channel, CommandScope, GlobalScope},
+};
 
+#[allow(deprecated)]
+use crate::open::Program;
 use crate::{
-    open::Program,
+    Shell,
     process::{CommandEvent, TerminatedPayload},
     scope::ExecuteArgs,
-    Shell,
 };
 
 type ChildId = u32;
@@ -20,7 +24,7 @@ type ChildId = u32;
 #[derive(Debug, Clone, Serialize)]
 #[serde(tag = "event", content = "payload")]
 #[non_exhaustive]
-enum JSCommandEvent {
+pub enum JSCommandEvent {
     /// Stderr bytes until a newline (\n) or carriage return (\r) is found.
     Stderr(Buffer),
     /// Stdout bytes until a newline (\n) or carriage return (\r) is found.
@@ -84,6 +88,10 @@ pub struct CommandOptions {
     env: Option<HashMap<String, String>>,
     // Character encoding for stdout/stderr
     encoding: Option<String>,
+    // Spawn the child in a new process group (POSIX) or job object (Windows).
+    // When enabled, killing the child also kills all processes in the group.
+    #[serde(default)]
+    process_group: bool,
 }
 
 #[allow(clippy::unnecessary_wraps)]
@@ -91,22 +99,34 @@ fn default_env() -> Option<HashMap<String, String>> {
     Some(HashMap::default())
 }
 
-#[tauri::command]
-pub fn execute<R: Runtime>(
+#[inline(always)]
+fn prepare_cmd<R: Runtime>(
     window: Window<R>,
-    shell: State<'_, Shell<R>>,
     program: String,
     args: ExecuteArgs,
-    on_event: Channel,
     options: CommandOptions,
-) -> crate::Result<ChildId> {
+    command_scope: CommandScope<crate::scope::ScopeAllowedCommand>,
+    global_scope: GlobalScope<crate::scope::ScopeAllowedCommand>,
+) -> crate::Result<(crate::process::Command, EncodingWrapper)> {
+    let scope = crate::scope::ShellScope {
+        scopes: command_scope
+            .allows()
+            .iter()
+            .chain(global_scope.allows())
+            .collect(),
+    };
+
     let mut command = if options.sidecar {
         let program = PathBuf::from(program);
         let program_as_string = program.display().to_string();
-        let program_no_ext_as_string = program.with_extension("").display().to_string();
+        let has_extension = program.extension().is_some_and(|ext| ext == "exe");
+        let program_no_ext_as_string = if has_extension {
+            program.with_extension("").display().to_string()
+        } else {
+            program_as_string.clone()
+        };
         let configured_sidecar = window
             .config()
-            .tauri
             .bundle
             .external_bin
             .as_ref()
@@ -116,14 +136,12 @@ pub fn execute<R: Runtime>(
             })
             .cloned();
         if let Some(sidecar) = configured_sidecar {
-            shell
-                .scope
-                .prepare_sidecar(&program.to_string_lossy(), &sidecar, args)?
+            scope.prepare_sidecar(&program.to_string_lossy(), &sidecar, args)?
         } else {
             return Err(crate::Error::SidecarNotAllowed(program));
         }
     } else {
-        match shell.scope.prepare(&program, args) {
+        match scope.prepare(&program, args) {
             Ok(cmd) => cmd,
             Err(e) => {
                 #[cfg(debug_assertions)]
@@ -140,10 +158,17 @@ pub fn execute<R: Runtime>(
     } else {
         command = command.env_clear();
     }
+    if options.process_group {
+        command = command.set_process_group(true);
+    }
+
     let encoding = match options.encoding {
         Option::None => EncodingWrapper::Text(None),
         Some(encoding) => match encoding.as_str() {
-            "raw" => EncodingWrapper::Raw,
+            "raw" => {
+                command = command.set_raw_out(true);
+                EncodingWrapper::Raw
+            }
             _ => {
                 if let Some(text_encoding) = Encoding::for_label(encoding.as_bytes()) {
                     EncodingWrapper::Text(Some(text_encoding))
@@ -153,6 +178,81 @@ pub fn execute<R: Runtime>(
             }
         },
     };
+
+    Ok((command, encoding))
+}
+
+#[derive(Serialize)]
+#[serde(untagged)]
+enum Output {
+    String(String),
+    Raw(Vec<u8>),
+}
+
+#[derive(Serialize)]
+pub struct ChildProcessReturn {
+    code: Option<i32>,
+    signal: Option<i32>,
+    stdout: Output,
+    stderr: Output,
+}
+
+#[allow(clippy::too_many_arguments)]
+#[tauri::command]
+pub async fn execute<R: Runtime>(
+    window: Window<R>,
+    program: String,
+    args: ExecuteArgs,
+    options: CommandOptions,
+    command_scope: CommandScope<crate::scope::ScopeAllowedCommand>,
+    global_scope: GlobalScope<crate::scope::ScopeAllowedCommand>,
+) -> crate::Result<ChildProcessReturn> {
+    let (command, encoding) =
+        prepare_cmd(window, program, args, options, command_scope, global_scope)?;
+
+    let mut command: std::process::Command = command.into();
+    let output = command.output()?;
+
+    let (stdout, stderr) = match encoding {
+        EncodingWrapper::Text(Some(encoding)) => (
+            Output::String(encoding.decode_with_bom_removal(&output.stdout).0.into()),
+            Output::String(encoding.decode_with_bom_removal(&output.stderr).0.into()),
+        ),
+        EncodingWrapper::Text(None) => (
+            Output::String(String::from_utf8(output.stdout)?),
+            Output::String(String::from_utf8(output.stderr)?),
+        ),
+        EncodingWrapper::Raw => (Output::Raw(output.stdout), Output::Raw(output.stderr)),
+    };
+
+    #[cfg(unix)]
+    use std::os::unix::process::ExitStatusExt;
+
+    Ok(ChildProcessReturn {
+        code: output.status.code(),
+        #[cfg(windows)]
+        signal: None,
+        #[cfg(unix)]
+        signal: output.status.signal(),
+        stdout,
+        stderr,
+    })
+}
+
+#[allow(clippy::too_many_arguments)]
+#[tauri::command]
+pub fn spawn<R: Runtime>(
+    window: Window<R>,
+    shell: State<'_, Shell<R>>,
+    program: String,
+    args: ExecuteArgs,
+    on_event: Channel<JSCommandEvent>,
+    options: CommandOptions,
+    command_scope: CommandScope<crate::scope::ScopeAllowedCommand>,
+    global_scope: GlobalScope<crate::scope::ScopeAllowedCommand>,
+) -> crate::Result<ChildId> {
+    let (command, encoding) =
+        prepare_cmd(window, program, args, options, command_scope, global_scope)?;
 
     let (mut rx, child) = command.spawn()?;
 
@@ -166,7 +266,21 @@ pub fn execute<R: Runtime>(
                 children.lock().unwrap().remove(&pid);
             };
             let js_event = JSCommandEvent::new(event, encoding);
-            let _ = on_event.send(&js_event);
+
+            if on_event.send(js_event.clone()).is_err() {
+                fn send<'a>(
+                    on_event: &'a Channel<JSCommandEvent>,
+                    js_event: &'a JSCommandEvent,
+                ) -> Pin<Box<dyn Future<Output = ()> + Send + 'a>> {
+                    Box::pin(async move {
+                        tokio::time::sleep(std::time::Duration::from_millis(15)).await;
+                        if on_event.send(js_event.clone()).is_err() {
+                            send(on_event, js_event).await;
+                        }
+                    })
+                }
+                send(&on_event, &js_event).await;
+            }
         }
     });
 
@@ -189,24 +303,28 @@ pub fn stdin_write<R: Runtime>(
     Ok(())
 }
 
+// Async so waiting for the child to exit doesn't block the main thread.
 #[tauri::command]
-pub fn kill<R: Runtime>(
+pub async fn kill<R: Runtime>(
     _window: Window<R>,
     shell: State<'_, Shell<R>>,
     pid: ChildId,
 ) -> crate::Result<()> {
-    if let Some(child) = shell.children.lock().unwrap().remove(&pid) {
+    // Release the lock before killing, which waits for the child to exit.
+    let child = shell.children.lock().unwrap().remove(&pid);
+    if let Some(child) = child {
         child.kill()?;
     }
     Ok(())
 }
 
+#[allow(deprecated)]
 #[tauri::command]
-pub fn open<R: Runtime>(
+pub async fn open<R: Runtime>(
     _window: Window<R>,
     shell: State<'_, Shell<R>>,
     path: String,
     with: Option<Program>,
 ) -> crate::Result<()> {
-    shell.open(path, with)
+    crate::open::open(Some(&shell.open_scope), path, with)
 }

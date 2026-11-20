@@ -5,10 +5,17 @@ import org.gradle.api.GradleException
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
+import javax.inject.Inject
+import org.gradle.process.ExecOperations
 
-open class BuildTask : DefaultTask() {
+abstract class BuildTask : DefaultTask() {
+    @get:Inject
+    abstract val execOperations: ExecOperations
+
     @Input
     var rootDirRel: String? = null
+    @Input
+    var projectDir: String? = null
     @Input
     var target: String? = null
     @Input
@@ -16,12 +23,28 @@ open class BuildTask : DefaultTask() {
 
     @TaskAction
     fun assemble() {
-        val executable = """node""";
+        val executable = """pnpm""";
         try {
             runTauriCli(executable)
         } catch (e: Exception) {
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                runTauriCli("$executable.cmd")
+                // Try different Windows-specific extensions
+                val fallbacks = listOf(
+                    "$executable.exe",
+                    "$executable.cmd",
+                    "$executable.bat",
+                )
+
+                var lastException: Exception = e
+                for (fallback in fallbacks) {
+                    try {
+                        runTauriCli(fallback)
+                        return
+                    } catch (fallbackException: Exception) {
+                        lastException = fallbackException
+                    }
+                }
+                throw lastException
             } else {
                 throw e;
             }
@@ -32,15 +55,15 @@ open class BuildTask : DefaultTask() {
         val rootDirRel = rootDirRel ?: throw GradleException("rootDirRel cannot be null")
         val target = target ?: throw GradleException("target cannot be null")
         val release = release ?: throw GradleException("release cannot be null")
-        val args = listOf("/Users/lucas/projects/tauri/plugins-workspace/examples/api/./node_modules/.bin/../../../../node_modules/.pnpm/@tauri-apps+cli@2.0.0-alpha.14/node_modules/@tauri-apps/cli/tauri.js", "android", "android-studio-script");
+        val args = listOf("tauri", "android", "android-studio-script");
 
-        project.exec {
-            workingDir(File(project.projectDir, rootDirRel))
+        execOperations.exec {
+            workingDir(File(projectDir, rootDirRel))
             executable(executable)
             args(args)
-            if (project.logger.isEnabled(LogLevel.DEBUG)) {
+            if (logger.isEnabled(LogLevel.DEBUG)) {
                 args("-vv")
-            } else if (project.logger.isEnabled(LogLevel.INFO)) {
+            } else if (logger.isEnabled(LogLevel.INFO)) {
                 args("-v")
             }
             if (release) {

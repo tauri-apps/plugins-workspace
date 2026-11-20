@@ -2,19 +2,17 @@
 name = "single-instance-example"
 version = "0.1.0"
 description = "A Tauri App"
-authors = [ "You" ]
+authors = ["You"]
 repository = ""
-edition = "2021"
-rust-version = "1.65"
+edition = "2024"
+rust-version = "1.90"
 
 [dependencies]
-serde_json = { workspace = true }
 serde = { workspace = true }
-tauri = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true, features = ["wry", "common-controls-v6", "x11"] }
 tauri-plugin-single-instance = { path = "../../../" }
+tauri-plugin-cli = { path = "../../../../cli" }
 
 [build-dependencies]
 tauri-build = { workspace = true }
-
-[features]
-custom-protocol = [ "tauri/custom-protocol" ]

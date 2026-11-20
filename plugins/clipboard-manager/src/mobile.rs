@@ -3,12 +3,14 @@
 // SPDX-License-Identifier: MIT
 
 use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize};
 use tauri::{
-    plugin::{PluginApi, PluginHandle},
     AppHandle, Runtime,
+    image::Image,
+    plugin::{PluginApi, PluginHandle},
 };
 
-use crate::models::*;
+use std::borrow::Cow;
 
 #[cfg(target_os = "android")]
 const PLUGIN_IDENTIFIER: &str = "app.tauri.clipboard";
@@ -32,11 +34,137 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct Clipboard<R: Runtime>(PluginHandle<R>);
 
 impl<R: Runtime> Clipboard<R> {
-    pub fn write(&self, kind: ClipKind) -> crate::Result<()> {
-        self.0.run_mobile_plugin("write", kind).map_err(Into::into)
+    /// Writes plain text to the system clipboard, without a label.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::Error::PluginInvoke`] if the underlying mobile plugin call fails.
+    pub fn write_text<'a, T: Into<Cow<'a, str>>>(&self, text: T) -> crate::Result<()> {
+        let text = text.into().to_string();
+        self.0
+            .run_mobile_plugin("writeText", ClipKind::PlainText { text, label: None })
+            .map_err(Into::into)
     }
 
-    pub fn read(&self) -> crate::Result<ClipboardContents> {
-        self.0.run_mobile_plugin("read", ()).map_err(Into::into)
+    /// Writes plain text to the system clipboard along with a label describing the content.
+    ///
+    /// The label is only used on Android (it becomes the `ClipData` label); iOS ignores it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::Error::PluginInvoke`] if the underlying mobile plugin call fails.
+    pub fn write_text_with_label<'a, T: Into<Cow<'a, str>>>(
+        &self,
+        text: T,
+        label: T,
+    ) -> crate::Result<()> {
+        let text = text.into().to_string();
+        let label = label.into().to_string();
+        self.0
+            .run_mobile_plugin(
+                "writeText",
+                ClipKind::PlainText {
+                    text,
+                    label: Some(label),
+                },
+            )
+            .map_err(Into::into)
     }
+
+    /// Not supported on mobile.
+    ///
+    /// # Errors
+    ///
+    /// Always returns [`crate::Error::Clipboard`].
+    pub fn write_image(&self, _image: &Image<'_>) -> crate::Result<()> {
+        Err(crate::Error::Clipboard(
+            "Unsupported on this platform".to_string(),
+        ))
+    }
+
+    /// Reads the system clipboard as plain text.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::Error::PluginInvoke`] if the underlying mobile plugin call fails.
+    pub fn read_text(&self) -> crate::Result<String> {
+        self.0
+            .run_mobile_plugin("readText", ())
+            .map(|c| match c {
+                ClipboardContents::PlainText { text } => text,
+            })
+            .map_err(Into::into)
+    }
+
+    /// Not supported on mobile.
+    ///
+    /// # Errors
+    ///
+    /// Always returns [`crate::Error::Clipboard`].
+    pub fn read_image(&self) -> crate::Result<Image<'_>> {
+        Err(crate::Error::Clipboard(
+            "Unsupported on this platform".to_string(),
+        ))
+    }
+
+    // Treat HTML as unsupported on mobile until tested
+    /// Not supported on mobile.
+    ///
+    /// # Errors
+    ///
+    /// Always returns [`crate::Error::Clipboard`].
+    pub fn write_html<'a, T: Into<Cow<'a, str>>>(
+        &self,
+        _html: T,
+        _alt_text: Option<T>,
+    ) -> crate::Result<()> {
+        Err(crate::Error::Clipboard(
+            "Unsupported on this platform".to_string(),
+        ))
+    }
+
+    /// Writes plain text to the system clipboard, marked as sensitive.
+    ///
+    /// On Android the clip is flagged with `ClipDescription.EXTRA_IS_SENSITIVE`, which hides it
+    /// from the clipboard preview. On iOS the text is written as local only, so it is not
+    /// synced to other devices through Universal Clipboard.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::Error::PluginInvoke`] if the underlying mobile plugin call fails.
+    pub fn write_secret<'a, T: Into<Cow<'a, str>>>(&self, text: T) -> crate::Result<()> {
+        let text = text.into().to_string();
+        self.0
+            .run_mobile_plugin("writeSecret", WriteSecretArgs { text })
+            .map_err(Into::into)
+    }
+
+    /// Clears the system clipboard.
+    ///
+    /// On Android this only works on SDK 28 and above; on older versions the clipboard is
+    /// instead overwritten with an empty string.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::Error::PluginInvoke`] if the underlying mobile plugin call fails.
+    pub fn clear(&self) -> crate::Result<()> {
+        self.0.run_mobile_plugin("clear", ()).map_err(Into::into)
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+enum ClipKind {
+    PlainText { label: Option<String>, text: String },
+}
+
+#[derive(Debug, Serialize)]
+struct WriteSecretArgs {
+    text: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+enum ClipboardContents {
+    PlainText { text: String },
 }

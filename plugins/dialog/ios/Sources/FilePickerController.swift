@@ -95,16 +95,33 @@ public class FilePickerController: NSObject {
 			return nil
 		}
 	}
-
+    
+	/// ## In which cases do we need to save a copy of a file selected by a user to the app sandbox?
+	/// In short, only when the file is **not** selected using UIDocumentPickerDelegate.
+	/// For the rest of the cases, we need to write a copy of the file to the app sandbox. 
+	/// 
+	/// For PHPicker (used for photos and videos), `NSItemProvider.loadFileRepresentation` returns a temporary file URL that is deleted after the completion handler.
+	/// The recommendation is to [Persist](https://developer.apple.com/documentation/foundation/nsitemprovider/2888338-loadfilerepresentation) the file by moving/copying
+	/// it to your app’s directory within the completion handler.
+	/// 
+	/// If available, `loadInPlaceFileRepresentation` can open a file in place; Photos assets typically do not support true in-place access,
+	/// so fall back to persisting a local file.
+	/// Ref: https://developer.apple.com/documentation/foundation/nsitemprovider/2888335-loadinplacefilerepresentation
+	/// 
+	/// For UIDocumentPicker, prefer "open in place" and avoid copying when possible.
+	/// Ref: https://developer.apple.com/documentation/uikit/uidocumentpickerviewcontroller
 	private func saveTemporaryFile(_ sourceUrl: URL) throws -> URL {
+
 		var directory = URL(fileURLWithPath: NSTemporaryDirectory())
 		if let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first {
 			directory = cachesDirectory
 		}
+		
 		let targetUrl = directory.appendingPathComponent(sourceUrl.lastPathComponent)
 		do {
 			try deleteFile(targetUrl)
 		}
+
 		try FileManager.default.copyItem(at: sourceUrl, to: targetUrl)
 		return targetUrl
 	}
@@ -119,8 +136,7 @@ public class FilePickerController: NSObject {
 extension FilePickerController: UIDocumentPickerDelegate {
 	public func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
 		do {
-			let temporaryUrls = try urls.map { try saveTemporaryFile($0) }
-			self.plugin.onFilePickerEvent(.selected(temporaryUrls))
+			self.plugin.onFilePickerEvent(.selected(urls))
 		} catch {
 			self.plugin.onFilePickerEvent(.error("Failed to create a temporary copy of the file"))
 		}
@@ -191,6 +207,8 @@ extension FilePickerController: PHPickerViewControllerDelegate {
 						return
 					}
 					do {
+						// We have to make a copy of the file to the app sandbox here, as PHPicker returns an NSItemProvider with either an ephemeral file URL or content that is deleted after the completion handler.
+						// This is a different behavior from UIDocumentPicker, where the file can either be copied to the app sandbox or opened in place, and then accessed with `startAccessingSecurityScopedResource`.
 						let temporaryUrl = try self.saveTemporaryFile(url)
 						temporaryUrls.append(temporaryUrl)
 					} catch {
@@ -212,6 +230,8 @@ extension FilePickerController: PHPickerViewControllerDelegate {
 						return
 					}
 					do {
+						// We have to make a copy of the file to the app sandbox here, as PHPicker returns an NSItemProvider with either an ephemeral file URL or content that is deleted after the completion handler.
+						// This is a different behavior from UIDocumentPicker, where the file can either be copied to the app sandbox or opened in place, and then accessed with `startAccessingSecurityScopedResource`.
 						let temporaryUrl = try self.saveTemporaryFile(url)
 						temporaryUrls.append(temporaryUrl)
 					} catch {

@@ -6,12 +6,14 @@ As you create PRs and make changes that require a version bump, please add a new
 
 When you select the version bump required, you do _not_ need to consider dependencies. Only note the package with the actual change, and any packages that depend on that package will be bumped automatically in the process.
 
+**Note, that in this repository, even if only the Rust code or only the JavaScript code of a plugin changed, both packages need to be bumped with the same increment!**
+
 Use the following format:
 
 ```md
 ---
 "package-a": patch
-"package-b": minor
+"package-b": minor:feat
 ---
 
 Change summary goes here

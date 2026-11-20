@@ -1,0 +1,82 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+# Scopes Section
+# This section contains scopes, which define file level access
+
+[[permission]]
+identifier = "scope-home-recursive"
+description = "This scope permits recursive access to the complete `$HOME` folder, including sub directories and files."
+
+[[permission.scope.allow]]
+path = "$HOME"
+[[permission.scope.allow]]
+path = "$HOME/**"
+
+[[permission]]
+identifier = "scope-home"
+description = "This scope permits access to all files and list content of top level directories in the `$HOME` folder."
+
+[[permission.scope.allow]]
+path = "$HOME"
+[[permission.scope.allow]]
+path = "$HOME/*"
+
+[[permission]]
+identifier = "scope-home-index"
+description = "This scope permits to list all files and folders in the `$HOME`folder."
+
+[[permission.scope.allow]]
+path = "$HOME"
+
+# Sets Section
+# This section combines the scope elements with enablement of commands
+
+[[set]]
+identifier = "allow-home-read-recursive"
+description = "This allows full recursive read access to the complete `$HOME` folder, files and subdirectories."
+permissions = [
+    "read-all",
+    "scope-home-recursive"
+]
+
+[[set]]
+identifier = "allow-home-write-recursive"
+description = "This allows full recursive write access to the complete `$HOME` folder, files and subdirectories."
+permissions = [
+    "write-all",
+    "scope-home-recursive"
+]
+
+[[set]]
+identifier = "allow-home-read"
+description = "This allows non-recursive read access to the `$HOME` folder."
+permissions = [
+    "read-all",
+    "scope-home"
+]
+
+[[set]]
+identifier = "allow-home-write"
+description = "This allows non-recursive write access to the `$HOME` folder."
+permissions = [
+    "write-all",
+    "scope-home"
+]
+
+[[set]]
+identifier = "allow-home-meta-recursive"
+description = "This allows full recursive read access to metadata of the `$HOME` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-home-recursive"
+]
+
+[[set]]
+identifier = "allow-home-meta"
+description = "This allows non-recursive read access to metadata of the `$HOME` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-home-index"
+]

@@ -42,7 +42,7 @@ fn main() {
                         std::process::exit(0);
                     }
                     Ok(None) => {
-                        std::process::exit(0);
+                        std::process::exit(2);
                     }
                     Err(e) => {
                         println!("{e}");

@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-is-registered"
+description = "Enables the is_registered command without any pre-configured scope."
+commands.allow = ["is_registered"]
+
+[[permission]]
+identifier = "deny-is-registered"
+description = "Denies the is_registered command without any pre-configured scope."
+commands.deny = ["is_registered"]

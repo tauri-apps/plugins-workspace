@@ -1,0 +1,82 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+# Scopes Section
+# This section contains scopes, which define file level access
+
+[[permission]]
+identifier = "scope-download-recursive"
+description = "This scope permits recursive access to the complete `$DOWNLOAD` folder, including sub directories and files."
+
+[[permission.scope.allow]]
+path = "$DOWNLOAD"
+[[permission.scope.allow]]
+path = "$DOWNLOAD/**"
+
+[[permission]]
+identifier = "scope-download"
+description = "This scope permits access to all files and list content of top level directories in the `$DOWNLOAD` folder."
+
+[[permission.scope.allow]]
+path = "$DOWNLOAD"
+[[permission.scope.allow]]
+path = "$DOWNLOAD/*"
+
+[[permission]]
+identifier = "scope-download-index"
+description = "This scope permits to list all files and folders in the `$DOWNLOAD`folder."
+
+[[permission.scope.allow]]
+path = "$DOWNLOAD"
+
+# Sets Section
+# This section combines the scope elements with enablement of commands
+
+[[set]]
+identifier = "allow-download-read-recursive"
+description = "This allows full recursive read access to the complete `$DOWNLOAD` folder, files and subdirectories."
+permissions = [
+    "read-all",
+    "scope-download-recursive"
+]
+
+[[set]]
+identifier = "allow-download-write-recursive"
+description = "This allows full recursive write access to the complete `$DOWNLOAD` folder, files and subdirectories."
+permissions = [
+    "write-all",
+    "scope-download-recursive"
+]
+
+[[set]]
+identifier = "allow-download-read"
+description = "This allows non-recursive read access to the `$DOWNLOAD` folder."
+permissions = [
+    "read-all",
+    "scope-download"
+]
+
+[[set]]
+identifier = "allow-download-write"
+description = "This allows non-recursive write access to the `$DOWNLOAD` folder."
+permissions = [
+    "write-all",
+    "scope-download"
+]
+
+[[set]]
+identifier = "allow-download-meta-recursive"
+description = "This allows full recursive read access to metadata of the `$DOWNLOAD` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-download-recursive"
+]
+
+[[set]]
+identifier = "allow-download-meta"
+description = "This allows non-recursive read access to metadata of the `$DOWNLOAD` folder, including file listing and statistics."
+permissions = [
+    "read-meta",
+    "scope-download-index"
+]

@@ -1,0 +1,8 @@
+"$schema" = "schemas/schema.json"
+
+[[set]]
+identifier = "create-app-specific-dirs"
+description = """
+This permissions allows to create the application specific directories.
+"""
+permissions = ["allow-mkdir", "scope-app-index"]

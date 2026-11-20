@@ -1,10 +1,6 @@
-# Copyright 2019-2023 Tauri Programme within The Commons Conservancy
-# SPDX-License-Identifier: Apache-2.0
-# SPDX-License-Identifier: MIT
-
 name: deep-link-example
 options:
-  bundleIdPrefix: com.tauri
+  bundleIdPrefix: com.tauri.deep-link-example
   deploymentTarget:
     iOS: 13.0
 fileGroups: [../../src]
@@ -16,7 +12,6 @@ settingGroups:
     base:
       PRODUCT_NAME: deep-link-example
       PRODUCT_BUNDLE_IDENTIFIER: com.tauri.deep-link-example
-      DEVELOPMENT_TEAM: Q93MBH6S2F
 targetTemplates:
   app:
     type: application
@@ -40,6 +35,7 @@ targets:
       - path: assets
         buildPhase: resources
         type: folder
+      - path: LaunchScreen.storyboard
     info:
       path: deep-link-example_iOS/Info.plist
       properties:
@@ -55,8 +51,8 @@ targets:
           - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
-        CFBundleShortVersionString: 0.0.0
-        CFBundleVersion: 0.0.0
+        CFBundleShortVersionString: 0.1.0
+        CFBundleVersion: '0.1.0'
     entitlements:
       path: deep-link-example_iOS/deep-link-example_iOS.entitlements
     scheme:
@@ -66,15 +62,15 @@ targets:
     settings:
       base:
         ENABLE_BITCODE: false
-        ARCHS: [arm64, arm64-sim]
-        VALID_ARCHS: arm64  arm64-sim
-        LIBRARY_SEARCH_PATHS[arch=x86_64]: $(inherited) $(PROJECT_DIR)/Externals/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)
-        LIBRARY_SEARCH_PATHS[arch=arm64]: $(inherited) $(PROJECT_DIR)/Externals/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)
-        LIBRARY_SEARCH_PATHS[arch=arm64-sim]: $(inherited) $(PROJECT_DIR)/Externals/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)
+        ARCHS: [arm64]
+        VALID_ARCHS: arm64
+        LIBRARY_SEARCH_PATHS[arch=x86_64]: $(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)
+        LIBRARY_SEARCH_PATHS[arch=arm64]: $(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)
         ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: true
+        EXCLUDED_ARCHS[sdk=iphoneos*]: x86_64
       groups: [app]
     dependencies:
-      - framework: libdeep_link_example.a
+      - framework: libapp.a
         embed: false
       - sdk: CoreGraphics.framework
       - sdk: Metal.framework
@@ -88,5 +84,5 @@ targets:
         name: Build Rust Code
         basedOnDependencyAnalysis: false
         outputFiles:
-          - $(SRCROOT)/target/aarch64-apple-ios/${CONFIGURATION}/deps/libdeep_link_example.a
-          - $(SRCROOT)/target/x86_64-apple-ios/${CONFIGURATION}/deps/libdeep_link_example.a
+          - $(SRCROOT)/Externals/x86_64/${CONFIGURATION}/libapp.a
+          - $(SRCROOT)/Externals/arm64/${CONFIGURATION}/libapp.a

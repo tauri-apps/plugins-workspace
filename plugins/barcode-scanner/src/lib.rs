@@ -2,14 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+//! Scan QR codes, EAN-13 and other kinds of barcodes with the device's camera.
+//!
+//! - Supported platforms: Android and iOS.
+
 #![cfg(mobile)]
 
 use tauri::{
-    plugin::{Builder, PluginHandle, TauriPlugin},
     Manager, Runtime,
+    plugin::{Builder, PluginHandle, TauriPlugin},
 };
-
-pub use models::*;
 
 mod error;
 mod models;
@@ -27,8 +29,9 @@ pub struct BarcodeScanner<R: Runtime>(PluginHandle<R>);
 
 impl<R: Runtime> BarcodeScanner<R> {}
 
-/// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the barcode scanner APIs.
+/// Extensions to [`tauri::App`], [`tauri::AppHandle`], [`tauri::WebviewWindow`], [`tauri::Webview`] and [`tauri::Window`] to access the barcode scanner APIs.
 pub trait BarcodeScannerExt<R: Runtime> {
+    /// Returns the [`BarcodeScanner`] instance managed by the app.
     fn barcode_scanner(&self) -> &BarcodeScanner<R>;
 }
 
@@ -40,7 +43,7 @@ impl<R: Runtime, T: Manager<R>> crate::BarcodeScannerExt<R> for T {
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("barcodeScanner")
+    Builder::new("barcode-scanner")
         .setup(|app, api| {
             #[cfg(target_os = "android")]
             let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "BarcodeScannerPlugin")?;

@@ -7,7 +7,13 @@ import Tauri
 import UIKit
 import WebKit
 
-enum SupportedFormat: String, CaseIterable {
+struct ScanOptions: Decodable {
+  var formats: [SupportedFormat]?
+  var windowed: Bool?
+  var cameraDirection: String?
+}
+
+enum SupportedFormat: String, CaseIterable, Decodable {
   // UPC_A not supported
   case UPC_E
   case EAN_8
@@ -21,8 +27,11 @@ enum SupportedFormat: String, CaseIterable {
   case DATA_MATRIX
   case PDF_417
   case QR_CODE
+  case GS1_DATA_BAR
+  case GS1_DATA_BAR_LIMITED
+  case GS1_DATA_BAR_EXPANDED
 
-  var value: AVMetadataObject.ObjectType {
+  var value: AVMetadataObject.ObjectType? {
     switch self {
     case .UPC_E: return AVMetadataObject.ObjectType.upce
     case .EAN_8: return AVMetadataObject.ObjectType.ean8
@@ -35,6 +44,24 @@ enum SupportedFormat: String, CaseIterable {
     case .DATA_MATRIX: return AVMetadataObject.ObjectType.dataMatrix
     case .PDF_417: return AVMetadataObject.ObjectType.pdf417
     case .QR_CODE: return AVMetadataObject.ObjectType.qr
+    case .GS1_DATA_BAR:
+      if #available(iOS 15.4, *) {
+        return AVMetadataObject.ObjectType.gs1DataBar
+      } else {
+        return nil
+      }
+    case .GS1_DATA_BAR_LIMITED:
+      if #available(iOS 15.4, *) {
+        return AVMetadataObject.ObjectType.gs1DataBarLimited
+      } else {
+        return nil
+      }
+    case .GS1_DATA_BAR_EXPANDED:
+      if #available(iOS 15.4, *) {
+        return AVMetadataObject.ObjectType.gs1DataBarExpanded
+      } else {
+        return nil
+      }
     }
   }
 }
@@ -164,6 +191,7 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
     if self.captureSession != nil {
       self.captureSession!.stopRunning()
       self.cameraView.removePreviewLayer()
+      self.cameraView.removeFromSuperview()
       self.captureVideoPreviewLayer = nil
       self.metaOutput = nil
       self.captureSession = nil
@@ -232,35 +260,57 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
     }
   }
 
-  private func runScanner(_ invoke: Invoke) {
+  private func runScanner(_ invoke: Invoke, args: ScanOptions) {
+    if getPermissionState() != "granted" {
+      invoke.reject("Camera permission denied or not yet requested")
+      return
+    }
+
     scanFormats = [AVMetadataObject.ObjectType]()
 
-    if (invoke.data["formats"]) != nil {
-      let _scanFormats = invoke.getArray("formats", String.self)
+    (args.formats ?? []).forEach { format in
+      if let formatValue = format.value {
+        scanFormats.append(formatValue)
+      } else {
+        invoke.reject("Unsupported barcode format on this iOS version: \(format)")
+        return
+      }
+    }
 
-      if _scanFormats != nil && _scanFormats?.count ?? 0 > 0 {
-        _scanFormats?.forEach { targetedFormat in
-          if let value = SupportedFormat(rawValue: targetedFormat)?.value {
-            scanFormats.append(value)
-          }
+    if scanFormats.isEmpty {
+      for supportedFormat in SupportedFormat.allCases {
+        if let formatValue = supportedFormat.value {
+          scanFormats.append(formatValue)
         }
       }
     }
 
-    if scanFormats.count == 0 {
-      for supportedFormat in SupportedFormat.allCases {
-        scanFormats.append(supportedFormat.value)
-      }
-    }
-
     self.metaOutput!.metadataObjectTypes = self.scanFormats
-    self.captureSession!.startRunning()
+    DispatchQueue.main.async {
+      self.captureSession!.startRunning()
+    }
 
     self.isScanning = true
   }
 
-  @objc private func scan(_ invoke: Invoke) {
+  @objc private func scan(_ invoke: Invoke) throws {
+    let args = try invoke.parseArgs(ScanOptions.self)
+
     self.invoke = invoke
+
+    let entry = Bundle.main.infoDictionary?["NSCameraUsageDescription"] as? String
+
+    if entry == nil || entry?.count == 0 {
+      invoke.reject("NSCameraUsageDescription is not in the app Info.plist")
+      return
+    }
+
+    // Check if camera is available on this platform (iOS simulator doesn't have cameras)
+    let availableVideoDevices = discoverCaptureDevices()
+    if availableVideoDevices.isEmpty {
+      invoke.reject("No camera available on this device (e.g., iOS Simulator)")
+      return
+    }
 
     var iOS14min: Bool = false
     if #available(iOS 14.0, *) { iOS14min = true }
@@ -279,22 +329,23 @@ class BarcodeScannerPlugin: Plugin, AVCaptureMetadataOutputObjectsDelegate {
       self.loadCamera()
       self.dismantleCamera()
       self.setupCamera(
-        direction: invoke.getString("cameraDirection") ?? "back",
-        windowed: invoke.getBool("windowed") ?? false
+        direction: args.cameraDirection ?? "back",
+        windowed: args.windowed ?? false
       )
-      self.runScanner(invoke)
+      self.runScanner(invoke, args: args)
     }
   }
 
   @objc private func cancel(_ invoke: Invoke) {
-    self.invoke?.reject("cancelled")
-
-    destroy()
-    invoke.resolve()
+    DispatchQueue.main.async { [self] in
+      self.invoke?.reject("cancelled")
+      self.destroy()
+      invoke.resolve()
+    }
   }
 }
 
 @_cdecl("init_plugin_barcode_scanner")
-func initPlugin() -> Plugin {
+public func initPlugin() -> Plugin {
   return BarcodeScannerPlugin()
 }

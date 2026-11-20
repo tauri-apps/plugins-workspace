@@ -1,0 +1,12 @@
+# Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: MIT
+
+#blank_issues_enabled: false
+contact_links:
+  - name: 💡 Request a new plugin
+    url: https://github.com/orgs/tauri-apps/discussions/new?category=plugin-requests
+    about: Propose a new Plugin to the community or the Tauri org.
+  - name: 💬 Discord Chat
+    url: https://discord.com/invite/tauri
+    about: Ask questions and talk to other Tauri users and the maintainers

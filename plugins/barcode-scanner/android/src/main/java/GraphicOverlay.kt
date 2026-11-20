@@ -91,22 +91,10 @@ class GraphicOverlay: View {
                 return
             }
 
-            val zLowerBoundInScreenPixel: Float
-            val zUpperBoundInScreenPixel: Float
-            if (rescaleZForVisualization) {
-                zLowerBoundInScreenPixel = (-0.001f).coerceAtMost(scale(zMin))
-                zUpperBoundInScreenPixel = 0.001f.coerceAtLeast(scale(zMax))
-            } else {
-                val defaultRangeFactor = 1f
-                zLowerBoundInScreenPixel = -defaultRangeFactor * canvas.width
-                zUpperBoundInScreenPixel = defaultRangeFactor * canvas.width
-            }
             val zInScreenPixel = scale(zInImagePixel)
             if (zInScreenPixel < 0) {
-                val v = (zInScreenPixel / zLowerBoundInScreenPixel * 255).toInt()
                 paint.setARGB(0, 0, 255, 0)
             } else {
-                val v = (zInScreenPixel / zUpperBoundInScreenPixel * 255).toInt()
                 paint.setARGB(0, 0, 255, 0)
             }
         }
@@ -180,7 +168,7 @@ class GraphicOverlay: View {
         needUpdateTransformation = false
     }
 
-    override fun onDraw(canvas: Canvas?) {
+    override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         synchronized(lock) {
             updateTransformationIfNeeded()
