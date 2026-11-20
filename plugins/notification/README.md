@@ -101,7 +101,7 @@ You can add sound to your notifications on all platforms (desktop and mobile):
 
 ```javascript
 import { sendNotification } from '@tauri-apps/plugin-notification'
-import { platform } from '@tauri-apps/api/os'
+import { platform } from '@tauri-apps/plugin-os'
 
 // Basic notification with sound
 sendNotification({
@@ -115,7 +115,7 @@ async function sendPlatformSpecificNotification() {
   const platformName = platform()
 
   let soundPath
-  if (platformName === 'darwin') {
+  if (platformName === 'macos') {
     // On macOS: use system sounds or sound files in the app bundle
     soundPath = 'Ping' // macOS system sound
   } else if (platformName === 'linux') {
