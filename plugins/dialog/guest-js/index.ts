@@ -352,12 +352,12 @@ type OpenDialogReturn<T extends OpenDialogOptions> = T['directory'] extends true
  * @example
  * ```typescript
  * import { open } from '@tauri-apps/plugin-dialog';
- * import { appDir } from '@tauri-apps/api/path';
+ * import { appDataDir } from '@tauri-apps/api/path';
  * // Open a selection dialog for directories
  * const selected = await open({
  *   directory: true,
  *   multiple: true,
- *   defaultPath: await appDir(),
+ *   defaultPath: await appDataDir(),
  * });
  * if (Array.isArray(selected)) {
  *   // user selected multiple directories
