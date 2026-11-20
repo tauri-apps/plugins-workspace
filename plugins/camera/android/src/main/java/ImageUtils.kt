@@ -11,7 +11,6 @@ import android.net.Uri
 import androidx.exifinterface.media.ExifInterface
 import app.tauri.Logger
 import java.io.IOException
-import java.io.InputStream
 import java.lang.Integer.min
 import kotlin.math.roundToInt
 
@@ -92,8 +91,8 @@ object ImageUtils {
   @Throws(IOException::class)
   private fun getOrientation(c: Context, imageUri: Uri): Int {
     var result = 0
-    c.getContentResolver().openInputStream(imageUri).use { iStream ->
-      val exifInterface = ExifInterface(iStream!!)
+    c.contentResolver.openInputStream(imageUri)?.use { iStream ->
+      val exifInterface = ExifInterface(iStream)
       val orientation: Int = exifInterface.getAttributeInt(
         ExifInterface.TAG_ORIENTATION,
         ExifInterface.ORIENTATION_NORMAL
@@ -109,21 +108,13 @@ object ImageUtils {
     return result
   }
 
-  fun getExifData(c: Context, bitmap: Bitmap?, imageUri: Uri): ExifWrapper {
-    var stream: InputStream? = null
+  fun getExifData(c: Context, imageUri: Uri): ExifWrapper {
     try {
-      stream = c.getContentResolver().openInputStream(imageUri)
-      val exifInterface = ExifInterface(stream!!)
-      return ExifWrapper(exifInterface)
+      c.contentResolver.openInputStream(imageUri)?.use { stream ->
+        return ExifWrapper(ExifInterface(stream))
+      }
     } catch (ex: IOException) {
       Logger.error("Error loading exif data from image", ex)
-    } finally {
-      if (stream != null) {
-        try {
-          stream.close()
-        } catch (ignored: IOException) {
-        }
-      }
     }
     return ExifWrapper(null)
   }

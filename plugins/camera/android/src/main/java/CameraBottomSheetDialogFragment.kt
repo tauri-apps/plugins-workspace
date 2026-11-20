@@ -84,7 +84,6 @@ class CameraBottomSheetDialogFragment : BottomSheetDialogFragment() {
     layout.addView(ttv)
     for (i in options!!.indices) {
       val tv = TextView(context)
-      tv.setTextColor(Color.parseColor("#000000"))
       tv.setPadding(layoutPaddingPx12, layoutPaddingPx12, layoutPaddingPx12, layoutPaddingPx12)
       tv.text = options!![i]
       tv.setOnClickListener {

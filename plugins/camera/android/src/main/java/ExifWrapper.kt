@@ -169,34 +169,31 @@ class ExifWrapper(private val exif: ExifInterface?) {
     if (exif == null) {
       return ret
     }
-    for (i in attributes.indices) {
-      p(ret, attributes[i])
+    for (tag in attributes) {
+      ret.put(tag, exif.getAttribute(tag))
     }
     return ret
   }
 
-  fun p(o: JSObject, tag: String?) {
-    val value = exif!!.getAttribute(tag!!)
-    o.put(tag, value)
-  }
-
+  /** Writes the attributes to the given JPEG file. */
   fun copyExif(destFile: String?) {
+    if (exif == null || destFile == null) {
+      return
+    }
     try {
-      val destExif = ExifInterface(
-        destFile!!
-      )
-      for (i in attributes.indices) {
-        val value = exif!!.getAttribute(attributes[i])
+      val destExif = ExifInterface(destFile)
+      for (tag in attributes) {
+        val value = exif.getAttribute(tag)
         if (value != null) {
-          destExif.setAttribute(attributes[i], value)
+          destExif.setAttribute(tag, value)
         }
       }
       destExif.saveAttributes()
-    } catch (_: java.lang.Exception) {
+    } catch (_: Exception) {
     }
   }
 
   fun resetOrientation() {
-    exif!!.resetOrientation()
+    exif?.resetOrientation()
   }
 }

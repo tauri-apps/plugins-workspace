@@ -83,7 +83,8 @@
         "updater",
         "geolocation",
         "haptics",
-        "torch"
+        "torch",
+        "camera"
       ]
     },
     "api-example-js": {
@@ -108,7 +109,8 @@
         "shell-js",
         "store-js",
         "updater-js",
-        "torch-js"
+        "torch-js",
+        "camera-js"
       ],
       "postversion": "pnpm install --no-frozen-lockfile"
     },
@@ -141,6 +143,14 @@
     },
     "biometric-js": {
       "path": "./plugins/biometric",
+      "manager": "javascript"
+    },
+    "camera": {
+      "path": "./plugins/camera",
+      "manager": "rust"
+    },
+    "camera-js": {
+      "path": "./plugins/camera",
       "manager": "javascript"
     },
     "cli": {

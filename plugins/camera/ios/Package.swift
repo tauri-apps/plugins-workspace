@@ -2,14 +2,14 @@
 // Copyright 2019-2023 Tauri Programme within The Commons Conservancy
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
-// The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
   name: "tauri-plugin-camera",
   platforms: [
-    .iOS(.v11)
+    .macOS(.v10_13),
+    .iOS(.v13),
   ],
   products: [
     // Products define the executables and libraries a package produces, and make them visible to other packages.

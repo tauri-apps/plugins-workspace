@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+import AVFoundation
+import ImageIO
 import Photos
 import PhotosUI
 import Tauri
@@ -9,61 +11,59 @@ import UIKit
 import WebKit
 
 public class CameraPlugin: Plugin {
+  // the request waiting for the user, see `resolve`, `reject` and `cancel`
   private var invoke: Invoke?
   private var settings = CameraSettings()
-  private let defaultSource = CameraSource.prompt
-  private let defaultDirection = CameraDirection.rear
+  // whether the pending request is `pickImages`
   private var multiple = false
-
-  private var imageCounter = 0
+  // keeps the saver alive until the system reports the result
+  private var imageSaver: ImageSaver?
 
   @objc override public func checkPermissions(_ invoke: Invoke) {
-    var result: [String: Any] = [:]
-    for permission in CameraPermissionType.allCases {
-      let state: String
-      switch permission {
-      case .camera:
-        state = AVCaptureDevice.authorizationStatus(for: .video).authorizationState
-      case .photos:
-        if #available(iOS 14, *) {
-          state = PHPhotoLibrary.authorizationStatus(for: .readWrite).authorizationState
-        } else {
-          state = PHPhotoLibrary.authorizationStatus().authorizationState
-        }
-      }
-      result[permission.rawValue] = state
-    }
+    let result: JsonObject = [
+      CameraPermissionType.camera.rawValue:
+        AVCaptureDevice.authorizationStatus(for: .video).authorizationState,
+      CameraPermissionType.photos.rawValue: photosAuthorizationStatus().authorizationState,
+    ]
     invoke.resolve(result)
   }
 
   @objc override public func requestPermissions(_ invoke: Invoke) {
-    // get the list of desired types, if passed
-    let typeList =
-      invoke.getArray("permissions", String.self)?.compactMap({ (type) -> CameraPermissionType? in
-        return CameraPermissionType(rawValue: type)
-      }) ?? []
-    // otherwise check everything
-    let permissions: [CameraPermissionType] =
-      (typeList.count > 0) ? typeList : CameraPermissionType.allCases
-    // request the permissions
+    let permissions: [CameraPermissionType]
+    do {
+      permissions =
+        try invoke.parseArgs(RequestPermissionsArgs.self).permissions
+        ?? CameraPermissionType.allCases
+    } catch {
+      invoke.reject(error.localizedDescription)
+      return
+    }
+
+    // the system terminates the app if it prompts without the usage description
+    for permission in permissions {
+      if let message = missingUsageDescription(permission.usageDescriptionKey) {
+        invoke.reject(message)
+        return
+      }
+    }
+
     let group = DispatchGroup()
     for permission in permissions {
+      group.enter()
       switch permission {
       case .camera:
-        group.enter()
         AVCaptureDevice.requestAccess(for: .video) { _ in
           group.leave()
         }
       case .photos:
-        group.enter()
         if #available(iOS 14, *) {
-          PHPhotoLibrary.requestAuthorization(for: .readWrite) { (_) in
+          PHPhotoLibrary.requestAuthorization(for: .addOnly) { _ in
             group.leave()
           }
         } else {
-          PHPhotoLibrary.requestAuthorization({ (_) in
+          PHPhotoLibrary.requestAuthorization { _ in
             group.leave()
-          })
+          }
         }
       }
     }
@@ -72,96 +72,19 @@ public class CameraPlugin: Plugin {
     }
   }
 
-  @objc func pickLimitedLibraryPhotos(_ invoke: Invoke) {
-    if #available(iOS 14, *) {
-      PHPhotoLibrary.requestAuthorization(for: .readWrite) { (granted) in
-        if granted == .limited {
-          if let viewController = self.manager.viewController {
-            if #available(iOS 15, *) {
-              PHPhotoLibrary.shared().presentLimitedLibraryPicker(from: viewController) { _ in
-                self.getLimitedLibraryPhotos(invoke)
-              }
-            } else {
-              PHPhotoLibrary.shared().presentLimitedLibraryPicker(from: viewController)
-              invoke.resolve([
-                "photos": []
-              ])
-            }
-          }
-        } else {
-          invoke.resolve([
-            "photos": []
-          ])
-        }
-      }
-    } else {
-      invoke.unavailable("Not available on iOS 13")
-    }
-  }
+  @objc public func getPhoto(_ invoke: Invoke) throws {
+    let settings = CameraSettings(try invoke.parseArgs(ImageOptions.self))
 
-  @objc func getLimitedLibraryPhotos(_ invoke: Invoke) {
-    if #available(iOS 14, *) {
-      PHPhotoLibrary.requestAuthorization(for: .readWrite) { (granted) in
-        if granted == .limited {
-
-          self.invoke = invoke
-
-          DispatchQueue.global(qos: .utility).async {
-            let assets = PHAsset.fetchAssets(with: .image, options: nil)
-            var processedImages: [ProcessedImage] = []
-
-            let imageManager = PHImageManager.default()
-            let options = PHImageRequestOptions()
-            options.deliveryMode = .highQualityFormat
-
-            let group = DispatchGroup()
-
-            for index in 0...(assets.count - 1) {
-              let asset = assets.object(at: index)
-              let fullSize = CGSize(width: asset.pixelWidth, height: asset.pixelHeight)
-
-              group.enter()
-              imageManager.requestImage(
-                for: asset, targetSize: fullSize, contentMode: .default, options: options
-              ) { image, _ in
-                guard let image = image else {
-                  group.leave()
-                  return
-                }
-                processedImages.append(self.processedImage(from: image, with: asset.imageData))
-                group.leave()
-              }
-            }
-
-            group.notify(queue: .global(qos: .utility)) { [weak self] in
-              self?.returnImages(processedImages)
-            }
-          }
-        } else {
-          invoke.resolve([
-            "photos": []
-          ])
-        }
-      }
-    } else {
-      invoke.unavailable("Not available on iOS 13")
-    }
-  }
-
-  @objc func getPhoto(_ invoke: Invoke) {
-    self.multiple = false
-    self.invoke = invoke
-    self.settings = cameraSettings(from: invoke)
-
-    // Make sure they have all the necessary info.plist settings
-    if let missingUsageDescription = checkUsageDescriptions() {
-      Logger.error("[PLUGIN]", "Camera", "-", missingUsageDescription)
-      invoke.reject(missingUsageDescription)
+    if settings.saveToGallery,
+      let message = missingUsageDescription(.photoLibraryAddUsage)
+    {
+      invoke.reject(message)
       return
     }
 
     DispatchQueue.main.async {
-      switch self.settings.source {
+      self.start(invoke, settings: settings, multiple: false)
+      switch settings.source {
       case .prompt:
         self.showPrompt()
       case .camera:
@@ -172,60 +95,64 @@ public class CameraPlugin: Plugin {
     }
   }
 
-  @objc func pickImages(_ invoke: Invoke) {
-    self.multiple = true
-    self.invoke = invoke
-    self.settings = cameraSettings(from: invoke)
+  @objc public func pickImages(_ invoke: Invoke) throws {
+    var settings = CameraSettings(try invoke.parseArgs(ImageOptions.self))
+    // the images are always returned as files
+    settings.resultType = .uri
+    settings.saveToGallery = false
+    settings.allowEditing = false
+
     DispatchQueue.main.async {
+      self.start(invoke, settings: settings, multiple: true)
       self.showPhotos()
     }
   }
 
-  private func checkUsageDescriptions() -> String? {
-    if let dict = Bundle.main.infoDictionary {
-      for key in CameraPropertyListKeys.allCases where dict[key.rawValue] == nil {
-        return key.missingMessage
-      }
-    }
-    return nil
+  /// Makes `invoke` the pending request. A request that is still pending is cancelled.
+  private func start(_ invoke: Invoke, settings: CameraSettings, multiple: Bool) {
+    cancel()
+    self.invoke = invoke
+    self.settings = settings
+    self.multiple = multiple
   }
 
-  private func cameraSettings(from invoke: Invoke) -> CameraSettings {
-    var settings = CameraSettings()
-    settings.jpegQuality = min(abs(CGFloat(invoke.getFloat("quality") ?? 100.0)) / 100.0, 1.0)
-    settings.allowEditing = invoke.getBool("allowEditing") ?? false
-    settings.source =
-      CameraSource(rawValue: invoke.getString("source") ?? defaultSource.rawValue) ?? defaultSource
-    settings.direction =
-      CameraDirection(rawValue: invoke.getString("direction") ?? defaultDirection.rawValue)
-      ?? defaultDirection
-    if let typeString = invoke.getString("resultType"),
-      let type = CameraResultType(rawValue: typeString)
-    {
-      settings.resultType = type
-    }
-    settings.saveToGallery = invoke.getBool("saveToGallery") ?? false
+  private func resolve(_ data: JsonObject) {
+    invoke?.resolve(data)
+    invoke = nil
+  }
 
-    // Get the new image dimensions if provided
-    settings.width = CGFloat(invoke.getInt("width") ?? 0)
-    settings.height = CGFloat(invoke.getInt("height") ?? 0)
-    if settings.width > 0 || settings.height > 0 {
-      // We resize only if a dimension was provided
-      settings.shouldResize = true
-    }
-    settings.shouldCorrectOrientation = invoke.getBool("correctOrientation") ?? true
-    settings.userPromptText = CameraPromptText(
-      title: invoke.getString("promptLabelHeader"),
-      photoAction: invoke.getString("promptLabelPhoto"),
-      cameraAction: invoke.getString("promptLabelPicture"),
-      cancelAction: invoke.getString("promptLabelCancel"))
-    if let styleString = invoke.getString("presentationStyle"), styleString == "popover" {
-      settings.presentationStyle = .popover
+  private func reject(_ message: String) {
+    invoke?.reject(message)
+    invoke = nil
+  }
+
+  /// Resolves the pending request as cancelled by the user: no image for `getPhoto`, an empty list
+  /// for `pickImages`.
+  private func cancel() {
+    if multiple {
+      let data: JsonObject = ["images": [JsonObject]()]
+      invoke?.resolve(data)
     } else {
-      settings.presentationStyle = .fullScreen
+      invoke?.resolve()
     }
+    invoke = nil
+  }
 
-    return settings
+  private func photosAuthorizationStatus() -> PHAuthorizationStatus {
+    // the plugin only needs the library to save pictures: picking images needs no permission
+    if #available(iOS 14, *) {
+      return PHPhotoLibrary.authorizationStatus(for: .addOnly)
+    } else {
+      return PHPhotoLibrary.authorizationStatus()
+    }
+  }
+
+  /// Returns an error message if the app's Info.plist does not have the given usage description.
+  private func missingUsageDescription(_ key: CameraPropertyListKeys) -> String? {
+    if Bundle.main.object(forInfoDictionaryKey: key.rawValue) == nil {
+      return key.missingMessage
+    }
+    return nil
   }
 }
 
@@ -235,17 +162,11 @@ extension CameraPlugin: UIImagePickerControllerDelegate, UINavigationControllerD
 {
   public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
     picker.dismiss(animated: true)
-    self.invoke?.reject("User cancelled photos app")
-  }
-
-  public func popoverPresentationControllerDidDismissPopover(
-    _ popoverPresentationController: UIPopoverPresentationController
-  ) {
-    self.invoke?.reject("User cancelled photos app")
+    cancel()
   }
 
   public func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
-    self.invoke?.reject("User cancelled photos app")
+    cancel()
   }
 
   public func imagePickerController(
@@ -256,7 +177,7 @@ extension CameraPlugin: UIImagePickerControllerDelegate, UINavigationControllerD
       if let processedImage = self.processImage(from: info) {
         self.returnProcessedImage(processedImage)
       } else {
-        self.invoke?.reject("Error processing image")
+        self.reject("Error processing image")
       }
     }
   }
@@ -266,155 +187,135 @@ extension CameraPlugin: UIImagePickerControllerDelegate, UINavigationControllerD
 extension CameraPlugin: PHPickerViewControllerDelegate {
   public func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
     picker.dismiss(animated: true, completion: nil)
-    guard let result = results.first else {
-      self.invoke?.reject("User cancelled photos app")
+    if results.isEmpty {
+      cancel()
       return
     }
-    if multiple {
-      var images: [ProcessedImage] = []
-      var processedCount = 0
-      for img in results {
-        guard img.itemProvider.canLoadObject(ofClass: UIImage.self) else {
-          self.invoke?.reject("Error loading image")
+
+    // The images are loaded from their data instead of as UIImage to also get their metadata,
+    // which otherwise is only available from the photo library, i.e. with its permission.
+    let group = DispatchGroup()
+    let lock = NSLock()
+    var images = [ProcessedImage?](repeating: nil, count: results.count)
+    for (index, result) in results.enumerated() {
+      group.enter()
+      result.itemProvider.loadDataRepresentation(forTypeIdentifier: "public.image") {
+        [weak self] (data, _) in
+        defer { group.leave() }
+        guard let self = self, let data = data, let image = UIImage(data: data) else {
           return
         }
-        // extract the image
-        img.itemProvider.loadObject(ofClass: UIImage.self) { [weak self] (reading, _) in
-          if let image = reading as? UIImage {
-            var asset: PHAsset?
-            if let assetId = img.assetIdentifier {
-              asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil).firstObject
-            }
-            if let processedImage = self?.processedImage(from: image, with: asset?.imageData) {
-              images.append(processedImage)
-            }
-            processedCount += 1
-            if processedCount == results.count {
-              self?.returnImages(images)
-            }
-          } else {
-            self?.invoke?.reject("Error loading image")
-          }
-        }
+        var processedImage = self.processedImage(from: image, with: self.metadata(from: data))
+        processedImage.flags = .gallery
+        lock.lock()
+        images[index] = processedImage
+        lock.unlock()
       }
+    }
 
-    } else {
-      guard result.itemProvider.canLoadObject(ofClass: UIImage.self) else {
-        self.invoke?.reject("Error loading image")
+    group.notify(queue: DispatchQueue.global(qos: .userInitiated)) { [weak self] in
+      guard let self = self else {
         return
       }
-      // extract the image
-      result.itemProvider.loadObject(ofClass: UIImage.self) { [weak self] (reading, _) in
-        if let image = reading as? UIImage {
-          var asset: PHAsset?
-          if let assetId = result.assetIdentifier {
-            asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil).firstObject
-          }
-          if var processedImage = self?.processedImage(from: image, with: asset?.imageData) {
-            processedImage.flags = .gallery
-            self?.returnProcessedImage(processedImage)
-            return
-          }
-        }
-        self?.invoke?.reject("Error loading image")
+      let loadedImages = images.compactMap { $0 }
+      if loadedImages.count != results.count {
+        self.reject("Error loading image")
+      } else if self.multiple {
+        self.returnImages(loadedImages)
+      } else {
+        self.returnProcessedImage(loadedImages[0])
       }
     }
   }
 }
 
 extension CameraPlugin {
+  /// Encodes the image and resolves the pending `getPhoto` request with it.
   fileprivate func returnImage(_ processedImage: ProcessedImage, isSaved: Bool) {
-    guard let jpeg = processedImage.generateJPEG(with: settings.jpegQuality) else {
-      self.invoke?.reject("Unable to convert image to jpeg")
-      return
-    }
+    DispatchQueue.global(qos: .userInitiated).async {
+      guard let jpeg = processedImage.generateJPEG(with: self.settings.jpegQuality) else {
+        self.reject("Unable to convert image to jpeg")
+        return
+      }
 
-    if settings.resultType == CameraResultType.uri || multiple {
-      guard let fileURL = try? saveTemporaryImage(jpeg),
-        let webURL = manager.assetUrl(fromLocalURL: fileURL)
-      else {
-        invoke?.reject("Unable to get asset URL to file")
-        return
+      switch self.settings.resultType {
+      case .uri:
+        guard let result = self.fileResult(jpeg, processedImage, isSaved: isSaved) else {
+          self.reject("Unable to write the image to a file")
+          return
+        }
+        self.resolve(result)
+      case .base64, .dataURL:
+        var data = jpeg.base64EncodedString()
+        if self.settings.resultType == .dataURL {
+          data = "data:image/jpeg;base64," + data
+        }
+        let result: JsonObject = [
+          "data": data,
+          "exif": processedImage.exifData,
+          "format": "jpeg",
+          "saved": isSaved,
+        ]
+        self.resolve(result)
       }
-      if self.multiple {
-        invoke?.resolve([
-          "photos": [
-            [
-              "data": fileURL.absoluteString,
-              "exif": processedImage.exifData,
-              "assetUrl": webURL.absoluteString,
-              "format": "jpeg",
-            ]
-          ]
-        ])
-        return
-      }
-      invoke?.resolve([
-        "data": fileURL.absoluteString,
-        "exif": processedImage.exifData,
-        "assetUrl": webURL.absoluteString,
-        "format": "jpeg",
-        "saved": isSaved,
-      ])
-    } else if settings.resultType == CameraResultType.base64 {
-      self.invoke?.resolve([
-        "data": jpeg.base64EncodedString(),
-        "exif": processedImage.exifData,
-        "format": "jpeg",
-        "saved": isSaved,
-      ])
-    } else if settings.resultType == CameraResultType.dataURL {
-      invoke?.resolve([
-        "data": "data:image/jpeg;base64," + jpeg.base64EncodedString(),
-        "exif": processedImage.exifData,
-        "format": "jpeg",
-        "saved": isSaved,
-      ])
     }
   }
 
+  /// Encodes the images and resolves the pending `pickImages` request with them.
   fileprivate func returnImages(_ processedImages: [ProcessedImage]) {
-    var photos: [JsonObject] = []
-    for processedImage in processedImages {
-      guard let jpeg = processedImage.generateJPEG(with: settings.jpegQuality) else {
-        self.invoke?.reject("Unable to convert image to jpeg")
-        return
+    DispatchQueue.global(qos: .userInitiated).async {
+      var images: [JsonObject] = []
+      for processedImage in processedImages {
+        guard let jpeg = processedImage.generateJPEG(with: self.settings.jpegQuality) else {
+          self.reject("Unable to convert image to jpeg")
+          return
+        }
+        guard let result = self.fileResult(jpeg, processedImage, isSaved: false) else {
+          self.reject("Unable to write the image to a file")
+          return
+        }
+        images.append(result)
       }
-
-      guard let fileURL = try? saveTemporaryImage(jpeg),
-        let webURL = manager.assetUrl(fromLocalURL: fileURL)
-      else {
-        invoke?.reject("Unable to get asset URL to file")
-        return
-      }
-
-      photos.append([
-        "path": fileURL.absoluteString,
-        "exif": processedImage.exifData,
-        "assetUrl": webURL.absoluteString,
-        "format": "jpeg",
-      ])
+      let result: JsonObject = ["images": images]
+      self.resolve(result)
     }
-    invoke?.resolve([
-      "photos": photos
-    ])
+  }
+
+  /// Writes the JPEG to a temporary file and returns the result describing it.
+  fileprivate func fileResult(_ jpeg: Data, _ processedImage: ProcessedImage, isSaved: Bool)
+    -> JsonObject?
+  {
+    guard let fileURL = try? saveTemporaryImage(jpeg),
+      let webURL = manager.assetUrl(fromLocalURL: fileURL)
+    else {
+      return nil
+    }
+    return [
+      "data": fileURL.absoluteString,
+      "exif": processedImage.exifData,
+      "assetUrl": webURL.absoluteString,
+      "format": "jpeg",
+      "saved": isSaved,
+    ]
   }
 
   fileprivate func returnProcessedImage(_ processedImage: ProcessedImage) {
-    // conditionally save the image
+    if multiple {
+      returnImages([processedImage])
+      return
+    }
+    // images picked from the gallery are already there, unless they were edited
     if settings.saveToGallery
-      && (processedImage.flags.contains(.edited) == true
-        || processedImage.flags.contains(.gallery) == false)
+      && (processedImage.flags.contains(.edited) || !processedImage.flags.contains(.gallery))
     {
-      _ = ImageSaver(image: processedImage.image) { error in
-        var isSaved = false
-        if error == nil {
-          isSaved = true
+      DispatchQueue.main.async {
+        self.imageSaver = ImageSaver(image: processedImage.image) { error in
+          self.imageSaver = nil
+          self.returnImage(processedImage, isSaved: error == nil)
         }
-        self.returnImage(processedImage, isSaved: isSaved)
       }
     } else {
-      self.returnImage(processedImage, isSaved: false)
+      returnImage(processedImage, isSaved: false)
     }
   }
 
@@ -441,10 +342,18 @@ extension CameraPlugin {
       UIAlertAction(
         title: settings.userPromptText.cancelAction, style: .cancel,
         handler: { [weak self] (_: UIAlertAction) in
-          self?.invoke?.reject("User cancelled photos app prompt")
+          self?.cancel()
         }))
     UIUtils.centerPopover(rootViewController: manager.viewController, popoverController: alert)
-    self.manager.viewController?.present(alert, animated: true, completion: nil)
+    present(alert)
+  }
+
+  fileprivate func present(_ controller: UIViewController) {
+    guard let viewController = manager.viewController else {
+      reject("Unable to present the view: the app has no view controller")
+      return
+    }
+    viewController.present(controller, animated: true, completion: nil)
   }
 
   fileprivate func showCamera() {
@@ -452,48 +361,37 @@ extension CameraPlugin {
     if manager.isSimEnvironment
       || !UIImagePickerController.isSourceTypeAvailable(UIImagePickerController.SourceType.camera)
     {
-      Logger.error("[PLUGIN]", "Camera", "-", "Camera not available in simulator")
-      invoke?.reject("Camera not available while running in Simulator")
+      reject("Camera not available on this device or while running in the Simulator")
+      return
+    }
+    if let message = missingUsageDescription(.cameraUsage) {
+      reject(message)
       return
     }
     // check for permission
     let authStatus = AVCaptureDevice.authorizationStatus(for: .video)
     if authStatus == .restricted || authStatus == .denied {
-      invoke?.reject("User denied access to camera")
+      reject("User denied access to camera")
       return
     }
     // we either already have permission or can prompt
     AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
-      if granted {
-        DispatchQueue.main.async {
+      DispatchQueue.main.async {
+        if granted {
           self?.presentCameraPicker()
+        } else {
+          self?.reject("User denied access to camera")
         }
-      } else {
-        self?.invoke?.reject("User denied access to camera")
       }
     }
   }
 
   fileprivate func showPhotos() {
-    // check for permission
-    let authStatus = PHPhotoLibrary.authorizationStatus()
-    if authStatus == .restricted || authStatus == .denied {
-      invoke?.reject("User denied access to photos")
-      return
-    }
-    // we either already have permission or can prompt
-    if authStatus == .authorized {
-      presentSystemAppropriateImagePicker()
+    // neither picker needs a permission: the app only gets the images the user selects
+    if #available(iOS 14, *) {
+      presentPhotoPicker()
     } else {
-      PHPhotoLibrary.requestAuthorization({ [weak self] (status) in
-        if status == PHAuthorizationStatus.authorized {
-          DispatchQueue.main.async { [weak self] in
-            self?.presentSystemAppropriateImagePicker()
-          }
-        } else {
-          self?.invoke?.reject("User denied access to photos")
-        }
-      })
+      presentImagePicker()
     }
   }
 
@@ -509,21 +407,7 @@ extension CameraPlugin {
     {
       picker.cameraDevice = .front
     }
-    // present
-    picker.modalPresentationStyle = settings.presentationStyle
-    if settings.presentationStyle == .popover {
-      picker.popoverPresentationController?.delegate = self
-      UIUtils.centerPopover(rootViewController: manager.viewController, popoverController: picker)
-    }
-    manager.viewController?.present(picker, animated: true, completion: nil)
-  }
-
-  fileprivate func presentSystemAppropriateImagePicker() {
-    if #available(iOS 14, *) {
-      presentPhotoPicker()
-    } else {
-      presentImagePicker()
-    }
+    presentPicker(picker)
   }
 
   fileprivate func presentImagePicker() {
@@ -532,41 +416,45 @@ extension CameraPlugin {
     picker.allowsEditing = self.settings.allowEditing
     // select the input
     picker.sourceType = .photoLibrary
-    // present
-    picker.modalPresentationStyle = settings.presentationStyle
-    if settings.presentationStyle == .popover {
-      picker.popoverPresentationController?.delegate = self
-      UIUtils.centerPopover(rootViewController: manager.viewController, popoverController: picker)
-    }
-    manager.viewController?.present(picker, animated: true, completion: nil)
+    presentPicker(picker)
   }
 
   @available(iOS 14, *)
   fileprivate func presentPhotoPicker() {
-    var configuration = PHPickerConfiguration(photoLibrary: PHPhotoLibrary.shared())
-    configuration.selectionLimit = self.multiple ? (self.invoke?.getInt("limit") ?? 0) : 1
+    var configuration = PHPickerConfiguration()
+    // 0 means no limit
+    configuration.selectionLimit = multiple ? settings.limit : 1
     configuration.filter = .images
     let picker = PHPickerViewController(configuration: configuration)
     picker.delegate = self
-    // present
+    presentPicker(picker)
+  }
+
+  fileprivate func presentPicker(_ picker: UIViewController) {
     picker.modalPresentationStyle = settings.presentationStyle
     if settings.presentationStyle == .popover {
       picker.popoverPresentationController?.delegate = self
       UIUtils.centerPopover(rootViewController: manager.viewController, popoverController: picker)
     }
-    manager.viewController?.present(picker, animated: true, completion: nil)
+    present(picker)
   }
 
   fileprivate func saveTemporaryImage(_ data: Data) throws -> URL {
-    var url: URL
-    repeat {
-      imageCounter += 1
-      url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(
-        "photo-\(imageCounter).jpg")
-    } while FileManager.default.fileExists(atPath: url.path)
-
+    let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(
+      "photo-\(UUID().uuidString).jpg")
     try data.write(to: url, options: .atomic)
     return url
+  }
+
+  /// Reads the metadata (EXIF, GPS, orientation...) embedded in the image data.
+  fileprivate func metadata(from data: Data) -> [String: Any] {
+    let options = [kCGImageSourceShouldCache as String: kCFBooleanFalse] as CFDictionary
+    guard let source = CGImageSourceCreateWithData(data as CFData, options),
+      let metadata = CGImageSourceCopyPropertiesAtIndex(source, 0, options) as? [String: Any]
+    else {
+      return [:]
+    }
+    return metadata
   }
 
   fileprivate func processImage(from info: [UIImagePickerController.InfoKey: Any])
@@ -591,6 +479,7 @@ extension CameraPlugin {
     } else {
       flags = flags.union([.gallery])
     }
+    // only set if the app has access to the photo library
     if let asset = info[UIImagePickerController.InfoKey.phAsset] as? PHAsset {
       metadata = asset.imageData
     }

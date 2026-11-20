@@ -9,6 +9,7 @@ import type * as Autostart from '@tauri-apps/plugin-autostart'
 import type * as BarcodeScanner from '@tauri-apps/plugin-barcode-scanner'
 import type * as Biometric from '@tauri-apps/plugin-biometric'
 import type * as Cli from '@tauri-apps/plugin-cli'
+import type * as Camera from '@tauri-apps/plugin-camera'
 import type * as ClipboardManager from '@tauri-apps/plugin-clipboard-manager'
 import type * as DeepLink from '@tauri-apps/plugin-deep-link'
 import type * as Dialog from '@tauri-apps/plugin-dialog'
@@ -70,6 +71,7 @@ export interface DesktopPluginApi {
 /** The plugin APIs the example only registers on mobile (`#[cfg(mobile)]`). */
 export interface MobilePluginApi {
   barcodeScanner: typeof BarcodeScanner
+  camera: typeof Camera
   geolocation: typeof Geolocation
   haptics: typeof Haptics
   nfc: typeof Nfc
@@ -265,7 +267,7 @@ export interface DescribePluginOptions {
   desktopOnly?: boolean
   /**
    * The example only registers the plugin on mobile (`barcode-scanner`,
-   * `geolocation`, `haptics`, `nfc`), so the whole suite is skipped on
+   * `camera`, `geolocation`, `haptics`, `nfc`), so the whole suite is skipped on
    * desktop.
    */
   mobileOnly?: boolean
