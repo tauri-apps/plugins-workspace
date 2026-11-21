@@ -115,7 +115,7 @@ jobs:
           # the deep-link tests drive the real XDG tools
           sudo apt-get install -y xdg-utils desktop-file-utils
 
-      - uses: dtolnay/rust-toolchain@1.90
+      - uses: dtolnay/rust-toolchain@1.96
         with:
           targets: ${{ matrix.platform.target }}
 
