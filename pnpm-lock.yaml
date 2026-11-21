@@ -300,8 +300,8 @@ importers:
         specifier: workspace:*
         version: link:../../plugins/websocket
       '@zerodevx/svelte-json-view':
-        specifier: 2.0.1
-        version: 2.0.1(svelte@5.57.2(@typescript-eslint/types@8.72.1))
+        specifier: 2.0.2
+        version: 2.0.2(svelte@5.57.2(@typescript-eslint/types@8.72.1))
     devDependencies:
       '@iconify-json/codicon':
         specifier: ^1.2.49
@@ -2275,8 +2275,8 @@ packages:
     resolution: {integrity: sha512-5AXjrcMClTryPe9LgZrygpB1lj7s0S9E0+W+AHaVKAVyHanafK86iPSvG5xHVSp/jC+VH1UXu0TAEmY279xH7A==}
     engines: {node: '>=14.6'}
 
-  '@zerodevx/svelte-json-view@2.0.1':
-    resolution: {integrity: sha512-nZJOkUdN8uzPHjZTqr5344SXyfyjHzFuQEBfexnfAZiE558mx4lnrROtKTPv9OplwiDASp197WhVjaWQcKcLTQ==}
+  '@zerodevx/svelte-json-view@2.0.2':
+    resolution: {integrity: sha512-3O7EjjaW9ol9r2N7N1cGQd8HXlJbfK5EnAXh+byuiheafFC3POOuQV3tJxZh/ftE3Kv1mGmAVwt14yfMWGVEEw==}
     peerDependencies:
       svelte: ^5.0.0
     peerDependenciesMeta:
@@ -6010,7 +6010,7 @@ snapshots:
 
   '@xmldom/xmldom@0.9.12': {}
 
-  '@zerodevx/svelte-json-view@2.0.1(svelte@5.57.2(@typescript-eslint/types@8.72.1))':
+  '@zerodevx/svelte-json-view@2.0.2(svelte@5.57.2(@typescript-eslint/types@8.72.1))':
     optionalDependencies:
       svelte: 5.57.2(@typescript-eslint/types@8.72.1)
 
