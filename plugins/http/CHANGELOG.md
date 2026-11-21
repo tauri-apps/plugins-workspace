@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.9.1]
+
+- [`068bc7cc`](https://github.com/tauri-apps/plugins-workspace/commit/068bc7cc8ca9df26fb2feffd1cb3f6a89be5b851) ([#3786](https://github.com/tauri-apps/plugins-workspace/pull/3786) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix request cancellation, including signals supplied through `Request` objects, abort-listener cleanup, and concurrent response-body reads. `fetch_cancel` and `fetch_cancel_body` now only close the plugin's own requests and responses, instead of any resource id they are given.
+- [`068bc7cc`](https://github.com/tauri-apps/plugins-workspace/commit/068bc7cc8ca9df26fb2feffd1cb3f6a89be5b851) ([#3786](https://github.com/tauri-apps/plugins-workspace/pull/3786) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix HTTP resource leaks on cancellation, errors, navigation, window close, and bodyless responses, including WebKit memory leaks. Clean up abandoned responses after garbage collection on supported webviews and reject response statuses outside 200–599.
+- [`068bc7cc`](https://github.com/tauri-apps/plugins-workspace/commit/068bc7cc8ca9df26fb2feffd1cb3f6a89be5b851) ([#3786](https://github.com/tauri-apps/plugins-workspace/pull/3786) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix loss of response URLs and headers when cloning a previously cloned response.
+
 ## [2.9.0]
 
 - [`b11126ea`](https://github.com/tauri-apps/plugins-workspace/commit/b11126eae6dad431ce9e84d1c471bfca2e53bdf8) ([#3756](https://github.com/tauri-apps/plugins-workspace/pull/3756) by [@Lorkydey](https://github.com/tauri-apps/plugins-workspace/../../Lorkydey)) Release native HTTP response resources for responses with no body, such as `204 No Content`, even when the response is never read.
