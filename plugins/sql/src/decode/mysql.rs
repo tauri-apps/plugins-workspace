@@ -86,8 +86,15 @@ pub(crate) fn to_json(v: MySqlValueRef) -> Result<JsonValue, Error> {
             }
         }
         "JSON" => ValueRef::to_owned(&v).try_decode().unwrap_or_default(),
-        "TINIYBLOB" | "MEDIUMBLOB" | "BLOB" | "LONGBLOB" => {
-            if let Ok(v) = ValueRef::to_owned(&v).try_decode::<Vec<u8>>() {
+        // MySQL reports text columns with a binary collation (e.g. `utf8mb4_bin`) using the
+        // BINARY flag, so they show up here as BINARY/VARBINARY/BLOB. sqlx only decodes a
+        // `String` when the column's collation is not `binary`, so try that first and fall
+        // back to raw bytes for real binary data.
+        "BINARY" | "VARBINARY" | "TINYBLOB" | "MEDIUMBLOB" | "BLOB" | "LONGBLOB" => {
+            let owned = ValueRef::to_owned(&v);
+            if let Ok(v) = owned.try_decode::<String>() {
+                JsonValue::String(v)
+            } else if let Ok(v) = owned.try_decode::<Vec<u8>>() {
                 JsonValue::Array(v.into_iter().map(|n| JsonValue::Number(n.into())).collect())
             } else {
                 JsonValue::Null
