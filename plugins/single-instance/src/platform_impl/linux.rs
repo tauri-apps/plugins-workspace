@@ -5,26 +5,55 @@
 #[cfg(feature = "semver")]
 use crate::semver_compat::semver_compat_string;
 
+use std::{future::Future, thread};
+
 use crate::{SingleInstanceCallback, manage_instance_lock};
 use tauri::{
     AppHandle, Resource, Runtime,
     plugin::{self, TauriPlugin},
 };
-use zbus::{blocking::Connection, interface, names::WellKnownName};
+use tokio::runtime::{Handle, RuntimeFlavor};
+use zbus::{Connection, ObjectPath, connection, interface, names::WellKnownName};
+
+/// Runs `future` on Tauri's async runtime. A connection built in it keeps being served after this
+/// returns: on Tauri's runtime when zbus's `tokio` feature is enabled anywhere in the app, and on
+/// zbus's own runtime otherwise. Unlike `zbus::block_on`, this works with either feature. The
+/// short-lived thread is there because [`tauri::async_runtime::block_on`] panics on a thread that
+/// is already inside a Tokio runtime.
+fn block_on<F: Future + Send>(future: F) -> F::Output
+where
+    F::Output: Send,
+{
+    thread::scope(|scope| {
+        let thread = scope.spawn(|| tauri::async_runtime::block_on(future));
+        // The future may need the runtime's workers, such as for the task that reads the
+        // connection's replies, while this thread could be the only one.
+        block_in_place(|| thread.join()).unwrap_or_else(|panic| std::panic::resume_unwind(panic))
+    })
+}
+
+/// Tells Tokio that `f` may block when this thread is a worker of a multi-thread runtime, which
+/// hands the worker's other duties, such as polling for I/O, to another thread in the meantime.
+fn block_in_place<T>(f: impl FnOnce() -> T) -> T {
+    match Handle::try_current() {
+        Ok(handle) if handle.runtime_flavor() == RuntimeFlavor::MultiThread => {
+            tokio::task::block_in_place(f)
+        }
+        _ => f(),
+    }
+}
 
 /// Owns the D-Bus name, released when the app exits (see [`crate::destroy`]).
 struct InstanceLock {
     connection: Connection,
-    name: String,
+    name: WellKnownName<'static>,
 }
 
 impl Resource for InstanceLock {}
 
 impl Drop for InstanceLock {
     fn drop(&mut self) {
-        if let Ok(name) = WellKnownName::try_from(self.name.as_str()) {
-            let _ = self.connection.release_name(name);
-        }
+        let _ = block_on(self.connection.release_name(&self.name));
     }
 }
 
@@ -36,7 +65,9 @@ struct SingleInstanceDBus<R: Runtime> {
 #[interface(name = "org.SingleInstance.DBus")]
 impl<R: Runtime> SingleInstanceDBus<R> {
     fn execute_callback(&mut self, argv: Vec<String>, cwd: String) {
-        (self.callback)(&self.app_handle, argv, cwd);
+        // The callback runs in a task on Tauri's runtime, or on zbus's own runtime when zbus's
+        // `tokio` feature is not enabled.
+        block_in_place(|| (self.callback)(&self.app_handle, argv, cwd));
     }
 }
 
@@ -60,58 +91,51 @@ pub fn init<R: Runtime>(
                 dbus_path = format!("/{dbus_path}");
             }
 
+            // Checked here so that an invalid `dbus_id` fails setup rather than reading as a
+            // missing bus, since the connection builder reports both from `build()`.
+            let name = WellKnownName::try_from(dbus_name)?;
+            let path = ObjectPath::try_from(dbus_path)?;
+
             let single_instance_dbus = SingleInstanceDBus {
                 callback,
                 app_handle: app.clone(),
             };
 
-            let builder = match zbus::blocking::connection::Builder::session() {
-                Ok(builder) => builder,
-                Err(error) => {
-                    tracing::warn!(
-                        "single-instance: invalid D-Bus session address, launching normally: {error}"
-                    );
-                    return Ok(());
-                }
-            };
-
-            match builder
-                .name(dbus_name.as_str())?
-                .replace_existing_names(false)
-                .allow_name_replacements(false)
-                .serve_at(dbus_path.as_str(), single_instance_dbus)?
-                .build()
-            {
+            match block_on(
+                connection::Builder::session()
+                    .name(&name)
+                    .replace_existing_names(false)
+                    .allow_name_replacements(false)
+                    .serve_at(&path, single_instance_dbus)
+                    .build(),
+            ) {
                 Ok(connection) => {
-                    manage_instance_lock(
-                        app,
-                        InstanceLock {
-                            connection,
-                            name: dbus_name,
-                        },
-                    );
+                    manage_instance_lock(app, InstanceLock { connection, name });
                 }
                 Err(zbus::Error::NameTaken) => {
-                    let connection = Connection::session()?;
-                    connection
-                        .call_method(
-                            Some(dbus_name.as_str()),
-                            dbus_path.as_str(),
-                            Some("org.SingleInstance.DBus"),
-                            "ExecuteCallback",
-                            &(
-                                std::env::args_os()
-                                    .map(|arg| arg.to_string_lossy().into_owned())
-                                    .collect::<Vec<String>>(),
-                                std::env::current_dir()
-                                    .unwrap_or_default()
-                                    .to_string_lossy()
-                                    .as_ref(),
-                            ),
-                        )
-                        .map_err(|error| {
-                            format!("failed to forward arguments to the running instance: {error}")
-                        })?;
+                    block_on(async {
+                        Connection::session()
+                            .await?
+                            .call_method(
+                                Some(&name),
+                                &path,
+                                Some("org.SingleInstance.DBus"),
+                                "ExecuteCallback",
+                                &(
+                                    std::env::args_os()
+                                        .map(|arg| arg.to_string_lossy().into_owned())
+                                        .collect::<Vec<String>>(),
+                                    std::env::current_dir()
+                                        .unwrap_or_default()
+                                        .to_string_lossy()
+                                        .as_ref(),
+                                ),
+                            )
+                            .await
+                    })
+                    .map_err(|error| {
+                        format!("failed to forward arguments to the running instance: {error}")
+                    })?;
                     // Exit successfully only after the primary accepted the arguments.
                     app.cleanup_before_exit();
                     std::process::exit(0);
