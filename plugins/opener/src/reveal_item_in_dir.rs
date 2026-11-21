@@ -226,10 +226,17 @@ mod imp {
     fn reveal_items_in_dir_blocking(paths: &[PathBuf]) -> crate::Result<()> {
         let connection = zbus::blocking::Connection::session()?;
 
-        reveal_with_filemanager1(paths, &connection).or_else(|e| {
+        reveal_items_with_connection(paths, &connection)
+    }
+
+    fn reveal_items_with_connection(
+        paths: &[PathBuf],
+        connection: &zbus::blocking::Connection,
+    ) -> crate::Result<()> {
+        reveal_with_filemanager1(paths, connection).or_else(|e| {
             // Fallback to opening the directory of the first item if revealing multiple items fails.
             if let Some(first_path) = paths.first() {
-                reveal_with_open_uri_portal(first_path, &connection)
+                reveal_with_open_uri_portal(first_path, connection)
             } else {
                 Err(e)
             }
@@ -268,26 +275,282 @@ mod imp {
         path: &Path,
         connection: &zbus::blocking::Connection,
     ) -> crate::Result<()> {
-        let uri = url::Url::from_file_path(path)
-            .map_err(|_| crate::Error::FailedToConvertPathToFileUrl)?;
+        let file = open_portal_file(path)?;
 
         #[zbus::proxy(
-            interface = "org.freedesktop.portal.Desktop",
-            default_service = "org.freedesktop.portal.OpenURI",
+            interface = "org.freedesktop.portal.OpenURI",
+            default_service = "org.freedesktop.portal.Desktop",
             default_path = "/org/freedesktop/portal/desktop"
         )]
         trait PortalDesktop {
             async fn OpenDirectory(
                 &self,
-                arg1: &str,
-                name: &str,
-                arg3: HashMap<&str, &str>,
-            ) -> crate::Result<()>;
+                parent_window: &str,
+                fd: zbus::zvariant::Fd<'_>,
+                options: HashMap<&str, zbus::zvariant::Value<'_>>,
+            ) -> zbus::Result<zbus::zvariant::OwnedObjectPath>;
         }
 
         let proxy = PortalDesktopProxyBlocking::new(connection)?;
 
-        proxy.OpenDirectory("", uri.as_str(), HashMap::new())
+        proxy.OpenDirectory("", zbus::zvariant::Fd::from(&file), HashMap::new())?;
+        Ok(())
+    }
+    fn open_portal_file(path: &Path) -> std::io::Result<std::fs::File> {
+        use std::os::unix::fs::OpenOptionsExt;
+        std::fs::OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_NONBLOCK)
+            .open(path)
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        use std::io::{BufRead, BufReader};
+        use std::process::{Child, Command, Stdio};
+        use std::sync::Arc;
+        use std::sync::atomic::{AtomicBool, Ordering};
+        use std::sync::mpsc::{self, Sender};
+        use std::time::Duration;
+
+        struct PrivateBus(Child);
+
+        impl Drop for PrivateBus {
+            fn drop(&mut self) {
+                let _ = self.0.kill();
+                let _ = self.0.wait();
+            }
+        }
+
+        struct FallbackFileManager {
+            events: Sender<&'static str>,
+            fail: Arc<AtomicBool>,
+        }
+
+        #[zbus::interface(name = "org.freedesktop.FileManager1")]
+        impl FallbackFileManager {
+            fn show_items(&self, _uris: Vec<String>, _startup_id: String) -> zbus::fdo::Result<()> {
+                self.events.send("primary").unwrap();
+                if self.fail.load(Ordering::SeqCst) {
+                    Err(zbus::fdo::Error::Failed("primary fixture error".into()))
+                } else {
+                    Ok(())
+                }
+            }
+        }
+
+        struct Portal {
+            events: Sender<&'static str>,
+            received: Sender<(String, String, usize)>,
+            fail: Arc<AtomicBool>,
+        }
+
+        #[zbus::interface(name = "org.freedesktop.portal.OpenURI")]
+        impl Portal {
+            fn open_directory(
+                &self,
+                parent_window: String,
+                fd: zbus::zvariant::OwnedFd,
+                options: HashMap<String, zbus::zvariant::OwnedValue>,
+            ) -> zbus::fdo::Result<zbus::zvariant::OwnedObjectPath> {
+                use std::io::Read;
+                self.events.send("portal").unwrap();
+                let mut file = std::fs::File::from(std::os::fd::OwnedFd::from(fd));
+                let mut contents = String::new();
+                file.read_to_string(&mut contents).unwrap();
+                self.received
+                    .send((parent_window, contents, options.len()))
+                    .unwrap();
+                if self.fail.load(Ordering::SeqCst) {
+                    Err(zbus::fdo::Error::Failed("portal fixture error".into()))
+                } else {
+                    Ok(zbus::zvariant::OwnedObjectPath::try_from(
+                        "/org/freedesktop/portal/desktop/request/fixture",
+                    )
+                    .unwrap())
+                }
+            }
+        }
+
+        struct TestDirectory(PathBuf);
+
+        impl Drop for TestDirectory {
+            fn drop(&mut self) {
+                let _ = std::fs::remove_dir_all(&self.0);
+            }
+        }
+
+        #[test]
+        fn portal_fallback_transfers_fd_and_preserves_order_and_errors() {
+            let directory = TestDirectory(std::env::temp_dir().join(format!(
+                "opener-portal-{}-{}",
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_nanos()
+            )));
+            std::fs::create_dir(&directory.0).unwrap();
+            let paths = [
+                directory.0.join("first file\nλ"),
+                directory.0.join("second"),
+            ];
+            std::fs::write(&paths[0], "first file contents").unwrap();
+            std::fs::write(&paths[1], "second file contents").unwrap();
+            let mut bus = PrivateBus(
+                Command::new("dbus-daemon")
+                    .args(["--session", "--nofork", "--print-address=1"])
+                    .stdout(Stdio::piped())
+                    .spawn()
+                    .expect("dbus-daemon is required for the D-Bus integration test"),
+            );
+            let mut address = String::new();
+            BufReader::new(bus.0.stdout.take().unwrap())
+                .read_line(&mut address)
+                .unwrap();
+            let (events_tx, events_rx) = mpsc::channel();
+            let (received_tx, received_rx) = mpsc::channel();
+            let primary_fails = Arc::new(AtomicBool::new(false));
+            let portal_fails = Arc::new(AtomicBool::new(false));
+
+            {
+                let _primary = zbus::blocking::connection::Builder::address(address.trim())
+                    .unwrap()
+                    .name("org.freedesktop.FileManager1")
+                    .unwrap()
+                    .serve_at(
+                        "/org/freedesktop/FileManager1",
+                        FallbackFileManager {
+                            events: events_tx.clone(),
+                            fail: primary_fails.clone(),
+                        },
+                    )
+                    .unwrap()
+                    .build()
+                    .unwrap();
+                let _portal = zbus::blocking::connection::Builder::address(address.trim())
+                    .unwrap()
+                    .name("org.freedesktop.portal.Desktop")
+                    .unwrap()
+                    .serve_at(
+                        "/org/freedesktop/portal/desktop",
+                        Portal {
+                            events: events_tx,
+                            received: received_tx,
+                            fail: portal_fails.clone(),
+                        },
+                    )
+                    .unwrap()
+                    .build()
+                    .unwrap();
+                let client = zbus::blocking::connection::Builder::address(address.trim())
+                    .unwrap()
+                    .build()
+                    .unwrap();
+
+                reveal_items_with_connection(&paths, &client).unwrap();
+                assert_eq!(
+                    events_rx.recv_timeout(Duration::from_secs(5)).unwrap(),
+                    "primary"
+                );
+                assert!(
+                    events_rx.try_recv().is_err(),
+                    "no fallback on primary success"
+                );
+
+                primary_fails.store(true, Ordering::SeqCst);
+                reveal_items_with_connection(&paths, &client).unwrap();
+                assert_eq!(
+                    events_rx.recv_timeout(Duration::from_secs(5)).unwrap(),
+                    "primary"
+                );
+                assert_eq!(
+                    events_rx.recv_timeout(Duration::from_secs(5)).unwrap(),
+                    "portal"
+                );
+                assert_eq!(
+                    received_rx.recv_timeout(Duration::from_secs(5)).unwrap(),
+                    (String::new(), "first file contents".into(), 0)
+                );
+
+                portal_fails.store(true, Ordering::SeqCst);
+                let error = reveal_items_with_connection(&paths, &client).unwrap_err();
+                assert!(error.to_string().contains("portal fixture error"));
+                assert_eq!(
+                    events_rx.recv_timeout(Duration::from_secs(5)).unwrap(),
+                    "primary"
+                );
+                assert_eq!(
+                    events_rx.recv_timeout(Duration::from_secs(5)).unwrap(),
+                    "portal"
+                );
+                received_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+
+                let missing = [directory.0.join("missing")];
+                assert!(matches!(
+                    reveal_items_with_connection(&missing, &client),
+                    Err(crate::Error::Io(_))
+                ));
+                assert_eq!(
+                    events_rx.recv_timeout(Duration::from_secs(5)).unwrap(),
+                    "primary"
+                );
+                assert!(
+                    events_rx.try_recv().is_err(),
+                    "do not call the portal without a file"
+                );
+                assert!(reveal_items_with_connection(&[], &client).is_err());
+                assert_eq!(
+                    events_rx.recv_timeout(Duration::from_secs(5)).unwrap(),
+                    "primary"
+                );
+                assert!(
+                    events_rx.try_recv().is_err(),
+                    "no first path means no fallback"
+                );
+            }
+        }
+        #[test]
+        fn maintained_dbus_portal_file_open_does_not_wait_for_a_fifo_writer() {
+            use std::os::unix::fs::{FileTypeExt, OpenOptionsExt};
+            let directory = TestDirectory(std::env::temp_dir().join(format!(
+                "opener-fifo-{}-{}",
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_nanos()
+            )));
+            std::fs::create_dir(&directory.0).unwrap();
+            let fifo = directory.0.join("without-writer");
+            assert!(
+                Command::new("mkfifo")
+                    .arg(&fifo)
+                    .status()
+                    .unwrap()
+                    .success()
+            );
+            let path = fifo.clone();
+            let (tx, rx) = mpsc::channel();
+            let probe = std::thread::spawn(move || {
+                let _ = tx.send(open_portal_file(&path));
+            });
+            let result = rx.recv_timeout(Duration::from_secs(5));
+            if result.is_err() {
+                // Release an incorrectly blocking reader before reporting the bounded failure.
+                let _writer = std::fs::OpenOptions::new()
+                    .write(true)
+                    .custom_flags(libc::O_NONBLOCK)
+                    .open(&fifo);
+                let _ = rx.recv_timeout(Duration::from_secs(5));
+            }
+            let file = result
+                .expect("opening a portal FIFO must not wait for a writer")
+                .unwrap();
+            probe.join().unwrap();
+            assert!(file.metadata().unwrap().file_type().is_fifo());
+        }
     }
 }
 
