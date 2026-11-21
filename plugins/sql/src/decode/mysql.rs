@@ -85,8 +85,42 @@ pub(crate) fn to_json(v: MySqlValueRef) -> Result<JsonValue, Error> {
                 JsonValue::Null
             }
         }
+        "DECIMAL" => {
+            if let Ok(v) = ValueRef::to_owned(&v).try_decode::<rust_decimal::Decimal>() {
+                JsonValue::String(v.to_string())
+            } else {
+                JsonValue::Null
+            }
+        }
+        "SET" | "GEOMETRY" | "BIT" => {
+            if let Ok(v) = ValueRef::to_owned(&v).try_decode::<String>() {
+                JsonValue::String(v)
+            } else {
+                JsonValue::Null
+            }
+        }
         "JSON" => ValueRef::to_owned(&v).try_decode().unwrap_or_default(),
-        "TINIYBLOB" | "MEDIUMBLOB" | "BLOB" | "LONGBLOB" => {
+        "BINARY" | "VARBINARY" => {
+            // MySQL information_schema often returns text data as VARBINARY,
+            // so try decoding as UTF-8 string first, then fall back to byte array
+            if let Ok(v) = ValueRef::to_owned(&v).try_decode::<Vec<u8>>() {
+                match String::from_utf8(v) {
+                    Ok(s) => JsonValue::String(s),
+                    Err(e) => {
+                        let bytes = e.into_bytes();
+                        JsonValue::Array(
+                            bytes
+                                .into_iter()
+                                .map(|n| JsonValue::Number(n.into()))
+                                .collect(),
+                        )
+                    }
+                }
+            } else {
+                JsonValue::Null
+            }
+        }
+        "TINYBLOB" | "MEDIUMBLOB" | "BLOB" | "LONGBLOB" => {
             if let Ok(v) = ValueRef::to_owned(&v).try_decode::<Vec<u8>>() {
                 JsonValue::Array(v.into_iter().map(|n| JsonValue::Number(n.into())).collect())
             } else {
