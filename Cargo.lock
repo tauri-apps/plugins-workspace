@@ -6961,6 +6961,7 @@ dependencies = [
 name = "tauri-plugin-notification"
 version = "2.8.1"
 dependencies = [
+ "futures-util",
  "log",
  "notify-rust",
  "rand 0.10.3",
@@ -6971,8 +6972,9 @@ dependencies = [
  "tauri-plugin",
  "thiserror 2.0.12",
  "time",
+ "tokio",
  "url",
- "zbus 5.9.0",
+ "zbus 6.2.1",
 ]
 
 [[package]]
