@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
@@ -117,6 +118,7 @@ internal class NotificationScheduleSerializer @JvmOverloads constructor(t: Class
         sdf.timeZone = TimeZone.getTimeZone("UTC")
         jgen.writeStringField("date", sdf.format(value.date))
         jgen.writeBooleanField("repeating", value.repeating)
+        jgen.writeBooleanField("allowWhileIdle", value.allowWhileIdle)
 
         jgen.writeEndObject()
       }
@@ -124,6 +126,7 @@ internal class NotificationScheduleSerializer @JvmOverloads constructor(t: Class
         jgen.writeObjectFieldStart("interval")
 
         jgen.writeObjectField("interval", value.interval)
+        jgen.writeBooleanField("allowWhileIdle", value.allowWhileIdle)
 
         jgen.writeEndObject()
       }
@@ -131,6 +134,7 @@ internal class NotificationScheduleSerializer @JvmOverloads constructor(t: Class
         jgen.writeObjectFieldStart("every")
 
         jgen.writeObjectField("interval", value.interval)
+        jgen.writeBooleanField("allowWhileIdle", value.allowWhileIdle)
         jgen.writeNumberField("count", value.count)
 
         jgen.writeEndObject()
@@ -156,7 +160,7 @@ internal class NotificationScheduleDeserializer: JsonDeserializer<NotificationSc
     node.get("every")?.let {
       return jsonParser.codec.treeToValue(it, NotificationSchedule.Every::class.java)
     }
-    throw Error("unknown schedule kind $node")
+    throw JsonMappingException.from(jsonParser, "unknown schedule kind $node")
   }
 }
 

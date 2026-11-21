@@ -11,6 +11,14 @@ import android.graphics.BitmapFactory
 import app.tauri.annotation.InvokeArg
 import app.tauri.plugin.JSArray
 import app.tauri.plugin.JSObject
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonRawValue
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.JsonMappingException
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -31,10 +39,13 @@ class Notification {
   var isGroupSummary = false
   var isOngoing = false
   var isAutoCancel = false
+  @JsonRawValue
+  @JsonDeserialize(using = NotificationExtraDeserializer::class)
   var extra: JSObject? = null
   var attachments: List<NotificationAttachment>? = null
   var schedule: NotificationSchedule? = null
   var channelId: String? = null
+  @JsonIgnore
   var sourceJson: String? = null
   var visibility: Int? = null
   var number: Int? = null
@@ -96,3 +107,13 @@ class Notification {
 }
 
 class PendingNotification(val id: Int, val title: String?, val body: String?, val schedule: NotificationSchedule?, val extra: JSObject?)
+
+internal class NotificationExtraDeserializer : JsonDeserializer<JSObject>() {
+  override fun deserialize(parser: JsonParser, context: DeserializationContext): JSObject {
+    val node: JsonNode = parser.codec.readTree(parser)
+    if (!node.isObject) {
+      throw JsonMappingException.from(parser, "Expected a JSON object")
+    }
+    return JSObject(node.toString())
+  }
+}
