@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-package app.tauri.torch
+package app.tauri.flashlight
 
 import androidx.camera.core.Camera
 import androidx.camera.core.TorchState
@@ -15,7 +15,7 @@ import java.util.concurrent.Executor
  * While CameraX holds the camera, `CameraManager.setTorchMode` fails with `CAMERA_IN_USE`, so the
  * torch has to go through the camera's own `CameraControl`. This is the only class referencing
  * CameraX, which is only on the classpath when the barcode scanner plugin is; only construct it
- * from a camera returned by [TorchPlugin.findScannerCamera].
+ * from a camera returned by [FlashlightPlugin.findScannerCamera].
  */
 internal class ScannerCamera(camera: Any) {
     private val camera = camera as Camera

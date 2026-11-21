@@ -355,10 +355,10 @@
           "markdownDescription": "Denies the toggle command without any pre-configured scope."
         },
         {
-          "description": "This permission set configures which\ntorch features are by default exposed.\n\n#### Granted Permissions\n\nIt allows all torch related features.\n\n\n#### This default permission set includes:\n\n- `allow-disable`\n- `allow-enable`\n- `allow-is-available`\n- `allow-is-enabled`\n- `allow-toggle`",
+          "description": "This permission set configures which\nflashlight features are by default exposed.\n\n#### Granted Permissions\n\nIt allows all flashlight related features.\n\n\n#### This default permission set includes:\n\n- `allow-disable`\n- `allow-enable`\n- `allow-is-available`\n- `allow-is-enabled`\n- `allow-toggle`",
           "type": "string",
           "const": "default",
-          "markdownDescription": "This permission set configures which\ntorch features are by default exposed.\n\n#### Granted Permissions\n\nIt allows all torch related features.\n\n\n#### This default permission set includes:\n\n- `allow-disable`\n- `allow-enable`\n- `allow-is-available`\n- `allow-is-enabled`\n- `allow-toggle`"
+          "markdownDescription": "This permission set configures which\nflashlight features are by default exposed.\n\n#### Granted Permissions\n\nIt allows all flashlight related features.\n\n\n#### This default permission set includes:\n\n- `allow-disable`\n- `allow-enable`\n- `allow-is-available`\n- `allow-is-enabled`\n- `allow-toggle`"
         }
       ]
     }

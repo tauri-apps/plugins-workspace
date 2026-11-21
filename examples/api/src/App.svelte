@@ -32,7 +32,7 @@
   import Biometric from './views/Biometric.svelte'
   import Geolocation from './views/Geolocation.svelte'
   import Haptics from './views/Haptics.svelte'
-  import Torch from './views/Torch.svelte'
+  import Flashlight from './views/Flashlight.svelte'
   import Nfc from './views/Nfc.svelte'
   import Autostart from './views/Autostart.svelte'
   import DeepLink from './views/DeepLink.svelte'
@@ -188,8 +188,8 @@
       icon: 'i-ph-vibrate'
     },
     isMobile && {
-      label: 'Torch',
-      component: Torch,
+      label: 'Flashlight',
+      component: Flashlight,
       icon: 'i-ph-flashlight'
     }
   ].filter(Boolean) as {

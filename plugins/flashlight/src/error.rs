@@ -13,7 +13,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub enum Error {
     /// Failed to run a command on the mobile plugin implementation (Kotlin on Android, Swift on
     /// iOS). This includes the native side rejecting the call, e.g. because the device has no
-    /// torch or the camera is held by another app.
+    /// flashlight or the camera is held by another app.
     #[error(transparent)]
     PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
 }

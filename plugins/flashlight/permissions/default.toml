@@ -2,11 +2,11 @@
 [default]
 description = """
 This permission set configures which
-torch features are by default exposed.
+flashlight features are by default exposed.
 
 #### Granted Permissions
 
-It allows all torch related features.
+It allows all flashlight related features.
 
 """
 

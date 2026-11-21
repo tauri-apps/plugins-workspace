@@ -23,6 +23,6 @@
     "haptics:allow-notification-feedback",
     "haptics:allow-selection-feedback",
     "haptics:allow-vibrate",
-    "torch:default"
+    "flashlight:default"
   ]
 }

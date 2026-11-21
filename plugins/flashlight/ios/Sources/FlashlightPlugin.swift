@@ -8,10 +8,10 @@ import Tauri
 import UIKit
 import WebKit
 
-private let errorNotAvailable = "The torch is not available on this device"
+private let errorNotAvailable = "The flashlight is not available on this device"
 
-class TorchPlugin: Plugin {
-  // The back camera, whose flash unit is the torch. Locking it for configuration also works while a
+class FlashlightPlugin: Plugin {
+  // The back camera, whose flash unit is the flashlight. Locking it for configuration also works while a
   // capture session (e.g. the barcode scanner) is running on it.
   private func torchDevice() -> AVCaptureDevice? {
     let device =
@@ -29,7 +29,7 @@ class TorchPlugin: Plugin {
     }
     // false while the device is overheating, among others
     guard device.isTorchAvailable else {
-      invoke.reject("Failed to \(action) the torch: the torch is temporarily unavailable")
+      invoke.reject("Failed to \(action) the flashlight: the flashlight is temporarily unavailable")
       return false
     }
     do {
@@ -42,7 +42,7 @@ class TorchPlugin: Plugin {
       }
       return true
     } catch {
-      invoke.reject("Failed to \(action) the torch: \(error.localizedDescription)")
+      invoke.reject("Failed to \(action) the flashlight: \(error.localizedDescription)")
       return false
     }
   }
@@ -75,7 +75,7 @@ class TorchPlugin: Plugin {
   }
 }
 
-@_cdecl("init_plugin_torch")
+@_cdecl("init_plugin_flashlight")
 public func initPlugin() -> Plugin {
-  return TorchPlugin()
+  return FlashlightPlugin()
 }

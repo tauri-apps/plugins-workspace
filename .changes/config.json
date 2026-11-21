@@ -83,7 +83,7 @@
         "updater",
         "geolocation",
         "haptics",
-        "torch"
+        "flashlight"
       ]
     },
     "api-example-js": {
@@ -108,7 +108,7 @@
         "shell-js",
         "store-js",
         "updater-js",
-        "torch-js"
+        "flashlight-js"
       ],
       "postversion": "pnpm install --no-frozen-lockfile"
     },
@@ -165,6 +165,14 @@
     },
     "deep-link-js": {
       "path": "./plugins/deep-link",
+      "manager": "javascript"
+    },
+    "flashlight": {
+      "path": "./plugins/flashlight",
+      "manager": "rust"
+    },
+    "flashlight-js": {
+      "path": "./plugins/flashlight",
       "manager": "javascript"
     },
     "fs": {
@@ -327,14 +335,6 @@
     },
     "updater-js": {
       "path": "./plugins/updater",
-      "manager": "javascript"
-    },
-    "torch": {
-      "path": "./plugins/torch",
-      "manager": "rust"
-    },
-    "torch-js": {
-      "path": "./plugins/torch",
       "manager": "javascript"
     },
     "upload": {
