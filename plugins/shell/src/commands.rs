@@ -294,11 +294,14 @@ pub fn stdin_write<R: Runtime>(
     pid: ChildId,
     buffer: Buffer,
 ) -> crate::Result<()> {
+    let bytes = match buffer {
+        Buffer::Text(t) => t.into_bytes(),
+        Buffer::Raw(r) => r,
+    };
+    // Only queues the data, so a child that isn't reading its stdin can't block the main
+    // thread or hold the children lock. Staying sync keeps the writes in call order.
     if let Some(child) = shell.children.lock().unwrap().get_mut(&pid) {
-        match buffer {
-            Buffer::Text(t) => child.write(t.as_bytes())?,
-            Buffer::Raw(r) => child.write(&r)?,
-        }
+        child.write_queued(bytes)?;
     }
     Ok(())
 }
