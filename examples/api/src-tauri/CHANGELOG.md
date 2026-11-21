@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.59]
+
+### Dependencies
+
+- Upgraded to `http@2.9.1`
+
 ## [2.0.58]
 
 ### Dependencies

@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.55]
+
+### Dependencies
+
+- Upgraded to `http-js@2.9.1`
+
 ## [2.0.54]
 
 ### Dependencies
