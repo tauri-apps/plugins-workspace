@@ -54,10 +54,117 @@ enum PickerMode: String, Decodable {
   case video
 }
 
+let originUnavailableCode = "ORIGIN_UNAVAILABLE"
+let originUnavailableMessage = "the view controller that originated the call is no longer available"
+
+private final class DialogWindowObserver {
+  var onDeinit: (() -> Void)?
+
+  init(_ onDeinit: @escaping () -> Void) {
+    self.onDeinit = onDeinit
+  }
+
+  deinit {
+    onDeinit?()
+  }
+}
+
+// Each presented controller retains its own session to avoid sharing callbacks between dialogs.
+// If released without a result, the session completes the call in deinit.
+final class DialogSession {
+  private static var associationKey: UInt8 = 0
+
+  let invoke: Invoke
+  private let onEvent: (FilePickerEvent) -> Void
+  private var completed = false
+  private weak var originWindow: UIWindow?
+  private weak var windowObserver: DialogWindowObserver?
+  private weak var presentedController: UIViewController?
+  private var sceneObserver: NSObjectProtocol?
+
+  private var windowObserverKey: UnsafeRawPointer {
+    UnsafeRawPointer(Unmanaged.passUnretained(self).toOpaque())
+  }
+
+  init(invoke: Invoke, onEvent: @escaping (FilePickerEvent) -> Void) {
+    self.invoke = invoke
+    self.onEvent = onEvent
+  }
+
+  deinit {
+    complete {
+      if invoke.isContextual && invoke.presentingViewController() == nil {
+        invoke.reject(originUnavailableMessage, code: originUnavailableCode)
+      } else {
+        onEvent(.cancelled)
+      }
+    }
+  }
+
+  func complete(_ completion: () -> Void) {
+    guard !completed else {
+      return
+    }
+    completed = true
+    windowObserver?.onDeinit = nil
+    if let window = originWindow {
+      objc_setAssociatedObject(window, windowObserverKey, nil, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+    }
+    if let observer = sceneObserver {
+      NotificationCenter.default.removeObserver(observer)
+      sceneObserver = nil
+    }
+    completion()
+  }
+
+  func complete(_ event: FilePickerEvent) {
+    complete { onEvent(event) }
+  }
+
+  func attach(to controller: UIViewController) {
+    presentedController = controller
+    objc_setAssociatedObject(
+      controller, &DialogSession.associationKey, self, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+
+    guard invoke.isContextual, let window = invoke.viewController?.viewIfLoaded?.window else {
+      return
+    }
+    originWindow = window
+    let observer = DialogWindowObserver { [weak self] in
+      DispatchQueue.main.async { [weak self] in
+        self?.originUnavailable()
+      }
+    }
+    windowObserver = observer
+    // File copies may keep a dismissed picker pending while another session uses the same window.
+    objc_setAssociatedObject(window, windowObserverKey, observer, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+    if let scene = window.windowScene {
+      sceneObserver = NotificationCenter.default.addObserver(
+        forName: UIScene.didDisconnectNotification, object: nil, queue: .main
+      ) { [weak self, weak scene] notification in
+        guard let scene = scene, notification.object as? UIScene === scene else {
+          return
+        }
+        self?.originUnavailable()
+      }
+    }
+  }
+
+  private func originUnavailable() {
+    complete {
+      presentedController?.dismiss(animated: false)
+      invoke.reject(originUnavailableMessage, code: originUnavailableCode)
+    }
+  }
+
+  static func of(_ controller: UIViewController) -> DialogSession? {
+    return objc_getAssociatedObject(controller, &associationKey) as? DialogSession
+  }
+}
+
 class DialogPlugin: Plugin {
 
   var filePickerController: FilePickerController!
-  var onFilePickerResult: ((FilePickerEvent) -> Void)? = nil
 
   override init() {
     super.init()
@@ -68,7 +175,7 @@ class DialogPlugin: Plugin {
   @objc public func showFilePicker(_ invoke: Invoke) throws {
     let args = try invoke.parseArgs(FilePickerOptions.self)
 
-    onFilePickerResult = { (event: FilePickerEvent) -> Void in
+    let session = DialogSession(invoke: invoke) { (event: FilePickerEvent) -> Void in
       switch event {
       case .selected(let urls):
         invoke.resolve(["files": urls])
@@ -110,7 +217,7 @@ class DialogPlugin: Plugin {
           let picker = PHPickerViewController(configuration: configuration)
           picker.delegate = self.filePickerController
           picker.modalPresentationStyle = .fullScreen
-          self.presentViewController(picker)
+          self.presentViewController(picker, session: session)
         }
       } else {
         DispatchQueue.main.async {
@@ -127,11 +234,11 @@ class DialogPlugin: Plugin {
           picker.delegate = self.filePickerController
           picker.allowsMultipleSelection = args.multiple ?? false
           picker.modalPresentationStyle = .fullScreen
-          self.presentViewController(picker)
+          self.presentViewController(picker, session: session)
         }
       }
     } else {
-      showFilePickerLegacy(args: args)
+      showFilePickerLegacy(args: args, session: session)
     }
   }
 
@@ -153,7 +260,7 @@ class DialogPlugin: Plugin {
       try "".write(to: srcPath, atomically: true, encoding: .utf8)
     }
 
-    onFilePickerResult = { (event: FilePickerEvent) -> Void in
+    let session = DialogSession(invoke: invoke) { (event: FilePickerEvent) -> Void in
       switch event {
       case .selected(let urls):
         invoke.resolve(["file": urls.first!])
@@ -171,12 +278,45 @@ class DialogPlugin: Plugin {
       }
       picker.delegate = self.filePickerController
       picker.modalPresentationStyle = .fullScreen
-      self.presentViewController(picker)
+      self.presentViewController(picker, session: session)
     }
   }
 
-  private func presentViewController(_ viewControllerToPresent: UIViewController) {
-    self.manager.viewController?.present(viewControllerToPresent, animated: true, completion: nil)
+  // Must run on the main thread.
+  private func presentViewController(
+    _ viewControllerToPresent: UIViewController, session: DialogSession
+  ) {
+    let invoke = session.invoke
+    let presenter = invoke.presentingViewController()
+    if presenter == nil && invoke.isContextual {
+      session.complete {
+        invoke.reject(originUnavailableMessage, code: originUnavailableCode)
+      }
+      return
+    }
+    if let presented = presenter?.presentedViewController,
+      presented.isBeingDismissed,
+      let coordinator = presented.transitionCoordinator
+    {
+      coordinator.animate(alongsideTransition: nil) { _ in
+        // Wait one main turn for UIKit to finish cleaning up the dismissed controller.
+        DispatchQueue.main.async {
+          self.presentViewController(viewControllerToPresent, session: session)
+        }
+      }
+      return
+    }
+    if let presenter = presenter,
+      presenter.presentedViewController != nil || presenter.isBeingPresented
+        || presenter.isBeingDismissed || presenter.transitionCoordinator != nil
+    {
+      session.complete {
+        invoke.reject("the view controller is busy", code: "RESULT_PENDING")
+      }
+      return
+    }
+    session.attach(to: viewControllerToPresent)
+    presenter?.present(viewControllerToPresent, animated: true, completion: nil)
   }
 
   @available(iOS 14, *)
@@ -197,7 +337,7 @@ class DialogPlugin: Plugin {
   }
 
   /// This function is only used for iOS < 14, and should be removed if/when the deployment target is raised to 14.
-  private func showFilePickerLegacy(args: FilePickerOptions) {
+  private func showFilePickerLegacy(args: FilePickerOptions, session: DialogSession) {
     let parsedTypes = parseFiltersOptionLegacy(args.filters ?? [])
 
     var filtersIncludeImage: Bool = false
@@ -221,7 +361,7 @@ class DialogPlugin: Plugin {
         }
 
         picker.modalPresentationStyle = .fullScreen
-        self.presentViewController(picker)
+        self.presentViewController(picker, session: session)
       }
     } else {
       let documentTypes = parsedTypes.isEmpty ? ["public.data"] : parsedTypes
@@ -234,7 +374,7 @@ class DialogPlugin: Plugin {
         picker.delegate = self.filePickerController
         picker.allowsMultipleSelection = args.multiple ?? false
         picker.modalPresentationStyle = .fullScreen
-        self.presentViewController(picker)
+        self.presentViewController(picker, session: session)
       }
     }
   }
@@ -257,51 +397,37 @@ class DialogPlugin: Plugin {
     return parsedTypes
   }
 
-  public func onFilePickerEvent(_ event: FilePickerEvent) {
-    self.onFilePickerResult?(event)
+  public func onFilePickerEvent(_ controller: UIViewController, _ event: FilePickerEvent) {
+    DialogSession.of(controller)?.complete(event)
   }
 
   @objc public func showMessageDialog(_ invoke: Invoke) throws {
-    let manager = self.manager
     let args = try invoke.parseArgs(MessageDialogOptions.self)
 
-    DispatchQueue.main.async { [] in
+    DispatchQueue.main.async {
       let alert = UIAlertController(
         title: args.title, message: args.message, preferredStyle: UIAlertController.Style.alert)
 
-      if let cancelButtonLabel = args.cancelButtonLabel {
-        alert.addAction(
-          UIAlertAction(
-            title: cancelButtonLabel, style: UIAlertAction.Style.default,
-            handler: { (_) -> Void in
-              invoke.resolve(["value": cancelButtonLabel])
-            }
-          )
-        )
+      let session = DialogSession(invoke: invoke) { (event: FilePickerEvent) -> Void in
+        switch event {
+        case .cancelled:
+          invoke.resolve(["value": args.cancelButtonLabel ?? "Cancel"])
+        case .error(let error):
+          invoke.reject(error)
+        case .selected:
+          break
+        }
       }
 
-      if let noButtonLabel = args.noButtonLabel {
+      let labels = [args.cancelButtonLabel, args.noButtonLabel, args.okButtonLabel ?? "Ok"]
+      for label in labels.compactMap({ $0 }) {
         alert.addAction(
-          UIAlertAction(
-            title: noButtonLabel, style: UIAlertAction.Style.default,
-            handler: { (_) -> Void in
-              invoke.resolve(["value": noButtonLabel])
-            }
-          )
-        )
+          UIAlertAction(title: label, style: .default) { _ in
+            session.complete { invoke.resolve(["value": label]) }
+          })
       }
 
-      let okButtonLabel = args.okButtonLabel ?? "Ok"
-      alert.addAction(
-        UIAlertAction(
-          title: okButtonLabel, style: UIAlertAction.Style.default,
-          handler: { (_) -> Void in
-            invoke.resolve(["value": okButtonLabel])
-          }
-        )
-      )
-
-      manager.viewController?.present(alert, animated: true, completion: nil)
+      self.presentViewController(alert, session: session)
     }
   }
 

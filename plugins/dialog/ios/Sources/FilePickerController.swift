@@ -136,29 +136,30 @@ public class FilePickerController: NSObject {
 extension FilePickerController: UIDocumentPickerDelegate {
 	public func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
 		do {
-			self.plugin.onFilePickerEvent(.selected(urls))
+			self.plugin.onFilePickerEvent(controller, .selected(urls))
 		} catch {
-			self.plugin.onFilePickerEvent(.error("Failed to create a temporary copy of the file"))
+			self.plugin.onFilePickerEvent(controller, .error("Failed to create a temporary copy of the file"))
 		}
 	}
 
 	public func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
-		self.plugin.onFilePickerEvent(.cancelled)
+		self.plugin.onFilePickerEvent(controller, .cancelled)
 	}
 }
 
 extension FilePickerController: UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIPopoverPresentationControllerDelegate {
 	public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
 		dismissViewController(picker)
-		self.plugin.onFilePickerEvent(.cancelled)
+		self.plugin.onFilePickerEvent(picker, .cancelled)
 	}
 
+	// The session is attached to the presented picker, not its presentation controller.
 	public func popoverPresentationControllerDidDismissPopover(_ popoverPresentationController: UIPopoverPresentationController) {
-		self.plugin.onFilePickerEvent(.cancelled)
+		self.plugin.onFilePickerEvent(popoverPresentationController.presentedViewController, .cancelled)
 	}
 
 	public func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
-		self.plugin.onFilePickerEvent(.cancelled)
+		self.plugin.onFilePickerEvent(presentationController.presentedViewController, .cancelled)
 	}
 
 	public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
@@ -166,12 +167,12 @@ extension FilePickerController: UIImagePickerControllerDelegate, UINavigationCon
 			if let url = info[.mediaURL] as? URL {
 				do {
 					let temporaryUrl = try self.saveTemporaryFile(url)
-					self.plugin.onFilePickerEvent(.selected([temporaryUrl]))
+					self.plugin.onFilePickerEvent(picker, .selected([temporaryUrl]))
 				} catch {
-					self.plugin.onFilePickerEvent(.error("Failed to create a temporary copy of the file"))
+					self.plugin.onFilePickerEvent(picker, .error("Failed to create a temporary copy of the file"))
 				}
 			} else {
-				self.plugin.onFilePickerEvent(.cancelled)
+				self.plugin.onFilePickerEvent(picker, .cancelled)
 			}
 		}
 	}
@@ -182,7 +183,7 @@ extension FilePickerController: PHPickerViewControllerDelegate {
 	public func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
 		dismissViewController(picker)
 		if results.first == nil {
-			self.plugin.onFilePickerEvent(.cancelled)
+			self.plugin.onFilePickerEvent(picker, .cancelled)
 			return
 		}
 		var temporaryUrls: [URL] = []
@@ -242,12 +243,13 @@ extension FilePickerController: PHPickerViewControllerDelegate {
 				errorMessage = "Unsupported file type identifier"
 			}
 		}
+		// Retain the picker and its session until the file copies finish.
 		dispatchGroup.notify(queue: .main) {
 			if let errorMessage = errorMessage {
-				self.plugin.onFilePickerEvent(.error(errorMessage))
+				self.plugin.onFilePickerEvent(picker, .error(errorMessage))
 				return
 			}
-			self.plugin.onFilePickerEvent(.selected(temporaryUrls))
+			self.plugin.onFilePickerEvent(picker, .selected(temporaryUrls))
 		}
 	}
 }
