@@ -73,7 +73,7 @@ pub struct PluginConfig {
 }
 
 /// The direction of a [`Migration`].
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum MigrationKind {
     /// Moves the schema forward. Only migrations of this kind are executed by the plugin.
     Up,
@@ -99,7 +99,7 @@ impl From<MigrationKind> for MigrationType {
 /// Only [`MigrationKind::Up`] migrations are executed, in ascending
 /// [`version`](Self::version) order, and sqlx keeps track of the versions that
 /// already ran so each one is applied at most once per database.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Migration {
     /// The version of this migration. Determines the order in which migrations
     /// run and identifies the migration in the database.
@@ -112,7 +112,7 @@ pub struct Migration {
     pub kind: MigrationKind,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct MigrationList(Vec<Migration>);
 
 impl MigrationSource<'static> for MigrationList {
