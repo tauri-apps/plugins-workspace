@@ -222,6 +222,7 @@ dependencies = [
  "tauri-plugin-autostart",
  "tauri-plugin-barcode-scanner",
  "tauri-plugin-biometric",
+ "tauri-plugin-camera",
  "tauri-plugin-cli",
  "tauri-plugin-clipboard-manager",
  "tauri-plugin-deep-link",
@@ -6758,6 +6759,18 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_repr",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 2.0.12",
+]
+
+[[package]]
+name = "tauri-plugin-camera"
+version = "2.0.0"
+dependencies = [
+ "log",
+ "serde",
+ "serde_json",
  "tauri",
  "tauri-plugin",
  "thiserror 2.0.12",

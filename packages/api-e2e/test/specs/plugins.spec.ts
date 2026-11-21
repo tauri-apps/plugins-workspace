@@ -146,6 +146,15 @@ const mobileSurface: Surface<MobilePluginApi> = {
     'requestPermissions',
     'openAppSettings'
   ],
+  camera: [
+    'Source',
+    'ResultType',
+    'CameraDirection',
+    'getPhoto',
+    'pickImages',
+    'checkPermissions',
+    'requestPermissions'
+  ],
   geolocation: [
     'watchPosition',
     'getCurrentPosition',

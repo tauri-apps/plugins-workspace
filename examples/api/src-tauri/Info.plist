@@ -3,7 +3,9 @@
 <plist version="1.0">
 	<dict>
 		<key>NSCameraUsageDescription</key>
-		<string>Request camera access for WebRTC</string>
+		<string>Request camera access for WebRTC and to take pictures</string>
+		<key>NSPhotoLibraryAddUsageDescription</key>
+		<string>Save pictures taken with the camera plugin to the gallery</string>
 		<key>NSMicrophoneUsageDescription</key>
 		<string>Request microphone access for WebRTC</string>
 		<key>NSFaceIDUsageDescription</key>

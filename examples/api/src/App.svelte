@@ -33,6 +33,7 @@
   import Geolocation from './views/Geolocation.svelte'
   import Haptics from './views/Haptics.svelte'
   import Torch from './views/Torch.svelte'
+  import Camera from './views/Camera.svelte'
   import Nfc from './views/Nfc.svelte'
   import Autostart from './views/Autostart.svelte'
   import DeepLink from './views/DeepLink.svelte'
@@ -191,6 +192,11 @@
       label: 'Torch',
       component: Torch,
       icon: 'i-ph-flashlight'
+    },
+    isMobile && {
+      label: 'Camera',
+      component: Camera,
+      icon: 'i-ph-camera'
     }
   ].filter(Boolean) as {
     label: string
