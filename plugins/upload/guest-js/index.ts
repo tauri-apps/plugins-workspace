@@ -90,7 +90,7 @@ async function upload(
   filePath: string,
   progressHandler?: ProgressHandler,
   // TODO: V3 - Combine headers and methods into one `options` object
-  headers?: Map<string, string>,
+  headers?: Record<string, string> | Map<string, string>,
   method?: HttpMethod
 ): Promise<string> {
   const ids = new Uint32Array(1)
@@ -142,7 +142,7 @@ async function download(
   url: string,
   filePath: string,
   progressHandler?: ProgressHandler,
-  headers?: Map<string, string>,
+  headers?: Record<string, string> | Map<string, string>,
   body?: string
 ): Promise<void> {
   const ids = new Uint32Array(1)
