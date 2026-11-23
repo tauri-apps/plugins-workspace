@@ -87,7 +87,7 @@ struct PluginState {
     map_label: Option<Box<LabelMapperFn>>,
 }
 
-#[derive(Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 struct WindowState {
     width: u32,
     height: u32,
@@ -102,6 +102,33 @@ struct WindowState {
     visible: bool,
     decorated: bool,
     fullscreen: bool,
+}
+
+impl WindowState {
+    fn apply_from(&mut self, other: &Self, flags: StateFlags) {
+        if flags.contains(StateFlags::SIZE) {
+            self.width = other.width;
+            self.height = other.height;
+        }
+        if flags.contains(StateFlags::POSITION) {
+            self.x = other.x;
+            self.y = other.y;
+            self.prev_x = other.prev_x;
+            self.prev_y = other.prev_y;
+        }
+        if flags.contains(StateFlags::MAXIMIZED) {
+            self.maximized = other.maximized;
+        }
+        if flags.contains(StateFlags::VISIBLE) {
+            self.visible = other.visible;
+        }
+        if flags.contains(StateFlags::DECORATIONS) {
+            self.decorated = other.decorated;
+        }
+        if flags.contains(StateFlags::FULLSCREEN) {
+            self.fullscreen = other.fullscreen;
+        }
+    }
 }
 
 impl Default for WindowState {
@@ -140,24 +167,42 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
         let state_path = app_dir.join(&plugin_state.filename);
         let windows = self.webview_windows();
         let cache = self.state::<WindowStateCache>();
-        let mut state = cache.0.lock().unwrap();
+        let snapshot: Vec<(String, WindowState)> = {
+            let state = cache.0.lock().unwrap();
+            state
+                .iter()
+                .map(|(label, s)| (label.clone(), s.clone()))
+                .collect()
+        };
 
-        for (label, s) in state.iter_mut() {
+        let mut updated = Vec::new();
+        for (label, mut s) in snapshot {
             let window = if let Some(map) = &plugin_state.map_label {
                 windows
                     .iter()
                     .find_map(|(l, window)| (map(l) == label).then_some(window))
             } else {
-                windows.get(label)
+                windows.get(&label)
             };
 
             if let Some(window) = window {
-                window.update_state(s, flags)?;
+                window.update_state(&mut s, flags)?;
+                updated.push((label, s));
             }
         }
 
+        let serialized = {
+            let mut state = cache.0.lock().unwrap();
+            for (label, s) in updated {
+                if let Some(entry) = state.get_mut(&label) {
+                    entry.apply_from(&s, flags);
+                }
+            }
+            serde_json::to_vec_pretty(&*state)?
+        };
+
         create_dir_all(app_dir)?;
-        std::fs::write(state_path, serde_json::to_vec_pretty(&*state)?)?;
+        std::fs::write(state_path, serialized)?;
 
         Ok(())
     }
@@ -489,9 +534,17 @@ impl Builder {
 
                 window.on_window_event(move |e| match e {
                     WindowEvent::CloseRequested { .. } => {
-                        let mut c = cache.lock().unwrap();
-                        if let Some(state) = c.get_mut(&label) {
-                            let _ = window_clone.update_state(state, state_flags);
+                        let snapshot = cache.lock().unwrap().get(&label).cloned();
+                        if let Some(mut state) = snapshot {
+                            let updated =
+                                window_clone.update_state(&mut state, state_flags).is_ok();
+                            if updated {
+                                cache
+                                    .lock()
+                                    .unwrap()
+                                    .entry(label.clone())
+                                    .and_modify(|entry| entry.apply_from(&state, state_flags));
+                            }
                         }
                     }
 
@@ -592,5 +645,45 @@ impl MonitorExt for Monitor {
         ]
         .into_iter()
         .any(|(x, y)| x >= left && x < right && y >= top && y < bottom)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{StateFlags, WindowState};
+
+    #[test]
+    fn apply_from_updates_only_flagged_fields() {
+        let mut current = WindowState {
+            width: 800,
+            height: 600,
+            x: 120,
+            y: 240,
+            prev_x: 100,
+            prev_y: 200,
+            maximized: false,
+            visible: true,
+            decorated: true,
+            fullscreen: false,
+        };
+        let snapshot = WindowState {
+            width: 1024,
+            height: 768,
+            x: 0,
+            y: 0,
+            prev_x: 0,
+            prev_y: 0,
+            maximized: true,
+            visible: false,
+            decorated: false,
+            fullscreen: true,
+        };
+
+        current.apply_from(&snapshot, StateFlags::SIZE);
+        assert_eq!(current.width, 1024);
+        assert_eq!(current.height, 768);
+        assert_eq!(current.x, 120);
+        assert_eq!(current.y, 240);
+        assert!(!current.maximized);
     }
 }
