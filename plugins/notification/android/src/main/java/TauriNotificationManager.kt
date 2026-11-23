@@ -167,7 +167,7 @@ class TauriNotificationManager(
           .bigText(notification.largeBody)
           .setSummaryText(notification.summary)
       )
-    } else if (notification.inboxLines != null) {
+    } else if (!notification.inboxLines.isNullOrEmpty()) {
       val inboxStyle = NotificationCompat.InboxStyle()
       for (line in notification.inboxLines ?: listOf()) {
         inboxStyle.addLine(line)
