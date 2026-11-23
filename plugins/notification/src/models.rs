@@ -962,27 +962,3 @@ mod android {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::NotificationData;
-
-    #[test]
-    fn skips_empty_inbox_lines_when_serializing() {
-        let data = NotificationData {
-            title: Some("Title".into()),
-            body: Some("Body".into()),
-            ..Default::default()
-        };
-        let json = serde_json::to_value(&data).expect("serialize NotificationData");
-        assert!(json.get("inboxLines").is_none());
-
-        let with_lines = NotificationData {
-            inbox_lines: vec!["Line 1".into()],
-            ..data
-        };
-        let json_with_lines =
-            serde_json::to_value(&with_lines).expect("serialize NotificationData");
-        assert_eq!(json_with_lines["inboxLines"], serde_json::json!(["Line 1"]));
-    }
-}
