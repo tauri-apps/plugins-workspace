@@ -1,5 +1,30 @@
 # Changelog
 
+## [2.4.3]
+
+- [`2754eedb`](https://github.com/tauri-apps/plugins-workspace/commit/2754eedb8d13ba1a8e19be95bedfe97417407089) ([#3763](https://github.com/tauri-apps/plugins-workspace/pull/3763) by [@963s](https://github.com/tauri-apps/plugins-workspace/../../963s)) Save the scope when a path is forbidden too. Only allowed paths triggered a save, so a path forbidden at runtime was allowed again after a restart.
+
+## [2.4.2]
+
+### Dependencies
+
+- Upgraded to `fs@2.7.1`
+
+## [2.4.1]
+
+### Dependencies
+
+- Upgraded to `fs@2.7.0`
+
+## [2.4.0]
+
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+### Dependencies
+
+- Upgraded to `fs@2.6.0`
+
 ## [2.3.8]
 
 - [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.

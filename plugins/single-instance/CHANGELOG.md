@@ -1,5 +1,60 @@
 # Changelog
 
+## [2.5.5]
+
+- [`aedd883c`](https://github.com/tauri-apps/plugins-workspace/commit/aedd883cf318947e3d8915db2ec7caa77e7a90d0) ([#3482](https://github.com/tauri-apps/plugins-workspace/pull/3482) by [@JGuest121](https://github.com/tauri-apps/plugins-workspace/../../JGuest121)) Release the single instance lock in `AppHandle::cleanup_before_exit`, right before the process exits or restarts, instead of on `RunEvent::Exit`. The app now remains the single instance while your own `RunEvent::Exit` handler runs. `destroy` can still release the lock earlier.
+- [`6c9746e5`](https://github.com/tauri-apps/plugins-workspace/commit/6c9746e5515491a25c9d8c168c73e43a9edec6bb) ([#3704](https://github.com/tauri-apps/plugins-workspace/pull/3704) by [@karan5028ji](https://github.com/tauri-apps/plugins-workspace/../../karan5028ji)) Fix race condition on Windows where a secondary instance fails to exit if `FindWindowW` misses the target event window during startup.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.6.3`
+
+## [2.5.4]
+
+- [`f83c5d3b`](https://github.com/tauri-apps/plugins-workspace/commit/f83c5d3b0f88a24914c54ff906ec947fd3a659a3) ([#3584](https://github.com/tauri-apps/plugins-workspace/pull/3584) by [@vincentkoc](https://github.com/tauri-apps/plugins-workspace/../../vincentkoc)) On Linux, a secondary instance that cannot deliver its arguments to the primary instance now returns a plugin initialization error instead of exiting successfully, and an invalid `dbus_id` returns an error instead of panicking. When the session bus is unavailable the app keeps launching normally, without single-instance support, and logs a warning.
+- [`b53d1984`](https://github.com/tauri-apps/plugins-workspace/commit/b53d1984618da35083e91a2523f2b8aa53a2fcd1) ([#3686](https://github.com/tauri-apps/plugins-workspace/pull/3686) by [@lucasfernog](https://github.com/tauri-apps/plugins-workspace/../../lucasfernog)) On Windows, an argument containing a `|` is no longer split into several arguments when it is forwarded to the running instance.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.6.2`
+
+## [2.5.3]
+
+- [`818d2e04`](https://github.com/tauri-apps/plugins-workspace/commit/818d2e04d92fd208f11aafdf32bb4a0605f344b2) ([#3645](https://github.com/tauri-apps/plugins-workspace/pull/3645)) On Windows, a second instance no longer waits indefinitely for a first instance that stopped processing messages: it stops waiting after 10 seconds and exits. The first instance may still receive the arguments once it resumes processing messages.
+- [`323fe80d`](https://github.com/tauri-apps/plugins-workspace/commit/323fe80df1f0a78fb2c8d1dfca7a635fd5e0a3c3) ([#3644](https://github.com/tauri-apps/plugins-workspace/pull/3644)) A second instance no longer panics when a command-line argument is not valid Unicode: such an argument is forwarded with its invalid parts replaced by U+FFFD. A working directory that is not valid Unicode is now forwarded the same way instead of as an empty string.
+
+## [2.5.2]
+
+### Dependencies
+
+- Upgraded to `deep-link@2.6.1`
+
+## [2.5.1]
+
+- [`ecd3273e`](https://github.com/tauri-apps/plugins-workspace/commit/ecd3273e8e4c6e9b123bf9861bf7b925cad1c679) ([#3480](https://github.com/tauri-apps/plugins-workspace/pull/3480) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated `windows-rs` dependencies:
+    
+    - deep-link: updated `windows-registry` to 0.6 and `windows-result` to 0.4. The public `Error::Windows` variant wraps `windows_result::Error`; applications using this type directly should update their `windows-result` dependency.
+    - opener: updated `windows` to 0.62. The public `Error::Win32Error` variant wraps `windows::core::Error`; applications using this type directly should update their `windows` dependency.
+    - single-instance: updated `windows-sys` to 0.61
+    - updater: updated `windows-sys` to 0.61
+
+### Dependencies
+
+- Upgraded to `deep-link@2.6.0`
+
+## [2.5.0]
+
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
+### Dependencies
+
+- Upgraded to `deep-link@2.5.0`
+
+## [2.4.5]
+
+- [`67cd25a1`](https://github.com/tauri-apps/plugins-workspace/commit/67cd25a10ce3deb1b935e725228e528766f24ad7) ([#3592](https://github.com/tauri-apps/plugins-workspace/pull/3592)) On Windows, the second instance now allows the first instance to bring its window to the front before exiting, so focusing a window from the callback no longer gets refused by Windows.
+
 ## [2.4.4]
 
 - [`f8053e65`](https://github.com/tauri-apps/plugins-workspace/commit/f8053e659e4ccd85c1f52833411ff8417cbc5e69) ([#3527](https://github.com/tauri-apps/plugins-workspace/pull/3527) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Documented Cargo feature flags in each plugin's crate-level documentation.

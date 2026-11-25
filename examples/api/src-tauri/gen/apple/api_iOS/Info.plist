@@ -48,5 +48,26 @@
 	<string>Authenticate with biometrics</string>
 	<key>NFCReaderUsageDescription</key>
 	<string>Read and write to NFC tags for testing</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Read the device location for testing</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>tauri-plugins-e2e</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER).tauri-plugins-e2e</string>
+		</dict>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>tauri-plugins-e2e-mixed</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER).tauri-plugins-e2e-mixed</string>
+		</dict>
+	</array>
 </dict>
 </plist>

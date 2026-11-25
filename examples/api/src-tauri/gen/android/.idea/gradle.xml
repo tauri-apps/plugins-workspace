@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="GradleMigrationSettings" migrationVersion="1" />
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
@@ -17,16 +16,16 @@
         </compositeConfiguration>
         <option name="testRunner" value="CHOOSE_PER_TEST" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
         <option name="modules">
           <set>
-            <option value="$USER_HOME$/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.5.0/mobile/android" />
+            <option value="$USER_HOME$/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.12.0/mobile/android" />
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/buildSrc" />
             <option value="$PROJECT_DIR$/../../../../../plugins/barcode-scanner/android" />
             <option value="$PROJECT_DIR$/../../../../../plugins/biometric/android" />
             <option value="$PROJECT_DIR$/../../../../../plugins/clipboard-manager/android" />
+            <option value="$PROJECT_DIR$/../../../../../plugins/deep-link/android" />
             <option value="$PROJECT_DIR$/../../../../../plugins/dialog/android" />
             <option value="$PROJECT_DIR$/../../../../../plugins/fs/android" />
             <option value="$PROJECT_DIR$/../../../../../plugins/geolocation/android" />

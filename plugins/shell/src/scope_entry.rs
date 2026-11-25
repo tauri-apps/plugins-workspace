@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use serde::{de::Error as DeError, Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, de::Error as DeError};
 
 use std::path::PathBuf;
 

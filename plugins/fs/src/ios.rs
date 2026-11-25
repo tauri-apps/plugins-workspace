@@ -3,10 +3,15 @@
 // SPDX-License-Identifier: MIT
 
 use serde::de::DeserializeOwned;
-use tauri::{plugin::PluginApi, AppHandle, Runtime};
+use tauri::{AppHandle, Runtime, plugin::PluginApi};
 
 use crate::{FilePath, OpenOptions};
 
+/// Access to the file system APIs on iOS.
+///
+/// Opening a `file://` URL automatically starts accessing the matching security-scoped resource.
+///
+/// Retrieved with [`crate::FsExt::fs`].
 pub struct Fs<R: Runtime> {
     _phantom: std::marker::PhantomData<fn() -> R>,
 }
@@ -42,7 +47,7 @@ impl<R: Runtime> Fs<R> {
 
                 // Create NSURL from the URL string
                 // URLWithString may return None for invalid URLs, but file:// URLs should be valid
-                let ns_url = unsafe { NSURL::URLWithString(&url_nsstring) };
+                let ns_url = NSURL::URLWithString(&url_nsstring);
                 if let Some(ns_url) = ns_url {
                     // Start accessing the security-scoped resource
                     // This is required for files outside the app's sandbox (e.g., from file picker)
@@ -64,7 +69,10 @@ impl<R: Runtime> Fs<R> {
                         }
                     }
                 } else {
-                    log::debug!("Failed to create NSURL from URL: {}, ignoring security-scoped resource access request", url_string);
+                    log::debug!(
+                        "Failed to create NSURL from URL: {}, ignoring security-scoped resource access request",
+                        url_string
+                    );
                 }
 
                 // Convert URL to path and open the file
@@ -119,7 +127,7 @@ impl<R: Runtime> Fs<R> {
         };
 
         let url_nsstring = NSString::from_str(&url_string);
-        let ns_url = unsafe { NSURL::URLWithString(&url_nsstring) };
+        let ns_url = NSURL::URLWithString(&url_nsstring);
         if let Some(ns_url) = ns_url {
             // Stop accessing the security-scoped resource
             unsafe {

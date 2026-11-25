@@ -1,0 +1,34 @@
+[package]
+name = "tauri-plugin-torch"
+version = "2.0.0"
+description = "Control the device flashlight (torch) on Android and iOS"
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+rust-version = { workspace = true }
+repository = { workspace = true }
+links = "tauri-plugin-torch"
+exclude = ["/guest-js", "/package.json", "/rollup.config.js", "/tsconfig.json"]
+
+[package.metadata.docs.rs]
+targets = ["x86_64-linux-android"]
+
+[package.metadata.platforms.support]
+windows = { level = "none", notes = "" }
+linux = { level = "none", notes = "" }
+macos = { level = "none", notes = "" }
+android = { level = "full", notes = "" }
+ios = { level = "full", notes = "" }
+
+[build-dependencies]
+tauri-plugin = { workspace = true, features = ["build"] }
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
+
+[target.'cfg(target_os = "ios")'.dependencies]
+tauri = { workspace = true, features = ["wry"] }

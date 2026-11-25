@@ -5,9 +5,21 @@
 use indexmap::IndexMap;
 use serde_json::Value as JsonValue;
 use sqlx::migrate::Migrator;
-use tauri::{command, AppHandle, Runtime, State};
+use tauri::{AppHandle, Runtime, State, command};
 
 use crate::{DbInstances, DbPool, Error, LastInsertId, Migrations};
+
+#[derive(Debug, Clone, Copy, serde::Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub(crate) struct LoadOptions {
+    pub auto_create: bool,
+}
+
+impl Default for LoadOptions {
+    fn default() -> Self {
+        Self { auto_create: true }
+    }
+}
 
 #[command]
 pub(crate) async fn load<R: Runtime>(
@@ -15,8 +27,10 @@ pub(crate) async fn load<R: Runtime>(
     db_instances: State<'_, DbInstances>,
     migrations: State<'_, Migrations>,
     db: String,
+    options: Option<LoadOptions>,
 ) -> Result<String, crate::Error> {
-    let pool = DbPool::connect(&db, &app).await?;
+    let options = options.unwrap_or_default();
+    let pool = DbPool::connect(&db, &app, options.auto_create).await?;
 
     if let Some(migrations) = migrations.0.lock().await.remove(&db) {
         let migrator = Migrator::new(migrations).await?;

@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-http"
-version = "2.6.0"
+version = "2.9.0"
 description = "Access an HTTP client written in Rust."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -28,7 +28,7 @@ tauri-plugin = { workspace = true, features = ["build"] }
 schemars = { workspace = true }
 serde = { workspace = true }
 url = { workspace = true }
-urlpattern = "0.3"
+urlpattern = "0.6"
 regex = "1"
 
 [dependencies]
@@ -37,14 +37,15 @@ serde_json = { workspace = true }
 tauri = { workspace = true }
 thiserror = { workspace = true }
 tokio = { version = "1", features = ["sync", "macros"] }
-tauri-plugin-fs = { path = "../fs", version = "2.5.2" }
-urlpattern = "0.3"
+tauri-plugin-fs = { path = "../fs", version = "2.7.1" }
+urlpattern = "0.6"
 regex = "1"
 http = "1"
 # 0.12.16 is when `system-proxy` was added
 reqwest = { version = "0.12.16", default-features = false }
 url = { workspace = true }
 data-url = "0.3"
+percent-encoding = "2"
 cookie_store = { version = "0.22", optional = true, features = ["serde"] }
 bytes = { version = "1.9", optional = true }
 tracing = { workspace = true, optional = true }

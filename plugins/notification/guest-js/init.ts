@@ -2,6 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+/**
+ * Webview script injected by the notification plugin.
+ *
+ * It replaces `window.Notification` with an implementation backed by the plugin, so the
+ * standard Notification Web API sends OS notifications, and keeps
+ * `window.Notification.permission` and `window.Notification.requestPermission` in sync
+ * with the permission state reported by the plugin.
+ *
+ * @module
+ */
+
 import { invoke } from '@tauri-apps/api/core'
 import type { PermissionState } from '@tauri-apps/api/core'
 import type { Options } from './index'
@@ -10,9 +21,15 @@ import type { Options } from './index'
   let permissionValue = 'default'
 
   async function isPermissionGranted(): Promise<boolean> {
-    // @ts-expect-error __TEMPLATE_windows__ will be replaced in rust before it's injected.
-    if (window.Notification.permission !== 'default' || __TEMPLATE_windows__) {
+    if (window.Notification.permission !== 'default') {
       return await Promise.resolve(window.Notification.permission === 'granted')
+    }
+    // Windows always grants the permission, and asking the backend for it from
+    // the init script makes the WebView throw a STATUS_ACCESS_VIOLATION on
+    // remote websites, so answer it here instead of invoking.
+    // @ts-expect-error __TEMPLATE_windows__ will be replaced in rust before it's injected.
+    if (__TEMPLATE_windows__) {
+      return true
     }
     return await invoke('plugin:notification|is_permission_granted')
   }

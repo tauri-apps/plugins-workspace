@@ -245,6 +245,6 @@ class GeolocationPlugin: Plugin, CLLocationManagerDelegate {
 }
 
 @_cdecl("init_plugin_geolocation")
-func initPlugin() -> Plugin {
+public func initPlugin() -> Plugin {
   return GeolocationPlugin()
 }

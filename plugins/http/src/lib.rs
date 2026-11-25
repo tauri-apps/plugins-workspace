@@ -43,16 +43,33 @@
 //! - **tracing**: Adds request, response, and cookie-store diagnostics through `tracing`.
 //! - **unsafe-headers**: Allows webview requests to send any headers.
 //! - **dangerous-settings**: Allows dangerous client settings such as accepting invalid certificates or hostnames.
+//!
+//! ## Configuration
+//!
+//! See [`Config`] for the options that can be set on the `plugins > http` object of your
+//! `tauri.conf.json`:
+//!
+//! ```json
+//! {
+//!   "plugins": {
+//!     "http": {
+//!       "scopeRedirects": true
+//!     }
+//!   }
+//! }
+//! ```
 
 pub use reqwest;
 use tauri::{
-    plugin::{Builder, TauriPlugin},
     Manager, Runtime,
+    plugin::{Builder, TauriPlugin},
 };
 
+pub use config::Config;
 pub use error::{Error, Result};
 
 mod commands;
+mod config;
 mod error;
 #[cfg(feature = "cookies")]
 mod reqwest_cookie_store;
@@ -62,13 +79,26 @@ mod scope;
 const COOKIES_FILENAME: &str = ".cookies";
 
 pub(crate) struct Http {
+    pub(crate) config: Config,
+    /// Each webview's current page token rid, by webview label.
+    pub(crate) pages: std::sync::Mutex<std::collections::HashMap<String, tauri::ResourceId>>,
     #[cfg(feature = "cookies")]
     cookies_jar: std::sync::Arc<crate::reqwest_cookie_store::CookieStoreMutex>,
 }
 
-pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::<R>::new("http")
-        .setup(|app, _| {
+/// Initializes the plugin.
+///
+/// The plugin reads its [`Config`] from the `plugins > http` object of the `tauri.conf.json` file;
+/// when that object is missing, [`Config::default`] is used.
+///
+/// With the `cookies` Cargo feature (enabled by default), a cookie jar is loaded from a `.cookies`
+/// file in the application cache directory on setup and written back to it when the application
+/// exits. A jar that cannot be read is replaced by an empty one.
+///
+/// Register it on the Tauri builder with `.plugin(tauri_plugin_http::init())`.
+pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
+    Builder::<R, Option<Config>>::new("http")
+        .setup(|app, api| {
             #[cfg(feature = "cookies")]
             let cookies_jar = {
                 use crate::reqwest_cookie_store::*;
@@ -96,6 +126,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             };
 
             let state = Http {
+                config: api.config().clone().unwrap_or_default(),
+                pages: Default::default(),
                 #[cfg(feature = "cookies")]
                 cookies_jar: std::sync::Arc::new(cookies_jar),
             };
@@ -118,6 +150,31 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         tracing::error!("failed to save cookie jar: {_e}");
                     }
                 }
+            }
+        })
+        // Cancel a webview's requests and response bodies when its window is destroyed.
+        // This listens on each window instead of using the plugin's `on_event`:
+        // by the time `on_event` sees `WindowEvent::Destroyed`, Tauri has already
+        // removed the window and its webviews from the app, so their resource tables
+        // can no longer be looked up. The listener keeps the webview it was registered
+        // for, so it also cancels on the right table if the label is reused later.
+        //
+        // TODO: Also cancel on webview close (a webview closed on its own in a
+        // multiwebview window) once Tauri provides a plugin lifecycle hook for it.
+        .on_webview_ready(|webview| {
+            let webview_ = webview.clone();
+            webview.window().on_window_event(move |event| {
+                if matches!(event, tauri::WindowEvent::Destroyed) {
+                    commands::cancel_all_requests(&webview_);
+                    if let Some(state) = webview_.try_state::<Http>() {
+                        state.pages.lock().unwrap().remove(webview_.label());
+                    }
+                }
+            });
+        })
+        .on_page_load(|webview, payload| {
+            if matches!(payload.event(), tauri::webview::PageLoadEvent::Started) {
+                commands::cancel_all_requests(webview);
             }
         })
         .invoke_handler(tauri::generate_handler![

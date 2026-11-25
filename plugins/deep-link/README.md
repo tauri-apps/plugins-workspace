@@ -12,7 +12,7 @@ Set your Tauri application as the default handler for an URL.
 
 ## Install
 
-_This plugin requires a Rust version of at least **1.77.2**_
+_This plugin requires a Rust version of at least **1.90**_
 
 There are three general methods of installation that we can recommend.
 
@@ -93,6 +93,8 @@ To verify if your domain has been properly configured to expose the app associat
 ```sh
 curl -v https://app-site-association.cdn-apple.com/a/v1/<host>
 ```
+
+The plugin only manages the `applinks:` entries of the `com.apple.developer.associated-domains` entitlement. Other entries you add to your app's entitlements file, such as `webcredentials:<host>` for [Password AutoFill or passkeys](https://developer.apple.com/documentation/xcode/supporting-associated-domains), are kept.
 
 **The apple-app-site-association file must be served over HTTPS and the response must include the `Content-Type: application/json` header.**
 

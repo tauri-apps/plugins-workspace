@@ -13,8 +13,8 @@ use std::{
     time::{Duration, Instant},
 };
 use tauri::{
-    test::{mock_builder, mock_context, noop_assets},
     RunEvent, WebviewWindowBuilder,
+    test::{mock_builder, mock_context, noop_assets},
 };
 
 const TEST_NAME: &str = "dbus_handoff_and_release";

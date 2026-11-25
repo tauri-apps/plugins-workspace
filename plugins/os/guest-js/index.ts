@@ -25,6 +25,9 @@ declare global {
   }
 }
 
+/**
+ * A string describing the specific operating system in use, as returned by {@link platform}.
+ */
 type Platform =
   | 'linux'
   | 'macos'
@@ -37,8 +40,14 @@ type Platform =
   | 'android'
   | 'windows'
 
+/**
+ * A coarse-grained operating system category, as returned by {@link type}.
+ */
 type OsType = 'linux' | 'windows' | 'macos' | 'ios' | 'android'
 
+/**
+ * A string describing the specific operating system architecture in use, as returned by {@link arch}.
+ */
 type Arch =
   | 'x86'
   | 'x86_64'
@@ -57,6 +66,13 @@ type Arch =
  * - `\n` on POSIX
  * - `\r\n` on Windows
  *
+ * @example
+ * ```typescript
+ * import { eol } from '@tauri-apps/plugin-os';
+ * const eolChar = eol();
+ * ```
+ *
+ * @returns The end-of-line marker for the current platform.
  * @since 2.0.0
  * */
 function eol(): string {
@@ -73,6 +89,7 @@ function eol(): string {
  * const platformName = platform();
  * ```
  *
+ * @returns The platform name.
  * @since 2.0.0
  *
  */
@@ -88,12 +105,16 @@ function platform(): Platform {
  * const osVersion = version();
  * ```
  *
+ * @returns The operating system version.
  * @since 2.0.0
  */
 function version(): string {
   return window.__TAURI_OS_PLUGIN_INTERNALS__.version
 }
 
+/**
+ * A string describing the operating system family, as returned by {@link family}.
+ */
 type Family = 'unix' | 'windows'
 
 /**
@@ -101,9 +122,10 @@ type Family = 'unix' | 'windows'
  * @example
  * ```typescript
  * import { family } from '@tauri-apps/plugin-os';
- * const family = family();
+ * const osFamily = family();
  * ```
  *
+ * @returns The operating system family.
  * @since 2.0.0
  */
 function family(): Family {
@@ -118,6 +140,7 @@ function family(): Family {
  * const osType = type();
  * ```
  *
+ * @returns The operating system type.
  * @since 2.0.0
  */
 function type(): OsType {
@@ -133,6 +156,7 @@ function type(): OsType {
  * const archName = arch();
  * ```
  *
+ * @returns The operating system architecture.
  * @since 2.0.0
  */
 function arch(): Arch {
@@ -147,6 +171,7 @@ function arch(): Arch {
  * const exeExt = exeExtension();
  * ```
  *
+ * @returns The file extension used for executable binaries on this platform.
  * @since 2.0.0
  */
 function exeExtension(): string {
@@ -158,12 +183,13 @@ function exeExtension(): string {
  * @example
  * ```typescript
  * import { locale } from '@tauri-apps/plugin-os';
- * const locale = await locale();
- * if (locale) {
+ * const userLocale = await locale();
+ * if (userLocale) {
  *    // use the locale string here
  * }
  * ```
  *
+ * @returns A promise resolving to the `BCP-47` language tag, or `null` if it could not be obtained.
  * @since 2.0.0
  */
 async function locale(): Promise<string | null> {
@@ -175,8 +201,11 @@ async function locale(): Promise<string | null> {
  * @example
  * ```typescript
  * import { hostname } from '@tauri-apps/plugin-os';
- * const hostname = await hostname();
+ * const host = await hostname();
  * ```
+ *
+ * @returns A promise resolving to the host name of the operating system.
+ * @since 2.0.0
  */
 async function hostname(): Promise<string | null> {
   return await invoke('plugin:os|hostname')
