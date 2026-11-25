@@ -233,6 +233,9 @@ importers:
       '@tauri-apps/plugin-biometric':
         specifier: workspace:*
         version: link:../../plugins/biometric
+      '@tauri-apps/plugin-camera':
+        specifier: workspace:*
+        version: link:../../plugins/camera
       '@tauri-apps/plugin-cli':
         specifier: workspace:*
         version: link:../../plugins/cli
@@ -348,6 +351,9 @@ importers:
       '@tauri-apps/plugin-biometric':
         specifier: workspace:*
         version: link:../../plugins/biometric
+      '@tauri-apps/plugin-camera':
+        specifier: workspace:*
+        version: link:../../plugins/camera
       '@tauri-apps/plugin-cli':
         specifier: workspace:*
         version: link:../../plugins/cli
@@ -476,6 +482,12 @@ importers:
         version: 2.12.1
 
   plugins/biometric:
+    dependencies:
+      '@tauri-apps/api':
+        specifier: ^2.12.0
+        version: 2.12.1
+
+  plugins/camera:
     dependencies:
       '@tauri-apps/api':
         specifier: ^2.12.0

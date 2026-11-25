@@ -1,0 +1,18 @@
+"$schema" = "schemas/schema.json"
+[default]
+description = """
+This permission set configures which
+camera features are by default exposed.
+
+#### Granted Permissions
+
+It allows all camera related features.
+
+"""
+
+permissions = [
+  "allow-get-photo",
+  "allow-pick-images",
+  "allow-check-permissions",
+  "allow-request-permissions",
+]
