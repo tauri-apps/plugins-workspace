@@ -44,21 +44,23 @@ class FsPlugin(private val activity: Activity): Plugin(activity) {
 
         if (args.uri.startsWith(app.tauri.TAURI_ASSETS_DIRECTORY_URI)) {
             val path = args.uri.substring(app.tauri.TAURI_ASSETS_DIRECTORY_URI.length)
-            try {
-                val fd = activity.assets.openFd(path).parcelFileDescriptor?.detachFd()
-                res.put("fd", fd)
-            } catch (e: IOException) {
-                // if the asset is compressed, we cannot open a file descriptor directly
-                // so we copy it to the cache and get a fd from there
-                // this is a lot faster than serializing the file and sending it as invoke response
-                // because on the Rust side we can leverage the custom protocol IPC and read the file directly
-                val cacheFile = File(activity.cacheDir, "_assets/$path")
-                cacheFile.parentFile?.mkdirs()
-                copyAsset(path, cacheFile)
-
-                val fd = ParcelFileDescriptor.open(cacheFile, ParcelFileDescriptor.parseMode(args.mode)).detachFd()
-                res.put("fd", fd)
+            // We cannot hand out a file descriptor of the asset itself: for uncompressed assets
+            // `AssetManager.openFd` returns the descriptor of the whole APK with a start offset
+            // the Rust side cannot honor, and compressed assets have no descriptor at all.
+            // So we copy the asset to the cache and get a fd from there.
+            // This is a lot faster than serializing the file and sending it as invoke response
+            // because on the Rust side we can leverage the custom protocol IPC and read the file directly.
+            val assetsCacheDir = File(activity.cacheDir, "_assets")
+            val cacheFile = File(assetsCacheDir, path)
+            if (!cacheFile.canonicalPath.startsWith(assetsCacheDir.canonicalPath + File.separator)) {
+                invoke.reject("invalid asset path: $path")
+                return
             }
+            cacheFile.parentFile?.mkdirs()
+            copyAsset(path, cacheFile)
+
+            val fd = ParcelFileDescriptor.open(cacheFile, ParcelFileDescriptor.parseMode(args.mode)).detachFd()
+            res.put("fd", fd)
         } else {
             val fd = activity.contentResolver.openAssetFileDescriptor(
                 Uri.parse(args.uri),

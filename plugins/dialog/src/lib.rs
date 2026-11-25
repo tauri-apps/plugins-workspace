@@ -16,8 +16,8 @@
 
 use serde::{Deserialize, Serialize};
 use tauri::{
-    plugin::{Builder, TauriPlugin},
     Manager, Runtime,
+    plugin::{Builder, TauriPlugin},
 };
 
 use std::{

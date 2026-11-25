@@ -308,6 +308,6 @@ class DialogPlugin: Plugin {
 }
 
 @_cdecl("init_plugin_dialog")
-func initPlugin() -> Plugin {
+public func initPlugin() -> Plugin {
   return DialogPlugin()
 }

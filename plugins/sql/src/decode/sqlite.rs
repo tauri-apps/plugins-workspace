@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 use serde_json::Value as JsonValue;
-use sqlx::{sqlite::SqliteValueRef, TypeInfo, Value, ValueRef};
+use sqlx::{TypeInfo, Value, ValueRef, sqlite::SqliteValueRef};
 use time::{Date, PrimitiveDateTime, Time};
 
 use crate::Error;

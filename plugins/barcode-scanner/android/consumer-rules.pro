@@ -19,3 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# Looked up through reflection by the torch plugin.
+-keep class app.tauri.barcodescanner.BarcodeScannerPlugin {
+    public static androidx.camera.core.Camera getActiveCamera();
+}

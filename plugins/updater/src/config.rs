@@ -204,8 +204,12 @@ pub(crate) fn validate_endpoints(
             if url.scheme() != "https" {
                 #[cfg(debug_assertions)]
                 {
-                    eprintln!("[\x1b[33mWARNING\x1b[0m] The updater endpoint \"{url}\" doesn't use `https` protocol. This is allowed in development but will fail in release builds.");
-                    eprintln!("[\x1b[33mWARNING\x1b[0m] if this is a desired behavior, you can enable `dangerousInsecureTransportProtocol` in the plugin configuration");
+                    eprintln!(
+                        "[\x1b[33mWARNING\x1b[0m] The updater endpoint \"{url}\" doesn't use `https` protocol. This is allowed in development but will fail in release builds."
+                    );
+                    eprintln!(
+                        "[\x1b[33mWARNING\x1b[0m] if this is a desired behavior, you can enable `dangerousInsecureTransportProtocol` in the plugin configuration"
+                    );
                 }
                 #[cfg(not(debug_assertions))]
                 return Err(crate::Error::InsecureTransportProtocol);

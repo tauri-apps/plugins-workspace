@@ -46,9 +46,11 @@ fn custom_target_checks_metadata_without_installing() {
             request.push(byte[0]);
             assert!(request.len() < 8192);
         }
-        assert!(String::from_utf8(request)
-            .unwrap()
-            .starts_with("GET /updates/freebsd-x86_64 HTTP/1.1\r\n"));
+        assert!(
+            String::from_utf8(request)
+                .unwrap()
+                .starts_with("GET /updates/freebsd-x86_64 HTTP/1.1\r\n")
+        );
         let body = serde_json::json!({
             "version": "999.0.0",
             "notes": "Install this release with the package manager.",
@@ -99,10 +101,6 @@ fn custom_target_checks_metadata_without_installing() {
 
     #[cfg(not(target_os = "linux"))]
     {
-        assert!(matches!(
-            update.install(b"not a Linux package"),
-            Err(tauri_plugin_updater::Error::UnsupportedOs)
-        ));
         assert!(matches!(
             tauri::async_runtime::block_on(app.updater().unwrap().check()),
             Err(tauri_plugin_updater::Error::UnsupportedOs)

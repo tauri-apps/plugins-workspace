@@ -10,5 +10,7 @@
 		<string>Authenticate with biometrics</string>
 		<key>NFCReaderUsageDescription</key>
 		<string>Read and write to NFC tags for testing</string>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>Read the device location for testing</string>
 	</dict>
 </plist>

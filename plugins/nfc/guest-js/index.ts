@@ -102,7 +102,7 @@ export type ScanKind =
        * Examples
        *
        * ```ts
-       * import type { TechKind } from "@tauri-apps/plugin-nfc"
+       * import { TechKind } from "@tauri-apps/plugin-nfc"
        *
        * const techLists = [
        *  // capture anything using NfcF

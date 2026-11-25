@@ -22,14 +22,14 @@ use std::{
 
 use global_hotkey::GlobalHotKeyEvent;
 pub use global_hotkey::{
-    hotkey::{Code, HotKey as Shortcut, Modifiers},
     GlobalHotKeyEvent as ShortcutEvent, HotKeyState as ShortcutState,
+    hotkey::{Code, HotKey as Shortcut, Modifiers},
 };
 use serde::Serialize;
 use tauri::{
+    AppHandle, Manager, Runtime, State,
     ipc::Channel,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    AppHandle, Manager, Runtime, State,
 };
 
 mod error;
@@ -61,6 +61,32 @@ impl TryFrom<&str> for ShortcutWrapper {
 struct RegisteredShortcut<R: Runtime> {
     shortcut: Shortcut,
     handler: Option<Arc<HandlerFn<R>>>,
+}
+
+/// Runs the handlers registered for the shortcut behind `event`.
+///
+/// The shortcut and its handler are copied out of the map and the lock is released before any
+/// user code runs, so a handler can call back into the plugin (or pump messages that dispatch
+/// another shortcut event) without deadlocking on `shortcuts`.
+fn dispatch_shortcut_event<R: Runtime>(
+    shortcuts: &Mutex<HashMap<HotKeyId, RegisteredShortcut<R>>>,
+    app: &AppHandle<R>,
+    global_handler: Option<&HandlerFn<R>>,
+    event: GlobalHotKeyEvent,
+) {
+    let registered = shortcuts
+        .lock()
+        .unwrap()
+        .get(&event.id)
+        .map(|s| (s.shortcut, s.handler.clone()));
+    if let Some((shortcut, shortcut_handler)) = registered {
+        if let Some(handler) = &shortcut_handler {
+            handler(app, &shortcut, event);
+        }
+        if let Some(handler) = global_handler {
+            handler(app, &shortcut, event);
+        }
+    }
 }
 
 struct GlobalHotKeyManager(global_hotkey::GlobalHotKeyManager);
@@ -475,14 +501,7 @@ impl<R: Runtime> Builder<R> {
 
                 let app_handle = app.clone();
                 GlobalHotKeyEvent::set_event_handler(Some(move |e: GlobalHotKeyEvent| {
-                    if let Some(shortcut) = shortcuts_.lock().unwrap().get(&e.id) {
-                        if let Some(handler) = &shortcut.handler {
-                            handler(&app_handle, &shortcut.shortcut, e);
-                        }
-                        if let Some(handler) = &handler {
-                            handler(&app_handle, &shortcut.shortcut, e);
-                        }
-                    }
+                    dispatch_shortcut_event(&shortcuts_, &app_handle, handler.as_ref(), e);
                 }));
 
                 app.manage(GlobalShortcut {
@@ -493,5 +512,66 @@ impl<R: Runtime> Builder<R> {
                 Ok(())
             })
             .build()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use tauri::test::{MockRuntime, mock_app};
+
+    #[test]
+    fn handlers_run_without_holding_the_shortcuts_lock() {
+        let app = mock_app();
+        let shortcut = Shortcut::new(Some(Modifiers::ALT), Code::KeyW);
+        let shortcuts = Arc::new(Mutex::new(HashMap::<
+            HotKeyId,
+            RegisteredShortcut<MockRuntime>,
+        >::new()));
+        let calls = Arc::new(AtomicUsize::new(0));
+
+        let shortcut_handler: HandlerFn<MockRuntime> = {
+            let shortcuts = shortcuts.clone();
+            let calls = calls.clone();
+            Box::new(move |_, _, _| {
+                assert!(
+                    shortcuts.try_lock().is_ok(),
+                    "the shortcuts lock must not be held while a handler runs"
+                );
+                calls.fetch_add(1, Ordering::SeqCst);
+            })
+        };
+        let global_handler: HandlerFn<MockRuntime> = {
+            let shortcuts = shortcuts.clone();
+            let calls = calls.clone();
+            Box::new(move |_, _, _| {
+                assert!(
+                    shortcuts.try_lock().is_ok(),
+                    "the shortcuts lock must not be held while a handler runs"
+                );
+                calls.fetch_add(1, Ordering::SeqCst);
+            })
+        };
+
+        shortcuts.lock().unwrap().insert(
+            shortcut.id(),
+            RegisteredShortcut {
+                shortcut,
+                handler: Some(Arc::new(shortcut_handler)),
+            },
+        );
+
+        dispatch_shortcut_event(
+            &shortcuts,
+            app.handle(),
+            Some(&global_handler),
+            GlobalHotKeyEvent {
+                id: shortcut.id(),
+                state: ShortcutState::Pressed,
+            },
+        );
+
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
     }
 }

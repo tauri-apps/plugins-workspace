@@ -45,8 +45,8 @@ fn create_or_get_salt(salt: &mut [u8], salt_path: &Path) {
         salt.clone_from_slice(&tmp);
     } else {
         // Generate new salt
-        let mut gen = ChaCha20Rng::from_os_rng();
-        gen.fill_bytes(salt);
+        let mut rng = ChaCha20Rng::from_os_rng();
+        rng.fill_bytes(salt);
         std::fs::write(salt_path, salt).expect("Failed to write salt for Stronghold")
     }
 }

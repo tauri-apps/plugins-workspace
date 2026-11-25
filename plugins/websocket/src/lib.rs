@@ -18,13 +18,13 @@
     html_favicon_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png"
 )]
 
-use futures_util::{stream::SplitSink, SinkExt, StreamExt};
+use futures_util::{SinkExt, StreamExt, stream::SplitSink};
 use http::header::{HeaderName, HeaderValue};
-use serde::{ser::Serializer, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, ser::Serializer};
 use tauri::{
+    Manager, Runtime, State, Window,
     ipc::Channel,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    Manager, Runtime, State, Window,
 };
 use tokio::{net::TcpStream, sync::Mutex};
 #[cfg(any(
@@ -40,12 +40,12 @@ use tokio_tungstenite::connect_async_tls_with_config;
 )))]
 use tokio_tungstenite::connect_async_with_config;
 use tokio_tungstenite::{
+    Connector, MaybeTlsStream, WebSocketStream,
     tungstenite::{
+        Message,
         client::IntoClientRequest,
         protocol::{CloseFrame as ProtocolCloseFrame, WebSocketConfig},
-        Message,
     },
-    Connector, MaybeTlsStream, WebSocketStream,
 };
 
 use std::collections::HashMap;

@@ -17,7 +17,7 @@ http
       fs.readFile(
         path.resolve(__dirname, 'apple-app-site-association'),
         function (_error, content) {
-          response.writeHead(200)
+          response.writeHead(200, { 'Content-Type': 'application/json' })
           response.end(content, 'utf-8')
         }
       )

@@ -1,0 +1,19 @@
+"$schema" = "schemas/schema.json"
+[default]
+description = """
+This permission set configures which
+torch features are by default exposed.
+
+#### Granted Permissions
+
+It allows all torch related features.
+
+"""
+
+permissions = [
+  "allow-disable",
+  "allow-enable",
+  "allow-is-available",
+  "allow-is-enabled",
+  "allow-toggle",
+]

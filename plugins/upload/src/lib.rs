@@ -21,12 +21,11 @@ mod transfer_stats;
 use transfer_stats::TransferStats;
 
 use futures_util::TryStreamExt;
-use serde::{ser::Serializer, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, ser::Serializer};
 use tauri::{
-    command,
+    Runtime, command,
     ipc::Channel,
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    Runtime,
 };
 use tokio::{
     fs::File,
