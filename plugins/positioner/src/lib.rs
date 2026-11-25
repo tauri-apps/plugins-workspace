@@ -21,12 +21,12 @@ mod ext;
 
 pub use ext::*;
 use tauri::{
-    plugin::{self, TauriPlugin},
     Result, Runtime,
+    plugin::{self, TauriPlugin},
 };
 
 #[cfg(feature = "tray-icon")]
-use tauri::{tray::TrayIconEvent, AppHandle, Manager, PhysicalPosition, PhysicalSize};
+use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, tray::TrayIconEvent};
 
 #[cfg(feature = "tray-icon")]
 struct Tray(std::sync::Mutex<Option<(PhysicalPosition<f64>, PhysicalSize<f64>)>>);

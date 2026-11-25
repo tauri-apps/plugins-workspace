@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-use tauri::{command, AppHandle, Runtime, State, Window};
+use tauri::{AppHandle, Runtime, State, Window, command};
 
 use crate::{DeepLink, Result};
 

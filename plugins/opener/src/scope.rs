@@ -8,9 +8,9 @@ use std::{
     sync::Arc,
 };
 
-use tauri::{ipc::ScopeObject, utils::acl::Value, AppHandle, Manager, Runtime};
+use tauri::{AppHandle, Manager, Runtime, ipc::ScopeObject, utils::acl::Value};
 
-use crate::{scope_entry::EntryRaw, Error};
+use crate::{Error, scope_entry::EntryRaw};
 
 pub use crate::scope_entry::Application;
 

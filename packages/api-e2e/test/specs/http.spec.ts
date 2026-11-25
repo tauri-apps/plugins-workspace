@@ -1,0 +1,392 @@
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
+import { expect } from '@wdio/globals'
+import {
+  tauri,
+  tauriError,
+  describePlugin,
+  eventually,
+  itDesktop
+} from '../helpers/index.js'
+import {
+  FIXTURE_SERVER_URL,
+  RAW_HEADER_FILENAME,
+  STALL_BODY_FIRST_CHUNK
+} from '../helpers/server.js'
+
+// Requests and responses of the http plugin still in the webview's resource table.
+async function httpResourceCount(): Promise<number> {
+  const names = await tauri((api) =>
+    api.core.invoke<string[]>('webview_resource_names')
+  )
+  return names.filter(
+    (name) =>
+      name.endsWith('::FetchRequest') || name.endsWith('::ReqwestResponse')
+  ).length
+}
+
+// The example spawns an echo server on this port: it replies with the request
+// body and the request headers, and sets a `session-token` cookie on requests
+// that do not carry one. It is also the only `http://` origin in the example's
+// http scope.
+const echoServer = 'http://localhost:3003'
+
+describePlugin('http', () => {
+  for (const status of [204, 205, 304]) {
+    for (const readBody of [false, true]) {
+      it(`fetch releases a ${status} response ${readBody ? 'after reading it' : 'without reading it'}`, async () => {
+        const result = await tauri(
+          async (api, url, status, readBody) => {
+            const resourceNames = () =>
+              api.core.invoke<string[]>('webview_resource_names')
+            const before = await resourceNames()
+            const response = await api.http.fetch(`${url}/empty/${status}`)
+            const bytes = readBody
+              ? (await response.arrayBuffer()).byteLength
+              : null
+            const after = await resourceNames()
+            const responseCount = (names: string[]) =>
+              names.filter((name) => name.endsWith('::ReqwestResponse')).length
+            return {
+              status: response.status,
+              bodyIsNull: response.body === null,
+              bytes,
+              url: response.url,
+              header: response.headers.get('x-e2e-empty'),
+              // Reading an empty JS body succeeds even if its Rust resource leaked.
+              // Inspect the real native resource table instead.
+              retained: responseCount(after) - responseCount(before)
+            }
+          },
+          FIXTURE_SERVER_URL,
+          status,
+          readBody
+        )
+        expect(result.status).toBe(status)
+        expect(result.bodyIsNull).toBe(true)
+        expect(result.bytes).toBe(readBody ? 0 : null)
+        expect(result.url).toBe(`${FIXTURE_SERVER_URL}/empty/${status}`)
+        expect(result.header).toBe('present')
+        expect(result.retained).toBe(0)
+      })
+    }
+  }
+
+  it('fetch performs a GET and exposes status, url and headers', async () => {
+    const response = await tauri(async (api, url) => {
+      const response = await api.http.fetch(url, {
+        headers: { 'x-e2e-header': 'present' }
+      })
+      return {
+        ok: response.ok,
+        status: response.status,
+        url: response.url,
+        // the echo server mirrors the request headers back
+        echoedHeader: response.headers.get('x-e2e-header'),
+        body: await response.text()
+      }
+    }, echoServer)
+    expect(response.ok).toBe(true)
+    expect(response.status).toBe(200)
+    expect(response.url).toBe(`${echoServer}/`)
+    expect(response.echoedHeader).toBe('present')
+    expect(response.body).toBe('')
+  })
+
+  it('fetch sends a JSON body and parses the echoed response', async () => {
+    const payload = { message: 'hello from e2e', nested: { list: [1, 2, 3] } }
+    const response = await tauri(
+      async (api, url, payload) => {
+        const response = await api.http.fetch(`${url}/json`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        return {
+          status: response.status,
+          contentType: response.headers.get('content-type'),
+          body: (await response.json()) as unknown
+        }
+      },
+      echoServer,
+      payload
+    )
+    expect(response.status).toBe(200)
+    expect(response.contentType).toBe('application/json')
+    expect(response.body).toEqual(payload)
+  })
+
+  it('fetch sends binary bodies and reads them back as bytes', async () => {
+    const bytes = [0, 1, 2, 127, 128, 254, 255]
+    const echoed = await tauri(
+      async (api, url, bytes) => {
+        const response = await api.http.fetch(`${url}/bytes`, {
+          method: 'PUT',
+          body: new Uint8Array(bytes)
+        })
+        return Array.from(new Uint8Array(await response.arrayBuffer()))
+      },
+      echoServer,
+      bytes
+    )
+    expect(echoed).toEqual(bytes)
+  })
+
+  it('fetch sends multipart form data', async () => {
+    const body = await tauri(async (api, url) => {
+      const form = new FormData()
+      form.append('foo', 'baz')
+      form.append('bar', 'qux')
+      const response = await api.http.fetch(`${url}/form`, {
+        method: 'POST',
+        body: form
+      })
+      return {
+        contentType: response.headers.get('content-type'),
+        text: await response.text()
+      }
+    }, echoServer)
+    expect(body.contentType).toMatch(/^multipart\/form-data; boundary=/)
+    expect(body.text).toContain('name="foo"')
+    expect(body.text).toContain('baz')
+    expect(body.text).toContain('name="bar"')
+    expect(body.text).toContain('qux')
+  })
+
+  it('fetch exposes non-ASCII response header bytes as a ByteString', async () => {
+    // https://github.com/tauri-apps/plugins-workspace/issues/2898
+    const result = await tauri(async (api, url) => {
+      const response = await api.http.fetch(`${url}/raw-header`)
+      await response.text()
+      const value = response.headers.get('content-disposition') ?? ''
+      // A ByteString holds one byte per char, like a browser exposes it.
+      const bytes = Uint8Array.from(value, (c) => c.charCodeAt(0))
+      return new TextDecoder().decode(bytes)
+    }, FIXTURE_SERVER_URL)
+    expect(result).toBe(`attachment; filename="${RAW_HEADER_FILENAME}"`)
+  })
+
+  it('fetch sends ByteString request header values as raw bytes', async () => {
+    // Each char is one byte (0x80-0xFF) on the wire, as in a browser. The
+    // tail is the UTF-8 encoding of `中`, as when a response header is sent back.
+    const value = 'x\u00e4\u00ff\u00e4\u00b8\u00ad'
+    const echoed = await tauri(
+      async (api, url, value) => {
+        const response = await api.http.fetch(`${url}/echo`, {
+          headers: { 'x-e2e-raw': value }
+        })
+        const body = (await response.json()) as {
+          headers: Record<string, string>
+        }
+        return body.headers['x-e2e-raw']
+      },
+      FIXTURE_SERVER_URL,
+      value
+    )
+    // the fixture server decodes header values as ISO-8859-1
+    expect(echoed).toBe(value)
+  })
+
+  it('the cookie jar stores and replays cookies across requests', async () => {
+    const result = await tauri(async (api, url) => {
+      // The jar is persisted in the app data dir, so an earlier run (or the
+      // requests above) may already hold the cookie: the first request then
+      // replays it instead of being handed a new one.
+      const first = await api.http.fetch(`${url}/cookies`)
+      await first.text()
+      // Either way the jar attaches it to the next request, which the echo
+      // server mirrors back as a `cookie` header without setting a new one.
+      const second = await api.http.fetch(`${url}/cookies`)
+      await second.text()
+      return {
+        setCookie: first.headers.get('set-cookie'),
+        replayedFirst: first.headers.get('cookie'),
+        replayed: second.headers.get('cookie'),
+        setAgain: second.headers.get('set-cookie')
+      }
+    }, echoServer)
+    if (result.replayedFirst === null) {
+      expect(result.setCookie).toMatch(/^session-token=test-value/)
+    } else {
+      expect(result.replayedFirst).toContain('session-token=test-value')
+    }
+    expect(result.replayed).toContain('session-token=test-value')
+    expect(result.setAgain).toBeNull()
+  })
+
+  it('fetch can be aborted', async () => {
+    const message = await tauriError(async (api, url) => {
+      const controller = new AbortController()
+      controller.abort()
+      await api.http.fetch(`${url}/aborted`, { signal: controller.signal })
+    }, echoServer)
+    expect(message).toMatch(/abort|cancel/i)
+  })
+
+  it('aborting a request that waits for headers releases it', async () => {
+    const before = await httpResourceCount()
+    const message = await tauriError(async (api, url) => {
+      const controller = new AbortController()
+      setTimeout(() => controller.abort(), 300)
+      await api.http.fetch(`${url}/stall`, { signal: controller.signal })
+    }, FIXTURE_SERVER_URL)
+    expect(message).toMatch(/abort|cancel/i)
+    await eventually(async () => expect(await httpResourceCount()).toBe(before))
+  })
+
+  it('aborting a pending body read releases the response', async () => {
+    const before = await httpResourceCount()
+    const result = await tauri(async (api, url) => {
+      const controller = new AbortController()
+      const response = await api.http.fetch(`${url}/stall-body`, {
+        signal: controller.signal
+      })
+      const reader = response.body!.getReader()
+      const first = new TextDecoder().decode((await reader.read()).value)
+      // The server never sends the next chunk, so this read stays pending.
+      const pending = reader.read()
+      setTimeout(() => controller.abort(), 300)
+      try {
+        await pending
+        return { first, second: 'resolved' }
+      } catch (error) {
+        return { first, second: String(error) }
+      }
+    }, FIXTURE_SERVER_URL)
+    expect(result.first).toBe(STALL_BODY_FIRST_CHUNK)
+    expect(result.second).toMatch(/abort|cancel/i)
+    await eventually(async () => expect(await httpResourceCount()).toBe(before))
+  })
+
+  it('canceling the body stream releases the response', async () => {
+    const before = await httpResourceCount()
+    const first = await tauri(async (api, url) => {
+      const response = await api.http.fetch(`${url}/stall-body`)
+      const reader = response.body!.getReader()
+      const chunk = new TextDecoder().decode((await reader.read()).value)
+      await reader.cancel()
+      return chunk
+    }, FIXTURE_SERVER_URL)
+    expect(first).toBe(STALL_BODY_FIRST_CHUNK)
+    await eventually(async () => expect(await httpResourceCount()).toBe(before))
+  })
+
+  it('the cancel commands do not close resources of other APIs', async () => {
+    const result = await tauri(async (api) => {
+      const image = await api.image.Image.new(new Uint8Array(4), 1, 1)
+      const errors: string[] = []
+      for (const command of ['fetch_cancel', 'fetch_cancel_body']) {
+        try {
+          await api.core.invoke(`plugin:http|${command}`, { rid: image.rid })
+          errors.push('resolved')
+        } catch (error) {
+          errors.push(String(error))
+        }
+      }
+      const size = await image.size()
+      await image.close()
+      return { errors, size: `${size.width}x${size.height}` }
+    })
+    expect(result.errors).toEqual([
+      expect.stringMatching(/resource id .* is invalid/),
+      expect.stringMatching(/resource id .* is invalid/)
+    ])
+    expect(result.size).toBe('1x1')
+  })
+
+  itDesktop(
+    'closing a window cancels its requests and response bodies',
+    async () => {
+      // `capabilities/http-e2e.json` grants http to `http-e2e-*` windows.
+      const label = 'http-e2e-close'
+      const stallState = async (id: string) => {
+        const response = await fetch(`${FIXTURE_SERVER_URL}/stall-state/${id}`)
+        return ((await response.json()) as { state: string | null }).state
+      }
+
+      const main = await browser.getWindowHandle()
+      const handles = await browser.getWindowHandles()
+      await tauri(
+        (api, label) =>
+          new Promise<void>((resolve, reject) => {
+            const window = new api.webviewWindow.WebviewWindow(label)
+            window.once('tauri://created', () => resolve()).catch(reject)
+            window
+              .once('tauri://error', (event) =>
+                reject(
+                  new Error(`window creation failed: ${String(event.payload)}`)
+                )
+              )
+              .catch(reject)
+          }),
+        label
+      )
+      const handle = await eventually(async () => {
+        const handle = (await browser.getWindowHandles()).find(
+          (handle) => !handles.includes(handle)
+        )
+        if (!handle)
+          throw new Error('the new window has no WebDriver handle yet')
+        return handle
+      })
+
+      await browser.switchToWindow(handle)
+      try {
+        await eventually(async () => {
+          const ready = await browser.execute(
+            () =>
+              typeof (window as { __TAURI__?: { http?: { fetch?: unknown } } })
+                .__TAURI__?.http?.fetch === 'function'
+          )
+          if (!ready) throw new Error('the new window has not loaded yet')
+        })
+        await tauri(async (api, url) => {
+          // One request waiting for headers, one response with an unread body.
+          void api.http.fetch(`${url}/stall/close-window-send`).catch(() => {})
+          // keep the response alive so only the window close can release it
+          ;(window as { __unreadResponse?: Response }).__unreadResponse =
+            await api.http.fetch(`${url}/stall-body/close-window-body`)
+          return null
+        }, FIXTURE_SERVER_URL)
+      } finally {
+        await browser.switchToWindow(main)
+      }
+
+      await eventually(async () =>
+        expect(await stallState('close-window-send')).toBe('open')
+      )
+      expect(await stallState('close-window-body')).toBe('open')
+
+      await tauri(async (api, label) => {
+        const window = await api.webviewWindow.WebviewWindow.getByLabel(label)
+        await window?.close()
+        return null
+      }, label)
+
+      await eventually(async () => {
+        expect(await stallState('close-window-send')).toBe('closed')
+        expect(await stallState('close-window-body')).toBe('closed')
+      })
+    }
+  )
+
+  it('rejects URLs outside the configured scope', async () => {
+    const message = await tauriError((api) =>
+      api.http.fetch('http://localhost:3999/not-in-scope')
+    )
+    expect(message).toMatch(/url not allowed on the configured scope/)
+  })
+
+  it('network failures reject', async () => {
+    // Every in-scope origin is reachable, so route the request through a proxy
+    // nothing listens on to force a connection error.
+    const message = await tauriError(
+      (api, url) =>
+        api.http.fetch(url, { proxy: { all: 'http://127.0.0.1:1' } }),
+      echoServer
+    )
+    expect(message).toMatch(/error sending request/)
+  })
+})

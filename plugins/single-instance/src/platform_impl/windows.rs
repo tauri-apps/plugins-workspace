@@ -5,33 +5,55 @@
 #[cfg(feature = "semver")]
 use crate::semver_compat::semver_compat_string;
 
-use crate::SingleInstanceCallback;
-use std::ffi::CStr;
+use crate::{SingleInstanceCallback, manage_instance_lock};
 use tauri::{
+    AppHandle, Resource, Runtime,
     plugin::{self, TauriPlugin},
-    AppHandle, Manager, RunEvent, Runtime,
 };
 use windows_sys::Win32::{
-    Foundation::{CloseHandle, GetLastError, ERROR_ALREADY_EXISTS, HWND, LPARAM, LRESULT, WPARAM},
+    Foundation::{CloseHandle, ERROR_ALREADY_EXISTS, GetLastError, HWND, LPARAM, LRESULT, WPARAM},
     System::{
         DataExchange::COPYDATASTRUCT,
         LibraryLoader::GetModuleHandleW,
         Threading::{CreateMutexW, ReleaseMutex},
     },
     UI::WindowsAndMessaging::{
-        self as w32wm, AllowSetForegroundWindow, CreateWindowExW, DefWindowProcW, DestroyWindow,
-        FindWindowW, GetWindowThreadProcessId, RegisterClassExW, SendMessageW, CREATESTRUCTW,
-        GWLP_USERDATA, GWL_STYLE, WINDOW_LONG_PTR_INDEX, WM_COPYDATA, WM_CREATE, WM_DESTROY,
-        WNDCLASSEXW, WS_EX_LAYERED, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_EX_TRANSPARENT,
-        WS_OVERLAPPED, WS_POPUP, WS_VISIBLE,
+        self as w32wm, AllowSetForegroundWindow, CREATESTRUCTW, CreateWindowExW, DefWindowProcW,
+        DestroyWindow, FindWindowW, GWL_STYLE, GWLP_USERDATA, GetWindowThreadProcessId,
+        RegisterClassExW, SMTO_NORMAL, SendMessageTimeoutW, WINDOW_LONG_PTR_INDEX, WM_COPYDATA,
+        WM_CREATE, WM_DESTROY, WNDCLASSEXW, WS_EX_LAYERED, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW,
+        WS_EX_TRANSPARENT, WS_OVERLAPPED, WS_POPUP, WS_VISIBLE,
     },
 };
 
+// TODO(v3): remove this
+/// Legacy payload: cwd and arguments joined by `|`, which splits any argument containing a `|`.
+/// Still accepted from second instances running an older version of the plugin.
 const WMCOPYDATA_SINGLE_INSTANCE_DATA: usize = 1542;
+/// Cwd and arguments separated by NUL, without a terminator.
+const WMCOPYDATA_SINGLE_INSTANCE_DATA_NUL: usize = 1543;
 
-struct MutexHandle(isize);
+/// How long the second instance waits for the first instance to take its arguments.
+const FORWARD_TIMEOUT_MS: u32 = 10_000;
 
-struct TargetWindowHandle(isize);
+/// Owns the named mutex and the event target window, released when the app exits
+/// (see [`crate::destroy`]).
+struct InstanceLock {
+    mutex: isize,
+    window: isize,
+}
+
+impl Resource for InstanceLock {}
+
+impl Drop for InstanceLock {
+    fn drop(&mut self) {
+        unsafe {
+            ReleaseMutex(self.mutex as _);
+            CloseHandle(self.mutex as _);
+            DestroyWindow(self.window as _);
+        }
+    }
+}
 
 struct UserData<R: Runtime> {
     app: AppHandle<R>,
@@ -40,11 +62,11 @@ struct UserData<R: Runtime> {
 
 impl<R: Runtime> UserData<R> {
     unsafe fn from_hwnd_raw(hwnd: HWND) -> *mut Self {
-        GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut Self
+        unsafe { GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut Self }
     }
 
     unsafe fn from_hwnd<'a>(hwnd: HWND) -> &'a mut Self {
-        &mut *Self::from_hwnd_raw(hwnd)
+        unsafe { &mut *Self::from_hwnd_raw(hwnd) }
     }
 
     fn run_callback(&mut self, args: Vec<String>, cwd: String) {
@@ -72,7 +94,17 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
 
             if unsafe { GetLastError() } == ERROR_ALREADY_EXISTS {
                 unsafe {
-                    let hwnd = FindWindowW(class_name.as_ptr(), window_name.as_ptr());
+                    // When instances launch concurrently (e.g. quick double-click), the first
+                    // instance publishes the mutex before its event target window is created.
+                    // Poll with a bounded retry before giving up on message delivery.
+                    let mut hwnd = std::ptr::null_mut();
+                    for _ in 0..40 {
+                        hwnd = FindWindowW(class_name.as_ptr(), window_name.as_ptr());
+                        if !hwnd.is_null() {
+                            break;
+                        }
+                        std::thread::sleep(std::time::Duration::from_millis(25));
+                    }
 
                     if !hwnd.is_null() {
                         // Windows lets us bring a window to the front, but not the first
@@ -85,58 +117,67 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
                             AllowSetForegroundWindow(pid);
                         }
 
-                        let cwd = std::env::current_dir().unwrap_or_default();
-                        let cwd = cwd.to_str().unwrap_or_default();
-
-                        let args = std::env::args().collect::<Vec<String>>().join("|");
-
-                        let data = format!("{cwd}|{args}\0",);
+                        // Neither the cwd nor an argument can contain a NUL on Windows, so it
+                        // separates them unambiguously.
+                        let mut data = std::env::current_dir()
+                            .unwrap_or_default()
+                            .to_string_lossy()
+                            .into_owned();
+                        for arg in std::env::args_os() {
+                            data.push('\0');
+                            data.push_str(&arg.to_string_lossy());
+                        }
 
                         let bytes = data.as_bytes();
                         let cds = COPYDATASTRUCT {
-                            dwData: WMCOPYDATA_SINGLE_INSTANCE_DATA,
+                            dwData: WMCOPYDATA_SINGLE_INSTANCE_DATA_NUL,
                             cbData: bytes.len() as _,
                             lpData: bytes.as_ptr() as _,
                         };
 
-                        SendMessageW(hwnd, WM_COPYDATA, 0, &cds as *const _ as _);
-
-                        app.cleanup_before_exit();
-                        std::process::exit(0);
+                        let sent = SendMessageTimeoutW(
+                            hwnd,
+                            WM_COPYDATA,
+                            0,
+                            &cds as *const _ as _,
+                            SMTO_NORMAL,
+                            FORWARD_TIMEOUT_MS,
+                            std::ptr::null_mut(),
+                        );
+                        if sent == 0 {
+                            tracing::warn!(
+                                "single_instance failed to forward arguments to the running instance within {FORWARD_TIMEOUT_MS}ms (error {})",
+                                GetLastError()
+                            );
+                        }
+                    } else {
+                        tracing::warn!(
+                            "single_instance detected an existing instance mutex, but the target window was not found within 1000ms"
+                        );
                     }
+
+                    app.cleanup_before_exit();
+                    std::process::exit(0);
                 }
             } else {
-                app.manage(MutexHandle(hmutex as _));
-
                 let userdata = UserData {
                     app: app.clone(),
                     callback,
                 };
                 let userdata = Box::into_raw(Box::new(userdata));
                 let hwnd = create_event_target_window::<R>(&class_name, &window_name, userdata);
-                app.manage(TargetWindowHandle(hwnd as _));
+                manage_instance_lock(
+                    app,
+                    InstanceLock {
+                        mutex: hmutex as _,
+                        window: hwnd as _,
+                    },
+                );
             }
 
             Ok(())
         })
-        .on_event(|app, event| {
-            if let RunEvent::Exit = event {
-                destroy(app);
-            }
-        })
         .build()
-}
-
-pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
-    if let Some(hmutex) = manager.try_state::<MutexHandle>() {
-        unsafe {
-            ReleaseMutex(hmutex.0 as _);
-            CloseHandle(hmutex.0 as _);
-        }
-    }
-    if let Some(hwnd) = manager.try_state::<TargetWindowHandle>() {
-        unsafe { DestroyWindow(hwnd.0 as _) };
-    }
 }
 
 unsafe extern "system" fn single_instance_window_proc<R: Runtime>(
@@ -147,33 +188,49 @@ unsafe extern "system" fn single_instance_window_proc<R: Runtime>(
 ) -> LRESULT {
     match msg {
         WM_CREATE => {
-            let create_struct = &*(lparam as *const CREATESTRUCTW);
+            let create_struct = unsafe { &*(lparam as *const CREATESTRUCTW) };
             let userdata = create_struct.lpCreateParams as *const UserData<R>;
-            SetWindowLongPtrW(hwnd, GWLP_USERDATA, userdata as _);
+            unsafe { SetWindowLongPtrW(hwnd, GWLP_USERDATA, userdata as _) };
             0
         }
 
         WM_COPYDATA => {
-            let cds_ptr = lparam as *const COPYDATASTRUCT;
-            if (*cds_ptr).dwData == WMCOPYDATA_SINGLE_INSTANCE_DATA {
-                let userdata = UserData::<R>::from_hwnd(hwnd);
+            let cds = unsafe { &*(lparam as *const COPYDATASTRUCT) };
+            let separator = match cds.dwData {
+                WMCOPYDATA_SINGLE_INSTANCE_DATA_NUL => '\0',
+                WMCOPYDATA_SINGLE_INSTANCE_DATA => '|',
+                _ => return 1,
+            };
 
-                let data = CStr::from_ptr((*cds_ptr).lpData as _).to_string_lossy();
-                let mut s = data.split('|');
-                let cwd = s.next().unwrap();
-                let args = s.map(|s| s.to_string()).collect();
+            let bytes = if cds.lpData.is_null() {
+                &[][..]
+            } else {
+                unsafe { std::slice::from_raw_parts(cds.lpData as *const u8, cds.cbData as _) }
+            };
+            // The legacy format ends with a NUL terminator. The new one doesn't: a trailing NUL
+            // there precedes an empty last argument.
+            let bytes = if separator == '|' {
+                bytes.split(|b| *b == 0).next().unwrap_or_default()
+            } else {
+                bytes
+            };
+            let data = String::from_utf8_lossy(bytes);
 
-                userdata.run_callback(args, cwd.to_string());
-            }
+            let mut s = data.split(separator);
+            let cwd = s.next().unwrap_or_default().to_string();
+            let args = s.map(|s| s.to_string()).collect();
+
+            let userdata = unsafe { UserData::<R>::from_hwnd(hwnd) };
+            userdata.run_callback(args, cwd);
             1
         }
 
         WM_DESTROY => {
-            let userdata = UserData::<R>::from_hwnd_raw(hwnd);
-            drop(Box::from_raw(userdata));
+            let userdata = unsafe { UserData::<R>::from_hwnd_raw(hwnd) };
+            drop(unsafe { Box::from_raw(userdata) });
             0
         }
-        _ => DefWindowProcW(hwnd, msg, wparam, lparam),
+        _ => unsafe { DefWindowProcW(hwnd, msg, wparam, lparam) },
     }
 }
 
@@ -245,23 +302,23 @@ pub fn encode_wide(string: impl AsRef<std::ffi::OsStr>) -> Vec<u16> {
 #[cfg(target_pointer_width = "32")]
 #[allow(non_snake_case)]
 unsafe fn SetWindowLongPtrW(hwnd: HWND, index: WINDOW_LONG_PTR_INDEX, value: isize) -> isize {
-    w32wm::SetWindowLongW(hwnd, index, value as _) as _
+    unsafe { w32wm::SetWindowLongW(hwnd, index, value as _) as _ }
 }
 
 #[cfg(target_pointer_width = "64")]
 #[allow(non_snake_case)]
 unsafe fn SetWindowLongPtrW(hwnd: HWND, index: WINDOW_LONG_PTR_INDEX, value: isize) -> isize {
-    w32wm::SetWindowLongPtrW(hwnd, index, value)
+    unsafe { w32wm::SetWindowLongPtrW(hwnd, index, value) }
 }
 
 #[cfg(target_pointer_width = "32")]
 #[allow(non_snake_case)]
 unsafe fn GetWindowLongPtrW(hwnd: HWND, index: WINDOW_LONG_PTR_INDEX) -> isize {
-    w32wm::GetWindowLongW(hwnd, index) as _
+    unsafe { w32wm::GetWindowLongW(hwnd, index) as _ }
 }
 
 #[cfg(target_pointer_width = "64")]
 #[allow(non_snake_case)]
 unsafe fn GetWindowLongPtrW(hwnd: HWND, index: WINDOW_LONG_PTR_INDEX) -> isize {
-    w32wm::GetWindowLongPtrW(hwnd, index)
+    unsafe { w32wm::GetWindowLongPtrW(hwnd, index) }
 }

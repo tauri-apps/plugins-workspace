@@ -1,5 +1,27 @@
 # Changelog
 
+## [2.5.0]
+
+- [`36d8e409`](https://github.com/tauri-apps/plugins-workspace/commit/36d8e4098e0cbcb9005405249c0d55e26f8ed89c) ([#3377](https://github.com/tauri-apps/plugins-workspace/pull/3377) by [@cfpwastaken](https://github.com/tauri-apps/plugins-workspace/../../cfpwastaken)) On Android, `getCurrentPosition` now honors the `timeout` option and rejects when no position is found in time. A `timeout` of `0` means no timeout.
+- [`36d8e409`](https://github.com/tauri-apps/plugins-workspace/commit/36d8e4098e0cbcb9005405249c0d55e26f8ed89c) ([#3377](https://github.com/tauri-apps/plugins-workspace/pull/3377) by [@cfpwastaken](https://github.com/tauri-apps/plugins-workspace/../../cfpwastaken)) Fixed `watchPosition` on Android stopping updates for every other active watch, and `clearWatch` leaving location updates running until the last watch was cleared.
+- [`36d8e409`](https://github.com/tauri-apps/plugins-workspace/commit/36d8e4098e0cbcb9005405249c0d55e26f8ed89c) ([#3377](https://github.com/tauri-apps/plugins-workspace/pull/3377) by [@cfpwastaken](https://github.com/tauri-apps/plugins-workspace/../../cfpwastaken)) Add support for the geolocation plugin on non-GMS Android devices (API 24+), using the best available location provider.
+- [`36d8e409`](https://github.com/tauri-apps/plugins-workspace/commit/36d8e4098e0cbcb9005405249c0d55e26f8ed89c) ([#3377](https://github.com/tauri-apps/plugins-workspace/pull/3377) by [@cfpwastaken](https://github.com/tauri-apps/plugins-workspace/../../cfpwastaken)) Fix `watchPosition` never resolving on Android.
+
+## [2.4.2]
+
+- [`42ae8b45`](https://github.com/tauri-apps/plugins-workspace/commit/42ae8b4501f3628cddeab3973eb38a7593304cc8) ([#3684](https://github.com/tauri-apps/plugins-workspace/pull/3684)) On iOS, mark the plugin's `init_plugin_*` entry point `public` so release builds made with Xcode 27 keep it global and link.
+
+## [2.4.1]
+
+- [`569ee82c`](https://github.com/tauri-apps/plugins-workspace/commit/569ee82cf61a358b4c73ba52f2e99f3317ec05d0) Fix the docs.rs build for Android: the build script now detects docs.rs through the `DOCS_RS` environment variable, since `cfg(docsrs)` is never set for build scripts.
+
+## [2.4.0]
+
+- [`d869c162`](https://github.com/tauri-apps/plugins-workspace/commit/d869c162a7d1e95629a3acbf0084bbeac3e10f77) Fixed a build failure when the `specta` feature is enabled: the `Error` type used the `#[serde(skip)]` helper attribute, which recent `specta` versions no longer register. It now uses `#[specta(skip)]`.
+- [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.
+- [`9b29b601`](https://github.com/tauri-apps/plugins-workspace/commit/9b29b601f387ded1f4adb4386623a3c035a5598c) Update MSRV to 1.90 to match tauri.
+- [`a87a3c7d`](https://github.com/tauri-apps/plugins-workspace/commit/a87a3c7d4491bf25589a0b24c285fcd5df3d6337) Update documentation.
+
 ## [2.3.3]
 
 - [`db9c5998`](https://github.com/tauri-apps/plugins-workspace/commit/db9c5998feff9384f9cbbefcbe0d45937c00a1fc) ([#3531](https://github.com/tauri-apps/plugins-workspace/pull/3531) by [@Legend-Master](https://github.com/tauri-apps/plugins-workspace/../../Legend-Master)) Fix missing `consumer-rules.pro` on Gradle v9.
@@ -75,5 +97,8 @@
 ## \[2.0.0-rc.0]
 
 - [`9606089b`](https://github.com/tauri-apps/plugins-workspace/commit/9606089b2add4a17f80ed5a09d59ce94824bd672) ([#1599](https://github.com/tauri-apps/plugins-workspace/pull/1599)) Initial release.
+- [`9887d1`](https://github.com/tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.
+  tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.
+ttps://github.com/tauri-apps/plugins-workspace/pull/1599)) Initial release.
 - [`9887d1`](https://github.com/tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.
   tauri-apps/plugins-workspace/commit/9887d14bd0e971c4c0f5c1188fc4005d3fc2e29e) Update to tauri RC.

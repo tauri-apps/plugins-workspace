@@ -23,18 +23,18 @@ use std::{
 
 use crypto::keys::bip39;
 use iota_stronghold::{
+    Client, Location,
     procedures::{
         BIP39Generate, BIP39Recover, Curve, Ed25519Sign, KeyType as StrongholdKeyType,
         MnemonicLanguage, PublicKey, Slip10Derive, Slip10DeriveInput, Slip10Generate,
         StrongholdProcedure,
     },
-    Client, Location,
 };
-use serde::{de::Visitor, Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, de::Visitor};
 use stronghold::{Error, Result, Stronghold};
 use tauri::{
-    plugin::{Builder as PluginBuilder, TauriPlugin},
     Manager, Runtime, State,
+    plugin::{Builder as PluginBuilder, TauriPlugin},
 };
 use zeroize::{Zeroize, Zeroizing};
 
@@ -270,11 +270,11 @@ async fn destroy(
     snapshot_path: PathBuf,
 ) -> Result<()> {
     let mut collection = collection.0.lock().unwrap();
-    if let Some(stronghold) = collection.remove(&snapshot_path) {
-        if let Err(e) = stronghold.save() {
-            collection.insert(snapshot_path, stronghold);
-            return Err(e);
-        }
+    if let Some(stronghold) = collection.remove(&snapshot_path)
+        && let Err(e) = stronghold.save()
+    {
+        collection.insert(snapshot_path, stronghold);
+        return Err(e);
     }
     Ok(())
 }

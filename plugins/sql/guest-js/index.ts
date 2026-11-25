@@ -30,6 +30,19 @@ export interface QueryResult {
 }
 
 /**
+ * Options for loading a database.
+ *
+ * @since 2.6.0
+ */
+export interface LoadOptions {
+  /**
+   * Whether to automatically create the database if it does not exist yet.
+   * Defaults to `true`.
+   */
+  autoCreate?: boolean
+}
+
+/**
  * **Database**
  *
  * The `Database` class serves as the primary interface for
@@ -76,14 +89,17 @@ export default class Database {
    * ```typescript
    * import Database from '@tauri-apps/plugin-sql'
    * const db = await Database.load('sqlite:test.db')
+   * const existingDb = await Database.load('sqlite:test.db', { autoCreate: false })
    * ```
    *
-   * @param path The database connection string, such as `sqlite:test.db`. The database is created if it does not exist yet, and any migration registered for it on the Rust side is run.
+   * @param path The database connection string, such as `sqlite:test.db`. The database is created if it does not exist yet (unless `options.autoCreate` is `false`), and any migration registered for it on the Rust side is run.
+   * @param options Configuration options for connecting to the database.
    * @returns A promise resolving to a `Database` instance connected to the given database.
    */
-  static async load(path: string): Promise<Database> {
+  static async load(path: string, options?: LoadOptions): Promise<Database> {
     const _path = await invoke<string>('plugin:sql|load', {
-      db: path
+      db: path,
+      options
     })
 
     return new Database(_path)

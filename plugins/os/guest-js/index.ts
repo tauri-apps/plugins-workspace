@@ -122,7 +122,7 @@ type Family = 'unix' | 'windows'
  * @example
  * ```typescript
  * import { family } from '@tauri-apps/plugin-os';
- * const family = family();
+ * const osFamily = family();
  * ```
  *
  * @returns The operating system family.
@@ -183,8 +183,8 @@ function exeExtension(): string {
  * @example
  * ```typescript
  * import { locale } from '@tauri-apps/plugin-os';
- * const locale = await locale();
- * if (locale) {
+ * const userLocale = await locale();
+ * if (userLocale) {
  *    // use the locale string here
  * }
  * ```
@@ -201,7 +201,7 @@ async function locale(): Promise<string | null> {
  * @example
  * ```typescript
  * import { hostname } from '@tauri-apps/plugin-os';
- * const hostname = await hostname();
+ * const host = await hostname();
  * ```
  *
  * @returns A promise resolving to the host name of the operating system.

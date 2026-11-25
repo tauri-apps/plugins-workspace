@@ -11,6 +11,7 @@
   let cwd = null;
   let env = "SOMETHING=value ANOTHER=2";
   let encoding = "";
+  let processGroup = false;
   let stdin = "";
   let child;
 
@@ -30,6 +31,7 @@
       cwd: cwd || null,
       env: _getEnv(),
       encoding: encoding || undefined,
+      processGroup,
     });
 
     command.on("close", (data) => {
@@ -47,6 +49,9 @@
       .spawn()
       .then((c) => {
         child = c;
+        onMessage(
+          `spawned pid ${c.pid} (processGroup: ${processGroup ? "on" : "off"})`
+        );
       })
       .catch(onMessage);
   }
@@ -87,6 +92,14 @@
       bind:value={env}
       placeholder="Environment variables"
     />
+  </div>
+  <div class="flex items-center gap-1">
+    <input
+      type="checkbox"
+      id="shell-process-group"
+      bind:checked={processGroup}
+    />
+    <label for="shell-process-group">Process group</label>
   </div>
   <div class="flex children:grow gap-1">
     <button class="btn" on:click={spawn}>Run</button>

@@ -36,7 +36,6 @@ pub struct PositionOptions {
     pub enable_high_accuracy: bool,
     /// The maximum wait time in milliseconds for location updates.
     /// Default: 10000
-    /// On Android the timeout gets ignored for getCurrentPosition.
     /// Ignored on iOS.
     // TODO: Handle Infinity and default to it.
     // TODO: Should be u64+ but specta doesn't like that?

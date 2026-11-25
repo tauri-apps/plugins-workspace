@@ -1,6 +1,6 @@
 # Official Tauri Plugins
 
-This repo and all plugins require a Rust version of at least **1.77.2**
+This repo and all plugins require a Rust version of at least **1.90**
 
 ## Plugins Found Here
 
@@ -32,6 +32,7 @@ This repo and all plugins require a Rust version of at least **1.77.2**
 | [sql](plugins/sql)                             | Interface with SQL databases.                                                                                                                                  | ✅  | ✅  | ✅  | ✅  | ✅  |
 | [store](plugins/store)                         | Persistent key value storage.                                                                                                                                  | ✅  | ✅  | ✅  | ✅  | ✅  |
 | [stronghold](plugins/stronghold)               | Encrypted, secure database.                                                                                                                                    | ✅  | ✅  | ✅  | ?   | ?   |
+| [torch](plugins/torch)                         | Control the device flashlight (torch) on Android and iOS.                                                                                                      | ?   | ?   | ?   | ✅  | ✅  |
 | [updater](plugins/updater)                     | In-app updates for Tauri applications.                                                                                                                         | ✅  | ✅  | ✅  | ❌  | ❌  |
 | [upload](plugins/upload)                       | Tauri plugin for file uploads through HTTP.                                                                                                                    | ✅  | ✅  | ✅  | ✅  | ✅  |
 | [websocket](plugins/websocket)                 | Open a WebSocket connection using a Rust client in JS.                                                                                                         | ✅  | ✅  | ✅  | ?   | ?   |

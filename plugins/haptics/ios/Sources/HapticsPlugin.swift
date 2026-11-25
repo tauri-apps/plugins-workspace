@@ -128,6 +128,6 @@ class HapticsPlugin: Plugin {
 }
 
 @_cdecl("init_plugin_haptics")
-func initPlugin() -> Plugin {
+public func initPlugin() -> Plugin {
   return HapticsPlugin()
 }

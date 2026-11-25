@@ -75,6 +75,10 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
     private var cameraProvider: ProcessCameraProvider? = null
     private var graphicOverlay: GraphicOverlay? = null
     private var camera: Camera? = null
+        set(value) {
+            field = value
+            activeCamera = value
+        }
     private var vibrator: Vibrator? = null
 
     private var scannerOptions: BarcodeScannerOptions? = null
@@ -332,8 +336,10 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
 
     @Command
     fun cancel(invoke: Invoke) {
-        destroy()
+        // Reject the pending scan before destroy() clears savedInvoke, otherwise the
+        // scan() promise is never settled. Mirrors the iOS implementation.
         savedInvoke?.reject("cancelled")
+        destroy()
         invoke.resolve()
     }
 
@@ -413,5 +419,20 @@ class BarcodeScannerPlugin(private val activity: Activity) : Plugin(activity),
     @ActivityCallback
     private fun openSettingsResult(invoke: Invoke, result: ActivityResult) {
         invoke.resolve()
+    }
+
+    companion object {
+        @Volatile
+        private var activeCamera: Camera? = null
+
+        /**
+         * The camera bound by an active scan, or `null` when no scan is running.
+         *
+         * Looked up through reflection by the torch plugin (`app.tauri.torch`): while a scan holds the
+         * camera, Android rejects `CameraManager.setTorchMode`, so the flash must be driven through
+         * this camera's `CameraControl` instead. Keep the name and signature stable.
+         */
+        @JvmStatic
+        fun getActiveCamera(): Camera? = activeCamera
     }
 }
