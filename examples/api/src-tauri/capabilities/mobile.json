@@ -22,7 +22,6 @@
     "haptics:allow-impact-feedback",
     "haptics:allow-notification-feedback",
     "haptics:allow-selection-feedback",
-    "haptics:allow-vibrate",
-    "torch:default"
+    "haptics:allow-vibrate"
   ]
 }
