@@ -59,6 +59,8 @@ fn main() {
 
 Note that currently, plugins run in the order they were added in to the builder, so make sure that this plugin is registered first.
 
+On Linux the callback runs on the thread that serves the plugin's D-Bus connection. Don't call blocking `zbus`-based APIs (such as `notify-rust`'s `Notification::show`) or `tauri_plugin_single_instance::destroy` from it; spawn a thread for that work instead. The [crate documentation](https://docs.rs/tauri-plugin-single-instance/latest/tauri_plugin_single_instance/#linux) lists what the callback can and can't do.
+
 ## Usage with Flatpak/Snap
 
 If you use Flatpak/Snap to publish your package and your Tauri identifier doesn't match the package id, set the `DBUS_ID` variable using the builder for the plugin, look at example.

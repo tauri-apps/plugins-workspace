@@ -8,6 +8,53 @@
 //!
 //! - **semver**: Allows the app with SemVer incompatible versions to run alongside each other.
 //! - **deep-link**: Trigger [`tauri-plugin-deep-link`](https://crates.io/crates/tauri-plugin-deep-link) event before invoking the single-instance callback.
+//!
+//! ## Linux
+//!
+//! The plugin owns a name on the D-Bus session bus, and a second instance calls a method on it.
+//! The callback runs inside that method call, on the thread that serves the plugin's D-Bus
+//! connection, and the second instance waits for it to return before it exits.
+//!
+//! In the callback you can use the app handle as usual (emit events, show and focus windows, use
+//! state, show a notification with `tauri-plugin-notification`), spawn tasks and threads, and
+//! call [`tauri::async_runtime::block_on`].
+//!
+//! In the callback you can't:
+//!
+//! - call a blocking API built on `zbus`, such as `zbus::block_on` or `notify-rust`'s
+//!   `Notification::show`. It panics, the second instance gets no answer and keeps waiting.
+//! - call [`destroy`]. It waits for a reply that only the thread it is on can read, so it never
+//!   returns.
+//!
+//! Both happen to work when some crate in the app enables zbus's `tokio` feature (`ashpd` does by
+//! default), because the connection then runs on Tauri's async runtime. Don't rely on that: do
+//! such work on another thread instead, which works in every build.
+//!
+//! ```
+//! fn plugin<R: tauri::Runtime>() -> tauri::plugin::TauriPlugin<R> {
+//!     tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+//!         let app = app.clone();
+//!         std::thread::spawn(move || {
+//!             // blocking D-Bus calls are fine here, and so is releasing the lock
+//!             tauri_plugin_single_instance::destroy(&app);
+//!         });
+//!     })
+//! }
+//! ```
+//!
+//! The second instance then exits as soon as the callback returns, without waiting for that work.
+//! There is no way to keep it waiting for work that has to happen off the callback's thread.
+//!
+//! Two more limits:
+//!
+//! - When zbus's `tokio` feature is enabled and you pass a current-thread runtime to
+//!   [`tauri::async_runtime::set`], a thread of its own must drive that runtime. If the thread
+//!   that builds the app drives it, as under `#[tokio::main(flavor = "current_thread")]`, the app
+//!   hangs while the plugin is set up. Use a multi-thread runtime, or keep Tauri's default one.
+//!   Don't call [`destroy`] from a task of such a runtime either.
+//! - A session bus with a `unixexec:` address (one reached through a helper program such as
+//!   `systemd-stdio-bridge`) is not supported. The plugin logs a warning and every instance starts
+//!   normally, as when there is no session bus.
 
 #![doc(
     html_logo_url = "https://github.com/tauri-apps/tauri/raw/dev/app-icon.png",
@@ -45,6 +92,9 @@ pub(crate) type SingleInstanceCallback<R> =
 /// forwarded to [`tauri-plugin-deep-link`](https://crates.io/crates/tauri-plugin-deep-link)
 /// before `f` runs.
 ///
+/// On Linux `f` must not call blocking `zbus`-based APIs or [`destroy`]; see the
+/// [crate documentation](crate#linux).
+///
 /// The second instance never reaches [`tauri::Builder::run`]: it hands its arguments and working
 /// directory off to the first instance and exits immediately.
 pub fn init<R: Runtime, F: FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sync + 'static>(
@@ -63,6 +113,9 @@ pub fn init<R: Runtime, F: FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sy
 /// before terminating the process through means that skip [`AppHandle::cleanup_before_exit`], such
 /// as [`std::process::exit`], so a future instance of the app isn't mistaken for a still-running
 /// one.
+///
+/// On Linux, don't call this from the single-instance callback, where it never returns. Spawn a
+/// thread for it there; see the [crate documentation](crate#linux).
 pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
     if let Some(lock) = manager.try_state::<InstanceLockId>() {
         let _ = manager.resources_table().close(lock.0);
@@ -112,6 +165,9 @@ impl<R: Runtime> Builder<R> {
 
     /// Function to call when a secondary instance was opened by the user and killed by the plugin.
     /// If the `deep-link` feature is enabled, the plugin triggers the deep-link plugin before executing the callback.
+    ///
+    /// On Linux the callback must not call blocking `zbus`-based APIs or [`destroy`]; see the
+    /// [crate documentation](crate#linux).
     pub fn callback<F: FnMut(&AppHandle<R>, Vec<String>, String) + Send + Sync + 'static>(
         mut self,
         mut f: F,

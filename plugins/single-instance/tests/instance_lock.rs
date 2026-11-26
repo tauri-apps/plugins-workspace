@@ -268,3 +268,42 @@ fn other_runtimes() {
     }
     assert_started(launch_second_instance(&identifier), &forwarded);
 }
+
+/// What the crate documentation tells apps to do with work the callback itself cannot do on
+/// Linux: a blocking D-Bus call and [`tauri_plugin_single_instance::destroy`], on another thread.
+#[cfg(target_os = "linux")]
+#[test]
+#[ignore = "needs a D-Bus session bus"]
+fn callback_hands_off_blocking_work() {
+    let identifier = unique_identifier();
+    let (tx, forwarded) = mpsc::channel();
+    let mut context = mock_context(noop_assets());
+    context.config_mut().identifier = identifier.clone();
+    let _app = mock_builder()
+        .plugin(tauri_plugin_single_instance::init(move |app, args, cwd| {
+            let (app, tx) = (app.clone(), tx.clone());
+            thread::spawn(move || {
+                zbus::block_on(async {
+                    zbus::Connection::session()
+                        .await
+                        .unwrap()
+                        .call_method(
+                            Some("org.freedesktop.DBus"),
+                            "/org/freedesktop/DBus",
+                            Some("org.freedesktop.DBus"),
+                            "GetId",
+                            &(),
+                        )
+                        .await
+                        .unwrap();
+                });
+                tauri_plugin_single_instance::destroy(&app);
+                let _ = tx.send((args, cwd));
+            });
+        }))
+        .build(context)
+        .unwrap();
+
+    assert_forwarded(launch_second_instance(&identifier), &forwarded);
+    assert_started(launch_second_instance(&identifier), &forwarded);
+}
