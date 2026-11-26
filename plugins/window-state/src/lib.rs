@@ -156,6 +156,7 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
         }
 
         // `filename` may be absolute, so create the directory that will hold the file
+        // TODO: forbid absolute paths for `filename` in v3
         if let Some(parent) = state_path.parent() {
             create_dir_all(parent)?;
         }
