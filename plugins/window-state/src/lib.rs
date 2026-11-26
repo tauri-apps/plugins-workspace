@@ -135,9 +135,8 @@ pub trait AppHandleExt {
 
 impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
     fn save_window_state(&self, flags: StateFlags) -> Result<()> {
-        let app_dir = self.path().app_config_dir()?;
         let plugin_state = self.state::<PluginState>();
-        let state_path = app_dir.join(&plugin_state.filename);
+        let state_path = self.path().app_config_dir()?.join(&plugin_state.filename);
         let windows = self.webview_windows();
         let cache = self.state::<WindowStateCache>();
         let mut state = cache.0.lock().unwrap();
@@ -156,7 +155,10 @@ impl<R: Runtime> AppHandleExt for tauri::AppHandle<R> {
             }
         }
 
-        create_dir_all(app_dir)?;
+        // `filename` may be absolute, so create the directory that will hold the file
+        if let Some(parent) = state_path.parent() {
+            create_dir_all(parent)?;
+        }
         std::fs::write(state_path, serde_json::to_vec_pretty(&*state)?)?;
 
         Ok(())
