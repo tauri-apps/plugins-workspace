@@ -268,39 +268,3 @@ fn other_runtimes() {
     }
     assert_started(launch_second_instance(&identifier), &forwarded);
 }
-
-/// The callback runs on a thread of the plugin's own rather than where the connection is served,
-/// so it may block on D-Bus calls (as `notify-rust` does) and release the lock.
-#[cfg(target_os = "linux")]
-#[test]
-#[ignore = "needs a D-Bus session bus"]
-fn callback_may_block() {
-    let identifier = unique_identifier();
-    let (tx, forwarded) = mpsc::channel();
-    let mut context = mock_context(noop_assets());
-    context.config_mut().identifier = identifier.clone();
-    let _app = mock_builder()
-        .plugin(tauri_plugin_single_instance::init(move |app, args, cwd| {
-            zbus::block_on(async {
-                zbus::Connection::session()
-                    .await
-                    .unwrap()
-                    .call_method(
-                        Some("org.freedesktop.DBus"),
-                        "/org/freedesktop/DBus",
-                        Some("org.freedesktop.DBus"),
-                        "GetId",
-                        &(),
-                    )
-                    .await
-                    .unwrap();
-            });
-            tauri_plugin_single_instance::destroy(app);
-            let _ = tx.send((args, cwd));
-        }))
-        .build(context)
-        .unwrap();
-
-    assert_forwarded(launch_second_instance(&identifier), &forwarded);
-    assert_started(launch_second_instance(&identifier), &forwarded);
-}

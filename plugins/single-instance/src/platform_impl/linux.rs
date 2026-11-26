@@ -5,70 +5,42 @@
 #[cfg(feature = "semver")]
 use crate::semver_compat::semver_compat_string;
 
-use std::{
-    future::Future,
-    panic::{AssertUnwindSafe, catch_unwind},
-    pin::pin,
-    sync::{
-        Arc,
-        atomic::{AtomicBool, Ordering},
-        mpsc,
-    },
-    task::{Context, Poll, Wake, Waker},
-    thread::{self, Thread},
-};
+use std::{future::Future, thread};
 
 use crate::{SingleInstanceCallback, manage_instance_lock};
 use tauri::{
-    Resource, Runtime,
+    AppHandle, Resource, Runtime,
     plugin::{self, TauriPlugin},
 };
-use tokio::sync::oneshot;
+use tokio::runtime::{Handle, RuntimeFlavor};
 use zbus::{Connection, ObjectPath, connection, interface, names::WellKnownName};
 
-/// Wakes the thread parked in [`block_on`].
-struct Unpark {
-    thread: Thread,
-    woken: AtomicBool,
-}
-
-impl Wake for Unpark {
-    fn wake(self: Arc<Self>) {
-        self.woken.store(true, Ordering::Release);
-        self.thread.unpark();
-    }
-}
-
-/// Polls `future` to completion on a short-lived thread that is in no runtime. zbus picks the
-/// runtime of a connection from the thread that builds it, so this way it always serves ours on
-/// its own runtime, whatever zbus features the rest of the app enables and whatever runtime the
-/// caller is part of. The wait therefore never needs the calling thread to make progress.
+/// Runs `future` on Tauri's async runtime. A connection built in it keeps being served after this
+/// returns: on Tauri's runtime when zbus's `tokio` feature is enabled anywhere in the app, and on
+/// zbus's own runtime otherwise. Unlike `zbus::block_on`, this works with either feature. The
+/// short-lived thread is there because [`tauri::async_runtime::block_on`] panics on a thread that
+/// is already inside a Tokio runtime.
 fn block_on<F: Future + Send>(future: F) -> F::Output
 where
     F::Output: Send,
 {
     thread::scope(|scope| {
-        scope
-            .spawn(|| {
-                let unpark = Arc::new(Unpark {
-                    thread: thread::current(),
-                    woken: AtomicBool::new(false),
-                });
-                let waker = Waker::from(unpark.clone());
-                let mut cx = Context::from_waker(&waker);
-                let mut future = pin!(future);
-                loop {
-                    if let Poll::Ready(output) = future.as_mut().poll(&mut cx) {
-                        return output;
-                    }
-                    while !unpark.woken.swap(false, Ordering::Acquire) {
-                        thread::park();
-                    }
-                }
-            })
-            .join()
-            .unwrap_or_else(|panic| std::panic::resume_unwind(panic))
+        let thread = scope.spawn(|| tauri::async_runtime::block_on(future));
+        // The future may need the runtime's workers, such as for the task that reads the
+        // connection's replies, while this thread could be the only one.
+        block_in_place(|| thread.join()).unwrap_or_else(|panic| std::panic::resume_unwind(panic))
     })
+}
+
+/// Tells Tokio that `f` may block when this thread is a worker of a multi-thread runtime, which
+/// hands the worker's other duties, such as polling for I/O, to another thread in the meantime.
+fn block_in_place<T>(f: impl FnOnce() -> T) -> T {
+    match Handle::try_current() {
+        Ok(handle) if handle.runtime_flavor() == RuntimeFlavor::MultiThread => {
+            tokio::task::block_in_place(f)
+        }
+        _ => f(),
+    }
 }
 
 /// Owns the D-Bus name, released when the app exits (see [`crate::destroy`]).
@@ -85,21 +57,17 @@ impl Drop for InstanceLock {
     }
 }
 
-type Call = (Vec<String>, String, oneshot::Sender<()>);
-
-struct SingleInstanceDBus {
-    calls: mpsc::Sender<Call>,
+struct SingleInstanceDBus<R: Runtime> {
+    callback: Box<SingleInstanceCallback<R>>,
+    app_handle: AppHandle<R>,
 }
 
 #[interface(name = "org.SingleInstance.DBus")]
-impl SingleInstanceDBus {
-    async fn execute_callback(&self, argv: Vec<String>, cwd: String) -> zbus::fdo::Result<()> {
-        // The callback runs on the plugin's own thread, never on the one serving the connection,
-        // so it may block, including on D-Bus calls and on `destroy`.
-        let (done, wait) = oneshot::channel();
-        let failed = || zbus::fdo::Error::Failed("the single-instance callback panicked".into());
-        self.calls.send((argv, cwd, done)).map_err(|_| failed())?;
-        wait.await.map_err(|_| failed())
+impl<R: Runtime> SingleInstanceDBus<R> {
+    fn execute_callback(&mut self, argv: Vec<String>, cwd: String) {
+        // The callback runs in a task on Tauri's runtime, or on zbus's own runtime when zbus's
+        // `tokio` feature is not enabled.
+        block_in_place(|| (self.callback)(&self.app_handle, argv, cwd));
     }
 }
 
@@ -128,21 +96,10 @@ pub fn init<R: Runtime>(
             let name = WellKnownName::try_from(dbus_name)?;
             let path = ObjectPath::try_from(dbus_path)?;
 
-            let (calls, pending) = mpsc::channel::<Call>();
-            let single_instance_dbus = SingleInstanceDBus { calls };
-            let app_handle = app.clone();
-            let mut callback = callback;
-            thread::Builder::new()
-                .name("single-instance".into())
-                .spawn(move || {
-                    for (argv, cwd, done) in pending {
-                        // A panic drops `done`, which fails that second instance only.
-                        let call = AssertUnwindSafe(|| callback(&app_handle, argv, cwd));
-                        if catch_unwind(call).is_ok() {
-                            let _ = done.send(());
-                        }
-                    }
-                })?;
+            let single_instance_dbus = SingleInstanceDBus {
+                callback,
+                app_handle: app.clone(),
+            };
 
             match block_on(
                 connection::Builder::session()
