@@ -30,7 +30,6 @@
 - Upgraded to `notification-js@2.7.0`
 - Upgraded to `opener-js@2.7.2`
 - Upgraded to `http-js@2.8.3`
-- Upgraded to `torch-js@2.0.0`
 - Upgraded to `updater-js@2.14.0`
 - Upgraded to `dialog-js@2.8.3`
 
