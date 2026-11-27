@@ -10,6 +10,6 @@ tauri-build = { workspace = true }
 tauri = { workspace = true, features = ["wry", "common-controls-v6", "x11"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
-tauri-plugin-updater = { path = "../.." }
+tauri-plugin-updater = { path = "../..", features = ["cache"] }
 tiny_http = "0.12"
 time = { version = "0.3", features = ["formatting"] }
