@@ -24,6 +24,9 @@ pub enum Error {
     /// Error from the [`http`] crate, raised while building the response of a `data:` URL.
     #[error(transparent)]
     Http(#[from] http::Error),
+    /// The response status cannot be represented by the JavaScript Fetch API.
+    #[error("response status {0} is not supported by the Fetch API")]
+    InvalidResponseStatus(u16),
     /// A header name given by the frontend is not a valid HTTP header name.
     #[error(transparent)]
     HttpInvalidHeaderName(#[from] http::header::InvalidHeaderName),
@@ -46,7 +49,7 @@ pub enum Error {
     /// The requested URL uses an unsupported scheme. Only `http`, `https` and `data` are handled.
     #[error("scheme {0} not supported")]
     SchemeNotSupport(String),
-    /// The request was aborted by the frontend before the response was received.
+    /// The request or response body was canceled.
     #[error("Request canceled")]
     RequestCanceled,
     /// Error from the file system plugin.

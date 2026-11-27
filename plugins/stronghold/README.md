@@ -89,7 +89,7 @@ fn main() {
 Afterwards all the plugin's APIs are available through the JavaScript guest bindings:
 
 ```javascript
-import { Stronghold, Location, Client } from "tauri-plugin-stronghold-api";
+import { Stronghold, Location, Client } from "@tauri-apps/plugin-stronghold";
 import { appDataDir } from "@tauri-apps/api/path";
 
 const initStronghold = async () => {
@@ -104,9 +104,9 @@ const initStronghold = async () => {
   const clientName = "name your client";
 
   try {
-    client = await hold.loadClient(clientName);
+    client = await stronghold.loadClient(clientName);
   } catch {
-    client = await hold.createClient(clientName);
+    client = await stronghold.createClient(clientName);
   }
 
   return {
@@ -129,9 +129,9 @@ await store.insert(key, data);
 
 // Read a record from store
 
-const data = await store.get(key);
+const storedData = await store.get(key);
 
-const value = new TextDecoder().decode(new Uint8Array(data));
+const value = new TextDecoder().decode(new Uint8Array(storedData));
 
 // Save your updates
 

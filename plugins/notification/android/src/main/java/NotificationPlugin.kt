@@ -135,6 +135,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   @Command
   fun show(invoke: Invoke) {
     val notification = invoke.parseArgs(Notification::class.java)
+    notification.sourceJson = invoke.getRawArgs()
     val id = manager.schedule(notification)
 
     invoke.resolveObject(id)
@@ -143,6 +144,11 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
   @Command
   fun batch(invoke: Invoke) {
     val args = invoke.parseArgs(BatchArgs::class.java)
+    // keep each notification's JSON as sent: it is what gets persisted and attached to action intents
+    val rawNotifications = invoke.getArgs().getJSONArray("notifications")
+    args.notifications.forEachIndexed { i, notification ->
+      notification.sourceJson = rawNotifications.getJSONObject(i).toString()
+    }
 
     val ids = manager.schedule(args.notifications)
     notificationStorage.appendNotifications(args.notifications)
@@ -258,6 +264,8 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     } else {
       if (getPermissionState(LOCAL_NOTIFICATIONS) !== PermissionState.GRANTED) {
         requestPermissionForAlias(LOCAL_NOTIFICATIONS, invoke, "permissionsCallback")
+      } else {
+        permissionState(invoke)
       }
     }
   }

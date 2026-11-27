@@ -5,9 +5,9 @@
 #[cfg(feature = "semver")]
 use crate::semver_compat::semver_compat_string;
 
-use crate::SingleInstanceCallback;
+use crate::{SingleInstanceCallback, manage_instance_lock};
 use tauri::{
-    AppHandle, Manager, RunEvent, Runtime,
+    AppHandle, Resource, Runtime,
     plugin::{self, TauriPlugin},
 };
 use windows_sys::Win32::{
@@ -36,9 +36,24 @@ const WMCOPYDATA_SINGLE_INSTANCE_DATA_NUL: usize = 1543;
 /// How long the second instance waits for the first instance to take its arguments.
 const FORWARD_TIMEOUT_MS: u32 = 10_000;
 
-struct MutexHandle(isize);
+/// Owns the named mutex and the event target window, released when the app exits
+/// (see [`crate::destroy`]).
+struct InstanceLock {
+    mutex: isize,
+    window: isize,
+}
 
-struct TargetWindowHandle(isize);
+impl Resource for InstanceLock {}
+
+impl Drop for InstanceLock {
+    fn drop(&mut self) {
+        unsafe {
+            ReleaseMutex(self.mutex as _);
+            CloseHandle(self.mutex as _);
+            DestroyWindow(self.window as _);
+        }
+    }
+}
 
 struct UserData<R: Runtime> {
     app: AppHandle<R>,
@@ -79,7 +94,17 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
 
             if unsafe { GetLastError() } == ERROR_ALREADY_EXISTS {
                 unsafe {
-                    let hwnd = FindWindowW(class_name.as_ptr(), window_name.as_ptr());
+                    // When instances launch concurrently (e.g. quick double-click), the first
+                    // instance publishes the mutex before its event target window is created.
+                    // Poll with a bounded retry before giving up on message delivery.
+                    let mut hwnd = std::ptr::null_mut();
+                    for _ in 0..40 {
+                        hwnd = FindWindowW(class_name.as_ptr(), window_name.as_ptr());
+                        if !hwnd.is_null() {
+                            break;
+                        }
+                        std::thread::sleep(std::time::Duration::from_millis(25));
+                    }
 
                     if !hwnd.is_null() {
                         // Windows lets us bring a window to the front, but not the first
@@ -125,43 +150,34 @@ pub fn init<R: Runtime>(callback: Box<SingleInstanceCallback<R>>) -> TauriPlugin
                                 GetLastError()
                             );
                         }
-
-                        app.cleanup_before_exit();
-                        std::process::exit(0);
+                    } else {
+                        tracing::warn!(
+                            "single_instance detected an existing instance mutex, but the target window was not found within 1000ms"
+                        );
                     }
+
+                    app.cleanup_before_exit();
+                    std::process::exit(0);
                 }
             } else {
-                app.manage(MutexHandle(hmutex as _));
-
                 let userdata = UserData {
                     app: app.clone(),
                     callback,
                 };
                 let userdata = Box::into_raw(Box::new(userdata));
                 let hwnd = create_event_target_window::<R>(&class_name, &window_name, userdata);
-                app.manage(TargetWindowHandle(hwnd as _));
+                manage_instance_lock(
+                    app,
+                    InstanceLock {
+                        mutex: hmutex as _,
+                        window: hwnd as _,
+                    },
+                );
             }
 
             Ok(())
         })
-        .on_event(|app, event| {
-            if let RunEvent::Exit = event {
-                destroy(app);
-            }
-        })
         .build()
-}
-
-pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
-    if let Some(hmutex) = manager.try_state::<MutexHandle>() {
-        unsafe {
-            ReleaseMutex(hmutex.0 as _);
-            CloseHandle(hmutex.0 as _);
-        }
-    }
-    if let Some(hwnd) = manager.try_state::<TargetWindowHandle>() {
-        unsafe { DestroyWindow(hwnd.0 as _) };
-    }
 }
 
 unsafe extern "system" fn single_instance_window_proc<R: Runtime>(

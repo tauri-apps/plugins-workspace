@@ -220,7 +220,8 @@ impl Builder {
     }
 
     /// Whether the plugin should inject a JS script to open URLs in default browser
-    /// when clicking on `<a>` elements that has `_blank` target, or when pressing `Ctrl` or `Shift` while clicking it.
+    /// when clicking on `<a>` elements with a `_blank` target (including one inherited from
+    /// `<base target="_blank">`), or when pressing `Ctrl` or `Shift` while clicking it.
     ///
     /// Enabled by default for `http:`, `https:`, `mailto:`, `tel:` links.
     pub fn open_js_links_on_click(mut self, open: bool) -> Self {

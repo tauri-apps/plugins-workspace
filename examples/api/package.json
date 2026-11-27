@@ -32,11 +32,10 @@
     "@tauri-apps/plugin-shell": "workspace:*",
     "@tauri-apps/plugin-sql": "workspace:*",
     "@tauri-apps/plugin-store": "workspace:*",
-    "@tauri-apps/plugin-torch": "workspace:*",
     "@tauri-apps/plugin-updater": "workspace:*",
     "@tauri-apps/plugin-upload": "workspace:*",
     "@tauri-apps/plugin-websocket": "workspace:*",
-    "@zerodevx/svelte-json-view": "2.0.0"
+    "@zerodevx/svelte-json-view": "2.0.2"
   },
   "devDependencies": {
     "@iconify-json/codicon": "^1.2.49",

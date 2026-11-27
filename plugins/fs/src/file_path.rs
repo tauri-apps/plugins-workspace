@@ -143,12 +143,8 @@ impl<'de> serde::Deserialize<'de> for FilePath {
             where
                 E: serde::de::Error,
             {
-                FilePath::from_str(s).map_err(|e| {
-                    serde::de::Error::invalid_value(
-                        serde::de::Unexpected::Str(s),
-                        &e.to_string().as_str(),
-                    )
-                })
+                let Ok(path) = FilePath::from_str(s);
+                Ok(path)
             }
         }
 

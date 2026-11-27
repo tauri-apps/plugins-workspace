@@ -5,14 +5,28 @@
 #[cfg(feature = "semver")]
 use crate::semver_compat::semver_compat_string;
 
-use crate::SingleInstanceCallback;
+use crate::{SingleInstanceCallback, manage_instance_lock};
 use tauri::{
-    AppHandle, Manager, RunEvent, Runtime,
+    AppHandle, Resource, Runtime,
     plugin::{self, TauriPlugin},
 };
 use zbus::{blocking::Connection, interface, names::WellKnownName};
 
-struct ConnectionHandle(Connection);
+/// Owns the D-Bus name, released when the app exits (see [`crate::destroy`]).
+struct InstanceLock {
+    connection: Connection,
+    name: String,
+}
+
+impl Resource for InstanceLock {}
+
+impl Drop for InstanceLock {
+    fn drop(&mut self) {
+        if let Ok(name) = WellKnownName::try_from(self.name.as_str()) {
+            let _ = self.connection.release_name(name);
+        }
+    }
+}
 
 struct SingleInstanceDBus<R: Runtime> {
     callback: Box<SingleInstanceCallback<R>>,
@@ -25,8 +39,6 @@ impl<R: Runtime> SingleInstanceDBus<R> {
         (self.callback)(&self.app_handle, argv, cwd);
     }
 }
-
-struct DBusName(String);
 
 pub fn init<R: Runtime>(
     callback: Box<SingleInstanceCallback<R>>,
@@ -71,7 +83,13 @@ pub fn init<R: Runtime>(
                 .build()
             {
                 Ok(connection) => {
-                    app.manage(ConnectionHandle(connection));
+                    manage_instance_lock(
+                        app,
+                        InstanceLock {
+                            connection,
+                            name: dbus_name,
+                        },
+                    );
                 }
                 Err(zbus::Error::NameTaken) => {
                     let connection = Connection::session()?;
@@ -107,24 +125,7 @@ pub fn init<R: Runtime>(
                 }
             }
 
-            app.manage(DBusName(dbus_name));
-
             Ok(())
         })
-        .on_event(move |app, event| {
-            if let RunEvent::Exit = event {
-                destroy(app);
-            }
-        })
         .build()
-}
-
-pub fn destroy<R: Runtime, M: Manager<R>>(manager: &M) {
-    if let Some(connection) = manager.try_state::<ConnectionHandle>()
-        && let Some(dbus_name) = manager
-            .try_state::<DBusName>()
-            .and_then(|name| WellKnownName::try_from(name.0.clone()).ok())
-    {
-        let _ = connection.0.release_name(dbus_name);
-    }
 }

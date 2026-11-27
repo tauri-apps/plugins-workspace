@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-import path from 'node:path'
 import { execFile, spawnSync } from 'node:child_process'
 import { expect } from '@wdio/globals'
 import {
@@ -13,6 +12,7 @@ import {
   itOn,
   platform
 } from '../helpers/index.js'
+import { adbArgs, simctlArgs } from '../helpers/device.js'
 
 // The location is simulated from the host: `adb emu geo fix` on the Android
 // emulator and `simctl location` on the iOS simulator. Neither prompts for
@@ -34,16 +34,6 @@ const SUGARLOAF: Point = { latitude: -22.9486, longitude: -43.1566 }
 const OPERA_HOUSE: Point = { latitude: -33.8568, longitude: 151.2153 }
 
 const OPTIONS = { enableHighAccuracy: true, timeout: 1000, maximumAge: 0 }
-
-/** `adb` from the Android SDK (else `PATH`), on `E2E_ANDROID_DEVICE` if set. */
-function adbArgs(args: string[]): [string, string[]] {
-  const sdk = process.env.ANDROID_HOME ?? process.env.ANDROID_SDK_ROOT
-  const binary = sdk ? path.join(sdk, 'platform-tools', 'adb') : 'adb'
-  const device = process.env.E2E_ANDROID_DEVICE
-    ? ['-s', process.env.E2E_ANDROID_DEVICE]
-    : []
-  return [binary, [...device, ...args]]
-}
 
 function adb(args: string[]): void {
   const [binary, fullArgs] = adbArgs(args)
@@ -69,17 +59,6 @@ function locationCommand(point: Point): [string, string[]] {
     ])
   }
   return simctlArgs(['location', 'set', `${point.latitude},${point.longitude}`])
-}
-
-/** `xcrun simctl <command> <simulator> <args>` on the simulator under test. */
-function simctlArgs([command, ...args]: string[]): [string, string[]] {
-  const simulator = process.env.E2E_IOS_UDID
-  if (!simulator) {
-    throw new Error(
-      'E2E_IOS_UDID is not set — run the suite via wdio.ios.conf.ts'
-    )
-  }
-  return ['xcrun', ['simctl', command, simulator, ...args]]
 }
 
 /**

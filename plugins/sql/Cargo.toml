@@ -36,7 +36,12 @@ tauri = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 futures-core = "0.3"
-sqlx = { version = "0.8", features = ["json", "time", "uuid", "rust_decimal"] }
+sqlx = { version = "0.9.1", features = [
+  "json",
+  "time",
+  "uuid",
+  "rust_decimal",
+] }
 rust_decimal = "1"
 time = "0.3"
 tokio = { version = "1", features = ["sync"] }
@@ -45,6 +50,6 @@ uuid = "1"
 
 [features]
 sqlite = ["sqlx/sqlite", "sqlx/runtime-tokio"]
-mysql = ["sqlx/mysql", "sqlx/runtime-tokio-rustls"]
-postgres = ["sqlx/postgres", "sqlx/runtime-tokio-rustls"]
+mysql = ["sqlx/mysql", "sqlx/runtime-tokio", "sqlx/tls-rustls-ring"]
+postgres = ["sqlx/postgres", "sqlx/runtime-tokio", "sqlx/tls-rustls-ring"]
 # TODO: bundled-cipher etc

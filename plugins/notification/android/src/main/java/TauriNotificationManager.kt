@@ -26,7 +26,6 @@ import androidx.core.app.RemoteInput
 import app.tauri.Logger
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.PluginManager
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.json.JSONException
 import org.json.JSONObject
 import java.text.SimpleDateFormat
@@ -167,7 +166,7 @@ class TauriNotificationManager(
           .bigText(notification.largeBody)
           .setSummaryText(notification.summary)
       )
-    } else if (notification.inboxLines != null) {
+    } else if (!notification.inboxLines.isNullOrEmpty()) {
       val inboxStyle = NotificationCompat.InboxStyle()
       for (line in notification.inboxLines ?: listOf()) {
         inboxStyle.addLine(line)
@@ -199,6 +198,16 @@ class TauriNotificationManager(
     }
     mBuilder.setVisibility(notification.visibility ?: NotificationCompat.VISIBILITY_PRIVATE)
     mBuilder.setOnlyAlertOnce(true)
+
+    // Chronometer support
+    notification.`when`?.let { mBuilder.setWhen(it) }
+    if (notification.usesChronometer) {
+      mBuilder.setUsesChronometer(true)
+    }
+    if (notification.chronometerCountDown) {
+      mBuilder.setChronometerCountDown(true)
+    }
+
     mBuilder.setSmallIcon(notification.getSmallIcon(context, getDefaultSmallIcon(context)))
     mBuilder.setLargeIcon(notification.getLargeIcon(context))
     val iconColor = notification.getIconColor(config?.iconColor ?: "")
@@ -320,6 +329,7 @@ class TauriNotificationManager(
     )
     notificationIntent.putExtra(NOTIFICATION_INTENT_KEY, request.id)
     notificationIntent.putExtra(TimedNotificationPublisher.NOTIFICATION_KEY, notification)
+    notificationIntent.putExtra(TimedNotificationPublisher.CUSTOM_WHEN_KEY, request.`when` != null)
     var flags = PendingIntent.FLAG_CANCEL_CURRENT
     if (SDK_INT >= Build.VERSION_CODES.S) {
       flags = flags or PendingIntent.FLAG_MUTABLE
@@ -460,7 +470,7 @@ class NotificationDismissReceiver : BroadcastReceiver() {
     val isRemovable =
       intent.getBooleanExtra(NOTIFICATION_IS_REMOVABLE_KEY, true)
     if (isRemovable) {
-      val notificationStorage = NotificationStorage(context, ObjectMapper())
+      val notificationStorage = NotificationStorage(context, NotificationStorage.defaultMapper())
       notificationStorage.deleteNotification(intExtra.toString())
     }
   }
@@ -481,12 +491,15 @@ class TimedNotificationPublisher : BroadcastReceiver() {
     } else {
       getParcelableExtraLegacy(intent, NOTIFICATION_KEY)
     }
-    notification?.`when` = System.currentTimeMillis()
+    // keep the user provided `when` (e.g. a chronometer target), otherwise show the time it fired
+    if (!intent.getBooleanExtra(CUSTOM_WHEN_KEY, false)) {
+      notification?.`when` = System.currentTimeMillis()
+    }
     val id = intent.getIntExtra(NOTIFICATION_INTENT_KEY, Int.MIN_VALUE)
     if (id == Int.MIN_VALUE) {
       Logger.error(Logger.tags("Notification"), "No valid id supplied", null)
     }
-    val storage = NotificationStorage(context, ObjectMapper())
+    val storage = NotificationStorage(context, NotificationStorage.defaultMapper())
 
     val savedNotification = storage.getSavedNotification(id.toString())
     if (savedNotification != null) {
@@ -535,6 +548,7 @@ class TimedNotificationPublisher : BroadcastReceiver() {
   companion object {
     var NOTIFICATION_KEY = "NotificationPublisher.notification"
     var CRON_KEY = "NotificationPublisher.cron"
+    var CUSTOM_WHEN_KEY = "NotificationPublisher.customWhen"
   }
 }
 
@@ -547,7 +561,7 @@ class LocalNotificationRestoreReceiver : BroadcastReceiver() {
       )
       if (um == null || !um.isUserUnlocked) return
     }
-    val storage = NotificationStorage(context, ObjectMapper())
+    val storage = NotificationStorage(context, NotificationStorage.defaultMapper())
     val ids = storage.getSavedNotificationIds()
     val notifications = mutableListOf<Notification>()
     val updatedNotifications = mutableListOf<Notification>()

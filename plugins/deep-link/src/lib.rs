@@ -148,7 +148,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). Requires `update-desktop-database`. May not work on older distros.
+        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). May not work on older distros.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             Err(crate::Error::UnsupportedPlatform)
@@ -264,7 +264,7 @@ mod imp {
         ///
         /// ## Platform-specific:
         ///
-        /// - **Linux**: Needs the `xdg-mime` and `update-desktop-database` commands available on the system.
+        /// - **Linux**: Needs the `xdg-mime` command available on the system. `update-desktop-database` is used to refresh the MIME cache when available.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn register<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
@@ -348,10 +348,7 @@ mod imp {
                     )?;
                 }
 
-                run_command(
-                    "update-desktop-database",
-                    Command::new("update-desktop-database").arg(target),
-                )?;
+                update_desktop_database(&target)?;
                 run_command(
                     "xdg-mime",
                     Command::new("xdg-mime").args(["default", &file_name, mime_type.as_str()]),
@@ -372,7 +369,7 @@ mod imp {
         ///
         /// - **Windows**: Requires admin rights if the protocol is registered on local machine
         ///   (this can happen when registered from the NSIS installer when the install mode is set to both or per machine)
-        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). Requires `update-desktop-database`. May not work on older distros.
+        /// - **Linux**: Can only unregister the scheme if it was initially registered with [`register`](`Self::register`). May not work on older distros.
         /// - **macOS / Android / iOS**: Unsupported, will return [`Error::UnsupportedPlatform`](`crate::Error::UnsupportedPlatform`).
         pub fn unregister<S: AsRef<str>>(&self, _protocol: S) -> crate::Result<()> {
             #[cfg(windows)]
@@ -439,10 +436,7 @@ mod imp {
                         })
                     });
                 if desktop_changed || cached {
-                    run_command(
-                        "update-desktop-database",
-                        Command::new("update-desktop-database").arg(&target),
-                    )?;
+                    update_desktop_database(&target)?;
                 }
 
                 Ok(())
@@ -520,6 +514,24 @@ mod imp {
         check_command_status(name, status)
     }
 
+    /// Refreshes the desktop entry MIME cache. `update-desktop-database` is not installed on
+    /// every distro and the cache is only an optimization, so a missing binary is not an error.
+    #[cfg(target_os = "linux")]
+    fn update_desktop_database(target: &std::path::Path) -> crate::Result<()> {
+        const NAME: &str = "update-desktop-database";
+        match Command::new(NAME).arg(target).status() {
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                tracing::warn!(
+                    "`{NAME}` not found, skipping MIME database update. \
+                     Install `desktop-file-utils` to silence this warning."
+                );
+                Ok(())
+            }
+            Err(e) => Err(crate::Error::Execute(NAME, e)),
+            Ok(status) => check_command_status(NAME, status),
+        }
+    }
+
     #[cfg(target_os = "linux")]
     fn check_command_status(
         command: &'static str,
@@ -541,6 +553,8 @@ mod imp {
     fn load_desktop_ini(path: &std::path::Path) -> Result<ini::Ini, ini::Error> {
         ini::Ini::load_from_file_opt(
             path,
+            // rust-ini 0.21.3 added new struct fields
+            #[allow(clippy::needless_update)]
             ini::ParseOption {
                 enabled_quote: false,
                 enabled_escape: false,
