@@ -111,6 +111,10 @@ In `tauri.conf.json` you can set global cache preferences:
 }
 ```
 
+Responses are cached per URL. Request headers set with the `headers` option are not part of the cache key unless the server lists them in its `Vary` response header. If you pick the release channel or similar with a header, have the server send `Vary` for it, or put the value in the endpoint URL instead.
+
+Only successful manifest (200) and "no update" (204) responses are cached.
+
 Refer to the documentation for all available modes and configuration.
 
 ## Contributing
