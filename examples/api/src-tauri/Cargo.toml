@@ -33,9 +33,7 @@ tauri-plugin-http = { path = "../../../plugins/http", features = [
   "multipart",
   "cookies",
 ], version = "3.0.0-alpha.3" }
-tauri-plugin-notification = { path = "../../../plugins/notification", version = "3.0.0-alpha.3", features = [
-  "windows7-compat",
-] }
+tauri-plugin-notification = { path = "../../../plugins/notification", version = "3.0.0-alpha.3" }
 tauri-plugin-os = { path = "../../../plugins/os", version = "3.0.0-alpha.3" }
 tauri-plugin-process = { path = "../../../plugins/process", version = "3.0.0-alpha.3" }
 tauri-plugin-opener = { path = "../../../plugins/opener", version = "3.0.0-alpha.3" }
@@ -92,7 +90,6 @@ tauri-plugin-barcode-scanner = { path = "../../../plugins/barcode-scanner/", ver
 tauri-plugin-nfc = { path = "../../../plugins/nfc", version = "3.0.0-alpha.3" }
 tauri-plugin-geolocation = { path = "../../../plugins/geolocation/", version = "3.0.0-alpha.3" }
 tauri-plugin-haptics = { path = "../../../plugins/haptics/", version = "3.0.0-alpha.3" }
-tauri-plugin-torch = { path = "../../../plugins/torch/", version = "3.0.0-alpha.0" }
 
 [features]
 # Enables the WebDriver automation bridge; set by the e2e suite's build (packages/api-e2e).

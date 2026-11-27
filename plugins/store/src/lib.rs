@@ -39,6 +39,8 @@ struct ChangePayload<'a> {
 
 #[derive(Debug)]
 struct StoreState {
+    // Because we sync this with resource table and locks this in [`Resource::close`],
+    // we must always lock the resource table first and then lock this or we can deadlock.
     stores: Arc<RwLock<HashMap<PathBuf, ResourceId>>>,
     serialize_fns: HashMap<String, SerializeFn>,
     deserialize_fns: HashMap<String, DeserializeFn>,
@@ -321,11 +323,16 @@ impl<R: Runtime, T: Manager<R>> StoreExt<R> for T {
     }
 
     fn get_store(&self, path: impl AsRef<Path>) -> Option<Arc<Store<R>>> {
-        let collection = self.state::<StoreState>();
-        let stores = collection.stores.read().unwrap();
-        stores
-            .get(&resolve_store_path(self.app_handle(), path.as_ref()).ok()?)
-            .and_then(|rid| self.resources_table().get(*rid).ok())
+        let path = resolve_store_path(self.app_handle(), path.as_ref()).ok()?;
+        // resource table first, then the stores, see `StoreState`
+        let resources = self.resources_table();
+        let rid = *self
+            .state::<StoreState>()
+            .stores
+            .read()
+            .unwrap()
+            .get(&path)?;
+        resources.get(rid).ok()
     }
 }
 
@@ -467,12 +474,21 @@ impl Builder {
             })
             .on_event(|app_handle, event| {
                 if let RunEvent::Exit = event {
-                    let collection = app_handle.state::<StoreState>();
-                    let stores = collection.stores.read().unwrap();
-                    for (path, rid) in stores.iter() {
-                        if let Ok(store) = app_handle.resources_table().get::<Store<R>>(*rid)
-                            && let Err(err) = store.save()
-                        {
+                    // resource table first, then the stores, see `StoreState`,
+                    // and saved after both are unlocked
+                    let stores: Vec<_> = {
+                        let resources = app_handle.resources_table();
+                        let collection = app_handle.state::<StoreState>();
+                        let stores = collection.stores.read().unwrap();
+                        stores
+                            .iter()
+                            .filter_map(|(path, rid)| {
+                                Some((path.clone(), resources.get::<Store<R>>(*rid).ok()?))
+                            })
+                            .collect()
+                    };
+                    for (path, store) in stores {
+                        if let Err(err) = store.save() {
                             tracing::error!("failed to save store {path:?} with error {err:?}");
                         }
                     }

@@ -115,77 +115,66 @@ fn main() {
             // generated for explicit app links and not
             // other deep links because then they
             // are just going to complain and not be built or signed
-            let has_app_links = config.mobile.iter().any(|d| d.is_app_link());
+            tauri_plugin::mobile::update_entitlements(|entitlements| {
+                let current = entitlements
+                    .get("com.apple.developer.associated-domains")
+                    .and_then(|domains| domains.as_array())
+                    .map(|domains| {
+                        domains
+                            .iter()
+                            .filter_map(|domain| domain.as_string())
+                            .map(ToString::to_string)
+                            .collect::<Vec<_>>()
+                    })
+                    .unwrap_or_default();
 
-            if !has_app_links {
-                tauri_plugin::mobile::update_entitlements(|entitlements| {
+                let associated_domains = config.ios_associated_domains(&current);
+
+                if associated_domains.is_empty() {
                     entitlements.remove("com.apple.developer.associated-domains");
-                })
-                .expect("failed to update entitlements");
-            } else {
-                tauri_plugin::mobile::update_entitlements(|entitlements| {
+                } else {
                     entitlements.insert(
                         "com.apple.developer.associated-domains".into(),
-                        config
-                            .mobile
-                            .iter()
-                            .filter(|d| d.is_app_link())
-                            .filter_map(|d| d.host.as_ref())
-                            .map(|host| format!("applinks:{}", host).into())
+                        associated_domains
+                            .into_iter()
+                            .map(Into::into)
                             .collect::<Vec<_>>()
                             .into(),
                     );
-                })
-                .expect("failed to update entitlements");
-            }
+                }
+            })
+            .expect("failed to update entitlements");
 
-            let deep_link_domains = config
-                .mobile
-                .iter()
-                .filter(|domain| !domain.is_app_link())
-                .collect::<Vec<_>>();
+            let url_types = config.ios_url_types();
 
-            if deep_link_domains.is_empty() {
-                tauri_plugin::mobile::update_info_plist(|info_plist| {
+            tauri_plugin::mobile::update_info_plist(|info_plist| {
+                if url_types.is_empty() {
                     info_plist.remove("CFBundleURLTypes");
-                })
-                .expect("failed to update Info.plist");
-            } else {
-                tauri_plugin::mobile::update_info_plist(|info_plist| {
+                } else {
                     info_plist.insert(
                         "CFBundleURLTypes".into(),
-                        deep_link_domains
-                            .iter()
-                            .map(|domain| {
-                                let schemes = domain
-                                    .scheme
-                                    .iter()
-                                    .filter(|scheme| {
-                                        scheme.as_str() != "https" && scheme.as_str() != "http"
-                                    })
-                                    .collect::<Vec<_>>();
-
+                        url_types
+                            .into_iter()
+                            .map(|url_type| {
                                 let mut dict = plist::Dictionary::new();
                                 dict.insert(
                                     "CFBundleURLSchemes".into(),
-                                    schemes
-                                        .iter()
-                                        .map(|s| s.to_string().into())
+                                    url_type
+                                        .schemes
+                                        .into_iter()
+                                        .map(Into::into)
                                         .collect::<Vec<_>>()
                                         .into(),
                                 );
-                                dict.insert(
-                                    "CFBundleURLName".into(),
-                                    domain.scheme[0].clone().into(),
-                                );
+                                dict.insert("CFBundleURLName".into(), url_type.name.into());
                                 plist::Value::Dictionary(dict)
                             })
                             .collect::<Vec<_>>()
                             .into(),
                     );
-                })
-                .expect("failed to update Info.plist");
-            }
+                }
+            })
+            .expect("failed to update Info.plist");
         }
     }
 }

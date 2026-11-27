@@ -242,21 +242,19 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 #[cfg(feature = "protocol-asset")]
                 let app_dir_ = app_dir.clone();
 
+                // save on forbidden paths too, or a path forbidden at runtime is allowed
+                // again after a restart
                 if let Some(fs_scope) = &fs_scope {
-                    fs_scope.listen(move |event| {
-                        if let tauri::fs::Event::PathAllowed(_) = event {
-                            save_scopes(&app.fs_scope(), &app_dir, &fs_scope_state_path);
-                        }
+                    fs_scope.listen(move |_| {
+                        save_scopes(&app.fs_scope(), &app_dir, &fs_scope_state_path);
                     });
                 }
 
                 #[cfg(feature = "protocol-asset")]
                 {
                     let asset_protocol_scope_ = asset_protocol_scope.clone();
-                    asset_protocol_scope.listen(move |event| {
-                        if let tauri::scope::fs::Event::PathAllowed(_) = event {
-                            save_scopes(&asset_protocol_scope_, &app_dir_, &asset_scope_state_path);
-                        }
+                    asset_protocol_scope.listen(move |_| {
+                        save_scopes(&asset_protocol_scope_, &app_dir_, &asset_scope_state_path);
                     });
                 }
             }
