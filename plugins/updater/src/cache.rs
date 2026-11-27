@@ -207,6 +207,11 @@ mod tests {
         })
     }
 
+    /// Like `enabled_pending_default`, but also available without the `cache` feature.
+    fn enabled_pending_default_or_off() -> CacheManager {
+        CacheManager::from_config(parse_config(r#"{ "enabledByDefault": true }"#))
+    }
+
     /// The mode the middleware applies to a request.
     #[cfg(feature = "cache")]
     fn applied_mode(cache: &CacheManager, mode_override: Option<CacheMode>) -> HttpCacheMode {
@@ -308,6 +313,25 @@ mod tests {
         );
     }
 
+    /// Builds a client the way `Updater::check` does.
+    fn client(
+        cache: &CacheManager,
+        mode_override: Option<CacheMode>,
+    ) -> reqwest_middleware::ClientWithMiddleware {
+        #[cfg(feature = "rustls-tls")]
+        if rustls::crypto::CryptoProvider::get_default().is_none() {
+            let _ = rustls::crypto::ring::default_provider().install_default();
+        }
+
+        let client = reqwest::ClientBuilder::new().no_proxy().build().unwrap();
+        cache
+            .with_middleware(
+                reqwest_middleware::ClientBuilder::new(client),
+                mode_override,
+            )
+            .build()
+    }
+
     /// Sends a GET the way `Updater::check` does, returning the status and body.
     async fn get(
         cache: &CacheManager,
@@ -315,18 +339,7 @@ mod tests {
         url: &str,
         headers: &[(&str, &str)],
     ) -> (u16, String) {
-        #[cfg(feature = "rustls-tls")]
-        if rustls::crypto::CryptoProvider::get_default().is_none() {
-            let _ = rustls::crypto::ring::default_provider().install_default();
-        }
-
-        let client = reqwest::ClientBuilder::new().no_proxy().build().unwrap();
-        let client = cache.with_middleware(
-            reqwest_middleware::ClientBuilder::new(client),
-            mode_override,
-        );
-
-        let mut request = client.build().get(url);
+        let mut request = client(cache, mode_override).get(url);
         for (name, value) in headers {
             request = request.header(*name, *value);
         }
@@ -356,6 +369,40 @@ mod tests {
             get(cache, mode_override, &server.url(), &[]).await;
         }
         mock.assert_async().await;
+    }
+
+    /// Connects to a port nothing listens on, returning the updater error.
+    async fn network_error(cache: &CacheManager, mode_override: Option<CacheMode>) -> crate::Error {
+        client(cache, mode_override)
+            .get("http://127.0.0.1:1")
+            .send()
+            .await
+            .unwrap_err()
+            .into()
+    }
+
+    #[tokio::test]
+    async fn network_errors_stay_reqwest_errors_when_not_caching() {
+        let cache = enabled_pending_default_or_off();
+        let error = network_error(&cache, Some(CacheMode::Bypass)).await;
+        assert!(matches!(error, crate::Error::Reqwest(_)), "{error:?}");
+        #[cfg(not(feature = "cache"))]
+        {
+            let error = network_error(&cache, None).await;
+            assert!(matches!(error, crate::Error::Reqwest(_)), "{error:?}");
+        }
+    }
+
+    // `http-cache-reqwest` only keeps the message of errors from requests it may cache.
+    #[tokio::test]
+    #[cfg(feature = "cache")]
+    async fn network_errors_while_caching_keep_the_message() {
+        let cache = enabled_pending_default();
+        for mode in [None, Some(CacheMode::CheckNow)] {
+            let error = network_error(&cache, mode).await;
+            assert!(matches!(error, crate::Error::HttpCache(_)), "{error:?}");
+            assert!(error.to_string().contains("127.0.0.1:1"), "{error}");
+        }
     }
 
     #[tokio::test]

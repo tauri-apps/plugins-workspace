@@ -7,4 +7,4 @@
 - New `plugins.updater.cache` config: `enabledByDefault` and `maxTtlMins` (defaults to 12 hours).
 - The JS `check` command has a new `cacheMode` option (`default`, `bypass`, `checkNow`). In Rust this is exposed as `UpdaterBuilder::cache_mode_override`.
 - **Behavior change:** Caching is opt-in in this release. You can opt-in with `check({cacheMode: 'checkNow'})`, `cacheMode: 'default'` or set `enabledByDefault = true`. Otherwise the updater behaves the same and transparently skips caching. This is intended as temporary and a future release is expected to change the default!
-- **Rust API change:** Network errors from `check()` now come back as `Error::ReqwestMiddleware(Reqwest(..))` instead of `Error::Reqwest`, so code that matches on the old variant stops matching.
+- New `Error::HttpCache` variant. Network errors from `check()` are still `Error::Reqwest`, except for checks that use the cache (`default` or `checkNow` with the `cache` feature): the HTTP cache only keeps their message, so they come back as `Error::HttpCache`.
