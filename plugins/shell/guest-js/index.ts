@@ -470,6 +470,11 @@ class Child {
   /**
    * Writes `data` to the `stdin`.
    *
+   * The data is written by a background thread, so a child that isn't reading its stdin
+   * doesn't block the app. The returned promise resolves once the data was written to the
+   * pipe, so awaiting each write keeps the app from buffering more than the child takes.
+   * Writes keep their call order, even when they are not awaited one by one.
+   *
    * @param data The message to write, either a string or a byte array.
    * @example
    * ```typescript
@@ -480,15 +485,26 @@ class Child {
    * await child.write([0, 1, 2, 3, 4, 5]);
    * ```
    *
-   * @returns A promise indicating the success or failure of the operation.
+   * @returns A promise that resolves once the data was written to the child's stdin, and
+   * rejects if it could not be written (for example because the child exited).
    *
    * @since 2.0.0
    */
   async write(data: IOPayload | number[]): Promise<void> {
+    let settle: { resolve: () => void; reject: (e: string) => void } | undefined
+    const written = new Promise<void>((resolve, reject) => {
+      settle = { resolve, reject }
+    })
+    const onWritten = new Channel<{ error: string | null }>((result) => {
+      if (result.error === null) settle?.resolve()
+      else settle?.reject(result.error)
+    })
     await invoke('plugin:shell|stdin_write', {
       pid: this.pid,
-      buffer: data
+      buffer: data,
+      onWritten
     })
+    await written
   }
 
   /**

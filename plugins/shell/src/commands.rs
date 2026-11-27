@@ -287,22 +287,42 @@ pub fn spawn<R: Runtime>(
     Ok(pid)
 }
 
+/// Outcome of one `stdin_write`, sent on its `on_written` channel.
+#[derive(Clone, Serialize)]
+pub struct StdinWritten {
+    error: Option<String>,
+}
+
 #[tauri::command]
 pub fn stdin_write<R: Runtime>(
     _window: Window<R>,
     shell: State<'_, Shell<R>>,
     pid: ChildId,
     buffer: Buffer,
+    on_written: Channel<StdinWritten>,
 ) -> crate::Result<()> {
     let bytes = match buffer {
         Buffer::Text(t) => t.into_bytes(),
         Buffer::Raw(r) => r,
     };
     // Only queues the data, so a child that isn't reading its stdin can't block the main
-    // thread or hold the children lock. Staying sync keeps the writes in call order.
-    if let Some(child) = shell.children.lock().unwrap().get_mut(&pid) {
-        child.write_queued(bytes)?;
-    }
+    // thread or hold the children lock. Staying sync keeps the writes in call order. The JS
+    // promise resolves once `on_written` reports that the data was written.
+    let mut children = shell.children.lock().unwrap();
+    let Some(child) = children.get_mut(&pid) else {
+        // The child is gone: nothing to write, as before the writes were queued.
+        drop(children);
+        let _ = on_written.send(StdinWritten { error: None });
+        return Ok(());
+    };
+    child.write_queued(
+        bytes,
+        Box::new(move |result| {
+            let _ = on_written.send(StdinWritten {
+                error: result.err().map(|e| e.to_string()),
+            });
+        }),
+    )?;
     Ok(())
 }
 

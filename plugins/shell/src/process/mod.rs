@@ -7,7 +7,7 @@ use std::{
     io::{BufRead, BufReader, Write},
     path::{Path, PathBuf},
     process::{Command as StdCommand, Stdio},
-    sync::{Arc, Mutex, mpsc},
+    sync::{Arc, mpsc},
     thread::{JoinHandle, spawn},
 };
 
@@ -79,12 +79,13 @@ pub struct CommandChild {
     kill_on_drop: bool,
 }
 
+/// Called with the outcome of a [`CommandChild::write_queued`] write.
+pub(crate) type OnWritten = Box<dyn FnOnce(std::io::Result<()>) + Send>;
+
 /// Background writer used by [`CommandChild::write_queued`].
 #[derive(Debug)]
 struct StdinQueue {
-    tx: mpsc::Sender<Vec<u8>>,
-    /// The error that stopped the writer thread, returned by the next queued write.
-    error: Arc<Mutex<Option<std::io::Error>>>,
+    tx: mpsc::Sender<(Vec<u8>, OnWritten)>,
 }
 
 impl CommandChild {
@@ -97,32 +98,39 @@ impl CommandChild {
     /// Queues `buf` to be written to the process stdin by a background thread and returns
     /// without waiting for the child to read it. Queued writes keep their order.
     ///
-    /// Write errors happen on the background thread, so they are returned by the next call.
-    pub(crate) fn write_queued(&mut self, buf: Vec<u8>) -> crate::Result<()> {
+    /// `on_written` is called from the background thread once `buf` was written, or with the
+    /// error that stopped it. After a failed write, every later write fails with that error.
+    pub(crate) fn write_queued(
+        &mut self,
+        buf: Vec<u8>,
+        on_written: OnWritten,
+    ) -> crate::Result<()> {
         if self.stdin_queue.is_none() {
             let mut writer = self.stdin_writer.try_clone()?;
-            let (tx, rx) = mpsc::channel::<Vec<u8>>();
-            let error = Arc::new(Mutex::new(None));
-            let error_ = error.clone();
-            // Exits once the child is dropped and the queue is drained, or on the first error.
+            let (tx, rx) = mpsc::channel::<(Vec<u8>, OnWritten)>();
+            // Exits once the child is dropped and the queue is drained.
             spawn(move || {
-                for buf in rx {
-                    if let Err(e) = writer.write_all(&buf) {
-                        *error_.lock().unwrap() = Some(e);
-                        break;
-                    }
+                let mut failed: Option<std::io::Error> = None;
+                for (buf, on_written) in rx {
+                    let result = match &failed {
+                        Some(e) => Err(std::io::Error::new(e.kind(), e.to_string())),
+                        None => writer.write_all(&buf).map_err(|e| {
+                            let err = std::io::Error::new(e.kind(), e.to_string());
+                            failed = Some(e);
+                            err
+                        }),
+                    };
+                    on_written(result);
                 }
             });
-            self.stdin_queue = Some(StdinQueue { tx, error });
+            self.stdin_queue = Some(StdinQueue { tx });
         }
 
-        let queue = self.stdin_queue.as_ref().unwrap();
-        if let Some(e) = queue.error.lock().unwrap().take() {
-            return Err(e.into());
-        }
-        queue
+        self.stdin_queue
+            .as_ref()
+            .unwrap()
             .tx
-            .send(buf)
+            .send((buf, on_written))
             .map_err(|_| std::io::Error::from(std::io::ErrorKind::BrokenPipe))?;
         Ok(())
     }
@@ -708,9 +716,17 @@ mod tests {
         });
 
         let big = vec![b'a'; 1024 * 1024];
+        let (done_tx, done_rx) = std::sync::mpsc::channel();
         let start = std::time::Instant::now();
-        child.write_queued(big.clone()).unwrap();
-        child.write_queued(b"second".to_vec()).unwrap();
+        for (i, buf) in [big.clone(), b"second".to_vec()].into_iter().enumerate() {
+            let done_tx = done_tx.clone();
+            child
+                .write_queued(
+                    buf,
+                    Box::new(move |r| done_tx.send((i, r.is_ok())).unwrap()),
+                )
+                .unwrap();
+        }
         let elapsed = start.elapsed();
         // Closing stdin (by dropping the child) must still deliver everything queued first.
         drop(child);
@@ -724,6 +740,9 @@ mod tests {
         expected.extend_from_slice(b"second");
         assert_eq!(out.len(), expected.len());
         assert!(out == expected, "stdin data arrived out of order");
+        // Each write reported its completion, in order.
+        drop(done_tx);
+        assert_eq!(done_rx.iter().collect::<Vec<_>>(), [(0, true), (1, true)]);
     }
 
     #[cfg(not(windows))]
@@ -738,17 +757,21 @@ mod tests {
             }
         });
 
-        // The first write is queued; the writer thread then fails with a broken pipe,
-        // which a later write reports.
-        let mut result = child.write_queued(vec![b'x'; 1024 * 1024]);
-        for _ in 0..50 {
-            if result.is_err() {
-                break;
-            }
-            std::thread::sleep(std::time::Duration::from_millis(20));
-            result = child.write_queued(b"x".to_vec());
+        // The failed write reports its own error, and every write queued after it fails the
+        // same way instead of being dropped.
+        let (done_tx, done_rx) = std::sync::mpsc::channel();
+        for _ in 0..3 {
+            let done_tx = done_tx.clone();
+            child
+                .write_queued(
+                    vec![b'x'; 1024 * 1024],
+                    Box::new(move |r| done_tx.send(r.map_err(|e| e.kind())).unwrap()),
+                )
+                .unwrap();
         }
-        assert!(result.is_err());
+        drop(done_tx);
+        let results = done_rx.iter().collect::<Vec<_>>();
+        assert_eq!(results, [Err(std::io::ErrorKind::BrokenPipe); 3]);
     }
 
     #[cfg(not(windows))]
