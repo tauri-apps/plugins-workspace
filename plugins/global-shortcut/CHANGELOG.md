@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.0]
+
+- [`0472f4aa`](https://github.com/tauri-apps/plugins-workspace/commit/0472f4aa0eef8640a90073a212413cc7940d922e) ([#3719](https://github.com/tauri-apps/plugins-workspace/pull/3719) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated dependency `global-hotkey` to 0.10.
+
 ## [2.4.1]
 
 - [`fc18d055`](https://github.com/tauri-apps/plugins-workspace/commit/fc18d0551354c109b7d1fcbe57550649d693daaa) ([#3683](https://github.com/tauri-apps/plugins-workspace/pull/3683)) Release the shortcuts lock before running shortcut handlers, so a handler that calls back into the plugin, or pumps messages that dispatch another shortcut event, no longer deadlocks the app.
