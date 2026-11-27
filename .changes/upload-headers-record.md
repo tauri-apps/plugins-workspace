@@ -1,4 +1,5 @@
 ---
+upload: patch
 upload-js: patch
 ---
 
