@@ -6,30 +6,42 @@ package app.tauri.notification
 
 import android.content.Context
 import android.content.SharedPreferences
+import app.tauri.Logger
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.PropertyAccessor
-import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.json.JSONObject
 
 // Key for private preferences
 private const val NOTIFICATION_STORE_ID = "NOTIFICATION_STORE"
 // Key used to save action types
 private const val ACTION_TYPES_ID = "ACTION_TYPE_STORE"
 
-class NotificationStorage(private val context: Context, jsonMapper: ObjectMapper) {
-  private val jsonMapper = jsonMapper.copy()
-    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-    .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+class NotificationStorage(private val context: Context, private val jsonMapper: ObjectMapper) {
+  companion object {
+    // For the receivers, which run without the plugin (and its mapper) loaded.
+    // Configured like tauri's plugin mapper, so stored IPC JSON reads back the same way.
+    fun defaultMapper(): ObjectMapper = ObjectMapper()
+      .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+      .enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+      .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+  }
 
   fun appendNotifications(localNotifications: List<Notification>) {
     val storage = getStorage(NOTIFICATION_STORE_ID)
     val editor = storage.edit()
     for (request in localNotifications) {
-      if (request.schedule != null) {
-        val key: String = request.id.toString()
-        editor.putString(key, jsonMapper.writeValueAsString(request))
+      val schedule = request.schedule ?: continue
+      val source = request.sourceJson
+      if (source == null) {
+        Logger.error(Logger.tags("Notification"), "notification ${request.id} has no source JSON, not persisting it", null)
+        continue
       }
+      // the schedule may have changed since it was received (the restore receiver moves overdue dates)
+      val json = JSONObject(source)
+      json.put("schedule", JSONObject(jsonMapper.writeValueAsString(schedule)))
+      editor.putString(request.id.toString(), json.toString())
     }
     editor.apply()
   }
@@ -49,7 +61,7 @@ class NotificationStorage(private val context: Context, jsonMapper: ObjectMapper
       val notifications = ArrayList<Notification>()
       for (key in all.keys) {
         val notificationString = all[key] as? String ?: continue
-        deserializeNotification(notificationString)?.let { notifications.add(it) }
+        readNotification(notificationString)?.let { notifications.add(it) }
       }
       return notifications
     }
@@ -64,15 +76,14 @@ class NotificationStorage(private val context: Context, jsonMapper: ObjectMapper
       return null
     } ?: return null
 
-    return deserializeNotification(notificationString)
+    return readNotification(notificationString)
   }
 
-  private fun deserializeNotification(notificationString: String): Notification? {
+  // null for unreadable records, including the literal `null` older versions stored
+  private fun readNotification(json: String): Notification? {
     return try {
-      jsonMapper.readValue(notificationString, Notification::class.java)?.also {
-        it.sourceJson = notificationString
-      }
-    } catch (_: JsonProcessingException) {
+      jsonMapper.readValue(json, Notification::class.java)?.also { it.sourceJson = json }
+    } catch (_: Exception) {
       null
     }
   }

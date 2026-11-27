@@ -5,216 +5,127 @@
 package app.tauri.notification
 
 import android.content.Context
-import com.fasterxml.jackson.annotation.JsonAutoDetect
-import com.fasterxml.jackson.annotation.PropertyAccessor
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import app.tauri.plugin.JSObject
+import android.content.ContextWrapper
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import org.json.JSONObject
-import org.json.JSONException
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
 import java.util.Date
 
-abstract class NotificationStorageTest {
-  protected abstract val context: Context
+@RunWith(AndroidJUnit4::class)
+class NotificationStorageTest {
+  // keep the test's records away from the app's own store
+  private val context: Context = object : ContextWrapper(
+    InstrumentationRegistry.getInstrumentation().targetContext
+  ) {
+    override fun getSharedPreferences(name: String, mode: Int) =
+      super.getSharedPreferences("test-$name", mode)
+  }
 
   private fun preferences() = context.getSharedPreferences("NOTIFICATION_STORE", Context.MODE_PRIVATE)
 
-  protected open fun configuredMapper() = ObjectMapper()
-    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-    .enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
-    .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+  private fun storage() = NotificationStorage(context, NotificationStorage.defaultMapper())
+
+  // what `batch` receives from Rust, including keys the Kotlin model does not have (`silent`)
+  private val batchJson = """{"notifications":[
+    {"id":7,"channelId":"reminders","title":"Reminder","body":"Saved body","silent":false,
+     "groupSummary":false,"ongoing":false,"autoCancel":true,"attachments":[],
+     "extra":{"nested":{"items":[1,true,null,"text"]}},
+     "schedule":{"at":{"date":"2033-05-18T03:33:20.000Z","repeating":false,"allowWhileIdle":true}}},
+    {"id":8,"title":"Daily","extra":{},"schedule":{"every":{"interval":"day","count":2,"allowWhileIdle":true}}},
+    {"id":9,"title":"Evening","schedule":{"interval":{"interval":{"hour":20,"minute":0,"second":0},"allowWhileIdle":true}}}
+  ]}"""
+
+  // what `batch` does before storing: parse with the plugin's mapper, keep each raw notification
+  private fun receiveBatch(): List<Notification> {
+    val args = NotificationStorage.defaultMapper().readValue(batchJson, BatchArgs::class.java)
+    val raw = JSONObject(batchJson).getJSONArray("notifications")
+    args.notifications.forEachIndexed { i, n -> n.sourceJson = raw.getJSONObject(i).toString() }
+    return args.notifications
+  }
 
   @Before
-  fun clearTestStore() {
+  fun clearStore() {
     assertTrue(preferences().edit().clear().commit())
   }
 
-  private fun notification(id: Int = 7039373): Notification {
-    return Notification().apply {
-      this.id = id
-      title = "Reminder"
-      body = "Saved body"
-      channelId = "reminders"
-      isGroupSummary = true
-      isOngoing = true
-      isAutoCancel = true
-      usesChronometer = true
-      chronometerCountDown = true
-      visibility = -1
-      number = 7
-      `when` = 123456789L
-      inboxLines = listOf("first", "second")
-      extra = JSObject("""{"nested":{"items":[1,true,null,"text"]},"flag":false}""")
-      attachments = listOf(NotificationAttachment().apply {
-        this.id = "picture"
-        url = "asset://notification.png"
-        options = JSONObject("""{"nested":{"width":320},"flags":[true,null]}""")
-      })
-      schedule = NotificationSchedule.At().apply {
-        date = Date(2000000000000L)
-        repeating = true
-        allowWhileIdle = true
-      }
-    }
-  }
-
   @Test
-  fun storesTheModelWithoutSourceJsonAndRestoresWithBootMapper() {
-    val original = notification()
-    assertNull(original.sourceJson)
-    NotificationStorage(context, configuredMapper()).appendNotifications(listOf(original))
-    val raw = preferences().getString(original.id.toString(), null)
-    assertNotNull(raw)
-    assertNotEquals("null", raw)
-    assertFalse(JSONObject(raw!!).has("sourceJson"))
+  fun storesTheReceivedJsonAndReadsItBackWithTheReceiverMapper() {
+    storage().appendNotifications(receiveBatch())
 
-    val storage = NotificationStorage(context, ObjectMapper())
-    val restored = storage.getSavedNotification(original.id.toString())!!
-    assertEquals(original.id, restored.id)
+    val raw = JSONObject(preferences().getString("7", null)!!)
+    assertEquals("Reminder", raw.getString("title"))
+    assertEquals(
+      "text",
+      raw.getJSONObject("extra").getJSONObject("nested").getJSONArray("items").getString(3)
+    )
+
+    val restored = storage().getSavedNotification("7")!!
     assertEquals("Reminder", restored.title)
-    assertEquals("Saved body", restored.body)
     assertEquals("reminders", restored.channelId)
-    assertTrue(restored.isGroupSummary)
-    assertTrue(restored.isOngoing)
     assertTrue(restored.isAutoCancel)
-    assertTrue(restored.usesChronometer)
-    assertTrue(restored.chronometerCountDown)
-    assertEquals(-1, restored.visibility)
-    assertEquals(7, restored.number)
-    assertEquals(123456789L, restored.`when`)
-    assertEquals(listOf("first", "second"), restored.inboxLines)
-    val schedule = restored.schedule as NotificationSchedule.At
-    assertEquals(2000000000000L, schedule.date.time)
-    assertTrue(schedule.repeating)
-    assertTrue(schedule.allowWhileIdle)
-    val mapper = ObjectMapper()
-    assertEquals(mapper.readTree(original.extra.toString()), mapper.readTree(restored.extra.toString()))
-    assertEquals(mapper.readTree(original.attachments!![0].options.toString()),
-      mapper.readTree(restored.attachments!![0].options.toString()))
-    try {
-      restored.attachments!![0].options!!.getString("missing")
-      fail("Attachment options must retain JSONObject lookup behavior")
-    } catch (_: JSONException) { }
-    assertEquals(raw, restored.sourceJson)
-    val pending = Notification.buildNotificationPendingList(storage.getSavedNotifications())
-    assertEquals(1, pending.size)
-    assertEquals(original.id, pending[0].id)
-    assertEquals("Reminder", pending[0].title)
+    val at = restored.schedule as NotificationSchedule.At
+    assertEquals(2000000000000L, at.date.time)
+    assertTrue(at.allowWhileIdle)
+    // action intents carry this
+    assertEquals(raw.toString(), JSONObject(restored.sourceJson!!).toString())
+
+    val every = storage().getSavedNotification("8")!!.schedule as NotificationSchedule.Every
+    assertEquals(NotificationInterval.Day, every.interval)
+    assertEquals(2, every.count)
+    assertTrue(every.allowWhileIdle)
+
+    val interval = storage().getSavedNotification("9")!!.schedule as NotificationSchedule.Interval
+    assertEquals(20, interval.interval.hour)
+    assertTrue(interval.allowWhileIdle)
+
+    val pending = Notification.buildNotificationPendingList(storage().getSavedNotifications())
+    assertEquals(setOf(7, 8, 9), pending.map { it.id }.toSet())
   }
 
   @Test
-  fun preservesEveryAndIntervalSchedulesForMultipleNotifications() {
-    val every = notification(21).apply {
-      schedule = NotificationSchedule.Every().apply {
-        interval = NotificationInterval.Day
-        count = 2
-        allowWhileIdle = true
-      }
-    }
-    val interval = notification(22).apply {
-      schedule = NotificationSchedule.Interval().apply {
-        interval = DateMatch().apply { hour = 20; minute = 0; second = 0 }
-        allowWhileIdle = true
-      }
-    }
-    NotificationStorage(context, ObjectMapper()).appendNotifications(listOf(every, interval))
-    val storage = NotificationStorage(context, configuredMapper())
-    val first = storage.getSavedNotification("21")!!.schedule as NotificationSchedule.Every
-    assertEquals(NotificationInterval.Day, first.interval)
-    assertEquals(2, first.count)
-    assertTrue(first.allowWhileIdle)
-    val second = storage.getSavedNotification("22")!!.schedule as NotificationSchedule.Interval
-    assertEquals(20, second.interval.hour)
-    assertEquals(0, second.interval.minute)
-    assertEquals(0, second.interval.second)
-    assertTrue(second.allowWhileIdle)
-    assertEquals(setOf(21, 22), storage.getSavedNotifications().map { it.id }.toSet())
-  }
-
-  @Test
-  fun persistsDeserializedBatchNotifications() {
-    val mapper = configuredMapper()
-    val args = mapper.readValue("""{"notifications":[{"id":8,"title":"Batch reminder","extra":{"nested":[1,true,null]},"schedule":{"every":{"interval":"day","count":2,"allowWhileIdle":true}}}]}""", BatchArgs::class.java)
-    assertNull(args.notifications.single().sourceJson)
-    NotificationStorage(context, mapper).appendNotifications(args.notifications)
-    val restored = NotificationStorage(context, ObjectMapper()).getSavedNotification("8")!!
-    assertEquals("Batch reminder", restored.title)
-    assertEquals(mapper.readTree("""{"nested":[1,true,null]}"""), mapper.readTree(restored.extra.toString()))
-    assertTrue((restored.schedule as NotificationSchedule.Every).allowWhileIdle)
-  }
-
-  @Test
-  fun legacyNullDoesNotBreakTheHealthyPendingList() {
-    preferences().edit().putString("1", "null")
-      .putString("4", """{"id":4,"title":"Healthy","schedule":{"every":{"interval":"day","count":2}}}""")
-      .commit()
-    val storage = NotificationStorage(context, ObjectMapper())
-    val pending = Notification.buildNotificationPendingList(storage.getSavedNotifications())
-    assertEquals(4, pending.single().id)
-    assertEquals("Healthy", pending.single().title)
-    assertEquals(setOf("1", "4"), storage.getSavedNotificationIds().toSet())
-  }
-
-  @Test
-  fun resavingUsesChangedFieldsRatherThanStaleSourceJson() {
-    val storage = NotificationStorage(context, ObjectMapper())
-    storage.appendNotifications(listOf(notification()))
-    val restored = storage.getSavedNotification("7039373")!!
-    assertNotNull(restored.sourceJson)
-    restored.title = "Updated"
+  fun resavingKeepsAChangedSchedule() {
+    storage().appendNotifications(receiveBatch())
+    // what the restore receiver does with an overdue notification
+    val restored = storage().getSavedNotification("7")!!
     (restored.schedule as NotificationSchedule.At).date = Date(2100000000000L)
-    storage.appendNotifications(listOf(restored))
-    val again = NotificationStorage(context, ObjectMapper()).getSavedNotification("7039373")!!
-    assertEquals("Updated", again.title)
-    assertEquals(2100000000000L, (again.schedule as NotificationSchedule.At).date.time)
-    assertFalse(JSONObject(preferences().getString("7039373", null)!!).has("sourceJson"))
+    storage().appendNotifications(listOf(restored))
+
+    val again = storage().getSavedNotification("7")!!
+    val at = again.schedule as NotificationSchedule.At
+    assertEquals(2100000000000L, at.date.time)
+    assertTrue(at.allowWhileIdle)
+    assertEquals("Reminder", again.title)
+    val raw = JSONObject(preferences().getString("7", null)!!)
+    assertTrue(raw.getJSONObject("extra").has("nested"))
   }
 
   @Test
-  fun preservesNullOptionalJsonFields() {
-    val notification = notification().apply {
-      extra = null
-      attachments!![0].options = null
-    }
-    NotificationStorage(context, ObjectMapper()).appendNotifications(listOf(notification))
-    val restored = NotificationStorage(context, ObjectMapper()).getSavedNotification("7039373")!!
-    assertNull(restored.extra)
-    assertNull(restored.attachments!![0].options)
-  }
-
-  @Test
-  fun skipsLegacyNullAndMalformedRecordsWithoutDeletingTheirIds() {
+  fun skipsNullAndUnreadableRecords() {
     preferences().edit()
       .putString("1", "null")
       .putString("2", "not-json")
       .putInt("3", 42)
-      .putString("4", """{"id":4,"title":"Healthy","schedule":{"every":{"interval":"day","count":2}}}""")
-      .putString("5", """{"id":5,"schedule":{"unknown":{}}}""")
+      .putString("4", """{"id":4,"title":"Healthy","schedule":{"unknown":{}}}""")
       .commit()
-    val storage = NotificationStorage(context, ObjectMapper())
-    assertNull(storage.getSavedNotification("1"))
-    assertNull(storage.getSavedNotification("2"))
-    assertNull(storage.getSavedNotification("3"))
-    assertEquals(listOf(4), storage.getSavedNotifications().map { it.id })
-    assertEquals(4, Notification.buildNotificationPendingList(storage.getSavedNotifications()).single().id)
-    assertNull(storage.getSavedNotification("5"))
-    assertEquals(setOf("1", "2", "3", "4", "5"), storage.getSavedNotificationIds().toSet())
+    storage().appendNotifications(receiveBatch().take(1))
+
+    for (id in listOf("1", "2", "3", "4")) {
+      assertNull(storage().getSavedNotification(id))
+    }
+    val pending = Notification.buildNotificationPendingList(storage().getSavedNotifications())
+    assertEquals(listOf(7), pending.map { it.id })
   }
 
   @Test
-  fun doesNotPersistUnscheduledNotifications() {
-    NotificationStorage(context, ObjectMapper()).appendNotifications(listOf(notification().apply { schedule = null }))
+  fun persistsOnlyScheduledNotificationsWithSourceJson() {
+    val (scheduled, unscheduled) = receiveBatch().take(2)
+    unscheduled.schedule = null
+    scheduled.sourceJson = null
+    storage().appendNotifications(listOf(scheduled, unscheduled))
     assertTrue(preferences().all.isEmpty())
-  }
-
-  @Test
-  fun leavesCallerMapperConfigurationUnchanged() {
-    val mapper = ObjectMapper()
-    assertTrue(mapper.isEnabled(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES))
-    NotificationStorage(context, mapper)
-    assertTrue(mapper.isEnabled(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES))
   }
 }

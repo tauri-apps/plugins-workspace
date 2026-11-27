@@ -134,8 +134,8 @@ internal class NotificationScheduleSerializer @JvmOverloads constructor(t: Class
         jgen.writeObjectFieldStart("every")
 
         jgen.writeObjectField("interval", value.interval)
-        jgen.writeBooleanField("allowWhileIdle", value.allowWhileIdle)
         jgen.writeNumberField("count", value.count)
+        jgen.writeBooleanField("allowWhileIdle", value.allowWhileIdle)
 
         jgen.writeEndObject()
       }
