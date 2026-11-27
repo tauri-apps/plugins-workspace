@@ -80,6 +80,8 @@ const COOKIES_FILENAME: &str = ".cookies";
 
 pub(crate) struct Http {
     pub(crate) config: Config,
+    /// Each webview's current page token rid, by webview label.
+    pub(crate) pages: std::sync::Mutex<std::collections::HashMap<String, tauri::ResourceId>>,
     #[cfg(feature = "cookies")]
     cookies_jar: std::sync::Arc<crate::reqwest_cookie_store::CookieStoreMutex>,
 }
@@ -125,6 +127,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
 
             let state = Http {
                 config: api.config().clone().unwrap_or_default(),
+                pages: Default::default(),
                 #[cfg(feature = "cookies")]
                 cookies_jar: std::sync::Arc::new(cookies_jar),
             };
@@ -147,6 +150,31 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<Config>> {
                         tracing::error!("failed to save cookie jar: {_e}");
                     }
                 }
+            }
+        })
+        // Cancel a webview's requests and response bodies when its window is destroyed.
+        // This listens on each window instead of using the plugin's `on_event`:
+        // by the time `on_event` sees `WindowEvent::Destroyed`, Tauri has already
+        // removed the window and its webviews from the app, so their resource tables
+        // can no longer be looked up. The listener keeps the webview it was registered
+        // for, so it also cancels on the right table if the label is reused later.
+        //
+        // TODO: Also cancel on webview close (a webview closed on its own in a
+        // multiwebview window) once Tauri provides a plugin lifecycle hook for it.
+        .on_webview_ready(|webview| {
+            let webview_ = webview.clone();
+            webview.window().on_window_event(move |event| {
+                if matches!(event, tauri::WindowEvent::Destroyed) {
+                    commands::cancel_all_requests(&webview_);
+                    if let Some(state) = webview_.try_state::<Http>() {
+                        state.pages.lock().unwrap().remove(webview_.label());
+                    }
+                }
+            });
+        })
+        .on_page_load(|webview, payload| {
+            if matches!(payload.event(), tauri::webview::PageLoadEvent::Started) {
+                commands::cancel_all_requests(webview);
             }
         })
         .invoke_handler(tauri::generate_handler![

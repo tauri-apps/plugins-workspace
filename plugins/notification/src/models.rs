@@ -228,7 +228,7 @@ pub struct NotificationData {
     #[serde(default)]
     pub(crate) group_summary: bool,
     pub(crate) sound: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub(crate) inbox_lines: Vec<String>,
     pub(crate) icon: Option<String>,
     pub(crate) large_icon: Option<String>,

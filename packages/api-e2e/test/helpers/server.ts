@@ -37,6 +37,9 @@ export const WEBSOCKET_CLOSE_REQUEST = 'close-me'
 export const WEBSOCKET_CLOSE_CODE = 4000
 export const WEBSOCKET_CLOSE_REASON = 'closed by the fixture server'
 
+/** First (and only) body chunk `GET /stall-body` sends. */
+export const STALL_BODY_FIRST_CHUNK = 'first chunk'
+
 export interface FixtureServer {
   close(): void
 }
@@ -56,6 +59,11 @@ export interface FixtureServer {
  * - `GET /raw-header` — an empty response whose `content-disposition` names
  *   {@link RAW_HEADER_FILENAME} in raw UTF-8 bytes.
  * - `GET /empty/{204,205,304}` — a response with no body and the requested status.
+ * - `GET /stall[/<id>]` — never answers, so a request can be aborted while it waits for headers.
+ * - `GET /stall-body[/<id>]` — answers with headers and {@link STALL_BODY_FIRST_CHUNK}, then
+ *   never sends the rest of the body, so a body read can be aborted mid-stream.
+ * - `GET /stall-state/<id>` — `{ "state": "open" | "closed" | null }`: whether the
+ *   client still holds the connection of the stalled request named `<id>`.
  * - `ws /ws` — a WebSocket echo endpoint: text and binary messages are sent
  *   back as-is, and {@link WEBSOCKET_CLOSE_REQUEST} makes the server close the
  *   connection with {@link WEBSOCKET_CLOSE_CODE}. On `/ws/headers` the server
@@ -64,6 +72,14 @@ export interface FixtureServer {
  *   the client attached a listener).
  */
 export function startFixtureServer(): Promise<FixtureServer> {
+  // Connection state of the named `/stall` and `/stall-body` requests.
+  const stalls = new Map<string, 'open' | 'closed'>()
+  const trackStall = (id: string | undefined, res: http.ServerResponse) => {
+    if (!id) return
+    stalls.set(id, 'open')
+    res.on('close', () => stalls.set(id, 'closed'))
+  }
+
   const server = http.createServer((req, res) => {
     const chunks: Buffer[] = []
     req.on('data', (chunk: Buffer) => chunks.push(chunk))
@@ -78,6 +94,24 @@ export function startFixtureServer(): Promise<FixtureServer> {
           res.writeHead(status, { 'x-e2e-empty': 'present' }).end()
           return
         }
+      }
+
+      if (route === 'stall' && req.method === 'GET') {
+        // The connection is dropped by the client or by `close()`.
+        trackStall(rest[0], res)
+        return
+      }
+
+      if (route === 'stall-body' && req.method === 'GET') {
+        trackStall(rest[0], res)
+        res.writeHead(200, { 'content-type': 'text/plain' })
+        res.write(STALL_BODY_FIRST_CHUNK)
+        return
+      }
+
+      if (route === 'stall-state' && req.method === 'GET') {
+        json(res, { state: stalls.get(rest[0]) ?? null })
+        return
       }
 
       if (route === 'updater' && req.method === 'GET') {

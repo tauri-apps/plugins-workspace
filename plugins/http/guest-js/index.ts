@@ -121,7 +121,96 @@ export interface DangerousSettings {
   acceptInvalidHostnames?: boolean
 }
 
+interface FetchSendResponse {
+  status: number
+  statusText: string
+  headers: [[string, string]]
+  url: string
+  rid: number
+}
+
 const ERROR_REQUEST_CANCELLED = 'Request cancelled'
+
+const bodyFinalizer =
+  typeof FinalizationRegistry !== 'undefined' && typeof WeakRef !== 'undefined'
+    ? new FinalizationRegistry<() => Promise<void>>((dropBody) => {
+        void dropBody()
+      })
+    : undefined
+
+/**
+ * Read the request body while allowing an abort to interrupt a stalled upload.
+ * `request.arrayBuffer()` locks the body internally without observing its abort
+ * signal, so keep access to the reader and cancel it when the signal fires.
+ * The caller checks the signal after buffering to reject canceled uploads.
+ */
+async function readRequestBody(request: Request): Promise<ArrayBuffer> {
+  const signal = request.signal
+  if (signal.aborted) {
+    throw new Error(ERROR_REQUEST_CANCELLED)
+  }
+
+  if (request.body === null) {
+    return new ArrayBuffer(0)
+  }
+
+  const reader = request.body.getReader()
+
+  const abort = () => {
+    void reader.cancel().catch(() => {})
+  }
+  signal.addEventListener('abort', abort, { once: true })
+
+  try {
+    // Keep a reader we can cancel while the browser collects and validates bytes.
+    const body = new ReadableStream<Uint8Array>({
+      async pull(controller) {
+        const { done, value } = await reader.read()
+        if (done) controller.close()
+        else controller.enqueue(value)
+      }
+    })
+    return await new Response(body).arrayBuffer()
+  } catch (error) {
+    abort()
+    throw error
+  } finally {
+    signal.removeEventListener('abort', abort)
+    reader.releaseLock()
+  }
+}
+
+/**
+ * Apply the response URL and headers and preserve them when cloning.
+ * Keep response references out of the body stream's closure scope so WebKit can
+ * collect the response once it is no longer used.
+ */
+function patchResponse(
+  response: Response,
+  url: string,
+  headers: [string, string][]
+): Response {
+  // `Response.url` cannot be set via the constructor, so we define it manually.
+  Object.defineProperty(response, 'url', { value: url, writable: false })
+
+  // Expose `set-cookie` via `response.headers` (and `getSetCookie()` where
+  // supported). This is not Fetch-spec compliant for network responses in
+  // browsers, where `set-cookie` is treated as a forbidden response
+  // header and is generally not readable from JavaScript.
+  Object.defineProperty(response, 'headers', {
+    value: new Headers(headers),
+    writable: false
+  })
+
+  // Use the receiver instead of retaining a response in a bound clone method.
+  Object.defineProperty(response, 'clone', {
+    value: function (this: Response): Response {
+      return patchResponse(Response.prototype.clone.call(this), url, headers)
+    }
+  })
+
+  return response
+}
 
 /**
  * Fetch a resource from the network. It returns a `Promise` that resolves to the
@@ -151,12 +240,6 @@ export async function fetch(
   input: URL | Request | string,
   init?: RequestInit & ClientOptions
 ): Promise<Response> {
-  // Optimistically check for abort signal and avoid doing any work
-  const signal = init?.signal
-  if (signal?.aborted) {
-    throw new Error(ERROR_REQUEST_CANCELLED)
-  }
-
   const maxRedirections = init?.maxRedirections
   const connectTimeout = init?.connectTimeout
   const proxy = init?.proxy
@@ -177,7 +260,10 @@ export async function fetch(
     : new Headers()
 
   const req = new Request(input, init)
-  const buffer = await req.arrayBuffer()
+  const signal = req.signal
+
+  // read the upload with abort support.
+  const buffer = await readRequestBody(req)
 
   // append new headers created by the browser `Request` implementation,
   // if not already declared by the caller of this function
@@ -204,8 +290,8 @@ export async function fetch(
     ]
   )
 
-  // Optimistically check for abort signal and avoid doing any work on the Rust side
-  if (signal?.aborted) {
+  // Cancellation may have ended the body read with only a partial upload.
+  if (signal.aborted) {
     throw new Error(ERROR_REQUEST_CANCELLED)
   }
 
@@ -229,25 +315,37 @@ export async function fetch(
     }
   )
 
-  const abort = () =>
-    invoke('plugin:http|fetch_cancel', { rid }).catch(() => {})
+  let requestCancelled = false
+  const abortRequest = () => {
+    if (requestCancelled) return
+    requestCancelled = true
+    void invoke('plugin:http|fetch_cancel', { rid }).catch(() => {})
+  }
 
-  // Optimistically check for abort signal
-  // and avoid doing any work after doing intial work on the Rust side
-  if (signal?.aborted) {
-    // we don't care about the result of this promise
-    void abort()
+  if (signal.aborted) {
+    abortRequest()
     throw new Error(ERROR_REQUEST_CANCELLED)
   }
 
-  signal?.addEventListener('abort', () => void abort())
+  let response: FetchSendResponse
+  try {
+    signal.addEventListener('abort', abortRequest, { once: true })
+    response = await invoke<FetchSendResponse>('plugin:http|fetch_send', {
+      rid
+    })
+  } catch (error) {
+    if (signal.aborted) {
+      throw Object.assign(new Error(ERROR_REQUEST_CANCELLED), { cause: error })
+    }
+    throw error
+  } finally {
+    signal.removeEventListener('abort', abortRequest)
+  }
 
-  interface FetchSendResponse {
-    status: number
-    statusText: string
-    headers: [[string, string]]
-    url: string
-    rid: number
+  // An abort may have happened before the response's stream listener is attached.
+  if (signal.aborted) {
+    abortRequest()
+    throw new Error(ERROR_REQUEST_CANCELLED)
   }
 
   const {
@@ -256,102 +354,93 @@ export async function fetch(
     url,
     headers: responseHeaders,
     rid: responseRid
-  } = await invoke<FetchSendResponse>('plugin:http|fetch_send', {
-    rid
-  })
+  } = response
 
-  let bodyDropped = false
+  // The finalizer and abort listener must not keep the stream alive through its
+  // controller. Older webviews without finalization retain explicit cleanup.
+  let bodyController:
+    | { deref(): ReadableStreamDefaultController<Uint8Array> | undefined }
+    | undefined
+  const finalizerToken = {}
+
+  let bodyClosed = false
+  const finishBody = () => {
+    bodyClosed = true
+    bodyFinalizer?.unregister(finalizerToken)
+    signal.removeEventListener('abort', abortBody)
+    bodyController = undefined
+  }
   const dropBody = () => {
-    if (bodyDropped) return Promise.resolve()
-    bodyDropped = true
-    return invoke('plugin:http|fetch_cancel_body', { rid: responseRid }).catch(
-      () => {}
-    )
+    if (bodyClosed) return Promise.resolve()
+    finishBody()
+    return invoke<void>('plugin:http|fetch_cancel_body', {
+      rid: responseRid
+    }).catch(() => {})
+  }
+  const abortBody = () => {
+    bodyController?.deref()?.error(ERROR_REQUEST_CANCELLED)
+    void dropBody()
   }
 
   const readChunk = async (
     controller: ReadableStreamDefaultController<Uint8Array>
   ) => {
-    let data: ArrayBuffer
     try {
-      data = await invoke('plugin:http|fetch_read_body', {
+      const data = await invoke<ArrayBuffer>('plugin:http|fetch_read_body', {
         rid: responseRid
       })
-    } catch (e) {
-      // close the stream if an error occurs
-      // and drop the body on Rust side
-      controller.error(e)
+      if (bodyClosed) return
+
+      const dataUint8 = new Uint8Array(data)
+      const lastByte = dataUint8[dataUint8.byteLength - 1]
+      const actualData = dataUint8.slice(0, dataUint8.byteLength - 1)
+
+      // close when the signal to close (last byte is 1) is sent from the IPC.
+      if (lastByte === 1) {
+        finishBody()
+        controller.close()
+        return
+      }
+
+      controller.enqueue(actualData)
+    } catch (error) {
+      if (bodyClosed) return
+      controller.error(error)
       void dropBody()
-      return
     }
-
-    const dataUint8 = new Uint8Array(data)
-    const lastByte = dataUint8[dataUint8.byteLength - 1]
-    const actualData = dataUint8.slice(0, dataUint8.byteLength - 1)
-
-    // close when the signal to close (last byte is 1) is sent from the IPC.
-    if (lastByte === 1) {
-      controller.close()
-      return
-    }
-
-    controller.enqueue(actualData)
   }
 
-  // no body for 101, 103, 204, 205 and 304
-  // see https://fetch.spec.whatwg.org/#null-body-status
-  const body = [101, 103, 204, 205, 304].includes(status)
-    ? null
-    : new ReadableStream<Uint8Array>({
-        start: (controller) => {
-          // listen for abort events to cancel reading
-          signal?.addEventListener('abort', () => {
-            controller.error(ERROR_REQUEST_CANCELLED)
-            void dropBody()
-          })
-        },
-        pull: (controller) => readChunk(controller),
-        cancel: () => {
-          // Ensure body resources are released on stream cancellation
-          void dropBody()
-        }
-      })
-
-  if (body === null) {
-    // No stream will read or cancel this response's Rust resource.
-    await dropBody()
+  const source: UnderlyingDefaultSource<Uint8Array> = {
+    start: (controller) => {
+      bodyController = bodyFinalizer
+        ? new WeakRef(controller)
+        : { deref: () => controller }
+      signal.addEventListener('abort', abortBody, { once: true })
+    },
+    pull: (controller) => readChunk(controller),
+    cancel: () => dropBody()
   }
 
-  const res = new Response(body, {
-    status,
-    statusText
-  })
+  try {
+    // No body for HEAD requests or null-body statuses.
+    // see https://fetch.spec.whatwg.org/#null-body-status
+    const body =
+      req.method === 'HEAD' || [101, 103, 204, 205, 304].includes(status)
+        ? null
+        : new ReadableStream(source)
 
-  // `Response.url` cannot be set via the constructor, so we define it manually
-  Object.defineProperty(res, 'url', { value: url, writable: false })
-
-  // Expose `set-cookie` via `response.headers` (and `getSetCookie()` where
-  // supported). This is not Fetch-spec compliant for network responses in
-  // browsers, where `set-cookie` is treated as a forbidden response
-  // header and is generally not readable from JavaScript.
-  Object.defineProperty(res, 'headers', {
-    value: new Headers(responseHeaders),
-    writable: false
-  })
-
-  // Patch clone() per-instance so cloning preserves the overridden properties
-  const originalClone = res.clone.bind(res)
-  Object.defineProperty(res, 'clone', {
-    value: () => {
-      const cloned = originalClone()
-      Object.defineProperty(cloned, 'url', { value: url, writable: false })
-      Object.defineProperty(cloned, 'headers', {
-        value: new Headers(responseHeaders),
-        writable: false
-      })
-      return cloned
+    if (body !== null) {
+      // Clones share this source, so cleanup waits until none can read it.
+      bodyFinalizer?.register(source, dropBody, finalizerToken)
     }
-  })
 
-  return res
+    return patchResponse(
+      new Response(body, { status, statusText }),
+      url,
+      responseHeaders
+    )
+  } catch (error) {
+    void dropBody()
+    throw error
+  }
 }
