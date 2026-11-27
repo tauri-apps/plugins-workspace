@@ -71,7 +71,9 @@ tauri-plugin-global-shortcut = { path = "../../../plugins/global-shortcut", vers
 tauri-plugin-positioner = { path = "../../../plugins/positioner", version = "2.3.4", features = [
   "tray-icon",
 ] }
-tauri-plugin-updater = { path = "../../../plugins/updater", version = "2.14.1" }
+tauri-plugin-updater = { path = "../../../plugins/updater", version = "2.14.1", features = [
+  "cache",
+] }
 tauri-plugin-window-state = { path = "../../../plugins/window-state", version = "2.2.0" }
 
 [target."cfg(any(target_os = \"android\", target_os = \"ios\"))".dependencies]

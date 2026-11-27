@@ -41,6 +41,9 @@ pub enum Error {
     /// `reqwest` crate errors.
     #[error(transparent)]
     Reqwest(#[from] reqwest::Error),
+    /// The HTTP cache failed while checking for updates.
+    #[error(transparent)]
+    HttpCache(Box<dyn std::error::Error + Send + Sync>),
     /// The platform was not found in the updater JSON response.
     #[error("the platform `{0}` was not found in the response `platforms` object")]
     TargetNotFound(String),
@@ -126,6 +129,15 @@ pub enum Error {
     /// Tauri errors.
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
+}
+
+impl From<reqwest_middleware::Error> for Error {
+    fn from(error: reqwest_middleware::Error) -> Self {
+        match error {
+            reqwest_middleware::Error::Reqwest(error) => Self::Reqwest(error),
+            reqwest_middleware::Error::Middleware(error) => Self::HttpCache(error.into()),
+        }
+    }
 }
 
 impl Serialize for Error {

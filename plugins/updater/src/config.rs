@@ -7,6 +7,8 @@ use std::{ffi::OsString, fmt::Display};
 use serde::{Deserialize, Deserializer};
 use url::Url;
 
+use crate::cache::CacheConfig;
+
 /// Install modes for the Windows update.
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -148,6 +150,8 @@ pub struct Config {
     pub allow_downgrades: bool,
     /// The Windows configuration for the updater.
     pub windows: Option<WindowsConfig>,
+    /// The cache configuration for the updater.
+    pub cache: Option<CacheConfig>,
 }
 
 impl<'de> Deserialize<'de> for Config {
@@ -172,6 +176,7 @@ impl<'de> Deserialize<'de> for Config {
             #[serde(default, alias = "allow-downgrades")]
             pub allow_downgrades: bool,
             pub windows: Option<WindowsConfig>,
+            pub cache: Option<CacheConfig>,
         }
 
         let config = Config::deserialize(deserializer)?;
@@ -191,6 +196,7 @@ impl<'de> Deserialize<'de> for Config {
             require_signed_version: config.require_signed_version,
             allow_downgrades: config.allow_downgrades,
             windows: config.windows,
+            cache: config.cache,
         })
     }
 }
