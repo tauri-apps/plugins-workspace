@@ -204,9 +204,9 @@ impl<R: Runtime> WindowExt for Window<R> {
             }
 
             if flags.contains(StateFlags::POSITION) {
-                // a maximized window's x and y are the monitor's corner, so it is
-                // placed where it was before it was maximized
-                let position = if state.maximized {
+                // a maximized or fullscreen window's x and y are the monitor's
+                // corner, so it is placed where it was before that happened
+                let position = if state.maximized || state.fullscreen {
                     PhysicalPosition::new(state.prev_x, state.prev_y)
                 } else {
                     PhysicalPosition::new(state.x, state.y)
@@ -321,15 +321,16 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
             flags.intersects(StateFlags::POSITION | StateFlags::SIZE) && self.is_minimized()?;
         // A fullscreen window's size and position are the monitor's, not the
         // ones it returns to, so they are kept like a maximized window's.
-        let is_fullscreen =
-            flags.intersects(StateFlags::POSITION | StateFlags::SIZE) && self.is_fullscreen()?;
+        let is_fullscreen = flags
+            .intersects(StateFlags::FULLSCREEN | StateFlags::POSITION | StateFlags::SIZE)
+            && self.is_fullscreen()?;
 
         if flags.contains(StateFlags::MAXIMIZED) {
             state.maximized = is_maximized;
         }
 
         if flags.contains(StateFlags::FULLSCREEN) {
-            state.fullscreen = self.is_fullscreen()?;
+            state.fullscreen = is_fullscreen;
         }
 
         if flags.contains(StateFlags::DECORATIONS) {
@@ -507,8 +508,7 @@ impl Builder {
                                 .0
                                 .try_lock()
                                 .is_ok()
-                            && !window_clone.is_minimized().unwrap_or_default()
-                            && !window_clone.is_fullscreen().unwrap_or_default() =>
+                            && !window_clone.is_minimized().unwrap_or_default() =>
                     {
                         let mut c = cache.lock().unwrap();
                         if let Some(state) = c.get_mut(&label) {
