@@ -329,7 +329,10 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
             state.maximized = is_maximized;
         }
 
-        if flags.contains(StateFlags::FULLSCREEN) {
+        // Also kept without the FULLSCREEN flag: restoring the position needs
+        // to know the saved x and y are the monitor's (see `restore_state`).
+        // The window is only made fullscreen again when the flag is set.
+        if flags.intersects(StateFlags::FULLSCREEN | StateFlags::POSITION | StateFlags::SIZE) {
             state.fullscreen = is_fullscreen;
         }
 
