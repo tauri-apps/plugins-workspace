@@ -89,7 +89,7 @@ async function upload(
   url: string,
   filePath: string,
   progressHandler?: ProgressHandler,
-  // TODO: V3 - Combine headers and methods into one `options` object
+  // TODO: V3 - Combine headers and methods into one `options` object, switch to HeadersInit
   headers?: Record<string, string> | Map<string, string>,
   method?: HttpMethod
 ): Promise<string> {
