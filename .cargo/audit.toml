@@ -2,4 +2,7 @@
 ignore = [
   # rsa Marvin Attack
   "RUSTSEC-2023-0071",
+  # crypto-bigint timing variability, pulled in by stronghold through
+  # iota-crypto -> k256 0.13; no release of iota-crypto uses a fixed version
+  "RUSTSEC-2026-0387",
 ]
