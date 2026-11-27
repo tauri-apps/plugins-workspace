@@ -514,7 +514,14 @@ impl Builder {
                             && !window_clone.is_minimized().unwrap_or_default() =>
                     {
                         let mut c = cache.lock().unwrap();
-                        if let Some(state) = c.get_mut(&label) {
+                        // The platform can report the same move several times (GTK
+                        // does when maximizing or entering fullscreen), and shifting
+                        // on each of them would overwrite prev_x and prev_y with the
+                        // monitor's corner.
+                        if let Some(state) = c
+                            .get_mut(&label)
+                            .filter(|state| (state.x, state.y) != (position.x, position.y))
+                        {
                             state.prev_x = state.x;
                             state.prev_y = state.y;
 
