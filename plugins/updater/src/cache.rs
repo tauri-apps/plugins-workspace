@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 #[cfg(feature = "cache")]
-use std::time::Duration;
+use std::{sync::Arc, time::Duration};
 
 #[cfg(feature = "cache")]
 use http_cache_quickcache::QuickManager;
@@ -173,6 +173,13 @@ impl CacheManager {
                     shared: false,
                     ..Default::default()
                 }),
+                // `DEFAULT_TTL` would otherwise also keep error statuses `http-cache` considers
+                // cacheable, like a 404 while a release is being published, for an hour.
+                // Only a manifest (200) or "no update" (204) is worth storing.
+                response_cache_mode_fn: Some(Arc::new(|_, response| {
+                    (!matches!(response.status, 200 | 204))
+                        .then_some(http_cache_reqwest::CacheMode::NoStore)
+                })),
                 ..Default::default()
             },
         })
@@ -396,6 +403,15 @@ mod tests {
             // A cache each, mockito may hand out the same server URL again.
             assert_hits(&enabled_pending_default(), None, 200, &[], 3, 1).await;
             assert_hits(&enabled_pending_default(), None, 204, &[], 3, 1).await;
+        }
+
+        #[tokio::test]
+        async fn does_not_store_error_responses() {
+            for status in [404, 410, 501] {
+                assert_hits(&enabled_pending_default(), None, status, &[], 3, 3).await;
+                let headers = [("cache-control", "max-age=60")];
+                assert_hits(&enabled_pending_default(), None, status, &headers, 3, 3).await;
+            }
         }
 
         #[tokio::test]
