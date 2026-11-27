@@ -42,8 +42,6 @@ pub enum Error {
     #[error(transparent)]
     Reqwest(#[from] reqwest::Error),
     /// The HTTP cache failed while checking for updates.
-    ///
-    /// Network errors are reported as [`Error::Reqwest`] as before.
     #[error(transparent)]
     HttpCache(Box<dyn std::error::Error + Send + Sync>),
     /// The platform was not found in the updater JSON response.
