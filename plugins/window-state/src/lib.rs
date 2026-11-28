@@ -204,9 +204,9 @@ impl<R: Runtime> WindowExt for Window<R> {
             }
 
             if flags.contains(StateFlags::POSITION) {
-                // a maximized window's x and y are the monitor's corner, so it is
-                // placed where it was before it was maximized
-                let position = if state.maximized {
+                // a maximized or fullscreen window's x and y are the monitor's
+                // corner, so it is placed where it was before that happened
+                let position = if state.maximized || state.fullscreen {
                     PhysicalPosition::new(state.prev_x, state.prev_y)
                 } else {
                     PhysicalPosition::new(state.x, state.y)
@@ -319,13 +319,21 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
             && self.is_maximized()?;
         let is_minimized =
             flags.intersects(StateFlags::POSITION | StateFlags::SIZE) && self.is_minimized()?;
+        // A fullscreen window's size and position are the monitor's, not the
+        // ones it returns to, so they are kept like a maximized window's.
+        let is_fullscreen = flags
+            .intersects(StateFlags::FULLSCREEN | StateFlags::POSITION | StateFlags::SIZE)
+            && self.is_fullscreen()?;
 
         if flags.contains(StateFlags::MAXIMIZED) {
             state.maximized = is_maximized;
         }
 
-        if flags.contains(StateFlags::FULLSCREEN) {
-            state.fullscreen = self.is_fullscreen()?;
+        // Also kept without the FULLSCREEN flag: restoring the position needs
+        // to know the saved x and y are the monitor's (see `restore_state`).
+        // The window is only made fullscreen again when the flag is set.
+        if flags.intersects(StateFlags::FULLSCREEN | StateFlags::POSITION | StateFlags::SIZE) {
+            state.fullscreen = is_fullscreen;
         }
 
         if flags.contains(StateFlags::DECORATIONS) {
@@ -336,7 +344,7 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
             state.visible = self.is_visible()?;
         }
 
-        if flags.contains(StateFlags::SIZE) && !is_maximized && !is_minimized {
+        if flags.contains(StateFlags::SIZE) && !is_maximized && !is_minimized && !is_fullscreen {
             let size = restorable_size(self)?;
             // It doesn't make sense to save a window with 0 height or width
             if size.width > 0 && size.height > 0 {
@@ -345,7 +353,8 @@ impl<R: Runtime> WindowExtInternal for Window<R> {
             }
         }
 
-        if flags.contains(StateFlags::POSITION) && !is_maximized && !is_minimized {
+        if flags.contains(StateFlags::POSITION) && !is_maximized && !is_minimized && !is_fullscreen
+        {
             let position = self.outer_position()?;
             state.x = position.x;
             state.y = position.y;
@@ -505,7 +514,14 @@ impl Builder {
                             && !window_clone.is_minimized().unwrap_or_default() =>
                     {
                         let mut c = cache.lock().unwrap();
-                        if let Some(state) = c.get_mut(&label) {
+                        // The platform can report the same move several times (GTK
+                        // does when maximizing or entering fullscreen), and shifting
+                        // on each of them would overwrite prev_x and prev_y with the
+                        // monitor's corner.
+                        if let Some(state) = c
+                            .get_mut(&label)
+                            .filter(|state| (state.x, state.y) != (position.x, position.y))
+                        {
                             state.prev_x = state.x;
                             state.prev_y = state.y;
 
@@ -531,7 +547,10 @@ impl Builder {
                             window_clone.is_maximized().unwrap_or_default()
                         };
 
-                        if !window_clone.is_minimized().unwrap_or_default() && !is_maximized {
+                        if !window_clone.is_minimized().unwrap_or_default()
+                            && !is_maximized
+                            && !window_clone.is_fullscreen().unwrap_or_default()
+                        {
                             let mut c = cache.lock().unwrap();
                             if let Some(state) = c.get_mut(&label) {
                                 // the event carries the inner size, which is not what
