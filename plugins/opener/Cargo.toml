@@ -51,6 +51,7 @@ features = [
 ]
 
 [target."cfg(any(target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"netbsd\", target_os = \"openbsd\"))".dependencies]
+libc = "0.2"
 zbus = { workspace = true }
 url = { workspace = true }
 
