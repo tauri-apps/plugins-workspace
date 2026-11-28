@@ -504,7 +504,7 @@ class NfcPlugin(private val activity: Activity) : Plugin(activity) {
 private fun fromU8Array(byteArray: ByteArray): JSONArray {
     val json = JSONArray()
     for (byte in byteArray) {
-        json.put(byte)
+        json.put(byte.toInt() and 0xFF)
     }
     return json
 }

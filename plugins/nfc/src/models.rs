@@ -78,12 +78,19 @@ pub struct NfcTagRecord {
 /// An NFC tag that has been scanned.
 #[derive(Deserialize)]
 pub struct NfcTag {
-    /// The tag identifier, as reported by the operating system.
-    pub id: String,
-    /// The technology the tag supports.
-    pub kind: String,
+    /// The tag identifier bytes, as reported by the operating system.
+    ///
+    /// Empty when the operating system does not report one (FeliCa tags on iOS).
+    #[serde(default, deserialize_with = "null_as_empty")]
+    pub id: Vec<u8>,
+    /// The technologies the tag supports, e.g. `["android.nfc.tech.Ndef"]` on Android.
+    pub kind: Vec<String>,
     /// The NDEF records stored on the tag. Empty when the tag holds no NDEF message.
     pub records: Vec<NfcTagRecord>,
+}
+
+fn null_as_empty<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<Vec<u8>, D::Error> {
+    Ok(Option::<Vec<u8>>::deserialize(deserializer)?.unwrap_or_default())
 }
 
 /// Response of the [`Nfc::scan`](crate::Nfc::scan) API.
