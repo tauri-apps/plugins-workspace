@@ -137,6 +137,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     val notification = invoke.parseArgs(Notification::class.java)
     notification.sourceJson = invoke.getRawArgs()
     val id = manager.schedule(notification)
+    notificationStorage.appendNotifications(listOf(notification))
 
     invoke.resolveObject(id)
   }
