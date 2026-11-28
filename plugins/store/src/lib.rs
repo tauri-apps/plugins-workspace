@@ -20,7 +20,7 @@ use std::{
 };
 pub use store::{DeserializeFn, SerializeFn, Store, StoreBuilder, resolve_store_path};
 use tauri::{
-    AppHandle, Manager, ResourceId, RunEvent, Runtime, State,
+    AppHandle, Manager, ResourceId, Runtime, State,
     plugin::{self, TauriPlugin},
 };
 
@@ -472,25 +472,25 @@ impl Builder {
                 });
                 Ok(())
             })
-            .on_event(|app_handle, event| {
-                if let RunEvent::Exit = event {
-                    // resource table first, then the stores, see `StoreState`,
-                    // and saved after both are unlocked
-                    let stores: Vec<_> = {
-                        let resources = app_handle.resources_table();
-                        let collection = app_handle.state::<StoreState>();
-                        let stores = collection.stores.read().unwrap();
-                        stores
-                            .iter()
-                            .filter_map(|(path, rid)| {
-                                Some((path.clone(), resources.get::<Store<R>>(*rid).ok()?))
-                            })
-                            .collect()
-                    };
-                    for (path, store) in stores {
-                        if let Err(err) = store.save() {
-                            tracing::error!("failed to save store {path:?} with error {err:?}");
-                        }
+            // unlike `RunEvent::Exit` this also runs when the app restarts on the main thread,
+            // and before the resource table is cleared
+            .on_cleanup_before_exit(|app_handle| {
+                // resource table first, then the stores, see `StoreState`,
+                // and saved after both are unlocked
+                let stores: Vec<_> = {
+                    let resources = app_handle.resources_table();
+                    let collection = app_handle.state::<StoreState>();
+                    let stores = collection.stores.read().unwrap();
+                    stores
+                        .iter()
+                        .filter_map(|(path, rid)| {
+                            Some((path.clone(), resources.get::<Store<R>>(*rid).ok()?))
+                        })
+                        .collect()
+                };
+                for (path, store) in stores {
+                    if let Err(err) = store.save() {
+                        tracing::error!("failed to save store {path:?} with error {err:?}");
                     }
                 }
             })
