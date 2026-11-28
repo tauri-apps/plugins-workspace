@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.1]
+
+- [`53c48017`](https://github.com/tauri-apps/plugins-workspace/commit/53c4801744ae4cbe2fca1ea297d8e6c4bb680619) ([#3797](https://github.com/tauri-apps/plugins-workspace/pull/3797) by [@sarankumar1325](https://github.com/tauri-apps/plugins-workspace/../../sarankumar1325)) Accept a plain object for the `headers` argument of `upload` and `download`, as shown in their examples, in addition to a `Map`.
+
 ## [2.5.0]
 
 - [`ae3c808e`](https://github.com/tauri-apps/plugins-workspace/commit/ae3c808eb60086f32b1d67bb8ccc525b95333e77) ([#3602](https://github.com/tauri-apps/plugins-workspace/pull/3602)) The plugin's global API script (used with `app.withGlobalTauri`) now resolves the core API from `window.__TAURI__` instead of bundling its own copy of `@tauri-apps/api`. Values created with the core API are now accepted by plugin APIs in global mode (e.g. an `Image` from `window.__TAURI__.image` passed to `clipboardManager.writeImage`, which previously failed the `instanceof` check against the plugin's private copy), and the script is considerably smaller.

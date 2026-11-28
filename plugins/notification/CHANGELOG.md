@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.8.2]
+
+- [`4140767e`](https://github.com/tauri-apps/plugins-workspace/commit/4140767e222a299eb1b2a1ac98f529151e37dfc6) ([#3728](https://github.com/tauri-apps/plugins-workspace/pull/3728) by [@Sealdot](https://github.com/tauri-apps/plugins-workspace/../../Sealdot)) Fixed scheduled notifications on Android being saved as `null`, which broke `pending()` and lost them across a device reboot. `actionPerformed` events now include the notification on every path, the pending schedule reports `allowWhileIdle`, and scheduled notifications fire the `notification` event (`onNotificationReceived`) while the app is running.
+- [`d65608c9`](https://github.com/tauri-apps/plugins-workspace/commit/d65608c946acf57874e0e1285bc905657f8d4408) ([#3798](https://github.com/tauri-apps/plugins-workspace/pull/3798) by [@MrSpy00](https://github.com/tauri-apps/plugins-workspace/../../MrSpy00)) Skip serializing empty `inbox_lines` on `NotificationData` and guard against empty `inboxLines` lists on Android so notifications with only a title and body keep their body visible when expanded.
+
 ## [2.8.1]
 
 - [`52edb98e`](https://github.com/tauri-apps/plugins-workspace/commit/52edb98eb043d09bc7598e0724a2f4bc9f9a4ecd) ([#3758](https://github.com/tauri-apps/plugins-workspace/pull/3758) by [@Lorkydey](https://github.com/tauri-apps/plugins-workspace/../../Lorkydey)) Fix notification permission requests never resolving on Android 13 and newer when the permission has already been granted.
