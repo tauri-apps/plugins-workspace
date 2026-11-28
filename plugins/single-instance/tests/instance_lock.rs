@@ -216,3 +216,94 @@ fn lock_is_held_during_the_exit_event() {
     // `App::run` cleans up after the exit event.
     assert_started(launch_second_instance(&identifier), &forwarded);
 }
+
+/// Tauri's runtime is set up once per process, so each case runs in a process of its own: the
+/// default runtime with a single worker, as on a machine with one CPU, and a current-thread
+/// runtime passed to [`tauri::async_runtime::set`].
+#[cfg(target_os = "linux")]
+#[test]
+#[ignore = "needs a D-Bus session bus"]
+fn other_runtimes() {
+    const RUNTIME_ENV: &str = "TAURI_SINGLE_INSTANCE_TEST_RUNTIME";
+    let Ok(runtime) = env::var(RUNTIME_ENV) else {
+        for runtime in ["one-worker", "current-thread"] {
+            let output = Command::new(env::current_exe().unwrap())
+                .args(["--ignored", "--exact", "other_runtimes", "--nocapture"])
+                .env(RUNTIME_ENV, runtime)
+                .env("TOKIO_WORKER_THREADS", "1")
+                .output()
+                .unwrap();
+            assert!(output.status.success(), "{runtime}: {output:?}");
+        }
+        return;
+    };
+    // Fails rather than hangs on a deadlock.
+    thread::spawn(|| {
+        thread::sleep(Duration::from_secs(60));
+        eprintln!("timed out");
+        std::process::exit(1);
+    });
+    if runtime == "current-thread" {
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        tauri::async_runtime::set(runtime.handle().clone());
+        thread::spawn(move || runtime.block_on(std::future::pending::<()>()));
+    }
+
+    let identifier = unique_identifier();
+    let (app, forwarded) = primary(&identifier);
+    assert_forwarded(launch_second_instance(&identifier), &forwarded);
+
+    if runtime == "one-worker" {
+        // As in an async command, which holds the only worker while the name is released.
+        let app = app.handle().clone();
+        tauri::async_runtime::block_on(tauri::async_runtime::spawn(async move {
+            tauri_plugin_single_instance::destroy(&app);
+        }))
+        .unwrap();
+    } else {
+        tauri_plugin_single_instance::destroy(&app);
+    }
+    assert_started(launch_second_instance(&identifier), &forwarded);
+}
+
+/// What the crate documentation tells apps to do with work the callback itself cannot do on
+/// Linux: a blocking D-Bus call and [`tauri_plugin_single_instance::destroy`], on another thread.
+#[cfg(target_os = "linux")]
+#[test]
+#[ignore = "needs a D-Bus session bus"]
+fn callback_hands_off_blocking_work() {
+    let identifier = unique_identifier();
+    let (tx, forwarded) = mpsc::channel();
+    let mut context = mock_context(noop_assets());
+    context.config_mut().identifier = identifier.clone();
+    let _app = mock_builder()
+        .plugin(tauri_plugin_single_instance::init(move |app, args, cwd| {
+            let (app, tx) = (app.clone(), tx.clone());
+            thread::spawn(move || {
+                zbus::block_on(async {
+                    zbus::Connection::session()
+                        .await
+                        .unwrap()
+                        .call_method(
+                            Some("org.freedesktop.DBus"),
+                            "/org/freedesktop/DBus",
+                            Some("org.freedesktop.DBus"),
+                            "GetId",
+                            &(),
+                        )
+                        .await
+                        .unwrap();
+                });
+                tauri_plugin_single_instance::destroy(&app);
+                let _ = tx.send((args, cwd));
+            });
+        }))
+        .build(context)
+        .unwrap();
+
+    assert_forwarded(launch_second_instance(&identifier), &forwarded);
+    assert_started(launch_second_instance(&identifier), &forwarded);
+}
