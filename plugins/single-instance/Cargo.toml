@@ -45,7 +45,7 @@ features = [
 version = "0.61"
 features = ["Win32_UI_WindowsAndMessaging"]
 
-[target."cfg(target_os = \"linux\")".dependencies]
+[target."cfg(any(target_os = \"linux\", target_os = \"freebsd\"))".dependencies]
 zbus = { workspace = true }
 
 [features]
