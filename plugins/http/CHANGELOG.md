@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.0-alpha.4]
+
+- [`068bc7cc`](https://github.com/tauri-apps/plugins-workspace/commit/068bc7cc8ca9df26fb2feffd1cb3f6a89be5b851) ([#3786](https://github.com/tauri-apps/plugins-workspace/pull/3786) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix request cancellation, including signals supplied through `Request` objects, abort-listener cleanup, and concurrent response-body reads. `fetch_cancel` and `fetch_cancel_body` now only close the plugin's own requests and responses, instead of any resource id they are given.
+- [`068bc7cc`](https://github.com/tauri-apps/plugins-workspace/commit/068bc7cc8ca9df26fb2feffd1cb3f6a89be5b851) ([#3786](https://github.com/tauri-apps/plugins-workspace/pull/3786) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix HTTP resource leaks on cancellation, errors, navigation, window close, and bodyless responses, including WebKit memory leaks. Clean up abandoned responses after garbage collection on supported webviews and reject response statuses outside 200–599.
+- [`068bc7cc`](https://github.com/tauri-apps/plugins-workspace/commit/068bc7cc8ca9df26fb2feffd1cb3f6a89be5b851) ([#3786](https://github.com/tauri-apps/plugins-workspace/pull/3786) by [@amrbashir](https://github.com/tauri-apps/plugins-workspace/../../amrbashir)) Fix loss of response URLs and headers when cloning a previously cloned response.
+
 ## [3.0.0-alpha.3]
 
 - [`41b96be3`](https://github.com/tauri-apps/plugins-workspace/commit/41b96be34559dff587d40f966277631df688ff9d) ([#3593](https://github.com/tauri-apps/plugins-workspace/pull/3593) by [@decebal](https://github.com/tauri-apps/plugins-workspace/../../decebal)) Updated `reqwest` to 0.13 and removed the `tauri_plugin_http::reqwest` re-export. Add `reqwest` to your own dependencies if you used it. Cargo features that `reqwest` 0.13 removed are removed here too:

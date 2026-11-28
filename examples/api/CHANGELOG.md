@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.0.44-alpha.5]
+
+### Dependencies
+
+- Upgraded to `notification-js@3.0.0-alpha.4`
+- Upgraded to `global-shortcut-js@3.0.0-alpha.4`
+- Upgraded to `http-js@3.0.0-alpha.4`
+- Upgraded to `shell-js@3.0.0-alpha.4`
+- Upgraded to `store-js@3.0.0-alpha.4`
+
 ## [2.0.44-alpha.4]
 
 ### Dependencies

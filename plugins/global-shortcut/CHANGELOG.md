@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.0-alpha.4]
+
+- [`0472f4aa`](https://github.com/tauri-apps/plugins-workspace/commit/0472f4aa0eef8640a90073a212413cc7940d922e) ([#3719](https://github.com/tauri-apps/plugins-workspace/pull/3719) by [@renovate](https://github.com/tauri-apps/plugins-workspace/../../renovate)) Updated dependency `global-hotkey` to 0.10.
+
 ## [3.0.0-alpha.3]
 
 - [``](https://github.com/tauri-apps/plugins-workspace/commit/undefined) Ported changes from v2.

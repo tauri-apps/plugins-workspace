@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.0-alpha.4]
+
+- [`1069850e`](https://github.com/tauri-apps/plugins-workspace/commit/1069850effdbab17e13202c9762e93a6110ba52b) ([#3749](https://github.com/tauri-apps/plugins-workspace/pull/3749) by [@963s](https://github.com/tauri-apps/plugins-workspace/../../963s)) The shell plugin now kills the child processes spawned from JavaScript, and the store plugin now saves its stores, in `on_cleanup_before_exit` instead of on `RunEvent::Exit`. So this also happens when the app restarts on the main thread with `AppHandle::restart`, which skips `RunEvent::Exit`. Before, those children kept running and unsaved store values were lost on such a restart.
+
 ## [3.0.0-alpha.3]
 
 - [``](https://github.com/tauri-apps/plugins-workspace/commit/undefined) Update to tauri v3.0.0-alpha.4 and `@tauri-apps/api` v3.0.0-alpha.2.
