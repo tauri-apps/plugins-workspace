@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.0.0-alpha.5]
+
+### Dependencies
+
+- Upgraded to `notification@3.0.0-alpha.4`
+- Upgraded to `global-shortcut@3.0.0-alpha.4`
+- Upgraded to `http@3.0.0-alpha.4`
+- Upgraded to `shell@3.0.0-alpha.4`
+- Upgraded to `store@3.0.0-alpha.4`
+
 ## [3.0.0-alpha.4]
 
 ### Dependencies

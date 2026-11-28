@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.0.0-alpha.4]
+
+- [`14ed4c4f`](https://github.com/tauri-apps/plugins-workspace/commit/14ed4c4f9e717929347b9c5609acaefc259a4e22) ([#3744](https://github.com/tauri-apps/plugins-workspace/pull/3744) by [@963s](https://github.com/tauri-apps/plugins-workspace/../../963s)) Removed the webview script that sent clicks on `<a target="_blank">` links to the removed `open` command. Since that command was removed, the script made those links do nothing, even when `tauri-plugin-opener` was registered. Opener now handles them again.
+- [`1069850e`](https://github.com/tauri-apps/plugins-workspace/commit/1069850effdbab17e13202c9762e93a6110ba52b) ([#3749](https://github.com/tauri-apps/plugins-workspace/pull/3749) by [@963s](https://github.com/tauri-apps/plugins-workspace/../../963s)) The shell plugin now kills the child processes spawned from JavaScript, and the store plugin now saves its stores, in `on_cleanup_before_exit` instead of on `RunEvent::Exit`. So this also happens when the app restarts on the main thread with `AppHandle::restart`, which skips `RunEvent::Exit`. Before, those children kept running and unsaved store values were lost on such a restart.
+
 ## [3.0.0-alpha.3]
 
 - [``](https://github.com/tauri-apps/plugins-workspace/commit/undefined) Ported changes from v2.

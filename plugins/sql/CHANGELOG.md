@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.0-alpha.4]
+
+- [`b5a93ad0`](https://github.com/tauri-apps/plugins-workspace/commit/b5a93ad0e711ce2722013ec428e4b43b340e077f) Updated `sqlx` to 0.9, which bundles a SQLite version with security fixes. `DbPool` exposes `sqlx` pool types, so update your own `sqlx` dependency to 0.9 if you use them.
+
 ## [3.0.0-alpha.3]
 
 - [``](https://github.com/tauri-apps/plugins-workspace/commit/undefined) Ported changes from v2.
