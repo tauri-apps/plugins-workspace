@@ -13,7 +13,10 @@ use windows_sys::Win32::{
         Diagnostics::ToolHelp::{
             CreateToolhelp32Snapshot, TH32CS_SNAPTHREAD, THREADENTRY32, Thread32First, Thread32Next,
         },
-        JobObjects::{AssignProcessToJobObject, CreateJobObjectW, TerminateJobObject},
+        JobObjects::{
+            AssignProcessToJobObject, CreateJobObjectW, JOBOBJECT_BASIC_ACCOUNTING_INFORMATION,
+            JobObjectBasicAccountingInformation, QueryInformationJobObject, TerminateJobObject,
+        },
         Threading::{OpenThread, ResumeThread, THREAD_SUSPEND_RESUME},
     },
 };
@@ -46,6 +49,21 @@ impl JobObject {
             return Err(io::Error::last_os_error());
         }
         Ok(())
+    }
+
+    /// Whether any process in the job is still running. `false` if the job can't be queried.
+    pub(crate) fn has_processes(&self) -> bool {
+        let mut info: JOBOBJECT_BASIC_ACCOUNTING_INFORMATION = unsafe { mem::zeroed() };
+        let queried = unsafe {
+            QueryInformationJobObject(
+                self.0,
+                JobObjectBasicAccountingInformation,
+                (&mut info as *mut JOBOBJECT_BASIC_ACCOUNTING_INFORMATION).cast(),
+                mem::size_of::<JOBOBJECT_BASIC_ACCOUNTING_INFORMATION>() as u32,
+                ptr::null_mut(),
+            )
+        };
+        queried != 0 && info.ActiveProcesses > 0
     }
 }
 
